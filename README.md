@@ -136,7 +136,7 @@ Once you've tested with mock data and want to use real MQTT:
    - URL: `your-broker.hivemq.cloud`
    - Port: `8883` (or 1883 for unsecured)
    - Username/Password (if required)
-   - Topic: `electro/telemetry/byd-seal/data`
+   - Topic: `electro/telemetry/byd-seal/data` (For Seal)
 3. Click "Save & Restart Service"
 4. Drive your BYD Seal!
 

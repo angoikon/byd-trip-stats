@@ -178,7 +178,7 @@ class MqttService : Service() {
         )
         
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("BYD Seal Stats")
+            .setContentTitle("BYD Info Stats")
             .setContentText(message)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(pendingIntent)
