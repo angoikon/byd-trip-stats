@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BYD Seal Stats</string>
+    <string name="app_name">BYD Info Stats</string>
     <string name="dashboard">Dashboard</string>
     <string name="trip_history">Trip History</string>
     <string name="settings">Settings</string>

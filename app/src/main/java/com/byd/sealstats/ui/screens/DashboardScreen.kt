@@ -40,7 +40,7 @@ fun DashboardScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("BYD Seal Stats", fontSize = 24.sp, fontWeight = FontWeight.Bold) },
+                title = { Text("BYD Info Stats", fontSize = 24.sp, fontWeight = FontWeight.Bold) },
                 actions = {
                     // Mock Data Button (for testing)
                     IconButton(onClick = { viewModel.startMockDrive() }) {

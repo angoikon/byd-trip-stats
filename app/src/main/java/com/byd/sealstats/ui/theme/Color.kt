@@ -2,7 +2,7 @@ package com.byd.sealstats.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Custom BYD Seal Stats colors
+// Custom BYD Info Stats colors
 val BatteryBlue = Color(0xFF2196F3)
 val RegenGreen = Color(0xFF4CAF50)
 val AccelerationOrange = Color(0xFFFF9800)

@@ -8,7 +8,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     
-    <!-- BYD Seal Stats custom colors -->
+    <!-- BYD Info Stats custom colors -->
     <color name="battery_blue">#FF2196F3</color>
     <color name="regen_green">#FF4CAF50</color>
     <color name="acceleration_orange">#FFFF9800</color>

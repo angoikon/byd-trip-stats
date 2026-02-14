@@ -230,7 +230,7 @@ fun SettingsScreen(
                 )
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    SettingsDetailRow("App Name", "BYD Seal Stats")
+                    SettingsDetailRow("App Name", "BYD Info Stats")
                     SettingsDetailRow("Version", "1.0.0")
                     SettingsDetailRow("Build", "Debug")
                 }
