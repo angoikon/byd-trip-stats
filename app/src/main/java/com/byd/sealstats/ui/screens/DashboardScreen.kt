@@ -145,6 +145,7 @@ fun DashboardContent(
             TripControls(
                 isInTrip = isInTrip,
                 autoTripDetection = autoTripDetection,
+                currentGear = telemetry.gear,
                 onStartTrip = onStartTrip,
                 onEndTrip = onEndTrip,
                 onToggleAutoDetection = onToggleAutoDetection,
@@ -539,15 +540,30 @@ fun TripControls(
                             modifier = Modifier.padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = if (isInTrip) Icons.Filled.DirectionsCar else Icons.Filled.LocalParking,
-                                contentDescription = null,
-                                tint = if (isInTrip) MaterialTheme.colorScheme.primary else Color.Gray,
-                                modifier = Modifier.size(28.dp)
-                            )
+                        Icon(
+                            imageVector = when (currentGear) {
+                                "P" -> Icons.Filled.LocalParking
+                                "D", "R" -> Icons.Filled.DirectionsCar
+                                else -> if (isInTrip) Icons.Filled.DirectionsCar else Icons.Filled.LocalParking
+                            },
+                            contentDescription = null,
+                            tint = when (currentGear) {
+                                "P" -> Color.Gray
+                                "D" -> Color.Green
+                                "R" -> Color.Red
+                                else -> if (isInTrip) MaterialTheme.colorScheme.primary else Color.Gray
+                            },
+                            modifier = Modifier.size(28.dp)
+                        )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = if (isInTrip) "Trip in Progress" else "Waiting for Trip...",
+                                text = when {
+                                    currentGear == "P" -> "Parked"
+                                    currentGear == "D" -> "Driving"
+                                    currentGear == "R" -> "Reversing"
+                                    isInTrip -> "Trip in Progress"
+                                    else -> "Waiting for Trip..."
+                                },
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Medium
                             )
