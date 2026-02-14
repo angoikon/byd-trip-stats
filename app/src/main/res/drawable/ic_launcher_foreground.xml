@@ -1,12 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    
+    <!-- Main circle background -->
+    <path
+        android:fillColor="#2196F3"
+        android:pathData="M 54,24 A 30,30 0 1,1 54,84 A 30,30 0 1,1 54,24 Z"/>
+    
+    <!-- White circle for chart area -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M54,30C40.7,30 30,40.7 30,54s10.7,24 24,24s24,-10.7 24,-24S67.3,30 54,30zM54,72c-9.9,0 -18,-8.1 -18,-18s8.1,-18 18,-18s18,8.1 18,18S63.9,72 54,72z"/>
+        android:pathData="M 54,30 A 24,24 0 1,1 54,78 A 24,24 0 1,1 54,30 Z"/>
+    
+    <!-- Rising bar chart (main focus) -->
+    <!-- Bar 1 - shortest -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M54,42L54,54l8.5,8.5"/>
+        android:fillColor="#4CAF50"
+        android:pathData="M 38,62 L 38,68 L 43,68 L 43,62 Z"/>
+    
+    <!-- Bar 2 - medium -->
+    <path
+        android:fillColor="#66BB6A"
+        android:pathData="M 45,56 L 45,68 L 50,68 L 50,56 Z"/>
+    
+    <!-- Bar 3 - tall -->
+    <path
+        android:fillColor="#81C784"
+        android:pathData="M 52,48 L 52,68 L 57,68 L 57,48 Z"/>
+    
+    <!-- Bar 4 - tallest -->
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M 59,42 L 59,68 L 64,68 L 64,42 Z"/>
+    
+    <!-- Upward trend arrow -->
+    <path
+        android:fillColor="#FF9800"
+        android:pathData="M 66,46 L 66,40 L 72,40 L 69,36 L 66,40 L 66,46 M 66,40 L 70,44"/>
+    
+    <!-- Small data points/dots as circles -->
+    <path
+        android:fillColor="#2196F3"
+        android:pathData="M 40,64 m -1.5,0 a 1.5,1.5 0 1,1 3,0 a 1.5,1.5 0 1,1 -3,0"/>
+    <path
+        android:fillColor="#2196F3"
+        android:pathData="M 47.5,58 m -1.5,0 a 1.5,1.5 0 1,1 3,0 a 1.5,1.5 0 1,1 -3,0"/>
+    <path
+        android:fillColor="#2196F3"
+        android:pathData="M 54.5,50 m -1.5,0 a 1.5,1.5 0 1,1 3,0 a 1.5,1.5 0 1,1 -3,0"/>
+    <path
+        android:fillColor="#2196F3"
+        android:pathData="M 61.5,44 m -1.5,0 a 1.5,1.5 0 1,1 3,0 a 1.5,1.5 0 1,1 -3,0"/>
 </vector>

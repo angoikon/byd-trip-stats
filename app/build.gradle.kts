@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "com.byd.sealstats"
-    compileSdk = 29
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.byd.sealstats"
         minSdk = 29
-        targetSdk = 29
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
 
