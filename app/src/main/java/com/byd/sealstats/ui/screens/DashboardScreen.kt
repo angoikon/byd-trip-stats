@@ -13,17 +13,32 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.sealstats.data.model.VehicleTelemetry
+import com.byd.sealstats.ui.screens.StatCard
 import com.byd.sealstats.ui.theme.*
 import com.byd.sealstats.ui.viewmodel.DashboardViewModel
 import kotlin.math.abs
+import com.byd.sealstats.R
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.drawscope.translate
+import kotlin.math.sin
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
+import com.airbnb.lottie.compose.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -223,8 +238,36 @@ fun EnergyFlowDiagram(
                     isCharging = isCharging,
                     flowOffset = flowOffset
                 )
+
+                // Lottie battery animation overlay with 3 states
+                val composition by rememberLottieComposition(
+                    LottieCompositionSpec.RawRes(R.raw.battery_animation)
+                )
+
+                // Determine animation speed and direction based on car state
+                val animationSpeed = when {
+                    telemetry.speed < 0.5 -> 0f  // Car stopped - static (no animation)
+                    isRegenerating -> 0.1f  // Regenerating - normal speed forward
+                    power > 0 -> -0.1f  // Moving/accelerating - reverse animation
+                    else -> 0f  // Default - static
+                }
+
+                val progress by animateLottieCompositionAsState(
+                    composition = composition,
+                    speed = animationSpeed,
+                    iterations = LottieConstants.IterateForever
+                )
+
+                LottieAnimation(
+                    composition = composition,
+                    progress = { progress },
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .offset(x = 120.dp)  // Adjust these values to position it
+                        .size(140.dp)
+                )
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
             
             // Power metrics
@@ -279,7 +322,10 @@ fun EnergyFlowCanvas(
 ) {
     // Capture composable colors before Canvas lambda
     val primaryColor = MaterialTheme.colorScheme.primary
-    
+
+    // Load AWD icon as ImageBitmap
+    val awdIcon = painterResource(R.drawable.ic_awd_axle)
+
     Canvas(modifier = Modifier.fillMaxSize()) {
         val width = size.width
         val height = size.height
@@ -290,9 +336,9 @@ fun EnergyFlowCanvas(
         val batteryX = width * 0.2f
         val batteryY = centerY
         val batterySize = 120f
-        
-        // Motor (center)
-        val motorX = centerX
+
+        // Motor (center) - shifted slightly to align with "Speed" and "Battery"
+        val motorX = centerX  // Add offset to move right
         val motorY = centerY
         val motorSize = 150f
         
@@ -301,48 +347,52 @@ fun EnergyFlowCanvas(
         val wheelY = centerY
         val wheelSize = 100f
         
-        // Draw battery
-        drawRoundRect(
-            color = BatteryBlue,
-            topLeft = Offset(batteryX - batterySize / 2, batteryY - batterySize / 2),
-            size = androidx.compose.ui.geometry.Size(batterySize, batterySize),
-            cornerRadius = androidx.compose.ui.geometry.CornerRadius(16f),
-            style = Stroke(width = 6f)
-        )
-        
-        // Battery fill level
-        val fillHeight = batterySize * (soc / 100f).toFloat()
-        drawRoundRect(
-            brush = Brush.verticalGradient(
-                colors = listOf(BatteryBlue.copy(alpha = 0.7f), BatteryBlue.copy(alpha = 0.3f))
-            ),
-            topLeft = Offset(
-                batteryX - batterySize / 2 + 6,
-                batteryY + batterySize / 2 - fillHeight - 6
-            ),
-            size = androidx.compose.ui.geometry.Size(batterySize - 12, fillHeight),
-            cornerRadius = androidx.compose.ui.geometry.CornerRadius(12f)
-        )
-        
-        // Draw motor
+        // Draw AWD axle icon
+        val iconColor = when {
+            isRegenerating -> RegenGreen
+            power > 0 -> AccelerationOrange
+            else -> Color.Gray
+        }
+
+        val iconSize = motorSize * 0.7f
+
+        // Draw the icon
+        translate(
+            left = motorX - iconSize / 2,
+            top = motorY - iconSize / 2
+        ) {
+            with(awdIcon) {
+                draw(
+                    size = Size(iconSize, iconSize),
+                    // colorFilter = ColorFilter.tint(iconColor)  // Now it can access iconColor
+                )
+            }
+        }
+
+        // Draw wheel with speed indicator
+        val wheelColor = when {
+            speed > 130 -> Color.Red // High speed warning
+            speed > 0 -> primaryColor // Moving
+            else -> Color.Gray // Stationary
+        }
+
         drawCircle(
-            color = when {
-                isRegenerating -> RegenGreen
-                power > 0 -> AccelerationOrange
-                else -> Color.Gray
-            },
-            radius = motorSize / 2,
-            center = Offset(motorX, motorY),
-            style = Stroke(width = 8f)
-        )
-        
-        // Draw wheel
-        drawCircle(
-            color = if (speed > 0) primaryColor else Color.Gray,
+            color = wheelColor,
             radius = wheelSize / 2,
             center = Offset(wheelX, wheelY),
             style = Stroke(width = 6f)
         )
+
+        // Draw speed value inside wheel
+        drawContext.canvas.nativeCanvas.apply {
+            val paint = android.graphics.Paint().apply {
+                color = wheelColor.toArgb()
+                textSize = 24f
+                textAlign = android.graphics.Paint.Align.CENTER
+                typeface = android.graphics.Typeface.DEFAULT_BOLD
+            }
+            drawText("${speed.toInt()}", wheelX, wheelY + 8, paint)
+        }
         
         // Energy flow lines
         if (abs(power) > 1) {
@@ -357,13 +407,20 @@ fun EnergyFlowCanvas(
             val dashPhase = flowOffset * 40f
             
             if (isRegenerating) {
-                // Motor to Battery (regeneration)
+                // Wheels to Motor to Battery (regeneration)
+                drawEnergyFlow(
+                    from = Offset(wheelX - wheelSize / 2 - 20f, wheelY),
+                    to = Offset(motorX + motorSize / 2, motorY),
+                    color = flowColor,
+                    dashPhase = dashPhase,
+                    reverse = true
+                )
                 drawEnergyFlow(
                     from = Offset(motorX - motorSize / 2, motorY),
                     to = Offset(batteryX + batterySize / 2, batteryY),
                     color = flowColor,
                     dashPhase = dashPhase,
-                    reverse = false
+                    reverse = true
                 )
             } else if (power > 0) {
                 // Battery to Motor (acceleration)
@@ -378,7 +435,7 @@ fun EnergyFlowCanvas(
                 // Motor to Wheels
                 drawEnergyFlow(
                     from = Offset(motorX + motorSize / 2, motorY),
-                    to = Offset(wheelX - wheelSize / 2, wheelY),
+                    to = Offset(wheelX - wheelSize / 2 - 20f, wheelY),
                     color = flowColor,
                     dashPhase = dashPhase,
                     reverse = true
@@ -601,12 +658,19 @@ fun VehicleStats(
         
         StatCard(
             title = "Voltage",
-            value = "${telemetry.batteryTotalVoltage}V",
-            subtitle = "Cell: ${String.format("%.3f", telemetry.batteryCellVoltageMin)}-${String.format("%.3f", telemetry.batteryCellVoltageMax)}V",
+            value = "${telemetry.batteryTotalVoltage} V",
+            subtitle = "Cell: ${String.format("%.3f", telemetry.batteryCellVoltageMin)} - ${String.format("%.3f", telemetry.batteryCellVoltageMax)} V",
             icon = Icons.Filled.Bolt,
             color = MaterialTheme.colorScheme.secondary
         )
-        
+
+        StatCard(
+            title = "Front / Rear Motor",
+            value = "${telemetry.engineSpeedFront} / ${telemetry.engineSpeedRear} RPM",
+            iconRes = R.drawable.ic_motor_axle,
+            color = Color(0xFF1976D2)
+        )
+
         StatCard(
             title = "Odometer",
             value = "${String.format("%.1f", telemetry.odometer)} km",
@@ -627,7 +691,8 @@ fun VehicleStats(
 fun StatCard(
     title: String,
     value: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: Any? = null,
+    iconRes: Int? = null,
     color: Color,
     subtitle: String? = null,
     modifier: Modifier = Modifier
@@ -644,12 +709,20 @@ fun StatCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(40.dp)
-            )
+            when {
+                icon is ImageVector -> Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier.size(32.dp)
+                )
+                iconRes != null -> Icon(
+                    painter = painterResource(id = iconRes),
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(

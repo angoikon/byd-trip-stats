@@ -85,7 +85,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             topic = topic
         )
         viewModelScope.launch {
-            delay(2000) // Wait 2 seconds for connection
+            delay(5000) // Wait 5 seconds for connection
             _mqttConnected.value = true
         }
     }
@@ -166,10 +166,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     fun startMockDrive() {
         viewModelScope.launch {
             val mockGenerator = com.byd.sealstats.mock.MockDataGenerator()
-            mockGenerator.generateMockDrive(
-                durationSeconds = 300, // 5 minute drive
-                updateIntervalMs = 1000 // 1 second updates
-            ).collect { telemetry ->
+            mockGenerator.generateMockDrive().collect { telemetry ->
                 updateTelemetry(telemetry)
                 tripRepository.processTelemetry(telemetry)
             }
