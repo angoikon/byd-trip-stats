@@ -148,7 +148,7 @@ fun TripOverviewTab(
             )
             
             MetricCard(
-                title = "Efficiency",
+                title = "Consumption",
                 value = String.format("%.1f", trip.efficiency ?: 0.0),
                 unit = "kWh/100km",
                 icon = Icons.Filled.Eco,
@@ -188,6 +188,7 @@ fun TripOverviewTab(
                 
                 DetailRow("Max Power", "${trip.maxPower.toInt()} kW")
                 DetailRow("Max Regen", "${abs(trip.maxRegenPower).toInt()} kW")
+                // DetailRow("Energy used", trip.energyConsumed?.let { String.format("%.2f kWh", it) } ?: "-")
                 DetailRow("Total Regen Energy", stats?.totalRegenEnergy?.let { String.format("%.2f kWh", it) } ?: "-")
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
                 

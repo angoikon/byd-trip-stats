@@ -244,7 +244,7 @@ fun EnergyFlowDiagram(
                     LottieCompositionSpec.RawRes(R.raw.battery_animation)
                 )
 
-                // Determine animation speed and direction based on car state
+                // Determine Lottie animation speed and direction based on car state
                 val animationSpeed = when {
                     telemetry.speed < 0.5 -> 0f  // Car stopped - static (no animation)
                     isRegenerating -> 0.25f  // Regenerating - normal speed forward
@@ -341,12 +341,7 @@ fun EnergyFlowCanvas(
         val motorX = centerX
         val motorY = centerY
         val motorSize = 150f
-        
-        // Wheels (right)
-        val wheelX = width * 0.8f
-        val wheelY = centerY
-        val wheelSize = 100f
-        
+
         // Draw AWD axle icon
         val iconColor = when {
             isRegenerating -> RegenGreen
@@ -369,31 +364,6 @@ fun EnergyFlowCanvas(
             }
         }
 
-        // Draw wheel with speed indicator
-        val wheelColor = when {
-            speed > 130 -> Color.Red // High speed warning
-            speed > 0 -> primaryColor // Moving
-            else -> Color.Gray // Stationary
-        }
-
-        drawCircle(
-            color = wheelColor,
-            radius = wheelSize / 2,
-            center = Offset(wheelX, wheelY),
-            style = Stroke(width = 6f)
-        )
-
-        // Draw speed value inside wheel
-        drawContext.canvas.nativeCanvas.apply {
-            val paint = android.graphics.Paint().apply {
-                color = wheelColor.toArgb()
-                textSize = 24f
-                textAlign = android.graphics.Paint.Align.CENTER
-                typeface = android.graphics.Typeface.DEFAULT_BOLD
-            }
-            drawText("${speed.toInt()}", wheelX, wheelY + 8, paint)
-        }
-        
         // Energy flow lines
         if (abs(power) > 1) {
             val flowColor = when {
@@ -407,14 +377,7 @@ fun EnergyFlowCanvas(
             val dashPhase = flowOffset * 40f
             
             if (isRegenerating) {
-                // Wheels to Motor to Battery (regeneration)
-                drawEnergyFlow(
-                    from = Offset(wheelX - wheelSize / 2 - 20f, wheelY),
-                    to = Offset(motorX + motorSize / 2, motorY),
-                    color = flowColor,
-                    dashPhase = dashPhase,
-                    reverse = true
-                )
+                // Motor to Battery (regeneration)
                 drawEnergyFlow(
                     from = Offset(motorX - motorSize / 2, motorY),
                     to = Offset(batteryX + batterySize / 2, batteryY),
@@ -427,15 +390,6 @@ fun EnergyFlowCanvas(
                 drawEnergyFlow(
                     from = Offset(batteryX + batterySize / 2, batteryY),
                     to = Offset(motorX - motorSize / 2, motorY),
-                    color = flowColor,
-                    dashPhase = dashPhase,
-                    reverse = true
-                )
-                
-                // Motor to Wheels
-                drawEnergyFlow(
-                    from = Offset(motorX + motorSize / 2, motorY),
-                    to = Offset(wheelX - wheelSize / 2 - 20f, wheelY),
                     color = flowColor,
                     dashPhase = dashPhase,
                     reverse = true
