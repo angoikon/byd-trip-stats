@@ -247,8 +247,8 @@ fun EnergyFlowDiagram(
                 // Determine animation speed and direction based on car state
                 val animationSpeed = when {
                     telemetry.speed < 0.5 -> 0f  // Car stopped - static (no animation)
-                    isRegenerating -> 0.1f  // Regenerating - normal speed forward
-                    power > 0 -> -0.1f  // Moving/accelerating - reverse animation
+                    isRegenerating -> 0.25f  // Regenerating - normal speed forward
+                    power > 0 -> -0.25f  // Moving/accelerating - reverse animation
                     else -> 0f  // Default - static
                 }
 
@@ -263,7 +263,7 @@ fun EnergyFlowDiagram(
                     progress = { progress },
                     modifier = Modifier
                         .align(Alignment.CenterStart)
-                        .offset(x = 120.dp)  // Adjust these values to position it
+                        .offset(x = 90.dp)  // Adjust these values to position it
                         .size(140.dp)
                 )
             }
@@ -337,8 +337,8 @@ fun EnergyFlowCanvas(
         val batteryY = centerY
         val batterySize = 120f
 
-        // Motor (center) - shifted slightly to align with "Speed" and "Battery"
-        val motorX = centerX  // Add offset to move right
+        // Motor (center)
+        val motorX = centerX
         val motorY = centerY
         val motorSize = 150f
         
