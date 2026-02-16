@@ -114,4 +114,8 @@ dependencies {
 
     // Lottie for animations
     implementation("com.airbnb.android:lottie-compose:6.3.0")
+
+    // osmdroid for offline maps
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
+
 }

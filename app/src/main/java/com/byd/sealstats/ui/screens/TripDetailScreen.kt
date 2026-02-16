@@ -17,7 +17,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.sealstats.ui.components.EnergyConsumptionChart
 import com.byd.sealstats.ui.components.MotorRpmChart
+import com.byd.sealstats.ui.components.OsmRouteMap
 import com.byd.sealstats.ui.components.PowerDistributionChart
+import com.byd.sealstats.ui.components.RouteAnalysisTab
 import com.byd.sealstats.ui.components.RouteMap
 import com.byd.sealstats.ui.components.SpeedChart
 import com.byd.sealstats.ui.theme.*
@@ -34,10 +36,10 @@ fun TripDetailScreen(
     val trip by viewModel.getTripDetails(tripId).collectAsState()
     val dataPoints by viewModel.getTripDataPoints(tripId).collectAsState()
     val stats by viewModel.getTripStats(tripId).collectAsState()
-
+    
     var selectedTab by remember { mutableStateOf(0) }
-    val tabs = listOf("Overview", "Charts", "Route")
-
+    val tabs = listOf("Overview", "Charts", "Route", "Analysis")
+    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -87,12 +89,19 @@ fun TripDetailScreen(
                         )
                     }
                 }
-
-                // Tab content
-                when (selectedTab) {
-                    0 -> TripOverviewTab(trip = trip!!, stats = stats)
-                    1 -> TripChartsTab(trip = trip!!, dataPoints = dataPoints, stats = stats)
-                    2 -> TripRouteTab(dataPoints = dataPoints)
+                
+                // Tab content - constrained to remaining space
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    when (selectedTab) {
+                        0 -> TripOverviewTab(trip = trip!!, stats = stats)
+                        1 -> TripChartsTab(trip = trip!!, dataPoints = dataPoints, stats = stats)
+                        2 -> TripRouteTab(dataPoints = dataPoints)
+                        3 -> RouteAnalysisTab(dataPoints = dataPoints)
+                    }
                 }
             }
         }
@@ -124,7 +133,7 @@ fun TripOverviewTab(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.weight(1f)
             )
-
+            
             MetricCard(
                 title = "Duration",
                 value = formatDuration(trip.duration ?: 0),
@@ -134,7 +143,7 @@ fun TripOverviewTab(
                 modifier = Modifier.weight(1f)
             )
         }
-
+        
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -147,7 +156,7 @@ fun TripOverviewTab(
                 color = AccelerationOrange,
                 modifier = Modifier.weight(1f)
             )
-
+            
             MetricCard(
                 title = "Efficiency",
                 value = String.format("%.1f", trip.efficiency ?: 0.0),
@@ -157,7 +166,7 @@ fun TripOverviewTab(
                 modifier = Modifier.weight(1f)
             )
         }
-
+        
         // Detailed stats
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -171,28 +180,28 @@ fun TripOverviewTab(
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
-
+                
                 Spacer(modifier = Modifier.height(16.dp))
-
+                
                 DetailRow("Start Time", formatTimestamp(trip.startTime))
                 DetailRow("End Time", trip.endTime?.let { formatTimestamp(it) } ?: "In Progress")
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
-
+                
                 DetailRow("Start SOC", "${String.format("%.1f", trip.startSoc)}%")
                 DetailRow("End SOC", trip.endSoc?.let { "${String.format("%.1f", it)}%" } ?: "-")
                 DetailRow("SOC Change", trip.socDelta?.let { "${String.format("%.1f", it)}%" } ?: "-")
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
-
+                
                 DetailRow("Max Speed", "${trip.maxSpeed.toInt()} km/h")
                 DetailRow("Avg Speed", stats?.avgSpeed?.toInt()?.toString()?.plus(" km/h") ?: "-")
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
-
+                
                 DetailRow("Max Power", "${trip.maxPower.toInt()} kW")
                 DetailRow("Max Regen", "${abs(trip.maxRegenPower).toInt()} kW")
                 // DetailRow("Energy used", trip.energyConsumed?.let { String.format("%.2f kWh", it) } ?: "-")
                 DetailRow("Total Regen Energy", stats?.totalRegenEnergy?.let { String.format("%.2f kWh", it) } ?: "-")
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
-
+                
                 DetailRow("Battery Temp Range", "${trip.minBatteryCellTemp}°C - ${trip.maxBatteryCellTemp}°C")
                 DetailRow("Avg Battery Temp", "${trip.avgBatteryTemp.toInt()}°C")
             }
@@ -235,7 +244,7 @@ fun TripChartsTab(
                 )
             }
         }
-
+        
         // Speed over time
         Card(
             modifier = Modifier
@@ -258,7 +267,7 @@ fun TripChartsTab(
                 )
             }
         }
-
+        
         // Power distribution
         if (stats != null) {
             Card(
@@ -283,7 +292,7 @@ fun TripChartsTab(
                 }
             }
         }
-
+        
         // Motor RPM Chart
         Card(
             modifier = Modifier
@@ -302,7 +311,7 @@ fun TripChartsTab(
                 Spacer(modifier = Modifier.height(8.dp))
                 MotorRpmChart(
                     dataPoints = dataPoints,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxSize()
                 )
             }
         }
@@ -313,28 +322,26 @@ fun TripChartsTab(
 fun TripRouteTab(
     dataPoints: List<com.byd.sealstats.data.local.entity.TripDataPointEntity>
 ) {
-    Box(
+    Card(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()  // ✅ Width only, not height
             .padding(16.dp)
     ) {
-        if (dataPoints.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "No route data available",
-                    style = MaterialTheme.typography.titleLarge
-                )
-            }
-        } else {
-            RouteMap(
-                dataPoints = dataPoints,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
+        OsmRouteMap(
+            dataPoints = dataPoints,
+            modifier = Modifier.fillMaxSize()
+        )
     }
+}
+
+@Composable
+fun TripAnalysisTab(
+    dataPoints: List<com.byd.sealstats.data.local.entity.TripDataPointEntity>
+) {
+    RouteAnalysisTab(
+        dataPoints = dataPoints,
+        modifier = Modifier.fillMaxSize()
+    )
 }
 
 @Composable
