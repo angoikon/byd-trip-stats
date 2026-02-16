@@ -117,7 +117,7 @@ class MockDataGenerator {
             locationAltitude = 50.0 + Random.nextDouble(-10.0, 10.0),
             chargingPower = if (progress > 0.95) 10.0 else 0.0, // Start "charging" at 95%
             enginePower = currentPower,
-            engineSpeedFront = (currentSpeed * 100).toInt(),
+            engineSpeedFront = (currentSpeed * 90).toInt(),
             gear = gear,
             locationLatitude = startLat + latOffset,
             locationLongitude = startLon + lonOffset,

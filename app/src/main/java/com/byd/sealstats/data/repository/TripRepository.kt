@@ -186,7 +186,9 @@ class TripRepository private constructor(context: Context) {
             batteryTemp = telemetry.batteryTempAvg,
             totalDischarge = telemetry.totalDischarge,
             gear = telemetry.gear,
-            isRegenerating = telemetry.isRegenerating
+            isRegenerating = telemetry.isRegenerating,
+            engineSpeedFront = telemetry.engineSpeedFront,
+            engineSpeedRear = telemetry.engineSpeedRear
         )
 
         dataPointDao.insertDataPoint(dataPoint)

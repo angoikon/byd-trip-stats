@@ -18,7 +18,7 @@ import com.byd.sealstats.data.local.entity.TripStatsEntity
         TripDataPointEntity::class,
         TripStatsEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

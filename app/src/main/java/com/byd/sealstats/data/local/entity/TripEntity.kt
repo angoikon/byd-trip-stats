@@ -65,7 +65,9 @@ data class TripDataPointEntity(
     val batteryTemp: Double,
     val totalDischarge: Double,
     val gear: String,
-    val isRegenerating: Boolean
+    val isRegenerating: Boolean,
+    val engineSpeedFront: Int = 0,
+    val engineSpeedRear: Int = 0
 )
 
 @Entity(tableName = "trip_stats")

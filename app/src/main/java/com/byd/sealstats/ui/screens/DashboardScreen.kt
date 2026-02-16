@@ -622,9 +622,9 @@ fun VehicleStats(
             title = "Front / Rear Motor",
             value = "${telemetry.engineSpeedFront} / ${telemetry.engineSpeedRear} RPM",
             subtitle = if (telemetry.engineSpeedRear > 0) {
-                "Front motor being used by ${((telemetry.engineSpeedFront.toDouble() / telemetry.engineSpeedRear.toDouble()) * 100).toInt()}%"
+                "${((telemetry.enginePower.toDouble() * 160 / 390).toInt())} / ${((telemetry.enginePower.toDouble() * 230 / 390).toInt())} kW"
             } else {
-                "Front motor is unused"
+                "0 / 0 kW"
             },
             iconRes = R.drawable.ic_motor_axle,
             color = Color(0xFF1976D2)

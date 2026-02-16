@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.sealstats.ui.components.EnergyConsumptionChart
+import com.byd.sealstats.ui.components.MotorRpmChart
 import com.byd.sealstats.ui.components.PowerDistributionChart
 import com.byd.sealstats.ui.components.RouteMap
 import com.byd.sealstats.ui.components.SpeedChart
@@ -33,10 +34,10 @@ fun TripDetailScreen(
     val trip by viewModel.getTripDetails(tripId).collectAsState()
     val dataPoints by viewModel.getTripDataPoints(tripId).collectAsState()
     val stats by viewModel.getTripStats(tripId).collectAsState()
-    
+
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Overview", "Charts", "Route")
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -86,7 +87,7 @@ fun TripDetailScreen(
                         )
                     }
                 }
-                
+
                 // Tab content
                 when (selectedTab) {
                     0 -> TripOverviewTab(trip = trip!!, stats = stats)
@@ -123,7 +124,7 @@ fun TripOverviewTab(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.weight(1f)
             )
-            
+
             MetricCard(
                 title = "Duration",
                 value = formatDuration(trip.duration ?: 0),
@@ -133,7 +134,7 @@ fun TripOverviewTab(
                 modifier = Modifier.weight(1f)
             )
         }
-        
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -146,9 +147,9 @@ fun TripOverviewTab(
                 color = AccelerationOrange,
                 modifier = Modifier.weight(1f)
             )
-            
+
             MetricCard(
-                title = "Consumption",
+                title = "Efficiency",
                 value = String.format("%.1f", trip.efficiency ?: 0.0),
                 unit = "kWh/100km",
                 icon = Icons.Filled.Eco,
@@ -156,7 +157,7 @@ fun TripOverviewTab(
                 modifier = Modifier.weight(1f)
             )
         }
-        
+
         // Detailed stats
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -170,28 +171,28 @@ fun TripOverviewTab(
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 DetailRow("Start Time", formatTimestamp(trip.startTime))
                 DetailRow("End Time", trip.endTime?.let { formatTimestamp(it) } ?: "In Progress")
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
-                
+
                 DetailRow("Start SOC", "${String.format("%.1f", trip.startSoc)}%")
                 DetailRow("End SOC", trip.endSoc?.let { "${String.format("%.1f", it)}%" } ?: "-")
                 DetailRow("SOC Change", trip.socDelta?.let { "${String.format("%.1f", it)}%" } ?: "-")
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
-                
+
                 DetailRow("Max Speed", "${trip.maxSpeed.toInt()} km/h")
                 DetailRow("Avg Speed", stats?.avgSpeed?.toInt()?.toString()?.plus(" km/h") ?: "-")
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
-                
+
                 DetailRow("Max Power", "${trip.maxPower.toInt()} kW")
                 DetailRow("Max Regen", "${abs(trip.maxRegenPower).toInt()} kW")
                 // DetailRow("Energy used", trip.energyConsumed?.let { String.format("%.2f kWh", it) } ?: "-")
                 DetailRow("Total Regen Energy", stats?.totalRegenEnergy?.let { String.format("%.2f kWh", it) } ?: "-")
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
-                
+
                 DetailRow("Battery Temp Range", "${trip.minBatteryCellTemp}°C - ${trip.maxBatteryCellTemp}°C")
                 DetailRow("Avg Battery Temp", "${trip.avgBatteryTemp.toInt()}°C")
             }
@@ -234,7 +235,7 @@ fun TripChartsTab(
                 )
             }
         }
-        
+
         // Speed over time
         Card(
             modifier = Modifier
@@ -257,7 +258,7 @@ fun TripChartsTab(
                 )
             }
         }
-        
+
         // Power distribution
         if (stats != null) {
             Card(
@@ -280,6 +281,29 @@ fun TripChartsTab(
                         modifier = Modifier.fillMaxSize()
                     )
                 }
+            }
+        }
+
+        // Motor RPM Chart
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(350.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Motor RPM",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                MotorRpmChart(
+                    dataPoints = dataPoints,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }
