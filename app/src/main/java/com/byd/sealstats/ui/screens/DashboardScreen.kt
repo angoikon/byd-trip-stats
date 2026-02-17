@@ -38,9 +38,12 @@ import kotlin.math.sin
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.FastOutSlowInEasing
-import com.airbnb.lottie.compose.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.Image
+import androidx.compose.runtime.remember
+import androidx.compose.ui.viewinterop.AndroidView
+import android.widget.ImageView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -200,7 +203,7 @@ fun EnergyFlowDiagram(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing),
+            animation = tween(1000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
         label = "flow_offset"
@@ -222,9 +225,9 @@ fun EnergyFlowDiagram(
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // Main energy flow visualization
             Box(
                 modifier = Modifier
@@ -241,32 +244,33 @@ fun EnergyFlowDiagram(
                     flowOffset = flowOffset
                 )
 
-                // Lottie battery animation overlay with 3 states
-                val composition by rememberLottieComposition(
-                    LottieCompositionSpec.RawRes(R.raw.battery_animation)
-                )
-
-                // Determine Lottie animation speed and direction based on car state
-                val animationSpeed = when {
-                    telemetry.speed < 0.5 -> 0f  // Car stopped - static (no animation)
-                    isRegenerating -> 0.25f  // Regenerating - normal speed forward
-                    power > 0 -> -0.25f  // Moving/accelerating - reverse animation
-                    else -> 0f  // Default - static
+                // Battery image based on SOC and charging state
+                val batteryImage = when {
+                    isCharging -> painterResource(R.drawable.battery_charging)
+                    telemetry.soc > 85 -> painterResource(R.drawable.battery_full)
+                    telemetry.soc > 60 -> painterResource(R.drawable.battery_high)
+                    telemetry.soc >= 30 -> painterResource(R.drawable.battery_medium)
+                    else -> painterResource(R.drawable.battery_low)
                 }
 
-                val progress by animateLottieCompositionAsState(
-                    composition = composition,
-                    speed = animationSpeed,
-                    iterations = LottieConstants.IterateForever
-                )
-
-                LottieAnimation(
-                    composition = composition,
-                    progress = { progress },
+                Image(
+                    painter = batteryImage,
+                    contentDescription = "Battery level",
                     modifier = Modifier
                         .align(Alignment.CenterStart)
-                        .offset(x = 90.dp)  // Adjust these values to position it
+                        .padding(start = 100.dp)
+                        .offset(y = -7.dp)
                         .size(140.dp)
+                )
+
+                // 4WD drivetrain
+                Image(
+                    painter = painterResource(R.drawable.awd),
+                    contentDescription = "AWD drivetrain",
+                    modifier = Modifier
+                        .align(Alignment.Center)
+//                        .padding(start = 200.dp)
+                        .size(120.dp)
                 )
             }
 
@@ -322,12 +326,6 @@ fun EnergyFlowCanvas(
     isCharging: Boolean,
     flowOffset: Float
 ) {
-    // Capture composable colors before Canvas lambda
-    val primaryColor = MaterialTheme.colorScheme.primary
-
-    // Load AWD icon as ImageBitmap
-    val awdIcon = painterResource(R.drawable.ic_awd_axle)
-
     Canvas(modifier = Modifier.fillMaxSize()) {
         val width = size.width
         val height = size.height
@@ -344,45 +342,22 @@ fun EnergyFlowCanvas(
         val motorY = centerY
         val motorSize = 150f
 
-        // Draw AWD axle icon
-        val iconColor = when {
-            isRegenerating -> RegenGreen
-            power > 0 -> AccelerationOrange
-            else -> Color.Gray
-        }
-
-        val iconSize = motorSize * 0.7f
-
-        // Draw the icon
-        translate(
-            left = motorX - iconSize / 2,
-            top = motorY - iconSize / 2
-        ) {
-            with(awdIcon) {
-                draw(
-                    size = Size(iconSize, iconSize),
-                    // colorFilter = ColorFilter.tint(iconColor)  // Now it can access iconColor
-                )
-            }
-        }
-
         // Energy flow lines
-        if (abs(power) > 1) {
+        if (abs(power) > 1 && !isCharging) {
             val flowColor = when {
                 isRegenerating -> RegenGreen
-                isCharging -> ChargingYellow
                 power > 0 -> AccelerationOrange
                 else -> Color.Gray
             }
             
             // Create animated flow effect
-            val dashPhase = flowOffset * 40f
+            val dashPhase = flowOffset * 30f
             
             if (isRegenerating) {
                 // Motor to Battery (regeneration)
                 drawEnergyFlow(
-                    from = Offset(motorX - motorSize / 2, motorY),
-                    to = Offset(batteryX + batterySize / 2, batteryY),
+                    from = Offset(motorX - motorSize / 3, motorY),
+                    to = Offset(batteryX + batterySize / 3, batteryY),
                     color = flowColor,
                     dashPhase = dashPhase,
                     reverse = true
@@ -390,8 +365,8 @@ fun EnergyFlowCanvas(
             } else if (power > 0) {
                 // Battery to Motor (acceleration)
                 drawEnergyFlow(
-                    from = Offset(batteryX + batterySize / 2, batteryY),
-                    to = Offset(motorX - motorSize / 2, motorY),
+                    from = Offset(batteryX + batterySize / 3, batteryY),
+                    to = Offset(motorX - motorSize / 3, motorY),
                     color = flowColor,
                     dashPhase = dashPhase,
                     reverse = true
@@ -553,30 +528,15 @@ fun TripControls(
                             modifier = Modifier.padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                        Icon(
-                            imageVector = when (currentGear) {
-                                "P" -> Icons.Filled.LocalParking
-                                "D", "R" -> Icons.Filled.DirectionsCar
-                                else -> if (isInTrip) Icons.Filled.DirectionsCar else Icons.Filled.LocalParking
-                            },
-                            contentDescription = null,
-                            tint = when (currentGear) {
-                                "P" -> Color.Gray
-                                "D" -> Color.Green
-                                "R" -> Color.Red
-                                else -> if (isInTrip) MaterialTheme.colorScheme.primary else Color.Gray
-                            },
-                            modifier = Modifier.size(28.dp)
-                        )
+                            Icon(
+                                imageVector = if (isInTrip) Icons.Filled.DirectionsCar else Icons.Filled.LocalParking,
+                                contentDescription = null,
+                                tint = if (isInTrip) MaterialTheme.colorScheme.primary else Color.Gray,
+                                modifier = Modifier.size(28.dp)
+                            )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = when {
-                                    currentGear == "P" -> "Parked"
-                                    currentGear == "D" -> "Driving"
-                                    currentGear == "R" -> "Reversing"
-                                    isInTrip -> "Trip in Progress"
-                                    else -> "Waiting for Trip..."
-                                },
+                                text = if (isInTrip) "Trip in Progress" else "Waiting for Trip...",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Medium
                             )
@@ -598,14 +558,14 @@ fun VehicleStats(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         StatCard(
-            title = "Battery Health",
+            title = "SoH",
             value = "${telemetry.soh}%",
             icon = Icons.Filled.BatteryChargingFull,
             color = BatteryBlue
         )
         
         StatCard(
-            title = "Temperature",
+            title = "Battery temperature",
             value = "${telemetry.batteryTempAvg.toInt()}°C",
             subtitle = "${telemetry.batteryCellTempMin}°C - ${telemetry.batteryCellTempMax}°C",
             icon = Icons.Filled.Thermostat,
@@ -621,10 +581,10 @@ fun VehicleStats(
         )
 
         StatCard(
-            title = "Front / Rear Motor",
+            title = "Front / Rear Motors",
             value = "${telemetry.engineSpeedFront} / ${telemetry.engineSpeedRear} RPM",
             subtitle = if (telemetry.engineSpeedRear > 0) {
-                "${((telemetry.enginePower.toDouble() * 160 / 390).toInt())} / ${((telemetry.enginePower.toDouble() * 230 / 390).toInt())} kW"
+                "${((telemetry.enginePower * 160 / 390).toInt())} / ${((telemetry.enginePower * 230 / 390).toInt())} kW"
             } else {
                 "0 / 0 kW"
             },
@@ -650,13 +610,13 @@ fun VehicleStats(
 
 @Composable
 fun StatCard(
+    modifier: Modifier = Modifier,
     title: String,
     value: String,
     icon: Any? = null,
     iconRes: Int? = null,
     color: Color,
     subtitle: String? = null,
-    modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
