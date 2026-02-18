@@ -283,7 +283,7 @@ fun EnergyFlowDiagram(
             ) {
                 PowerMetric(
                     label = "Power",
-                    value = "${abs(power).toInt()}",
+                    value = "${power.toInt()}",
                     unit = "kW",
                     color = when {
                         isRegenerating -> RegenGreen

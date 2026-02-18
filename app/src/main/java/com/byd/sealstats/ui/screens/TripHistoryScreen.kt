@@ -199,17 +199,18 @@ fun InfoChip(
         Row(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier.size(20.dp),  // Increased from 16dp
                 tint = MaterialTheme.colorScheme.primary
             )
             Text(
                 text = text,
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodyMedium,  // Changed from bodySmall
+                fontWeight = FontWeight.Medium
             )
         }
     }

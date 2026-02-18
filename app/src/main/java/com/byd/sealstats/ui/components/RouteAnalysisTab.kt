@@ -43,7 +43,7 @@ fun RouteAnalysisTab(
         }
         return
     }
-    
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -51,15 +51,15 @@ fun RouteAnalysisTab(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Waypoints Section
+        // Waypoints
         WaypointsCard(dataPoints)
-        
+
         // Route Segments
         RouteSegmentsCard(dataPoints)
-        
+
         // Energy Heatmap
         EnergyHeatmapCard(dataPoints)
-        
+
         // Timeline
         TripTimelineCard(dataPoints)
     }
@@ -86,9 +86,9 @@ private fun WaypointsCard(dataPoints: List<TripDataPointEntity>) {
             
             Spacer(modifier = Modifier.height(12.dp))
             
-            // Start point
+            // Start
             WaypointItem(
-                icon = Icons.Filled.PlayArrow,
+                icon = Icons.Filled.FlagCircle,  // Flag icon for start
                 label = "Start",
                 time = timeFormat.format(Date(startPoint.timestamp)),
                 location = "${String.format("%.6f", startPoint.latitude)}, ${String.format("%.6f", startPoint.longitude)}",
@@ -96,12 +96,12 @@ private fun WaypointsCard(dataPoints: List<TripDataPointEntity>) {
                 soc = "${startPoint.soc.toInt()}%",
                 color = Color.Green
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
-            // End point
+
+            // End
             WaypointItem(
-                icon = Icons.Filled.Stop,
+                icon = Icons.Filled.LocationOn,  // Pin icon for end
                 label = "End",
                 time = timeFormat.format(Date(endPoint.timestamp)),
                 location = "${String.format("%.6f", endPoint.latitude)}, ${String.format("%.6f", endPoint.longitude)}",
@@ -133,7 +133,7 @@ private fun WaypointItem(
             tint = color,
             modifier = Modifier.size(32.dp)
         )
-        
+
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = label,
@@ -150,17 +150,9 @@ private fun WaypointItem(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Text(
-                    text = "Speed: $speed",
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Text(
-                    text = "SOC: $soc",
-                    style = MaterialTheme.typography.bodySmall
-                )
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(text = "Speed: $speed", style = MaterialTheme.typography.bodySmall)
+                Text(text = "SOC: $soc", style = MaterialTheme.typography.bodySmall)
             }
         }
     }
@@ -184,21 +176,21 @@ private fun RouteSegmentsCard(dataPoints: List<TripDataPointEntity>) {
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
-            
+
             Spacer(modifier = Modifier.height(12.dp))
-            
+
             segments.forEachIndexed { index, segment ->
                 val avgSpeed = segment.map { it.speed }.average()
                 val avgPower = segment.map { it.power }.average()
                 val socChange = segment.first().soc - segment.last().soc
-                
+
                 SegmentItem(
                     segmentNumber = index + 1,
                     avgSpeed = avgSpeed.toInt(),
                     avgPower = avgPower.toInt(),
                     socChange = socChange
                 )
-                
+
                 if (index < segments.size - 1) {
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -230,7 +222,7 @@ private fun SegmentItem(
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold
         )
-        
+
         Column(horizontalAlignment = Alignment.End) {
             Text(
                 text = "$avgSpeed km/h",
@@ -242,7 +234,7 @@ private fun SegmentItem(
                 color = if (avgPower < 0) RegenGreen else AccelerationOrange
             )
             Text(
-                text = "${String.format("%.1f", abs(socChange))}% ${if (socChange > 0) "used" else "gained"}",
+                text = "${String.format("%.1f", abs(socChange))}%",
                 style = MaterialTheme.typography.bodySmall
             )
         }
@@ -311,7 +303,7 @@ private fun TripTimelineCard(dataPoints: List<TripDataPointEntity>) {
     events.add(TimelineEvent(
         time = timeFormat.format(Date(dataPoints.first().timestamp)),
         title = "Trip Started",
-        icon = Icons.Filled.PlayArrow,
+        icon = Icons.Filled.FlagCircle,
         color = Color.Green
     ))
     
@@ -335,7 +327,7 @@ private fun TripTimelineCard(dataPoints: List<TripDataPointEntity>) {
     events.add(TimelineEvent(
         time = timeFormat.format(Date(dataPoints.last().timestamp)),
         title = "Trip Ended",
-        icon = Icons.Filled.Stop,
+        icon = Icons.Filled.LocationOn,
         color = Color.Red
     ))
     

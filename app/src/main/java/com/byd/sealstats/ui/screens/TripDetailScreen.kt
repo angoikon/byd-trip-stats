@@ -41,6 +41,8 @@ fun TripDetailScreen(
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Overview", "Charts", "Route", "Analysis")
     
+    var showExportDialog by remember { mutableStateOf(false) }
+    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -48,6 +50,16 @@ fun TripDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Filled.ArrowBack, "Back", modifier = Modifier.size(28.dp))
+                    }
+                },
+                actions = {
+                    // Export/Share button
+                    IconButton(onClick = { showExportDialog = true }) {
+                        Icon(
+                            Icons.Filled.Share,
+                            contentDescription = "Export trip data",
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -107,6 +119,185 @@ fun TripDetailScreen(
             }
         }
     }
+    
+    // Export Dialog
+    if (showExportDialog && trip != null) {
+        ExportDialog(
+            trip = trip!!,
+            dataPoints = dataPoints,
+            onDismiss = { showExportDialog = false }
+        )
+    }
+}
+
+@Composable
+fun ExportDialog(
+    trip: com.byd.sealstats.data.local.entity.TripEntity,
+    dataPoints: List<com.byd.sealstats.data.local.entity.TripDataPointEntity>,
+    onDismiss: () -> Unit
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Export Trip Data", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("Choose export format:", style = MaterialTheme.typography.bodyLarge)
+                
+                // Export as CSV
+                OutlinedButton(
+                    onClick = {
+                        exportTripAsCSV(context, trip, dataPoints)
+                        onDismiss()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Filled.TableChart, null, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Export as CSV")
+                }
+                
+                // Export as JSON
+                OutlinedButton(
+                    onClick = {
+                        exportTripAsJSON(context, trip, dataPoints)
+                        onDismiss()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Filled.DataObject, null, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Export as JSON")
+                }
+                
+                // Share summary text
+                OutlinedButton(
+                    onClick = {
+                        shareTripSummary(context, trip)
+                        onDismiss()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Filled.Share, null, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Share Summary")
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+fun exportTripAsCSV(
+    context: android.content.Context,
+    trip: com.byd.sealstats.data.local.entity.TripEntity,
+    dataPoints: List<com.byd.sealstats.data.local.entity.TripDataPointEntity>
+) {
+    val fileName = "trip_${trip.id}_${System.currentTimeMillis()}.csv"
+    val csvContent = buildString {
+        // Header
+        appendLine("timestamp,latitude,longitude,altitude,speed,power,soc,odometer,batteryTemp,gear")
+        // Data
+        dataPoints.forEach { point ->
+            appendLine("${point.timestamp},${point.latitude},${point.longitude},${point.altitude},${point.speed},${point.power},${point.soc},${point.odometer},${point.batteryTemp},${point.gear}")
+        }
+    }
+    
+    shareFile(context, fileName, csvContent, "text/csv")
+}
+
+fun exportTripAsJSON(
+    context: android.content.Context,
+    trip: com.byd.sealstats.data.local.entity.TripEntity,
+    dataPoints: List<com.byd.sealstats.data.local.entity.TripDataPointEntity>
+) {
+    val fileName = "trip_${trip.id}_${System.currentTimeMillis()}.json"
+    val jsonContent = buildString {
+        appendLine("{")
+        appendLine("  \"tripId\": ${trip.id},")
+        appendLine("  \"startTime\": ${trip.startTime},")
+        appendLine("  \"endTime\": ${trip.endTime},")
+        appendLine("  \"distance\": ${trip.distance},")
+        appendLine("  \"duration\": ${trip.duration},")
+        appendLine("  \"consumption\": ${trip.efficiency},")
+        appendLine("  \"energyConsumed\": ${trip.energyConsumed},")
+        appendLine("  \"dataPoints\": [")
+        dataPoints.forEachIndexed { index, point ->
+            appendLine("    {")
+            appendLine("      \"timestamp\": ${point.timestamp},")
+            appendLine("      \"latitude\": ${point.latitude},")
+            appendLine("      \"longitude\": ${point.longitude},")
+            appendLine("      \"altitude\": ${point.altitude},")
+            appendLine("      \"speed\": ${point.speed},")
+            appendLine("      \"power\": ${point.power},")
+            appendLine("      \"soc\": ${point.soc}")
+            appendLine("    }${if (index < dataPoints.size - 1) "," else ""}")
+        }
+        appendLine("  ]")
+        appendLine("}")
+    }
+    
+    shareFile(context, fileName, jsonContent, "application/json")
+}
+
+fun shareTripSummary(
+    context: android.content.Context,
+    trip: com.byd.sealstats.data.local.entity.TripEntity
+) {
+    val summary = buildString {
+        appendLine("🚗 BYD Trip Summary")
+        appendLine("")
+        appendLine("📅 Date: ${formatTimestamp(trip.startTime)}")
+        appendLine("🛣️ Distance: ${String.format("%.1f", trip.distance ?: 0.0)} km")
+        appendLine("⏱️ Duration: ${formatDuration(trip.duration ?: 0)}")
+        appendLine("⚡ Energy: ${String.format("%.2f", trip.energyConsumed ?: 0.0)} kWh")
+        appendLine("🌿 Consumption: ${String.format("%.1f", trip.efficiency ?: 0.0)} kWh/100km")
+        appendLine("🔋 SOC: ${String.format("%.1f", trip.startSoc)}% → ${String.format("%.1f", trip.endSoc ?: 0.0)}%")
+    }
+    
+    val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(android.content.Intent.EXTRA_TEXT, summary)
+        putExtra(android.content.Intent.EXTRA_TITLE, "BYD Seal Trip")
+    }
+    
+    context.startActivity(android.content.Intent.createChooser(shareIntent, "Share trip via"))
+}
+
+fun shareFile(
+    context: android.content.Context,
+    fileName: String,
+    content: String,
+    mimeType: String
+) {
+    try {
+        // Create file in cache directory
+        val file = java.io.File(context.cacheDir, fileName)
+        file.writeText(content)
+        
+        // Get URI using FileProvider
+        val uri = androidx.core.content.FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file
+        )
+        
+        // Share intent
+        val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+            type = mimeType
+            putExtra(android.content.Intent.EXTRA_STREAM, uri)
+            addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        
+        context.startActivity(android.content.Intent.createChooser(shareIntent, "Export trip data"))
+    } catch (e: Exception) {
+        android.widget.Toast.makeText(context, "Export failed: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+    }
 }
 
 @Composable
@@ -159,7 +350,7 @@ fun TripOverviewTab(
             )
             
             MetricCard(
-                title = "Efficiency",
+                title = "Consumption",
                 value = String.format("%.1f", trip.efficiency ?: 0.0),
                 unit = "kWh / 100km",
                 icon = Icons.Filled.Eco,
