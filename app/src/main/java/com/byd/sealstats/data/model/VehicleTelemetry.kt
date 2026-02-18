@@ -35,9 +35,6 @@ data class VehicleTelemetry(
     val isRegenerating: Boolean
         get() = enginePower < -1.0 // Negative power indicates regeneration
     
-    val isMoving: Boolean
-        get() = speed > 0.5
-    
     val isDriving: Boolean
         get() = gear in listOf("D", "R")  // Start trip when D/R engaged, regardless of speed
     

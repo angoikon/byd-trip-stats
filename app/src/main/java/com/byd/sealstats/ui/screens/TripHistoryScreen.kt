@@ -110,11 +110,33 @@ fun TripItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = formatTimestamp(trip.startTime),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = formatTimestamp(trip.startTime),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    
+                    // "In Progress" badge for ongoing trips
+                    if (trip.endTime == null) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            shape = MaterialTheme.shapes.small
+                        ) {
+                            Text(
+                                text = "In Progress",
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+                
                 Spacer(modifier = Modifier.height(8.dp))
                 
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -124,7 +146,7 @@ fun TripItem(
                     )
                     InfoChip(
                         icon = Icons.Filled.Timer,
-                        text = formatDuration(trip.duration ?: 0)
+                        text = if (trip.endTime == null) "Ongoing..." else formatDuration(trip.duration ?: 0)
                     )
                     trip.efficiency?.let {
                         InfoChip(

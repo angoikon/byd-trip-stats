@@ -169,7 +169,7 @@ class TripRepository private constructor(context: Context) {
         currentTripId = null
         tripStarted = false
 
-        Log.i(TAG, "Trip ended: $tripId, distance: ${updatedTrip.distance} km, efficiency: ${updatedTrip.efficiency} kWh/100km")
+        Log.i(TAG, "Trip ended: $tripId, distance: ${updatedTrip.distance} km, consumption: ${updatedTrip.efficiency} kWh / 100km")
     }
 
     private suspend fun recordDataPoint(tripId: Long, telemetry: VehicleTelemetry) {

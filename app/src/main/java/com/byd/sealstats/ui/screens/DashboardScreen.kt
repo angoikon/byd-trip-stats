@@ -573,8 +573,8 @@ fun VehicleStats(
         )
         
         StatCard(
-            title = "Voltage",
-            value = "${telemetry.batteryTotalVoltage} V",
+            title = "Voltage HV / 12V",
+            value = "${telemetry.batteryTotalVoltage} V / ${telemetry.battery12vVoltage} V",
             subtitle = "Cell: ${String.format("%.3f", telemetry.batteryCellVoltageMin)} - ${String.format("%.3f", telemetry.batteryCellVoltageMax)} V",
             icon = Icons.Filled.Bolt,
             color = MaterialTheme.colorScheme.secondary

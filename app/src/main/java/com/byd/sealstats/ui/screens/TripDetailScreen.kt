@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.byd.sealstats.ui.components.AltitudeChart
 import com.byd.sealstats.ui.components.EnergyConsumptionChart
 import com.byd.sealstats.ui.components.MotorRpmChart
 import com.byd.sealstats.ui.components.OsmRouteMap
@@ -198,7 +199,7 @@ fun TripOverviewTab(
                 
                 DetailRow("Max Power", "${trip.maxPower.toInt()} kW")
                 DetailRow("Max Regen", "${abs(trip.maxRegenPower).toInt()} kW")
-                // DetailRow("Energy used", trip.energyConsumed?.let { String.format("%.2f kWh", it) } ?: "-")
+                DetailRow("Energy used", trip.energyConsumed?.let { String.format("%.2f kWh", it) } ?: "-")
                 DetailRow("Total Regen Energy", stats?.totalRegenEnergy?.let { String.format("%.2f kWh", it) } ?: "-")
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
                 
@@ -310,6 +311,29 @@ fun TripChartsTab(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 MotorRpmChart(
+                    dataPoints = dataPoints,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+        
+        // Altitude/Elevation Profile
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Elevation Profile",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                AltitudeChart(
                     dataPoints = dataPoints,
                     modifier = Modifier.fillMaxSize()
                 )
