@@ -259,7 +259,7 @@ fun EnergyFlowDiagram(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .padding(start = 100.dp)
-                        .offset(y = -7.dp)
+                        .offset(x = -50.dp, y = -7.dp)
                         .size(140.dp)
                 )
 
@@ -269,7 +269,7 @@ fun EnergyFlowDiagram(
                     contentDescription = "AWD drivetrain",
                     modifier = Modifier
                         .align(Alignment.Center)
-//                        .padding(start = 200.dp)
+                        .offset(x = -20.dp)
                         .size(120.dp)
                 )
             }
@@ -558,7 +558,7 @@ fun VehicleStats(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         StatCard(
-            title = "SoH",
+            title = "Battery health",
             value = "${telemetry.soh}%",
             icon = Icons.Filled.BatteryChargingFull,
             color = BatteryBlue
