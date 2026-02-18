@@ -161,7 +161,7 @@ fun TripOverviewTab(
             MetricCard(
                 title = "Efficiency",
                 value = String.format("%.1f", trip.efficiency ?: 0.0),
-                unit = "kWh/100km",
+                unit = "kWh / 100km",
                 icon = Icons.Filled.Eco,
                 color = RegenGreen,
                 modifier = Modifier.weight(1f)

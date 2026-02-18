@@ -151,7 +151,7 @@ fun TripItem(
                     trip.efficiency?.let {
                         InfoChip(
                             icon = Icons.Filled.Eco,
-                            text = "${String.format("%.1f", it)} kWh/100km"
+                            text = "${String.format("%.1f", it)} kWh / 100km"
                         )
                     }
                 }
