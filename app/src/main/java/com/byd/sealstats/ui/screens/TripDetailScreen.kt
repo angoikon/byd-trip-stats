@@ -43,6 +43,9 @@ fun TripDetailScreen(
     
     var showExportDialog by remember { mutableStateOf(false) }
     
+    // Only capture dataPoints when dialog is requested to open
+    var exportSnapshot by remember { mutableStateOf<Pair<com.byd.sealstats.data.local.entity.TripEntity?, List<com.byd.sealstats.data.local.entity.TripDataPointEntity>>?>(null) }
+    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -54,7 +57,10 @@ fun TripDetailScreen(
                 },
                 actions = {
                     // Export/Share button
-                    IconButton(onClick = { showExportDialog = true }) {
+                    IconButton(onClick = { 
+                        exportSnapshot = trip to dataPoints.toList()  // Capture immutable snapshot
+                        showExportDialog = true 
+                    }) {
                         Icon(
                             Icons.Filled.Share,
                             contentDescription = "Export trip data",
@@ -120,14 +126,33 @@ fun TripDetailScreen(
         }
     }
     
-    // Export Dialog
-    if (showExportDialog && trip != null) {
-        ExportDialog(
-            trip = trip!!,
-            dataPoints = dataPoints,
-            onDismiss = { showExportDialog = false }
-        )
+    // Export Dialog - isolated from parent recomposition
+    exportSnapshot?.let { (snapshotTrip, snapshotData) ->
+        if (showExportDialog && snapshotTrip != null) {
+            ExportDialogHandler(
+                trip = snapshotTrip,
+                dataPoints = snapshotData,
+                onDismiss = { 
+                    showExportDialog = false
+                    exportSnapshot = null
+                }
+            )
+        }
     }
+}
+
+@Composable
+private fun ExportDialogHandler(
+    trip: com.byd.sealstats.data.local.entity.TripEntity,
+    dataPoints: List<com.byd.sealstats.data.local.entity.TripDataPointEntity>,
+    onDismiss: () -> Unit
+) {
+    // Completely isolated - won't recompose with parent
+    ExportDialog(
+        trip = trip,
+        dataPoints = dataPoints,
+        onDismiss = onDismiss
+    )
 }
 
 @Composable
@@ -136,7 +161,10 @@ fun ExportDialog(
     dataPoints: List<com.byd.sealstats.data.local.entity.TripDataPointEntity>,
     onDismiss: () -> Unit
 ) {
+    // Capture stable references
     val context = androidx.compose.ui.platform.LocalContext.current
+    val stableTrip = remember { trip }
+    val stableDataPoints = remember { dataPoints.toList() }  // Create immutable copy
     
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -148,7 +176,7 @@ fun ExportDialog(
                 // Export as CSV
                 OutlinedButton(
                     onClick = {
-                        exportTripAsCSV(context, trip, dataPoints)
+                        exportTripAsCSV(context, stableTrip, stableDataPoints)
                         onDismiss()
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -161,7 +189,7 @@ fun ExportDialog(
                 // Export as JSON
                 OutlinedButton(
                     onClick = {
-                        exportTripAsJSON(context, trip, dataPoints)
+                        exportTripAsJSON(context, stableTrip, stableDataPoints)
                         onDismiss()
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -174,7 +202,7 @@ fun ExportDialog(
                 // Share summary text
                 OutlinedButton(
                     onClick = {
-                        shareTripSummary(context, trip)
+                        shareTripSummary(context, stableTrip)
                         onDismiss()
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -263,7 +291,7 @@ fun shareTripSummary(
     val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
         type = "text/plain"
         putExtra(android.content.Intent.EXTRA_TEXT, summary)
-        putExtra(android.content.Intent.EXTRA_TITLE, "BYD Seal Trip")
+        putExtra(android.content.Intent.EXTRA_TITLE, "BYD trip")
     }
     
     context.startActivity(android.content.Intent.createChooser(shareIntent, "Share trip via"))

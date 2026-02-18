@@ -232,6 +232,7 @@ fun SettingsScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     SettingsDetailRow("App Name", "BYD Info Stats")
                     SettingsDetailRow("Version", "1.0.0")
+                    SettingsDetailRow("Created by", "angoikon")
                     SettingsDetailRow("Build", "Debug")
                 }
             }
