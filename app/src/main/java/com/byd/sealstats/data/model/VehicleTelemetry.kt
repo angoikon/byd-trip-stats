@@ -39,7 +39,10 @@ data class VehicleTelemetry(
         get() = speed > 0.5
     
     val isDriving: Boolean
-        get() = gear in listOf("D", "R") && speed > 0
+        get() = gear in listOf("D", "R")  // Start trip when D/R engaged, regardless of speed
+    
+    val isMoving: Boolean
+        get() = gear in listOf("D", "R") && speed > 0  // Actually moving
     
     val isParked: Boolean
         get() = gear == "P"
