@@ -158,7 +158,6 @@ fun DashboardContent(
                 telemetry = telemetry,
                 isInTrip = isInTrip,
                 autoTripDetection = autoTripDetection,
-                currentGear = telemetry.gear,
                 onStartTrip = onStartTrip,
                 onEndTrip = onEndTrip,
                 onToggleAutoDetection = onToggleAutoDetection,
@@ -230,8 +229,6 @@ fun EnergyFlowDiagram(
             ) {
                 EnergyFlowCanvas(
                     power = power,
-                    soc = telemetry.soc,
-                    speed = telemetry.speed,
                     isRegenerating = isRegenerating,
                     isCharging = isCharging,
                     flowOffset = flowOffset

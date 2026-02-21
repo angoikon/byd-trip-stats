@@ -127,7 +127,7 @@ fun TripDetailScreen(
                 ) {
                     when (selectedTab) {
                         0 -> TripOverviewTab(trip = trip!!, stats = stats)
-                        1 -> TripChartsTab(trip = trip!!, dataPoints = dataPoints, stats = stats)
+                        1 -> TripChartsTab(dataPoints = dataPoints, stats = stats)
                         2 -> TripRouteTab(dataPoints = dataPoints)
                         3 -> RouteAnalysisTab(dataPoints = dataPoints)
                     }
@@ -593,7 +593,6 @@ fun TripChartsTab(
         FullscreenChartDialog(
             chartType = chartType,
             dataPoints = dataPoints,  // Full data
-            stats = stats,
             onDismiss = { expandedChart = null }
         )
     }
