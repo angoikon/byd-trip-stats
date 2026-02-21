@@ -7,9 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.sp
-import com.byd.sealstats.ui.theme.AccelerationOrange
-import com.byd.sealstats.ui.theme.RegenGreen
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
@@ -19,11 +16,11 @@ import com.patrykandpatrick.vico.core.entry.entryModelOf
 import com.patrykandpatrick.vico.compose.m3.style.m3ChartStyle
 
 @Composable
-fun PowerDistributionChart(
-    powerDistribution: Map<String, Double>,
+fun SpeedDistributionChart(
+    speedDistribution: Map<String, Double>,
     modifier: Modifier = Modifier
 ) {
-    if (powerDistribution.isEmpty()) {
+    if (speedDistribution.isEmpty()) {
         Box(modifier = modifier, contentAlignment = Alignment.Center) {
             Text(
                 text = "No data available",
@@ -34,19 +31,18 @@ fun PowerDistributionChart(
         return
     }
     
-    // Convert power distribution to chart data
-    val chartData = remember(powerDistribution) {
+    // Convert speed distribution to chart data
+    val chartData = remember(speedDistribution) {
         val orderedKeys = listOf(
-            "regen_strong",
-            "regen_medium", 
-            "regen_light",
-            "cruising",
-            "acceleration",
-            "hard_acceleration"
+            "0-30",
+            "30-70",
+            "70-100",
+            "100-130",
+            "130+"
         )
         
         orderedKeys.mapNotNull { key ->
-            powerDistribution[key]?.toFloat()
+            speedDistribution[key]?.toFloat()
         }
     }
     
@@ -73,15 +69,14 @@ fun PowerDistributionChart(
                 title = "Count"
             ),
             bottomAxis = rememberBottomAxis(
-                title = "Power Range",
+                title = "Speed Range (km/h)",
                 valueFormatter = { value, _ ->
                     when (value.toInt()) {
-                        0 -> "Strong regen"  // Regen Strong
-                        1 -> "Medium regen"  // Regen Medium
-                        2 -> "Light regen"  // Regen Light
-                        3 -> "Cruise"
-                        4 -> "Acceleration"
-                        5 -> "Drive it like you stole it"  // Hard Acceleration
+                        0 -> "0-30"
+                        1 -> "30-70"
+                        2 -> "70-100"
+                        3 -> "100-130"
+                        4 -> "130+"
                         else -> ""
                     }
                 }

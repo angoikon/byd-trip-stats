@@ -2,7 +2,6 @@ package com.byd.sealstats.ui.screens
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -11,40 +10,26 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.sealstats.data.model.VehicleTelemetry
-import com.byd.sealstats.ui.screens.StatCard
 import com.byd.sealstats.ui.theme.*
 import com.byd.sealstats.ui.viewmodel.DashboardViewModel
 import kotlin.math.abs
 import com.byd.sealstats.R
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.drawscope.translate
-import kotlin.math.sin
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.Image
-import androidx.compose.runtime.remember
-import androidx.compose.ui.viewinterop.AndroidView
-import android.widget.ImageView
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.StrokeCap
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,8 +51,8 @@ fun DashboardScreen(
                     // Mock Data Button (for testing)
                     IconButton(onClick = { viewModel.startMockDrive() }) {
                         Icon(
-                            imageVector = Icons.Filled.PlayArrow,
-                            contentDescription = "Start Mock Drive",
+                            imageVector = Icons.Filled.Analytics,
+                            contentDescription = "View Live Data",
                             tint = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.size(28.dp)
                         )
@@ -364,8 +349,8 @@ fun EnergyFlowCanvas(
             if (isRegenerating) {
                 // Motor to Battery (regeneration)
                 drawEnergyFlow(
-                    from = Offset(motorX - motorSize / 3, motorY),
-                    to = Offset(batteryX + batterySize / 3, batteryY),
+                    from = Offset(batteryX + batterySize / 3, batteryY),
+                    to = Offset(motorX - motorSize / 3, motorY),
                     color = flowColor,
                     dashPhase = dashPhase,
                     reverse = true
@@ -373,8 +358,8 @@ fun EnergyFlowCanvas(
             } else if (power > 0) {
                 // Battery to Motor (acceleration)
                 drawEnergyFlow(
-                    from = Offset(batteryX + batterySize / 3, batteryY),
-                    to = Offset(motorX - motorSize / 3, motorY),
+                    from = Offset(motorX - motorSize / 3, motorY),
+                    to = Offset(batteryX + batterySize / 3, batteryY),
                     color = flowColor,
                     dashPhase = dashPhase,
                     reverse = true
@@ -391,22 +376,56 @@ fun androidx.compose.ui.graphics.drawscope.DrawScope.drawEnergyFlow(
     dashPhase: Float,
     reverse: Boolean
 ) {
-    val path = Path().apply {
-        moveTo(from.x, from.y)
-        lineTo(to.x, to.y)
-    }
-    
-    drawPath(
-        path = path,
+    // Draw solid line
+    drawLine(
         color = color,
-        style = Stroke(
-            width = 6f,
-            pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(
-                intervals = floatArrayOf(20f, 10f),
-                phase = if (reverse) -dashPhase else dashPhase
-            )
-        )
+        start = from,
+        end = to,
+        strokeWidth = 6f
     )
+    
+    // Draw animated arrows along the line
+    val dx = to.x - from.x
+    val dy = to.y - from.y
+    val lineLength = kotlin.math.sqrt(dx * dx + dy * dy)
+    val arrowSpacing = 50f  // Increased spacing for smoother animation
+    val numArrows = (lineLength / arrowSpacing).toInt() + 2  // Extra arrows for smooth loop
+    
+    val angle = kotlin.math.atan2(dy.toDouble(), dx.toDouble()).toFloat()
+    val arrowAngle = if (!reverse) angle else (angle + kotlin.math.PI).toFloat()
+    
+    for (i in 0 until numArrows) {
+        // Smooth continuous animation using modulo
+        val offset = (dashPhase * 1.5) % arrowSpacing
+        val position = (i * arrowSpacing - offset)
+        
+        if (position < 0 || position > lineLength) continue
+        
+        val progress = position / lineLength
+        val arrowX = (from.x + dx * progress).toFloat()
+        val arrowY = (from.y + dy * progress).toFloat()
+        
+        // Draw arrow head (simplified for performance)
+        val arrowSize = 10f
+        val path = Path().apply {
+            moveTo(arrowX, arrowY)
+            lineTo(
+                arrowX - arrowSize * kotlin.math.cos(arrowAngle - 0.4).toFloat(),
+                arrowY - arrowSize * kotlin.math.sin(arrowAngle - 0.4).toFloat()
+            )
+            moveTo(arrowX, arrowY)
+            lineTo(
+                arrowX - arrowSize * kotlin.math.cos(arrowAngle + 0.4).toFloat(),
+                arrowY - arrowSize * kotlin.math.sin(arrowAngle + 0.4).toFloat()
+            )
+        }
+        
+        drawPath(
+            path = path,
+            color = color,
+            style = Stroke(width = 3f, cap = StrokeCap.Round)
+        )
+    }
 }
 
 @Composable

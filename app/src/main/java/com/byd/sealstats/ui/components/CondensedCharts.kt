@@ -49,6 +49,24 @@ fun CondensedAltitudeChart(
     AltitudeChart(dataPoints = condensed, modifier = modifier)
 }
 
+@Composable
+fun CondensedSocChart(
+    dataPoints: List<TripDataPointEntity>,
+    modifier: Modifier = Modifier
+) {
+    val condensed = remember(dataPoints) { condenseData(dataPoints) }
+    SocChart(dataPoints = condensed, modifier = modifier)
+}
+
+@Composable
+fun CondensedPowerChart(
+    dataPoints: List<TripDataPointEntity>,
+    modifier: Modifier = Modifier
+) {
+    val condensed = remember(dataPoints) { condenseData(dataPoints) }
+    PowerChart(dataPoints = condensed, modifier = modifier)
+}
+
 /**
  * Condense data points to a maximum number of points
  * @param dataPoints The original data points

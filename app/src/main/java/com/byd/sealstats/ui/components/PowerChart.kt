@@ -1,6 +1,7 @@
 package com.byd.sealstats.ui.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,7 +18,7 @@ import com.patrykandpatrick.vico.core.entry.entryModelOf
 import com.patrykandpatrick.vico.compose.m3.style.m3ChartStyle
 
 @Composable
-fun SpeedChart(
+fun PowerChart(
     dataPoints: List<TripDataPointEntity>,
     modifier: Modifier = Modifier
 ) {
@@ -32,12 +33,12 @@ fun SpeedChart(
         return
     }
     
-    val speedData = remember(dataPoints) {
-        dataPoints.map { it.speed.toFloat() }
+    val powerData = remember(dataPoints) {
+        dataPoints.map { it.power.toFloat() }
     }
     
-    val chartEntryModel = remember(speedData) {
-        entryModelOf(*speedData.toTypedArray())
+    val chartEntryModel = remember(powerData) {
+        entryModelOf(*powerData.toTypedArray())
     }
     
     ProvideChartStyle(m3ChartStyle()) {
@@ -45,13 +46,13 @@ fun SpeedChart(
             chart = lineChart(),
             model = chartEntryModel,
             startAxis = rememberStartAxis(
-                title = "Speed (km/h)"
+                title = "Power (kW)"
             ),
             bottomAxis = rememberBottomAxis(
                 title = "Time (min)",
                 valueFormatter = { value, _ ->
                     if (dataPoints.isEmpty()) return@rememberBottomAxis "0m"
-                    val totalDuration = (dataPoints.last().timestamp - dataPoints.first().timestamp) / 1000.0 // seconds
+                    val totalDuration = (dataPoints.last().timestamp - dataPoints.first().timestamp) / 1000.0
                     val seconds = (value / (dataPoints.size - 1)) * totalDuration
                     val minutes = (seconds / 60.0).toInt()
                     "${minutes}m"

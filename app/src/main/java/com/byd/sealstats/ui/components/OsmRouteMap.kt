@@ -2,7 +2,6 @@ package com.byd.sealstats.ui.components
 
 import android.graphics.Color
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -99,18 +98,16 @@ fun OsmRouteMap(
                 val startPoint = validPoints.first()
                 val startMarker = Marker(this).apply {
                     position = GeoPoint(startPoint.latitude, startPoint.longitude)
-                    title = "Start"
+                    title = "🟢 START"
                     snippet = "Trip began here"
-                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                 }
                 
                 // Add end marker (red)
                 val endPoint = validPoints.last()
                 val endMarker = Marker(this).apply {
                     position = GeoPoint(endPoint.latitude, endPoint.longitude)
-                    title = "End"
+                    title = "🔴 END"
                     snippet = "Trip ended here"
-                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                 }
                 
                 // Add overlays to map
@@ -141,15 +138,15 @@ fun OsmRouteMap(
             val startPoint = validPoints.first()
             val startMarker = Marker(mapView).apply {
                 position = GeoPoint(startPoint.latitude, startPoint.longitude)
-                title = "Start"
-                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                title = "🟢 START"
+                snippet = "Trip began here"
             }
             
             val endPoint = validPoints.last()
             val endMarker = Marker(mapView).apply {
                 position = GeoPoint(endPoint.latitude, endPoint.longitude)
-                title = "End"
-                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                title = "🔴 END"
+                snippet = "Trip ended here"
             }
             
             mapView.overlays.add(routeLine)

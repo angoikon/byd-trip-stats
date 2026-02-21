@@ -91,8 +91,6 @@ private fun WaypointsCard(dataPoints: List<TripDataPointEntity>) {
                 icon = Icons.Filled.FlagCircle,  // Flag icon for start
                 label = "Start",
                 time = timeFormat.format(Date(startPoint.timestamp)),
-                location = "${String.format("%.6f", startPoint.latitude)}, ${String.format("%.6f", startPoint.longitude)}",
-                speed = "${startPoint.speed.toInt()} km/h",
                 soc = "${startPoint.soc.toInt()}%",
                 color = Color.Green
             )
@@ -104,8 +102,6 @@ private fun WaypointsCard(dataPoints: List<TripDataPointEntity>) {
                 icon = Icons.Filled.LocationOn,  // Pin icon for end
                 label = "End",
                 time = timeFormat.format(Date(endPoint.timestamp)),
-                location = "${String.format("%.6f", endPoint.latitude)}, ${String.format("%.6f", endPoint.longitude)}",
-                speed = "${endPoint.speed.toInt()} km/h",
                 soc = "${endPoint.soc.toInt()}%",
                 color = Color.Red
             )
@@ -118,8 +114,6 @@ private fun WaypointItem(
     icon: ImageVector,
     label: String,
     time: String,
-    location: String,
-    speed: String,
     soc: String,
     color: Color
 ) {
@@ -145,13 +139,7 @@ private fun WaypointItem(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Text(
-                text = location,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(text = "Speed: $speed", style = MaterialTheme.typography.bodySmall)
                 Text(text = "SOC: $soc", style = MaterialTheme.typography.bodySmall)
             }
         }
