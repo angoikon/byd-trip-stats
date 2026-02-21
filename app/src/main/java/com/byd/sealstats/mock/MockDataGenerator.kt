@@ -26,7 +26,7 @@ class MockDataGenerator {
      * @param updateIntervalMs Interval between updates (simulates MQTT message frequency)
      */
     fun generateMockDrive(
-        durationSeconds: Int = 60, // 1-minute drive
+        durationSeconds: Int = 120, // 2-minute drive
         updateIntervalMs: Long = 1000 // 1 second updates
     ): Flow<VehicleTelemetry> = flow {
         val totalUpdates = (durationSeconds * 1000 / updateIntervalMs).toInt()

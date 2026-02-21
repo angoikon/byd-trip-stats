@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 class DashboardViewModel(application: Application) : AndroidViewModel(application) {
     
     private val tripRepository = TripRepository.getInstance(application)
-    
+
     // MQTT Connection state
     private val _mqttConnected = MutableStateFlow(false)
     val mqttConnected: StateFlow<Boolean> = _mqttConnected.asStateFlow()
@@ -103,14 +103,14 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             }
         }
     }
-    
+
     fun endManualTrip() {
         viewModelScope.launch {
             tripRepository.endCurrentTrip()
             updateTripState()
         }
     }
-    
+
     fun toggleAutoTripDetection() {
         viewModelScope.launch {
             val newValue = !_autoTripDetection.value
@@ -118,13 +118,13 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             _autoTripDetection.value = newValue
         }
     }
-    
+
     fun deleteTrip(tripId: Long) {
         viewModelScope.launch {
             tripRepository.deleteTrip(tripId)
         }
     }
-    
+
     fun getTripDetails(tripId: Long): StateFlow<TripEntity?> {
         return tripRepository.getTripById(tripId)
             .stateIn(
@@ -133,7 +133,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 initialValue = null
             )
     }
-    
+
     fun getTripDataPoints(tripId: Long): StateFlow<List<TripDataPointEntity>> {
         return tripRepository.getDataPointsForTrip(tripId)
             .stateIn(
@@ -142,7 +142,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 initialValue = emptyList()
             )
     }
-    
+
     fun getTripStats(tripId: Long): StateFlow<TripStatsEntity?> {
         return tripRepository.getStatsForTrip(tripId)
             .stateIn(
@@ -151,17 +151,17 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 initialValue = null
             )
     }
-    
+
     // Update telemetry from service
     fun updateTelemetry(telemetry: VehicleTelemetry) {
         _currentTelemetry.value = telemetry
         updateTripState()
     }
-    
+
     fun setMqttConnectionState(connected: Boolean) {
         _mqttConnected.value = connected
     }
-    
+
     // Mock data for testing
     fun startMockDrive() {
         viewModelScope.launch {

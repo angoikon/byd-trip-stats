@@ -1,5 +1,6 @@
 package com.byd.sealstats.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -15,7 +16,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.byd.sealstats.ui.components.AltitudeChart
+import com.byd.sealstats.ui.components.CondensedAltitudeChart
+import com.byd.sealstats.ui.components.CondensedEnergyChart
+import com.byd.sealstats.ui.components.CondensedMotorRpmChart
+import com.byd.sealstats.ui.components.CondensedSpeedChart
 import com.byd.sealstats.ui.components.EnergyConsumptionChart
 import com.byd.sealstats.ui.components.MotorRpmChart
 import com.byd.sealstats.ui.components.OsmRouteMap
@@ -26,6 +33,7 @@ import com.byd.sealstats.ui.components.SpeedChart
 import com.byd.sealstats.ui.theme.*
 import com.byd.sealstats.ui.viewmodel.DashboardViewModel
 import kotlin.math.abs
+import com.byd.sealstats.ui.components.condenseData
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -278,7 +286,7 @@ fun shareTripSummary(
     trip: com.byd.sealstats.data.local.entity.TripEntity
 ) {
     val summary = buildString {
-        appendLine("🚗 BYD Trip Summary")
+        appendLine("🚗 BYD Trip Stats")
         appendLine("")
         appendLine("📅 Date: ${formatTimestamp(trip.startTime)}")
         appendLine("🛣️ Distance: ${String.format("%.1f", trip.distance ?: 0.0)} km")
@@ -379,7 +387,7 @@ fun TripOverviewTab(
             
             MetricCard(
                 title = "Consumption",
-                value = String.format("%.1f", trip.efficiency ?: 0.0),
+                value = String.format("%.2f", trip.efficiency ?: 0.0),
                 unit = "kWh / 100km",
                 icon = Icons.Filled.Eco,
                 color = RegenGreen,
@@ -418,8 +426,8 @@ fun TripOverviewTab(
                 
                 DetailRow("Max Power", "${trip.maxPower.toInt()} kW")
                 DetailRow("Max Regen", "${abs(trip.maxRegenPower).toInt()} kW")
-                DetailRow("Energy used", trip.energyConsumed?.let { String.format("%.2f kWh", it) } ?: "-")
-                DetailRow("Total Regen Energy", stats?.totalRegenEnergy?.let { String.format("%.2f kWh", it) } ?: "-")
+                DetailRow("Energy consumed", trip.energyConsumed?.let { String.format("%.2f kWh", it) } ?: "-")
+                DetailRow("Energy regenerated", stats?.totalRegenEnergy?.let { String.format("%.2f kWh", it) } ?: "-")
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
                 
                 DetailRow("Battery Temp Range", "${trip.minBatteryCellTemp}°C - ${trip.maxBatteryCellTemp}°C")
@@ -435,6 +443,9 @@ fun TripChartsTab(
     dataPoints: List<com.byd.sealstats.data.local.entity.TripDataPointEntity>,
     stats: com.byd.sealstats.data.local.entity.TripStatsEntity?
 ) {
+    // Track which chart is expanded
+    var expandedChart by remember { mutableStateOf<ChartType?>(null) }
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -443,52 +454,30 @@ fun TripChartsTab(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Energy consumption over time
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
+        ClickableChartCard(
+            title = "Energy Consumption",
+            subtitle = "kWh over time",
+            onClick = { expandedChart = ChartType.ENERGY }
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Energy Consumption",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                EnergyConsumptionChart(
-                    dataPoints = dataPoints,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+            CondensedEnergyChart(
+                dataPoints = dataPoints,
+                modifier = Modifier.fillMaxSize()
+            )
         }
         
         // Speed over time
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
+        ClickableChartCard(
+            title = "Speed Profile",
+            subtitle = "km/h over time",
+            onClick = { expandedChart = ChartType.SPEED }
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Speed Profile",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                SpeedChart(
-                    dataPoints = dataPoints,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+            CondensedSpeedChart(
+                dataPoints = dataPoints,
+                modifier = Modifier.fillMaxSize()
+            )
         }
         
-        // Power distribution
+        // Power distribution (no expansion needed - it's already a summary)
         if (stats != null) {
             Card(
                 modifier = Modifier
@@ -514,48 +503,162 @@ fun TripChartsTab(
         }
         
         // Motor RPM Chart
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(350.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
+        ClickableChartCard(
+            title = "Motor RPM",
+            subtitle = "RPM over time",
+            onClick = { expandedChart = ChartType.MOTOR_RPM }
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Motor RPM",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                MotorRpmChart(
-                    dataPoints = dataPoints,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+            CondensedMotorRpmChart(
+                dataPoints = dataPoints,
+                modifier = Modifier.fillMaxSize()
+            )
         }
         
         // Altitude/Elevation Profile
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
+        ClickableChartCard(
+            title = "Elevation Profile",
+            subtitle = "Altitude over time",
+            onClick = { expandedChart = ChartType.ALTITUDE }
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Elevation Profile",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+            CondensedAltitudeChart(
+                dataPoints = dataPoints,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+    }
+    
+    // Fullscreen chart dialog
+    expandedChart?.let { chartType ->
+        FullscreenChartDialog(
+            chartType = chartType,
+            dataPoints = dataPoints,  // Full data
+            stats = stats,
+            onDismiss = { expandedChart = null }
+        )
+    }
+}
+
+@Composable
+private fun ClickableChartCard(
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(300.dp)
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Icon(
+                    imageVector = Icons.Filled.Fullscreen,
+                    contentDescription = "Expand",
+                    tint = MaterialTheme.colorScheme.primary
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                AltitudeChart(
-                    dataPoints = dataPoints,
-                    modifier = Modifier.fillMaxSize()
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            content()
+        }
+    }
+}
+
+enum class ChartType {
+    ENERGY, SPEED, MOTOR_RPM, ALTITUDE
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FullscreenChartDialog(
+    chartType: ChartType,
+    dataPoints: List<com.byd.sealstats.data.local.entity.TripDataPointEntity>,
+    stats: com.byd.sealstats.data.local.entity.TripStatsEntity?,
+    onDismiss: () -> Unit
+) {
+    // Condense to 100 points for readability
+    val condensedData = remember(dataPoints) {
+        condenseData(dataPoints, maxPoints = 100)
+    }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                // Header with close button
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = when (chartType) {
+                                ChartType.ENERGY -> "Energy Consumption (Detailed)"
+                                ChartType.SPEED -> "Speed Profile (Detailed)"
+                                ChartType.MOTOR_RPM -> "Motor RPM (Detailed)"
+                                ChartType.ALTITUDE -> "Elevation Profile (Detailed)"
+                            },
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onDismiss) {
+                            Icon(Icons.Filled.Close, "Close")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
                 )
+                
+                // Chart with condensed data
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                ) {
+                    when (chartType) {
+                        ChartType.ENERGY -> EnergyConsumptionChart(
+                            dataPoints = condensedData,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                        ChartType.SPEED -> SpeedChart(
+                            dataPoints = condensedData,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                        ChartType.MOTOR_RPM -> MotorRpmChart(
+                            dataPoints = condensedData,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                        ChartType.ALTITUDE -> AltitudeChart(
+                            dataPoints = condensedData,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                }
             }
         }
     }
@@ -565,9 +668,9 @@ fun TripChartsTab(
 fun TripRouteTab(
     dataPoints: List<com.byd.sealstats.data.local.entity.TripDataPointEntity>
 ) {
-    Card(
+    Box( // TODO: CHANGE TO CARD??
         modifier = Modifier
-            .fillMaxWidth()  // ✅ Width only, not height
+            .fillMaxWidth() // TODO: CHANGE TO fillMaxWidth() ?
             .padding(16.dp)
     ) {
         OsmRouteMap(

@@ -44,6 +44,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.runtime.remember
 import androidx.compose.ui.viewinterop.AndroidView
 import android.widget.ImageView
+import androidx.compose.foundation.shape.CircleShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,11 +57,11 @@ fun DashboardScreen(
     val isInTrip by viewModel.isInTrip.collectAsState()
     val mqttConnected by viewModel.mqttConnected.collectAsState()
     val autoTripDetection by viewModel.autoTripDetection.collectAsState()
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("BYD Info Stats", fontSize = 24.sp, fontWeight = FontWeight.Bold) },
+                title = { Text("BYD trip stats", fontSize = 24.sp, fontWeight = FontWeight.Bold) },
                 actions = {
                     // Mock Data Button (for testing)
                     IconButton(onClick = { viewModel.startMockDrive() }) {
@@ -71,7 +72,7 @@ fun DashboardScreen(
                             modifier = Modifier.size(28.dp)
                         )
                     }
-                    
+
                     // MQTT Status indicator
                     Icon(
                         imageVector = if (mqttConnected) Icons.Filled.CloudDone else Icons.Filled.CloudOff,
@@ -113,7 +114,7 @@ fun DashboardScreen(
                     CircularProgressIndicator(modifier = Modifier.size(60.dp))
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = if (mqttConnected) "Waiting for data..." else "Connecting to MQTT...",
+                        text = if (mqttConnected) "Waiting for data..." else "Connecting to MQTT Broker...",
                         style = MaterialTheme.typography.titleLarge
                     )
                 }
@@ -161,8 +162,9 @@ fun DashboardContent(
                     .fillMaxWidth()
                     .weight(1f)
             )
-            
+
             TripControls(
+                telemetry = telemetry,
                 isInTrip = isInTrip,
                 autoTripDetection = autoTripDetection,
                 currentGear = telemetry.gear,
@@ -172,7 +174,7 @@ fun DashboardContent(
                 modifier = Modifier.fillMaxWidth()
             )
         }
-        
+
         // Right column - Stats (40%)
         Column(
             modifier = Modifier
@@ -208,7 +210,7 @@ fun EnergyFlowDiagram(
         ),
         label = "flow_offset"
     )
-    
+
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
@@ -263,7 +265,7 @@ fun EnergyFlowDiagram(
                         .size(140.dp)
                 )
 
-                // 4WD drivetrain
+                // AWD drivetrain
                 Image(
                     painter = painterResource(R.drawable.awd),
                     contentDescription = "AWD drivetrain",
@@ -441,6 +443,7 @@ fun PowerMetric(
 
 @Composable
 fun TripControls(
+    telemetry: VehicleTelemetry,
     isInTrip: Boolean,
     autoTripDetection: Boolean,
     currentGear: String,
@@ -528,15 +531,38 @@ fun TripControls(
                             modifier = Modifier.padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = if (isInTrip) Icons.Filled.DirectionsCar else Icons.Filled.LocalParking,
-                                contentDescription = null,
-                                tint = if (isInTrip) MaterialTheme.colorScheme.primary else Color.Gray,
-                                modifier = Modifier.size(28.dp)
-                            )
+                            // Show actual gear letter in a circle
+                            Surface(
+                                modifier = Modifier.size(28.dp),
+                                shape = CircleShape,
+                                color = when {
+                                    telemetry.gear == "D" -> MaterialTheme.colorScheme.primary
+                                    telemetry.gear == "R" -> Color(0xFFFF9800) // Orange for reverse
+                                    isInTrip -> MaterialTheme.colorScheme.primary
+                                    else -> Color.Gray
+                                }
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    Text(
+                                        text = telemetry.gear,
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
+                            }
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = if (isInTrip) "Trip in Progress" else "Waiting for Trip...",
+                                text = when {
+                                    isInTrip && telemetry.gear in listOf("D", "R") -> "Driving"
+                                    isInTrip -> "Trip in Progress"
+                                    telemetry.gear == "D" -> "Ready to Drive"
+                                    telemetry.gear == "R" -> "Reverse"
+                                    else -> "Waiting for Trip..."
+                                },
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Medium
                             )
@@ -567,7 +593,7 @@ fun VehicleStats(
         StatCard(
             title = "Battery temperature",
             value = "${telemetry.batteryTempAvg.toInt()}°C",
-            subtitle = "${telemetry.batteryCellTempMin}°C - ${telemetry.batteryCellTempMax}°C",
+            subtitle = "Cells: ${telemetry.batteryCellTempMin}°C - ${telemetry.batteryCellTempMax}°C",
             icon = Icons.Filled.Thermostat,
             color = MaterialTheme.colorScheme.tertiary
         )

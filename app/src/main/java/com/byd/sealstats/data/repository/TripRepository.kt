@@ -248,10 +248,10 @@ class TripRepository private constructor(context: Context) {
         // Speed distribution
         val speedRanges = mapOf(
             "0-30" to dataPoints.count { it.speed in 0.0..30.0 }.toDouble(),
-            "30-50" to dataPoints.count { it.speed in 30.0..50.0 }.toDouble(),
-            "50-80" to dataPoints.count { it.speed in 50.0..80.0 }.toDouble(),
-            "80-100" to dataPoints.count { it.speed in 80.0..100.0 }.toDouble(),
-            "100+" to dataPoints.count { it.speed > 100 }.toDouble()
+            "30-70" to dataPoints.count { it.speed in 30.0..70.0 }.toDouble(),
+            "70-100" to dataPoints.count { it.speed in 70.0..100.0 }.toDouble(),
+            "100-130" to dataPoints.count { it.speed in 100.0..130.0 }.toDouble(),
+            "130+" to dataPoints.count { it.speed > 130 }.toDouble()
         )
 
         val firstPoint = dataPoints.first()

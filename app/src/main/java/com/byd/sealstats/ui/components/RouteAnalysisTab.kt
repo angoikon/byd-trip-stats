@@ -246,7 +246,8 @@ private fun EnergyHeatmapCard(dataPoints: List<TripDataPointEntity>) {
     // Find segments with highest energy consumption
     val segmentSize = 10
     val energySegments = dataPoints.chunked(segmentSize).mapIndexed { index, segment ->
-        val totalEnergy = segment.sumOf { abs(it.power) }
+        // Assuming data points are ~1 second apart : TODO FIX - calculate actual time duration
+        val totalEnergy = segment.sumOf { abs(it.power) } / 3600.0  // kW * seconds / 3600 = kWh
         index to totalEnergy
     }.sortedByDescending { it.second }.take(5)
     
@@ -282,7 +283,7 @@ private fun EnergyHeatmapCard(dataPoints: List<TripDataPointEntity>) {
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = "${String.format("%.1f", energy)} kW",
+                        text = "${String.format("%.2f", energy)} kWh",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
                         color = AccelerationOrange
