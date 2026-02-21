@@ -79,7 +79,7 @@ if (telemetry.isDriving) {  // speed > 0 && gear in [D, R]
 
 ## Files Modified
 
-1. **Created:** `app/src/main/java/com/byd/sealstats/receiver/BootReceiver.kt`
+1. **Created:** `app/src/main/java/com/byd/tripstats/receiver/BootReceiver.kt`
 2. **Modified:** `app/src/main/AndroidManifest.xml`
    - Added `RECEIVE_BOOT_COMPLETED` permission
    - Added `FOREGROUND_SERVICE_DATA_SYNC` permission

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Base.Theme.BydSealStats" parent="android:Theme.Material.Light.NoActionBar">
+    <style name="Base.Theme.BydTripStats" parent="android:Theme.Material.Light.NoActionBar">
         <!-- Customize your light theme here. -->
     </style>
     
-    <style name="Theme.BydSealStats" parent="Base.Theme.BydSealStats" />
+    <style name="Theme.BydTripStats" parent="Base.Theme.BydTripStats" />
 </resources>

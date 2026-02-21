@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.byd.sealstats"
+    namespace = "com.byd.tripstats"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.byd.sealstats"
+        applicationId = "com.byd.tripstats"
         minSdk = 29
         targetSdk = 34
         versionCode = 1

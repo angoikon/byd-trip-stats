@@ -39,7 +39,7 @@ implementation("org.osmdroid:osmdroid-android:6.1.18")
 ```
 
 ### 2. Add New Components
-Create these files in `app/src/main/java/com/byd/sealstats/ui/components/`:
+Create these files in `app/src/main/java/com/byd/tripstats/ui/components/`:
 - `OsmRouteMap.kt`
 - `RouteAnalysisTab.kt`
 

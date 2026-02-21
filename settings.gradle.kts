@@ -26,5 +26,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "BYD Info Stats"
+rootProject.name = "BYD Trip Stats"
 include(":app")

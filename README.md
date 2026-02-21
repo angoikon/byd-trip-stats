@@ -1,4 +1,4 @@
-# BYD Info Stats - Complete Android App
+# BYD Trip Stats - Complete Android App
 
 Trip tracking and visualization for BYD vehicles via MQTT, with built-in mock data for testing!
 
