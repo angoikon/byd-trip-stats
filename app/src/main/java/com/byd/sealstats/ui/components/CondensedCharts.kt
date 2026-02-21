@@ -50,15 +50,18 @@ fun CondensedAltitudeChart(
 }
 
 /**
- * Condense data points to max 45 for overview display
- * Ensures full trip fits in viewport without scrolling
+ * Condense data points to a maximum number of points
+ * @param dataPoints The original data points
+ * @param maxPoints Maximum number of points to return (default: 45)
+ * @return Condensed list fitting within maxPoints
  */
 fun condenseData(
     dataPoints: List<TripDataPointEntity>,
     maxPoints: Int = 45  // Default
 ): List<TripDataPointEntity> {
     if (dataPoints.size <= maxPoints) return dataPoints
-
-    val step = dataPoints.size / maxPoints
-    return dataPoints.filterIndexed { index, _ -> index % step == 0 }
+    
+    // Use ceiling division to ensure we don't exceed maxPoints
+    val step = (dataPoints.size + maxPoints - 1) / maxPoints  // Ceiling division
+    return dataPoints.filterIndexed { index, _ -> index % step == 0 }.take(maxPoints)
 }

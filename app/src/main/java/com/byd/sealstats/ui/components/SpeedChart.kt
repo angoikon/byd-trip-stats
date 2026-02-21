@@ -50,7 +50,14 @@ fun SpeedChart(
                 title = "Speed (km/h)"
             ),
             bottomAxis = rememberBottomAxis(
-                title = "Trip Progress"
+                title = "Time (min)",
+                valueFormatter = { value, _ ->
+                    if (dataPoints.isEmpty()) return@rememberBottomAxis "0m"
+                    val totalDuration = (dataPoints.last().timestamp - dataPoints.first().timestamp) / 1000.0 // seconds
+                    val seconds = (value / (dataPoints.size - 1)) * totalDuration
+                    val minutes = (seconds / 60.0).toInt()
+                    "${minutes}m"
+                }
             ),
             modifier = modifier
         )

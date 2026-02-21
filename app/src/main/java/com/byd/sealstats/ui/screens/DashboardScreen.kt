@@ -73,15 +73,7 @@ fun DashboardScreen(
                         )
                     }
 
-                    // MQTT Status indicator
-                    Icon(
-                        imageVector = if (mqttConnected) Icons.Filled.CloudDone else Icons.Filled.CloudOff,
-                        contentDescription = "MQTT Status",
-                        tint = if (mqttConnected) Color.Green else Color.Gray,
-                        modifier = Modifier.size(28.dp)
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    
+                    // History Button
                     IconButton(onClick = onNavigateToHistory) {
                         Icon(
                             imageVector = Icons.Filled.History,
@@ -89,6 +81,20 @@ fun DashboardScreen(
                             modifier = Modifier.size(28.dp)
                         )
                     }
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    // MQTT Status indicator
+                    Icon(
+                        imageVector = if (mqttConnected) Icons.Filled.CloudDone else Icons.Filled.CloudOff,
+                        contentDescription = "MQTT Status",
+                        tint = if (mqttConnected) Color.Green else Color.Gray,
+                        modifier = Modifier.size(28.dp)
+                    )
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    // Settings Button
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(
                             imageVector = Icons.Filled.Settings,

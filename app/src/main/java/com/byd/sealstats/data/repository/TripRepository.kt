@@ -86,8 +86,8 @@ class TripRepository private constructor(context: Context) {
         if (lastTelemetryTime > 0) {
             val messageInterval = currentTime - lastTelemetryTime
             
-            // If interval > 11 seconds, engine was turned off
-            if (tripStarted && messageInterval > engineOffIntervalMs) {
+            // Only check engine-off interval when parked (not while actively driving)
+            if (tripStarted && telemetry.isParked && messageInterval > engineOffIntervalMs) {
                 Log.i(TAG, "Engine turned OFF detected (${messageInterval / 1000}s interval) - ending trip")
                 endCurrentTrip()
                 // Don't return - still process this telemetry for UI display
@@ -115,9 +115,10 @@ class TripRepository private constructor(context: Context) {
         }
         
         // Check for brief stop timeout (parked with engine ON for 5+ minutes)
-        if (tripStarted && telemetry.isParked && !telemetry.isDriving) {
+        // EXCEPTION: Don't end trip if charging (DC charging can be 40+ min with engine ON)
+        if (tripStarted && telemetry.isParked && !telemetry.isDriving && !telemetry.isCharging) {
             if (currentTime - lastActiveTime > briefStopDelayMs) {
-                Log.i(TAG, "Brief stop timeout (5 min in P) - ending trip")
+                Log.i(TAG, "Brief stop timeout (5 min in P, not charging) - ending trip")
                 endCurrentTrip()
             }
         }
@@ -155,7 +156,7 @@ class TripRepository private constructor(context: Context) {
     private fun shouldEndTrip(telemetry: VehicleTelemetry, currentTime: Long): Boolean {
         // End trip when:
         // 1. Parked for extended period (5 min brief stop with engine ON)
-        // 2. Charging started (car is definitely OFF if charging) TODO: THIS IS NOT TRUE - CAR CAN BE CHARGING WITH ENGINE ON - NEED TO CHECK FOR PARKED + CHARGING
+        // 2. Charging started
         
         val parkedTooLong = telemetry.isParked && (currentTime - lastActiveTime > briefStopDelayMs)
         val startedCharging = telemetry.isCharging

@@ -596,9 +596,9 @@ private fun FullscreenChartDialog(
     stats: com.byd.sealstats.data.local.entity.TripStatsEntity?,
     onDismiss: () -> Unit
 ) {
-    // Condense to 100 points for readability
+    // Condense to 135 points for readability
     val condensedData = remember(dataPoints) {
-        condenseData(dataPoints, maxPoints = 100)
+        condenseData(dataPoints, maxPoints = 135)
     }
 
     Dialog(
@@ -668,10 +668,13 @@ private fun FullscreenChartDialog(
 fun TripRouteTab(
     dataPoints: List<com.byd.sealstats.data.local.entity.TripDataPointEntity>
 ) {
-    Box( // TODO: CHANGE TO CARD??
+    Card(
         modifier = Modifier
-            .fillMaxWidth() // TODO: CHANGE TO fillMaxWidth() ?
-            .padding(16.dp)
+            .fillMaxSize()
+            .padding(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
     ) {
         OsmRouteMap(
             dataPoints = dataPoints,
