@@ -8,7 +8,7 @@ import com.byd.sealstats.data.local.entity.TripDataPointEntity
 /**
  * Condensed versions of charts for overview display
  * These charts:
- * - Sample data to ~50 points max
+ * - Sample data to ~45 points max
  * - Disable scrolling/zooming
  * - Fit entire trip in viewport
  */

@@ -37,8 +37,10 @@ class TripRepository private constructor(context: Context) {
 
     // Configuration
     private var autoTripDetection = true
-    private val tripEndDelayMs = 2 * 60 * 1000L // 2 minutes of inactivity to end trip
-    private var lastActiveTime = 0L
+    private val briefStopDelayMs = 5 * 60 * 1000L     // 5 minutes for brief stops (parked with engine ON)
+    private val engineOffIntervalMs = 11 * 1000L       // 11 seconds between messages = engine OFF
+    private var lastTelemetryTime = 0L                // When we last received ANY telemetry
+    private var lastActiveTime = 0L                   // When car was last actively driving
 
     init {
         // Check for active trip on initialization
@@ -47,7 +49,27 @@ class TripRepository private constructor(context: Context) {
             if (activeTrip != null) {
                 currentTripId = activeTrip.id
                 tripStarted = true
-                Log.i(TAG, "Resumed active trip: ${activeTrip.id}")
+
+                // Restore lastActiveTime and lastTelemetryTime from last data point
+                val lastPoint = dataPointDao.getDataPointsForTripSync(activeTrip.id).lastOrNull()
+                if (lastPoint != null) {
+                    lastActiveTime = lastPoint.timestamp
+                    lastTelemetryTime = lastPoint.timestamp
+                    Log.i(TAG, "Resumed active trip: ${activeTrip.id}, lastActive: ${java.text.SimpleDateFormat("HH:mm:ss").format(lastActiveTime)}")
+                } else {
+                    // No data points yet, use trip start time
+                    lastActiveTime = activeTrip.startTime
+                    lastTelemetryTime = activeTrip.startTime
+                    Log.i(TAG, "Resumed active trip: ${activeTrip.id} (no data points yet)")
+                }
+
+                // Check if engine was turned off by examining message interval
+                // If last message was more than 11 seconds ago, engine is OFF
+                val timeSinceLastMessage = System.currentTimeMillis() - lastTelemetryTime
+                if (timeSinceLastMessage > engineOffIntervalMs) {
+                    Log.i(TAG, "Engine was turned off (${timeSinceLastMessage / 1000}s since last message) - ending trip")
+                    endCurrentTrip()
+                }
             }
         }
     }
@@ -55,31 +77,49 @@ class TripRepository private constructor(context: Context) {
     suspend fun processTelemetry(telemetry: VehicleTelemetry) {
         // Broadcast latest telemetry to UI
         _latestTelemetry.value = telemetry
-        Log.d(TAG, "Broadcasting telemetry: SOC=${telemetry.soc}, Speed=${telemetry.speed}")
 
         val currentTime = System.currentTimeMillis()
+
+        // Check message interval to detect engine state
+        // Car ON: MQTT every 1 second
+        // Car OFF: MQTT every 10 minutes
+        if (lastTelemetryTime > 0) {
+            val messageInterval = currentTime - lastTelemetryTime
+            
+            // If interval > 11 seconds, engine was turned off
+            if (tripStarted && messageInterval > engineOffIntervalMs) {
+                Log.i(TAG, "Engine turned OFF detected (${messageInterval / 1000}s interval) - ending trip")
+                endCurrentTrip()
+                // Don't return - still process this telemetry for UI display
+            }
+        }
+
+        lastTelemetryTime = currentTime  // Update telemetry timestamp
 
         // Auto trip detection
         if (autoTripDetection) {
             handleAutoTripDetection(telemetry, currentTime)
         }
-
+        
         // If there's an active trip, record data point
         currentTripId?.let { tripId ->
             recordDataPoint(tripId, telemetry)
             updateTripMetrics(tripId, telemetry)
         }
-
+        
         lastTelemetry = telemetry
-
-        // Check for trip timeout
-        if (tripStarted && !telemetry.isDriving) {
-            if (currentTime - lastActiveTime > tripEndDelayMs) {
-                Log.i(TAG, "Trip timeout - ending trip")
+        
+        // Update last active time if driving
+        if (telemetry.isDriving) {
+            lastActiveTime = currentTime
+        }
+        
+        // Check for brief stop timeout (parked with engine ON for 5+ minutes)
+        if (tripStarted && telemetry.isParked && !telemetry.isDriving) {
+            if (currentTime - lastActiveTime > briefStopDelayMs) {
+                Log.i(TAG, "Brief stop timeout (5 min in P) - ending trip")
                 endCurrentTrip()
             }
-        } else if (telemetry.isDriving) {
-            lastActiveTime = currentTime
         }
     }
 
@@ -92,7 +132,7 @@ class TripRepository private constructor(context: Context) {
             startTrip(telemetry, isManual = false)
         }
 
-        // Trip end conditions
+        // Trip end conditions  
         if (tripStarted && shouldEndTrip(telemetry, currentTime)) {
             Log.i(TAG, "Auto-ending trip")
             endCurrentTrip()
@@ -114,15 +154,15 @@ class TripRepository private constructor(context: Context) {
 
     private fun shouldEndTrip(telemetry: VehicleTelemetry, currentTime: Long): Boolean {
         // End trip when:
-        // 1. Parked for extended period
-        // 2. Charging started
-
-        val parkedTooLong = telemetry.isParked && (currentTime - lastActiveTime > tripEndDelayMs)
+        // 1. Parked for extended period (5 min brief stop with engine ON)
+        // 2. Charging started (car is definitely OFF if charging) TODO: THIS IS NOT TRUE - CAR CAN BE CHARGING WITH ENGINE ON - NEED TO CHECK FOR PARKED + CHARGING
+        
+        val parkedTooLong = telemetry.isParked && (currentTime - lastActiveTime > briefStopDelayMs)
         val startedCharging = telemetry.isCharging
-
+        
         return parkedTooLong || startedCharging
     }
-
+    
     suspend fun startTrip(telemetry: VehicleTelemetry, isManual: Boolean = false): Long {
         if (tripStarted) {
             Log.w(TAG, "Trip already active")
@@ -169,7 +209,7 @@ class TripRepository private constructor(context: Context) {
         currentTripId = null
         tripStarted = false
 
-        Log.i(TAG, "Trip ended: $tripId, distance: ${updatedTrip.distance} km, consumption: ${updatedTrip.efficiency} kWh / 100km")
+        Log.i(TAG, "Trip ended: $tripId, distance: ${updatedTrip.distance} km, efficiency: ${updatedTrip.efficiency} kWh/100km")
     }
 
     private suspend fun recordDataPoint(tripId: Long, telemetry: VehicleTelemetry) {
