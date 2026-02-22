@@ -19,6 +19,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.byd.tripstats.BuildConfig
 import com.byd.tripstats.data.model.VehicleTelemetry
 import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
@@ -49,13 +50,16 @@ fun DashboardScreen(
             TopAppBar(
                 title = { Text("BYD trip stats", fontSize = 24.sp, fontWeight = FontWeight.Bold) },
                 actions = {
-                    IconButton(onClick = { viewModel.startMockDrive() }) {
-                        Icon(
-                            imageVector = Icons.Filled.Analytics,
-                            contentDescription = "View Live Data",
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(28.dp)
-                        )
+                    // Mock Data Button (for testing) - ONLY IN DEBUG BUILDS
+                    if (BuildConfig.DEBUG) {
+                        IconButton(onClick = { viewModel.startMockDrive() }) {
+                            Icon(
+                                imageVector = Icons.Filled.Analytics,
+                                contentDescription = "View Live Data",
+                                tint = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.width(16.dp))
