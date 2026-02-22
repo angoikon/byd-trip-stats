@@ -236,17 +236,37 @@ fun exportTripAsCSV(
     trip: com.byd.tripstats.data.local.entity.TripEntity,
     dataPoints: List<com.byd.tripstats.data.local.entity.TripDataPointEntity>
 ) {
-    val fileName = "trip_${trip.id}_${System.currentTimeMillis()}.csv"
-    val csvContent = buildString {
-        // Header
-        appendLine("timestamp,latitude,longitude,altitude,speed,power,soc,odometer,batteryTemp,gear")
-        // Data
-        dataPoints.forEach { point ->
-            appendLine("${point.timestamp},${point.latitude},${point.longitude},${point.altitude},${point.speed},${point.power},${point.soc},${point.odometer},${point.batteryTemp},${point.gear}")
+    try {
+        val fileName = "trip_${trip.id}_${System.currentTimeMillis()}.csv"
+        val csvContent = buildString {
+            // Header
+            appendLine("timestamp,latitude,longitude,altitude,speed,power,soc,odometer,batteryTemp,gear")
+            // Data
+            dataPoints.forEach { point ->
+                appendLine("${point.timestamp},${point.latitude},${point.longitude},${point.altitude},${point.speed},${point.power},${point.soc},${point.odometer},${point.batteryTemp},${point.gear}")
+            }
         }
+        
+        // Save to Downloads folder
+        val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(
+            android.os.Environment.DIRECTORY_DOWNLOADS
+        )
+        val file = java.io.File(downloadsDir, fileName)
+        file.writeText(csvContent)
+        
+        android.widget.Toast.makeText(
+            context, 
+            "Saved to Downloads/$fileName", 
+            android.widget.Toast.LENGTH_LONG
+        ).show()
+        
+    } catch (e: Exception) {
+        android.widget.Toast.makeText(
+            context, 
+            "Export failed: ${e.message}", 
+            android.widget.Toast.LENGTH_LONG
+        ).show()
     }
-    
-    shareFile(context, fileName, csvContent, "text/csv")
 }
 
 fun exportTripAsJSON(
@@ -254,57 +274,95 @@ fun exportTripAsJSON(
     trip: com.byd.tripstats.data.local.entity.TripEntity,
     dataPoints: List<com.byd.tripstats.data.local.entity.TripDataPointEntity>
 ) {
-    val fileName = "trip_${trip.id}_${System.currentTimeMillis()}.json"
-    val jsonContent = buildString {
-        appendLine("{")
-        appendLine("  \"tripId\": ${trip.id},")
-        appendLine("  \"startTime\": ${trip.startTime},")
-        appendLine("  \"endTime\": ${trip.endTime},")
-        appendLine("  \"distance\": ${trip.distance},")
-        appendLine("  \"duration\": ${trip.duration},")
-        appendLine("  \"consumption\": ${trip.efficiency},")
-        appendLine("  \"energyConsumed\": ${trip.energyConsumed},")
-        appendLine("  \"dataPoints\": [")
-        dataPoints.forEachIndexed { index, point ->
-            appendLine("    {")
-            appendLine("      \"timestamp\": ${point.timestamp},")
-            appendLine("      \"latitude\": ${point.latitude},")
-            appendLine("      \"longitude\": ${point.longitude},")
-            appendLine("      \"altitude\": ${point.altitude},")
-            appendLine("      \"speed\": ${point.speed},")
-            appendLine("      \"power\": ${point.power},")
-            appendLine("      \"soc\": ${point.soc}")
-            appendLine("    }${if (index < dataPoints.size - 1) "," else ""}")
+    try {
+        val fileName = "trip_${trip.id}_${System.currentTimeMillis()}.json"
+        val jsonContent = buildString {
+            appendLine("{")
+            appendLine("  \"tripId\": ${trip.id},")
+            appendLine("  \"startTime\": ${trip.startTime},")
+            appendLine("  \"endTime\": ${trip.endTime},")
+            appendLine("  \"distance\": ${trip.distance},")
+            appendLine("  \"duration\": ${trip.duration},")
+            appendLine("  \"consumption\": ${trip.efficiency},")
+            appendLine("  \"energyConsumed\": ${trip.energyConsumed},")
+            appendLine("  \"dataPoints\": [")
+            dataPoints.forEachIndexed { index, point ->
+                appendLine("    {")
+                appendLine("      \"timestamp\": ${point.timestamp},")
+                appendLine("      \"latitude\": ${point.latitude},")
+                appendLine("      \"longitude\": ${point.longitude},")
+                appendLine("      \"altitude\": ${point.altitude},")
+                appendLine("      \"speed\": ${point.speed},")
+                appendLine("      \"power\": ${point.power},")
+                appendLine("      \"soc\": ${point.soc}")
+                appendLine("    }${if (index < dataPoints.size - 1) "," else ""}")
+            }
+            appendLine("  ]")
+            appendLine("}")
         }
-        appendLine("  ]")
-        appendLine("}")
+        
+        // Save to Downloads folder
+        val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(
+            android.os.Environment.DIRECTORY_DOWNLOADS
+        )
+        val file = java.io.File(downloadsDir, fileName)
+        file.writeText(jsonContent)
+        
+        android.widget.Toast.makeText(
+            context, 
+            "Saved to Downloads/$fileName", 
+            android.widget.Toast.LENGTH_LONG
+        ).show()
+        
+    } catch (e: Exception) {
+        android.widget.Toast.makeText(
+            context, 
+            "Export failed: ${e.message}", 
+            android.widget.Toast.LENGTH_LONG
+        ).show()
     }
-    
-    shareFile(context, fileName, jsonContent, "application/json")
 }
 
-fun shareTripSummary(
+fun saveTripSummaryAsText(
     context: android.content.Context,
     trip: com.byd.tripstats.data.local.entity.TripEntity
 ) {
-    val summary = buildString {
-        appendLine("🚗 BYD Trip Stats")
-        appendLine("")
-        appendLine("📅 Date: ${formatTimestamp(trip.startTime)}")
-        appendLine("🛣️ Distance: ${String.format("%.1f", trip.distance ?: 0.0)} km")
-        appendLine("⏱️ Duration: ${formatDuration(trip.duration ?: 0)}")
-        appendLine("⚡ Energy: ${String.format("%.2f", trip.energyConsumed ?: 0.0)} kWh")
-        appendLine("🌿 Consumption: ${String.format("%.1f", trip.efficiency ?: 0.0)} kWh/100km")
-        appendLine("🔋 SOC: ${String.format("%.1f", trip.startSoc)}% → ${String.format("%.1f", trip.endSoc ?: 0.0)}%")
+    try {
+        val fileName = "trip_summary_${trip.id}_${System.currentTimeMillis()}.txt"
+        val summary = buildString {
+            appendLine("🚗 BYD Trip Stats")
+            appendLine("")
+            appendLine("📅 Date: ${formatTimestamp(trip.startTime)}")
+            appendLine("🛣️ Distance: ${String.format("%.1f", trip.distance ?: 0.0)} km")
+            appendLine("⏱️ Duration: ${formatDuration(trip.duration ?: 0)}")
+            appendLine("⚡ Energy: ${String.format("%.2f", trip.energyConsumed ?: 0.0)} kWh")
+            appendLine("🌿 Consumption: ${String.format("%.1f", trip.efficiency ?: 0.0)} kWh/100km")
+            appendLine("🔋 SOC: ${String.format("%.1f", trip.startSoc)}% → ${String.format("%.1f", trip.endSoc ?: 0.0)}%")
+            appendLine("⚡ Max Power: ${trip.maxPower.toInt()} kW")
+            appendLine("🔋 Max Regen: ${kotlin.math.abs(trip.maxRegenPower).toInt()} kW")
+            appendLine("🏎️ Max Speed: ${trip.maxSpeed.toInt()} km/h")
+        }
+        
+        // Save to Downloads folder
+        val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(
+            android.os.Environment.DIRECTORY_DOWNLOADS
+        )
+        val file = java.io.File(downloadsDir, fileName)
+        file.writeText(summary)
+        
+        android.widget.Toast.makeText(
+            context, 
+            "Saved to Downloads/$fileName", 
+            android.widget.Toast.LENGTH_LONG
+        ).show()
+        
+    } catch (e: Exception) {
+        android.widget.Toast.makeText(
+            context, 
+            "Export failed: ${e.message}", 
+            android.widget.Toast.LENGTH_LONG
+        ).show()
     }
-    
-    val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
-        type = "text/plain"
-        putExtra(android.content.Intent.EXTRA_TEXT, summary)
-        putExtra(android.content.Intent.EXTRA_TITLE, "BYD trip")
-    }
-    
-    context.startActivity(android.content.Intent.createChooser(shareIntent, "Share trip via"))
 }
 
 fun shareFile(
