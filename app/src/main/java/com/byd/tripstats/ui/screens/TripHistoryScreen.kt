@@ -281,8 +281,18 @@ fun TripItem(
             }
             
             if (!selectionMode) {
-                IconButton(onClick = { showDeleteDialog = true }) {
-                    Icon(Icons.Filled.Delete, "Delete", tint = MaterialTheme.colorScheme.error)
+                IconButton(
+                    onClick = { showDeleteDialog = true },
+                    enabled = !isActive  // Disable delete for active trips
+                ) {
+                    Icon(
+                        Icons.Filled.Delete, 
+                        "Delete", 
+                        tint = if (isActive) 
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)  // Grayed out
+                        else 
+                            MaterialTheme.colorScheme.error
+                    )
                 }
             }
         }
