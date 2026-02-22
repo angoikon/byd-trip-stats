@@ -209,17 +209,17 @@ fun ExportDialog(
                     Text("Export as JSON")
                 }
                 
-                // Share summary text
+                // Save summary as text
                 OutlinedButton(
                     onClick = {
-                        shareTripSummary(context, stableTrip)
+                        saveTripSummaryAsText(context, stableTrip)
                         onDismiss()
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(Icons.Filled.Share, null, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Filled.Description, null, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Share Summary")
+                    Text("Save Summary as Text")
                 }
             }
         },
@@ -362,37 +362,6 @@ fun saveTripSummaryAsText(
             "Export failed: ${e.message}", 
             android.widget.Toast.LENGTH_LONG
         ).show()
-    }
-}
-
-fun shareFile(
-    context: android.content.Context,
-    fileName: String,
-    content: String,
-    mimeType: String
-) {
-    try {
-        // Create file in cache directory
-        val file = java.io.File(context.cacheDir, fileName)
-        file.writeText(content)
-        
-        // Get URI using FileProvider
-        val uri = androidx.core.content.FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.fileprovider",
-            file
-        )
-        
-        // Share intent
-        val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
-            type = mimeType
-            putExtra(android.content.Intent.EXTRA_STREAM, uri)
-            addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-        
-        context.startActivity(android.content.Intent.createChooser(shareIntent, "Export trip data"))
-    } catch (e: Exception) {
-        android.widget.Toast.makeText(context, "Export failed: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
     }
 }
 
