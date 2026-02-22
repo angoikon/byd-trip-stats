@@ -19,7 +19,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.byd.tripstats.BuildConfig
 import com.byd.tripstats.data.model.VehicleTelemetry
 import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
@@ -31,6 +30,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.StrokeCap
+
+private const val SHOW_MOCK_BUTTON = false  // Set to true for testing, false for production
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,17 +51,31 @@ fun DashboardScreen(
             TopAppBar(
                 title = { Text("BYD trip stats", fontSize = 24.sp, fontWeight = FontWeight.Bold) },
                 actions = {
-                    // Mock Data Button (for testing) - ONLY IN DEBUG BUILDS
-                    if (BuildConfig.DEBUG) {
+                    // Mock Data Button - only shown if SHOW_MOCK_BUTTON is true
+                    if (SHOW_MOCK_BUTTON) {
                         IconButton(onClick = { viewModel.startMockDrive() }) {
                             Icon(
                                 imageVector = Icons.Filled.Analytics,
-                                contentDescription = "View Live Data",
+                                contentDescription = "Mock Drive",
                                 tint = MaterialTheme.colorScheme.secondary,
                                 modifier = Modifier.size(28.dp)
                             )
                         }
                     }
+                    // // Dashboard/Home Button (always visible)
+                    // IconButton(onClick = {
+                    //     // If we're on a different screen, navigate back to dashboard
+                    //     // This is already the dashboard screen, so this might seem redundant,
+                    //     // but it's good UX to have a "home" button
+                    //     // For now, we can just scroll to top or refresh data
+                    // }) {
+                    //     Icon(
+                    //         imageVector = Icons.Filled.Home, // Analytics
+                    //         contentDescription = "View Live Data",
+                    //         tint = MaterialTheme.colorScheme.secondary,
+                    //         modifier = Modifier.size(28.dp)
+                    //     )
+                    // }
 
                     Spacer(modifier = Modifier.width(16.dp))
 
@@ -345,19 +360,60 @@ fun EnergyFlowDiagram(
                         .size(140.dp)
                 )
 
-                // AWD drivetrain
-                Image(
-                    painter = painterResource(R.drawable.awd),
-                    contentDescription = "AWD drivetrain",
+                // AWD drivetrain with tyre pressures
+                Box(
                     modifier = Modifier
                         .align(Alignment.Center)
                         .offset(x = -20.dp)
-                        .size(120.dp)
-                )
+                ) {
+                    // AWD Image
+                    Image(
+                        painter = painterResource(R.drawable.awd),
+                        contentDescription = "AWD drivetrain",
+                        modifier = Modifier.size(120.dp)
+                    )
+    
+                    // Tyre Pressure Overlays
+                    // Left Front (recommended: 2.6 bar)
+                    TyrePressureIndicator(
+                        pressure = telemetry.tyrePressureLF,
+                        isFront = true,
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .offset(x = (-10).dp, y = (-10).dp)
+                    )
+
+                    // Right Front (recommended: 2.6 bar)
+                    TyrePressureIndicator(
+                        pressure = telemetry.tyrePressureRF,
+                        isFront = true,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .offset(x = 10.dp, y = (-10).dp)
+                    )
+
+                    // Left Rear (recommended: 2.9 bar)
+                    TyrePressureIndicator(
+                        pressure = telemetry.tyrePressureLR,
+                        isFront = false,
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .offset(x = (-10).dp, y = (10).dp)
+                    )
+
+                    // Right Rear (recommended: 2.9 bar)
+                    TyrePressureIndicator(
+                        pressure = telemetry.tyrePressureRR,
+                        isFront = false,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .offset(x = 10.dp, y = (10).dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // Power metrics
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -373,21 +429,21 @@ fun EnergyFlowDiagram(
                         else -> Color.Gray
                     }
                 )
-                
+
                 PowerMetric(
                     label = "Speed",
                     value = "${telemetry.speed.toInt()}",
                     unit = "km/h",
                     color = MaterialTheme.colorScheme.primary
                 )
-                
+
                 PowerMetric(
                     label = "Battery",
                     value = "${telemetry.soc.toInt()}",
                     unit = "%",
                     color = BatteryBlue
                 )
-                
+
                 PowerMetric(
                     label = "Range",
                     value = "${telemetry.electricDrivingRangeKm}",
@@ -395,6 +451,50 @@ fun EnergyFlowDiagram(
                     color = MaterialTheme.colorScheme.tertiary
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun TyrePressureIndicator(
+    pressure: Double,  // In PSI
+    isFront: Boolean,  // true for front tyres, false for rear
+    modifier: Modifier = Modifier
+) {
+    // Convert PSI to bar (1 bar = 14.5038 PSI)
+    val pressureBar = pressure / 14.5038
+    
+    // BYD Seal recommended pressure: Front 2.6 bar, Rear 2.9 bar
+    // Tolerance: ±0.2 bar
+    val recommendedPressure = if (isFront) 2.6 else 2.9
+    val minPressure = recommendedPressure - 0.2
+    val maxPressure = recommendedPressure + 0.2
+    
+    val isLow = pressureBar < minPressure
+    val isHigh = pressureBar > maxPressure
+    val isNormal = !isLow && !isHigh
+    
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(4.dp),
+        color = when {
+            pressureBar < 0.1 -> Color.Gray.copy(alpha = 0.9f)  // Gray for no data
+            isLow -> Color(0xFFFF9800).copy(alpha = 0.9f)  // Orange for low
+            isHigh -> Color(0xFFF44336).copy(alpha = 0.9f) // Red for high
+            else -> Color(0xFF4CAF50).copy(alpha = 0.9f)   // Green for normal
+        }
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+        ) {
+            Text(
+                text = if (pressureBar < 0.1) "--" else String.format("%.1f", pressureBar),
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                fontSize = 10.sp
+            )
         }
     }
 }

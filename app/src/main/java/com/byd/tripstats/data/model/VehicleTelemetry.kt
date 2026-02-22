@@ -26,9 +26,17 @@ data class VehicleTelemetry(
     @SerialName("wifi_ssid") val wifiSsid: String,
     @SerialName("battery_total_voltage") val batteryTotalVoltage: Int,
     @SerialName("electric_driving_range_km") val electricDrivingRangeKm: Int,
-    @SerialName("total_discharge") val totalDischarge: Double
+    @SerialName("total_discharge") val totalDischarge: Double,
+    @SerialName("car_on") val carOn: Int = 0,
+    @SerialName("tyre_pressure_left_front_psi") val tyrePressureLF: Double = 0.0,
+    @SerialName("tyre_pressure_right_front_psi") val tyrePressureRF: Double = 0.0,
+    @SerialName("tyre_pressure_left_rear_psi") val tyrePressureLR: Double = 0.0,
+    @SerialName("tyre_pressure_right_rear_psi") val tyrePressureRR: Double = 0.0
 ) {
     // Helper properties for calculations
+    val isCarOn: Boolean
+        get() = carOn == 1
+    
     val isCharging: Boolean
         get() = chargingPower > 0
     
