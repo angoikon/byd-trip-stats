@@ -37,10 +37,16 @@ class MqttService : Service() {
     private var tripRepository: TripRepository? = null
     private var wakeLock: PowerManager.WakeLock? = null
     
-    private val _connectionState = MutableStateFlow<MqttClientManager.ConnectionState>(
-        MqttClientManager.ConnectionState.Disconnected
-    )
-    val connectionState: StateFlow<MqttClientManager.ConnectionState> = _connectionState.asStateFlow()
+    // Connection state - now properly tracked
+    sealed class ConnectionState {
+        object Disconnected : ConnectionState()
+        object Connecting : ConnectionState()
+        object Connected : ConnectionState()
+        data class Error(val message: String) : ConnectionState()
+    }
+
+    private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.Disconnected)
+    val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
     
     private val _telemetryCount = MutableStateFlow(0)
     val telemetryCount: StateFlow<Int> = _telemetryCount.asStateFlow()
@@ -62,39 +68,41 @@ class MqttService : Service() {
     
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "Service started")
-        Log.d(TAG, "Intent: $intent")
-        Log.d(TAG, "broker_url: ${intent?.getStringExtra("broker_url")}")
-        Log.d(TAG, "Service started")
 
-        val brokerUrl = intent?.getStringExtra("broker_url") ?: "broker.hivemq.com"
-        val brokerPort = intent?.getIntExtra("broker_port", 1883) ?: 1883
+        val brokerUrl = intent?.getStringExtra("broker_url")
+        val brokerPort = intent?.getIntExtra("broker_port", 1883)
         val username = intent?.getStringExtra("username")
         val password = intent?.getStringExtra("password")
-        val topic = intent?.getStringExtra("topic") ?: "electro/telemetry/byd-seal/data"
+        val topic = intent?.getStringExtra("topic")
+
+        // Validate configuration
+        if (brokerUrl.isNullOrBlank() || topic.isNullOrBlank()) {
+            Log.e(TAG, "Invalid MQTT configuration")
+            _connectionState.value = ConnectionState.Error("Invalid configuration")
+            updateNotification("Configuration error")
+            return START_STICKY
+        }
 
         Log.d(TAG, "=== MQTT CONFIG ===")
-        Log.d(TAG, "Broker: $brokerUrl")
-        Log.d(TAG, "Port: $brokerPort")
-        Log.d(TAG, "Username: $username")
+        Log.d(TAG, "Broker: $brokerUrl:$brokerPort")
         Log.d(TAG, "Topic: $topic")
-        Log.d(TAG, "Topic: $password")
 
-        startForeground(NOTIFICATION_ID, createNotification("Connecting..."))
-        
+        startForeground(NOTIFICATION_ID, createNotification("Starting..."))
+
         // Initialize MQTT client
         mqttClientManager = MqttClientManager(
             brokerUrl = brokerUrl,
-            brokerPort = brokerPort,
+            brokerPort = brokerPort ?: 1883,
             username = username,
             password = password,
             topic = topic
         )
-        
+
         // Initialize repository
         tripRepository = TripRepository.getInstance(applicationContext)
-        
+
         startMqttConnection()
-        
+
         return START_STICKY
     }
 
@@ -102,45 +110,47 @@ class MqttService : Service() {
         Log.d(TAG, "=== startMqttConnection CALLED ===")
         serviceScope.launch {
             try {
-                Log.d(TAG, "=== Inside coroutine, about to connect ===")
-                Log.d(TAG, "mqttClientManager = $mqttClientManager")
+                _connectionState.value = ConnectionState.Connecting
+                updateNotification("Connecting...")
 
                 mqttClientManager?.connect()?.collect { state ->
                     Log.d(TAG, "=== Connection state received: $state ===")
-                    _connectionState.value = state
 
                     when (state) {
                         is MqttClientManager.ConnectionState.Connected -> {
                             Log.d(TAG, "=== CONNECTED! ===")
-                            updateNotification("Connected to MQTT")
+                            _connectionState.value = ConnectionState.Connected
+                            updateNotification("Connected")
                             subscribeTelemetry()
                         }
                         is MqttClientManager.ConnectionState.Error -> {
                             Log.e(TAG, "=== CONNECTION ERROR: ${state.message} ===")
+                            _connectionState.value = ConnectionState.Error(state.message)
                             updateNotification("Connection error: ${state.message}")
                         }
                         is MqttClientManager.ConnectionState.Connecting -> {
                             Log.d(TAG, "=== CONNECTING... ===")
+                            _connectionState.value = ConnectionState.Connecting
                             updateNotification("Connecting...")
                         }
-                        else -> {
-                            Log.d(TAG, "=== Other state: $state ===")
+                        is MqttClientManager.ConnectionState.Disconnected -> {
+                            Log.d(TAG, "=== DISCONNECTED ===")
+                            _connectionState.value = ConnectionState.Disconnected
+                            updateNotification("Disconnected")
                         }
                     }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "=== EXCEPTION in startMqttConnection ===", e)
-                Log.e(TAG, "Exception message: ${e.message}")
-                e.printStackTrace()
+                _connectionState.value = ConnectionState.Error(e.message ?: "Unknown error")
+                updateNotification("Error: ${e.message}")
             }
         }
-        Log.d(TAG, "=== startMqttConnection RETURNED (coroutine launched) ===")
     }
     
     private fun subscribeTelemetry() {
         Log.d(TAG, "=== STARTING TELEMETRY SUBSCRIPTION ===")
         serviceScope.launch {
-            Log.d(TAG, "Calling mqttClientManager.subscribeToTelemetry()...")
             mqttClientManager?.subscribeToTelemetry()?.collect { result ->
                 result.onSuccess { telemetry ->
                     _telemetryCount.value++
@@ -207,6 +217,7 @@ class MqttService : Service() {
         mqttClientManager?.disconnect()
         wakeLock?.release()
         serviceScope.cancel()
+        _connectionState.value = ConnectionState.Disconnected
         super.onDestroy()
     }
     

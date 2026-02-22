@@ -41,10 +41,14 @@ class MainActivity : ComponentActivity() {
             val binder = service as MqttService.LocalBinder
             mqttService = binder.getService()
             bound = true
+
+            // Observe service connection state
+            mqttService?.let { viewModel.observeMqttServiceState(it) }
         }
         
         override fun onServiceDisconnected(arg0: ComponentName) {
             bound = false
+            mqttService = null
         }
     }
 
@@ -91,9 +95,12 @@ class MainActivity : ComponentActivity() {
         Log.d("MainActivity", "=== requestPermissions() called ===")
         val permissions = mutableListOf<String>()
 
+        // POST_NOTIFICATIONS only needed on API 33+ (Android 13+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             permissions.add(Manifest.permission.POST_NOTIFICATIONS)
-            Log.d("MainActivity", "Added POST_NOTIFICATIONS permission")
+            Log.d("MainActivity", "Added POST_NOTIFICATIONS permission (API 33+)")
+        } else {
+            Log.d("MainActivity", "Skipping POST_NOTIFICATIONS (API ${Build.VERSION.SDK_INT} < 33)")
         }
 
         val permissionsToRequest = permissions.filter {
@@ -119,21 +126,27 @@ class MainActivity : ComponentActivity() {
 
             Log.d("MainActivity", "Settings loaded: broker=${settings.brokerUrl}, topic=${settings.topic}")
 
-            viewModel.startMqttService(
-                brokerUrl = settings.brokerUrl,
-                brokerPort = settings.brokerPort,
-                username = settings.username.ifBlank { null },
-                password = settings.password.ifBlank { null },
-                topic = settings.topic
-            )
+            // Only start service if configuration is valid
+            if (settings.brokerUrl.isNotBlank() && settings.topic.isNotBlank()) {
+                viewModel.startMqttService(
+                    brokerUrl = settings.brokerUrl,
+                    brokerPort = settings.brokerPort,
+                    username = settings.username.ifBlank { null },
+                    password = settings.password.ifBlank { null },
+                    topic = settings.topic
+                )
 
-            Log.d("MainActivity", "Service start called, now binding...")
+                Log.d("MainActivity", "Service start called, now binding...")
 
-            Intent(this@MainActivity, MqttService::class.java).also { intent ->
-                bindService(intent, connection, Context.BIND_AUTO_CREATE)
+                Intent(this@MainActivity, MqttService::class.java).also { intent ->
+                    bindService(intent, connection, Context.BIND_AUTO_CREATE)
+                }
+
+                Log.d("MainActivity", "Bind service called")
+            } else {
+                Log.d("MainActivity", "MQTT not configured - skipping service start")
+                viewModel.setMqttConnectionState(false)
             }
-
-            Log.d("MainActivity", "Bind service called")
         }
     }
     

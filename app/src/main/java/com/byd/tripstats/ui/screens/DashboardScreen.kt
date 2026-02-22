@@ -41,6 +41,7 @@ fun DashboardScreen(
     val telemetry by viewModel.currentTelemetry.collectAsState()
     val isInTrip by viewModel.isInTrip.collectAsState()
     val mqttConnected by viewModel.mqttConnected.collectAsState()
+    val mqttConnectionError by viewModel.mqttConnectionError.collectAsState()
     val autoTripDetection by viewModel.autoTripDetection.collectAsState()
 
     Scaffold(
@@ -70,11 +71,19 @@ fun DashboardScreen(
 
                     Spacer(modifier = Modifier.width(24.dp))
 
-                    // MQTT Status indicator
+                    // MQTT Status indicator - properly shows connection state
                     Icon(
-                        imageVector = if (mqttConnected) Icons.Filled.CloudDone else Icons.Filled.CloudOff,
+                        imageVector = when {
+                            mqttConnectionError != null -> Icons.Filled.CloudOff
+                            mqttConnected -> Icons.Filled.CloudDone
+                            else -> Icons.Filled.CloudOff
+                        },
                         contentDescription = "MQTT Status",
-                        tint = if (mqttConnected) Color.Green else Color.Gray,
+                        tint = when {
+                            mqttConnectionError != null -> MaterialTheme.colorScheme.error
+                            mqttConnected -> Color.Green
+                            else -> Color.Gray
+                        },
                         modifier = Modifier.size(28.dp)
                     )
 
@@ -95,7 +104,78 @@ fun DashboardScreen(
             )
         }
     ) { paddingValues ->
-        if (telemetry == null) {
+        // Show error state if MQTT connection failed
+        if (mqttConnectionError != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        imageVector = Icons.Filled.CloudOff,
+                        contentDescription = null,
+                        modifier = Modifier.size(80.dp),
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Connection Failed",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = mqttConnectionError!!,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 32.dp)
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Button(onClick = onNavigateToSettings) {
+                        Text("Check Settings")
+                    }
+                }
+            }
+        } else if (telemetry == null && !mqttConnected) {
+            // Show "Not configured" state
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        imageVector = Icons.Filled.SettingsSuggest,
+                        contentDescription = null,
+                        modifier = Modifier.size(80.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "MQTT Not Configured",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Configure MQTT settings to connect",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Button(onClick = onNavigateToSettings) {
+                        Icon(Icons.Filled.Settings, null, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Configure MQTT")
+                    }
+                }
+            }
+        } else if (telemetry == null && mqttConnected) {
+            // Connected but waiting for data
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -106,12 +186,19 @@ fun DashboardScreen(
                     CircularProgressIndicator(modifier = Modifier.size(60.dp))
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = if (mqttConnected) "Waiting for data..." else "Connecting to MQTT Broker...",
+                        text = "Waiting for data...",
                         style = MaterialTheme.typography.titleLarge
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Listening to MQTT broker",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
         } else {
+            // Normal dashboard with telemetry
             DashboardContent(
                 telemetry = telemetry!!,
                 isInTrip = isInTrip,
@@ -619,7 +706,7 @@ fun VehicleStats(
         )
         
         StatCard(
-            title = "Voltage HV / 12V",
+            title = "HV / 12V",
             value = "${telemetry.batteryTotalVoltage} V / ${String.format("%.2f", telemetry.battery12vVoltage)} V",
             subtitle = "Cell: ${String.format("%.3f", telemetry.batteryCellVoltageMin)} - ${String.format("%.3f", telemetry.batteryCellVoltageMax)} V",
             icon = Icons.Filled.Bolt,

@@ -9,7 +9,6 @@ import com.byd.tripstats.data.local.entity.TripStatsEntity
 import com.byd.tripstats.data.model.VehicleTelemetry
 import com.byd.tripstats.data.repository.TripRepository
 import com.byd.tripstats.service.MqttService
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -21,9 +20,12 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     
     private val tripRepository = TripRepository.getInstance(application)
 
-    // MQTT Connection state
+    // MQTT Connection state - properly tracked from service
     private val _mqttConnected = MutableStateFlow(false)
     val mqttConnected: StateFlow<Boolean> = _mqttConnected.asStateFlow()
+
+    private val _mqttConnectionError = MutableStateFlow<String?>(null)
+    val mqttConnectionError: StateFlow<String?> = _mqttConnectionError.asStateFlow()
     
     // Latest telemetry
     private val _currentTelemetry = MutableStateFlow<VehicleTelemetry?>(null)
@@ -76,6 +78,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         password: String?,
         topic: String
     ) {
+        // Start service - it will handle connection state internally
         MqttService.start(
             context = getApplication(),
             brokerUrl = brokerUrl,
@@ -84,15 +87,16 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             password = password,
             topic = topic
         )
-        viewModelScope.launch {
-            delay(5000) // Wait 5 seconds for connection
-            _mqttConnected.value = true
-        }
+        // viewModelScope.launch {
+        //     delay(5000) // Wait 5 seconds for connection
+        //     _mqttConnected.value = true
+        // }
     }
     
     fun stopMqttService() {
         MqttService.stop(getApplication())
         _mqttConnected.value = false
+        _mqttConnectionError.value = null
     }
     
     fun startManualTrip() {
@@ -165,6 +169,33 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         updateTripState()
     }
 
+    // Called from MainActivity when service binding is established
+    fun observeMqttServiceState(service: MqttService) {
+        viewModelScope.launch {
+            service.connectionState.collect { state ->
+                when (state) {
+                    is MqttService.ConnectionState.Connected -> {
+                        _mqttConnected.value = true
+                        _mqttConnectionError.value = null
+                    }
+                    is MqttService.ConnectionState.Error -> {
+                        _mqttConnected.value = false
+                        _mqttConnectionError.value = state.message
+                    }
+                    is MqttService.ConnectionState.Connecting -> {
+                        _mqttConnected.value = false
+                        _mqttConnectionError.value = null
+                    }
+                    is MqttService.ConnectionState.Disconnected -> {
+                        _mqttConnected.value = false
+                        _mqttConnectionError.value = null
+                    }
+                }
+            }
+        }
+    }
+
+    // Legacy method - kept for backward compatibility
     fun setMqttConnectionState(connected: Boolean) {
         _mqttConnected.value = connected
     }

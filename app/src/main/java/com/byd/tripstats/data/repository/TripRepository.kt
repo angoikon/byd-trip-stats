@@ -322,19 +322,32 @@ class TripRepository private constructor(context: Context) {
     // Merge trips functionality
     suspend fun mergeTrips(tripIds: List<Long>): Long? {
         if (tripIds.size < 2) return null
-        
+
         val trips = tripIds.mapNotNull { tripDao.getTripById(it) }
         if (trips.size != tripIds.size) return null
-        
+
         // Sort by start time
         val sortedTrips = trips.sortedBy { it.startTime }
         val firstTrip = sortedTrips.first()
         val lastTrip = sortedTrips.last()
-        
+
+        // Get all data points from all trips and sort by timestamp
+        val allDataPoints = mutableListOf<TripDataPointEntity>()
+        for (tripId in tripIds) {
+            val points = dataPointDao.getDataPointsForTripSync(tripId)
+            allDataPoints.addAll(points)
+        }
+        allDataPoints.sortBy { it.timestamp }
+
+        // Calculate actual trip times from data points (excluding gaps)
+        // Use the earliest and latest data point timestamps for start/end
+        val actualStartTime = allDataPoints.firstOrNull()?.timestamp ?: firstTrip.startTime
+        val actualEndTime = allDataPoints.lastOrNull()?.timestamp ?: lastTrip.endTime
+
         // Create merged trip
         val mergedTrip = TripEntity(
-            startTime = firstTrip.startTime,
-            endTime = lastTrip.endTime,
+            startTime = actualStartTime,
+            endTime = actualEndTime,
             startOdometer = firstTrip.startOdometer,
             endOdometer = lastTrip.endOdometer,
             startSoc = firstTrip.startSoc,
@@ -354,12 +367,9 @@ class TripRepository private constructor(context: Context) {
         
         val mergedTripId = tripDao.insertTrip(mergedTrip)
         
-        // Copy all data points to merged trip
-        for (tripId in tripIds) {
-            val points = dataPointDao.getDataPointsForTripSync(tripId)
-            val updatedPoints = points.map { it.copy(id = 0, tripId = mergedTripId) }
-            dataPointDao.insertDataPoints(updatedPoints)
-        }
+        // Copy all data points to merged trip (already sorted)
+        val updatedPoints = allDataPoints.map { it.copy(id = 0, tripId = mergedTripId) }
+        dataPointDao.insertDataPoints(updatedPoints)
         
         // Calculate stats for merged trip
         calculateTripStats(mergedTripId)
