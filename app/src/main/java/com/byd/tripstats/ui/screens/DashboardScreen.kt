@@ -604,6 +604,7 @@ fun TripControls(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 if (!autoTripDetection) {
+                    // Manual mode - show start/stop button
                     Button(
                         onClick = if (isInTrip) onEndTrip else onStartTrip,
                         modifier = Modifier.weight(1f),
@@ -626,53 +627,113 @@ fun TripControls(
                         )
                     }
                 } else {
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        color = if (isInTrip) 
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                        else 
-                            Color.Transparent,
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
+                    // Auto mode - show status
+                    if (isInTrip) {
+                        // Show stop button for ongoing auto trip
                         Row(
-                            modifier = Modifier.padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            modifier = Modifier.weight(1f),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            // Show actual gear letter in a circle
                             Surface(
-                                modifier = Modifier.size(28.dp),
-                                shape = CircleShape,
-                                color = when {
-                                    telemetry.gear == "D" -> MaterialTheme.colorScheme.primary
-                                    telemetry.gear == "R" -> Color(0xFFFF9800) // Orange for reverse
-                                    isInTrip -> MaterialTheme.colorScheme.primary
-                                    else -> Color.Gray
-                                }
+                                modifier = Modifier.weight(1f),
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                shape = RoundedCornerShape(8.dp)
                             ) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.fillMaxSize()
+                                Row(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
+                                    // Show actual gear letter in a circle
+                                    Surface(
+                                        modifier = Modifier.size(28.dp),
+                                        shape = CircleShape,
+                                        color = when {
+                                            telemetry.gear == "D" -> MaterialTheme.colorScheme.primary
+                                            telemetry.gear == "R" -> Color(0xFFFF9800) // Orange for reverse
+                                            else -> MaterialTheme.colorScheme.primary
+                                        }
+                                    ) {
+                                        Box(
+                                            contentAlignment = Alignment.Center,
+                                            modifier = Modifier.fillMaxSize()
+                                        ) {
+                                            Text(
+                                                text = telemetry.gear,
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White
+                                            )
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.width(12.dp))
                                     Text(
-                                        text = telemetry.gear,
-                                        style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White
+                                        text = when {
+                                            telemetry.speed > 0.5 -> "Driving"  // Actually moving
+                                            telemetry.gear in listOf("D", "R") -> "Ready"  // In gear but not moving
+                                            else -> "Trip in Progress"
+                                        },
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Medium
                                     )
                                 }
                             }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = when {
-                                    isInTrip && telemetry.gear in listOf("D", "R") -> "Driving"
-                                    isInTrip -> "Trip in Progress"
-                                    telemetry.gear == "D" -> "Ready to Drive"
-                                    telemetry.gear == "R" -> "Reverse"
-                                    else -> "Waiting for Trip..."
-                                },
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Medium
-                            )
+                            
+                            // Stop button for auto trip
+                            Button(
+                                onClick = onEndTrip,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.error
+                                )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Stop,
+                                    contentDescription = "Stop trip",
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+                    } else {
+                        // Not in trip - show waiting status
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.Transparent,
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Show actual gear letter in a circle
+                                Surface(
+                                    modifier = Modifier.size(28.dp),
+                                    shape = CircleShape,
+                                    color = Color.Gray
+                                ) {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        Text(
+                                            text = telemetry.gear,
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = when (telemetry.gear) {
+                                        "D" -> "Ready to Drive"
+                                        "R" -> "Reverse"
+                                        "P" -> "Waiting for Trip..."
+                                        "N" -> "Neutral"
+                                        else -> "Waiting for Trip..."
+                                    },
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
                         }
                     }
                 }

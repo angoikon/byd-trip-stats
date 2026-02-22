@@ -129,19 +129,24 @@ fun TripHistoryScreen(
                         trip = trip,
                         isSelected = selectedTrips.contains(trip.id),
                         selectionMode = selectionMode,
+                        isActive = trip.isActive,  // Pass active state
                         onClick = {
                             if (selectionMode) {
-                                selectedTrips = if (selectedTrips.contains(trip.id)) {
-                                    selectedTrips - trip.id
-                                } else {
-                                    selectedTrips + trip.id
+                                // Don't allow selecting active trips
+                                if (!trip.isActive) {
+                                    selectedTrips = if (selectedTrips.contains(trip.id)) {
+                                        selectedTrips - trip.id
+                                    } else {
+                                        selectedTrips + trip.id
+                                    }
                                 }
                             } else {
                                 onTripClick(trip.id)
                             }
                         },
                         onLongClick = {
-                            if (!selectionMode) {
+                            // Don't allow long-press on active trips
+                            if (!selectionMode && !trip.isActive) {
                                 selectionMode = true
                                 selectedTrips = setOf(trip.id)
                             }
@@ -188,6 +193,7 @@ fun TripItem(
     trip: com.byd.tripstats.data.local.entity.TripEntity,
     isSelected: Boolean = false,
     selectionMode: Boolean = false,
+    isActive: Boolean = false,
     onClick: () -> Unit,
     onLongClick: () -> Unit = {},
     onDelete: () -> Unit
@@ -199,13 +205,15 @@ fun TripItem(
             .fillMaxWidth()
             .combinedClickable(
                 onClick = onClick,
-                onLongClick = onLongClick
+                onLongClick = onLongClick,
+                enabled = !isActive || !selectionMode  // Disable interaction for active trips in selection mode
             ),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) 
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-            else 
-                MaterialTheme.colorScheme.surfaceVariant
+            containerColor = when {
+                isActive && selectionMode -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)  // Dimmed for active
+                isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                else -> MaterialTheme.colorScheme.surfaceVariant
+            }
         )
     ) {
         Row(
@@ -219,6 +227,7 @@ fun TripItem(
                 Checkbox(
                     checked = isSelected,
                     onCheckedChange = { onClick() },
+                    enabled = !isActive,  // Disable checkbox for active trips
                     modifier = Modifier.padding(end = 8.dp)
                 )
             }
