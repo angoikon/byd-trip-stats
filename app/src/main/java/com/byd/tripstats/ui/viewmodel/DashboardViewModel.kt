@@ -92,6 +92,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     
     fun stopMqttService() {
         MqttService.stop(getApplication())
+        _mqttConnected.value = false
     }
     
     fun startManualTrip() {
@@ -122,6 +123,12 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     fun deleteTrip(tripId: Long) {
         viewModelScope.launch {
             tripRepository.deleteTrip(tripId)
+        }
+    }
+    
+    fun mergeTrips(tripIds: List<Long>) {
+        viewModelScope.launch {
+            tripRepository.mergeTrips(tripIds)
         }
     }
 

@@ -36,7 +36,7 @@ class TripRepository private constructor(context: Context) {
 
     // Configuration
     private var autoTripDetection = true
-    private val briefStopDelayMs = 5 * 60 * 1000L     // 5 minutes for brief stops (parked with engine ON)
+    private val briefStopDelayMs = 15 * 1000L          // 15 seconds in P to end trip
     private val engineOffIntervalMs = 11 * 1000L       // 11 seconds between messages = engine OFF
     private var lastTelemetryTime = 0L                // When we last received ANY telemetry
     private var lastActiveTime = 0L                   // When car was last actively driving
@@ -113,11 +113,11 @@ class TripRepository private constructor(context: Context) {
             lastActiveTime = currentTime
         }
         
-        // Check for brief stop timeout (parked with engine ON for 5+ minutes)
+        // Check for brief stop timeout (parked with engine ON for 15 seconds)
         // EXCEPTION: Don't end trip if charging (DC charging can be 40+ min with engine ON)
         if (tripStarted && telemetry.isParked && !telemetry.isDriving && !telemetry.isCharging) {
             if (currentTime - lastActiveTime > briefStopDelayMs) {
-                Log.i(TAG, "Brief stop timeout (5 min in P, not charging) - ending trip")
+                Log.i(TAG, "Brief stop timeout (15s in P, not charging) - ending trip")
                 endCurrentTrip()
             }
         }
@@ -154,7 +154,7 @@ class TripRepository private constructor(context: Context) {
 
     private fun shouldEndTrip(telemetry: VehicleTelemetry, currentTime: Long): Boolean {
         // End trip when:
-        // 1. Parked for extended period (5 min brief stop with engine ON)
+        // 1. Parked for 15 seconds
         // 2. Charging started
         
         val parkedTooLong = telemetry.isParked && (currentTime - lastActiveTime > briefStopDelayMs)
@@ -317,6 +317,60 @@ class TripRepository private constructor(context: Context) {
         )
 
         statsDao.insertStats(stats)
+    }
+
+    // Merge trips functionality
+    suspend fun mergeTrips(tripIds: List<Long>): Long? {
+        if (tripIds.size < 2) return null
+        
+        val trips = tripIds.mapNotNull { tripDao.getTripById(it) }
+        if (trips.size != tripIds.size) return null
+        
+        // Sort by start time
+        val sortedTrips = trips.sortedBy { it.startTime }
+        val firstTrip = sortedTrips.first()
+        val lastTrip = sortedTrips.last()
+        
+        // Create merged trip
+        val mergedTrip = TripEntity(
+            startTime = firstTrip.startTime,
+            endTime = lastTrip.endTime,
+            startOdometer = firstTrip.startOdometer,
+            endOdometer = lastTrip.endOdometer,
+            startSoc = firstTrip.startSoc,
+            endSoc = lastTrip.endSoc,
+            startTotalDischarge = firstTrip.startTotalDischarge,
+            endTotalDischarge = lastTrip.endTotalDischarge,
+            isActive = false,
+            isManual = true, // Merged trips are considered manual
+            maxSpeed = sortedTrips.maxOf { it.maxSpeed },
+            maxPower = sortedTrips.maxOf { it.maxPower },
+            maxRegenPower = sortedTrips.minOf { it.maxRegenPower },
+            avgBatteryTemp = sortedTrips.map { it.avgBatteryTemp }.average(),
+            minSoc = sortedTrips.minOf { it.minSoc },
+            maxBatteryCellTemp = sortedTrips.maxOf { it.maxBatteryCellTemp },
+            minBatteryCellTemp = sortedTrips.minOf { it.minBatteryCellTemp }
+        )
+        
+        val mergedTripId = tripDao.insertTrip(mergedTrip)
+        
+        // Copy all data points to merged trip
+        for (tripId in tripIds) {
+            val points = dataPointDao.getDataPointsForTripSync(tripId)
+            val updatedPoints = points.map { it.copy(id = 0, tripId = mergedTripId) }
+            dataPointDao.insertDataPoints(updatedPoints)
+        }
+        
+        // Calculate stats for merged trip
+        calculateTripStats(mergedTripId)
+        
+        // Delete original trips
+        for (tripId in tripIds) {
+            deleteTrip(tripId)
+        }
+        
+        Log.i(TAG, "Merged ${tripIds.size} trips into trip $mergedTripId")
+        return mergedTripId
     }
 
     // Public API

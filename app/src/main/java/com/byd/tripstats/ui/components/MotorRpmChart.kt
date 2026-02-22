@@ -54,6 +54,19 @@ fun MotorRpmChart(
     )
 
     Column(modifier = modifier) {
+        // Legend - ALWAYS VISIBLE
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            LegendItem(color = Color(0xFF1976D2), label = "Rear Motor")
+            Spacer(modifier = Modifier.width(24.dp))
+            LegendItem(color = Color(0xFF7821F3), label = "Front Motor")
+        }
+        
         // Chart
         ProvideChartStyle(m3ChartStyle()) {
             Chart(
@@ -79,21 +92,8 @@ fun MotorRpmChart(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(250.dp)
+                    .weight(1f)
             )
-        }
-
-        // Legend
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            LegendItem(color = Color(0xFF1976D2), label = "Rear Motor")
-            Spacer(modifier = Modifier.width(24.dp))
-            LegendItem(color = Color(0xFF7821F3), label = "Front Motor")
         }
     }
 }
