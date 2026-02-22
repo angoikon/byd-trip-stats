@@ -81,7 +81,7 @@ fun PowerDistributionChart(
                         2 -> "Light regen"  // Regen Light
                         3 -> "Cruise"
                         4 -> "Acceleration"
-                        5 -> "Drive it like you stole it"  // Hard Acceleration
+                        5 -> "Drive like you stole it"  // Hard Acceleration
                         else -> ""
                     }
                 }

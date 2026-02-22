@@ -655,9 +655,9 @@ private fun FullscreenChartDialog(
     dataPoints: List<com.byd.tripstats.data.local.entity.TripDataPointEntity>,
     onDismiss: () -> Unit
 ) {
-    // Condense to 135 points for readability
+    // Condense to 144 points for readability
     val condensedData = remember(dataPoints) {
-        condenseData(dataPoints, maxPoints = 135)
+        condenseData(dataPoints, maxPoints = 144)
     }
 
     Dialog(

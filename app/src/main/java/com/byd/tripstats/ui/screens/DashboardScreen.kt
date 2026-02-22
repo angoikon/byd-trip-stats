@@ -48,7 +48,6 @@ fun DashboardScreen(
             TopAppBar(
                 title = { Text("BYD trip stats", fontSize = 24.sp, fontWeight = FontWeight.Bold) },
                 actions = {
-                    // Mock Data Button (for testing)
                     IconButton(onClick = { viewModel.startMockDrive() }) {
                         Icon(
                             imageVector = Icons.Filled.Analytics,
@@ -57,6 +56,8 @@ fun DashboardScreen(
                             modifier = Modifier.size(28.dp)
                         )
                     }
+
+                    Spacer(modifier = Modifier.width(16.dp))
 
                     // History Button
                     IconButton(onClick = onNavigateToHistory) {
@@ -67,7 +68,7 @@ fun DashboardScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Spacer(modifier = Modifier.width(24.dp))
 
                     // MQTT Status indicator
                     Icon(
@@ -77,7 +78,7 @@ fun DashboardScreen(
                         modifier = Modifier.size(28.dp)
                     )
 
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Spacer(modifier = Modifier.width(24.dp))
 
                     // Settings Button
                     IconButton(onClick = onNavigateToSettings) {

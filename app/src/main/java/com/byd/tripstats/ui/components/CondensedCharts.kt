@@ -8,7 +8,7 @@ import com.byd.tripstats.data.local.entity.TripDataPointEntity
 /**
  * Condensed versions of charts for overview display
  * These charts:
- * - Sample data to ~45 points max
+ * - Sample data to 36 points max
  * - Disable scrolling/zooming
  * - Fit entire trip in viewport
  */
@@ -70,12 +70,12 @@ fun CondensedPowerChart(
 /**
  * Condense data points to a maximum number of points
  * @param dataPoints The original data points
- * @param maxPoints Maximum number of points to return (default: 45)
+ * @param maxPoints Maximum number of points to return (default: 36)
  * @return Condensed list fitting within maxPoints
  */
 fun condenseData(
     dataPoints: List<TripDataPointEntity>,
-    maxPoints: Int = 45  // Default
+    maxPoints: Int = 36  // Default
 ): List<TripDataPointEntity> {
     if (dataPoints.size <= maxPoints) return dataPoints
     
