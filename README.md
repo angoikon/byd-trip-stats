@@ -1,263 +1,487 @@
-# BYD Trip Stats - Complete Android App
+# 🚗⚡ BYD Trip Stats
 
-Trip tracking and visualization for BYD vehicles via MQTT, with built-in mock data for testing!
+<div align="center">
 
-## 🎯 What's New in This Version
+![BYD Trip Stats Banner](https://via.placeholder.com/800x200/2196F3/FFFFFF?text=BYD+Trip+Stats)
 
-✅ **API 29** (Android 10) - Works on more devices  
-✅ **No Google Maps** - Simplified, no location permissions needed  
-✅ **Launcher Icons Fixed** - All densities included  
-✅ **Chart Components Fixed** - No more Vico errors  
-✅ **Mock Data Generator** - Test without real MQTT! ⭐  
+**Professional trip tracking and analytics for BYD electric vehicles**
 
-## 🚀 Quick Start (2 Minutes!)
+[![GitHub release](https://img.shields.io/github/v/release/angoikon/byd-trip-stats?style=flat-square)](https://github.com/angoikon/byd-trip-stats/releases)
+[![GitHub downloads](https://img.shields.io/github/downloads/angoikon/byd-trip-stats/total?style=flat-square)](https://github.com/angoikon/byd-trip-stats/releases)
+[![License](https://img.shields.io/github/license/angoikon/byd-trip-stats?style=flat-square)](LICENSE)
+[![Android](https://img.shields.io/badge/Android-10%2B-green?style=flat-square&logo=android)](https://developer.android.com)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-purple?style=flat-square&logo=kotlin)](https://kotlinlang.org)
 
-### 1. Open Project
-```bash
-# Extract ZIP
-# Open Android Studio
-# File → Open → Select byd-stats-app folder
-# Wait for Gradle sync (~2 min first time)
-```
+[📥 Download](#-download) • [✨ Features](#-features) • [📸 Screenshots](#-screenshots) • [🚀 Installation](#-installation) • [🤝 Contributing](#-contributing)
 
-### 2. Run on Emulator
-- Select any emulator with **API 29+**
-- Click ▶️ (green play button)
-- Grant notification permission
-
-### 3. Test with Mock Data ⭐
-**Best way to see the app in action!**
-
-1. App launches → Dashboard appears
-2. Click **Play button** (▶️) in top toolbar (next to cloud icon)
-3. Watch the magic:
-   - Car accelerates to 80 km/h
-   - Energy flow animates
-   - Power consumption shown live
-   - Battery SOC decreases
-   - Trip auto-detects and starts recording
-   - After 5 min, car decelerates with regen braking
-   - Trip auto-ends
-
-4. Navigate to "Trip History" (clock icon)
-5. Click on the recorded trip
-6. See beautiful charts with real data!
-
-**That's it! No configuration needed!**
-
-## 📱 Features
-
-### Real-Time Dashboard
-- Animated energy flow (battery → motor → wheels)
-- Live stats: Power, Speed, Battery %, Range
-- Battery health monitoring
-- Trip controls (auto/manual)
-
-### Trip Statistics
-- Distance traveled
-- Energy consumed
-- Regeneration captured
-- Efficiency (kWh/100km)
-- Max/avg speed and power
-- Battery temperature tracking
-
-### Beautiful Charts
-- Energy consumption over time
-- Speed profile
-- Power distribution histogram
-
-### Trip History
-- All trips saved locally
-- Click for detailed view
-- Delete unwanted trips
-
-## 🎮 Mock Data Generator
-
-### What It Simulates
-A realistic 5-minute drive with:
-- **0-45sec**: Acceleration (0 → 80 km/h, high power)
-- **45-210sec**: Cruising (75-85 km/h, moderate power)
-- **210-255sec**: Deceleration (80 → 0 km/h, regeneration!)
-- **255-300sec**: Coming to stop (light regen)
-
-### Statistics Generated
-- Distance: ~4-5 km
-- Energy used: ~1-2 kWh
-- Max speed: 80 km/h
-- Max regen: -25 kW
-- Battery: 97.6% → ~96%
-- GPS route: San Francisco demo coordinates
-
-### How to Use
-1. Launch app
-2. Click ▶️ (Play) in dashboard toolbar
-3. Watch it run for 5 minutes
-4. Trip auto-records
-5. View in history with charts
-
-### Customize Mock Data
-Edit `DashboardViewModel.kt`:
-```kotlin
-mockGenerator.generateMockDrive(
-    durationSeconds = 600, // 10 min drive
-    updateIntervalMs = 500  // Faster updates
-)
-```
-
-## 🔧 Technical Details
-
-### Requirements
-- Android Studio Hedgehog or newer
-- API 29+ (Android 10+)
-- JDK 17
-
-### Architecture
-- **MVVM** pattern
-- **Jetpack Compose** UI
-- **Room** database
-- **Kotlin Coroutines** for async
-- **HiveMQ MQTT** client
-
-### Key Files
-```
-MainActivity.kt             - Entry point
-DashboardScreen.kt          - Main UI (with Play button!)
-DashboardViewModel.kt       - Logic + startMockDrive()
-MockDataGenerator.kt        - Simulates driving ⭐
-TripRepository.kt           - Auto-detection logic
-```
-
-## 🌐 Real MQTT Setup (Optional)
-
-Once you've tested with mock data and want to use real MQTT:
-
-1. Navigate to Settings (gear icon)
-2. Enter your HiveMQ broker:
-   - URL: `your-broker.hivemq.cloud`
-   - Port: `8883` (or 1883 for unsecured)
-   - Username/Password (if required)
-   - Topic: `electro/telemetry/byd-seal/data` (For Seal)
-3. Click "Save & Restart Service"
-4. Drive your BYD Seal!
-
-## 🐛 Troubleshooting
-
-### "Could not resolve libs.plugins..."
-- Check internet connection
-- File → Sync Project with Gradle Files
-- Wait for dependencies to download
-
-### "Cannot find ic_launcher"
-✅ Fixed! All launcher icons included.
-
-### "rememberTextComponent is undefined"
-✅ Fixed! Charts now use simple titles.
-
-### Mock Drive Button Not Visible
-- Look for Play button (▶️) in top toolbar
-- It's between the title and cloud icon
-
-### Charts Empty
-- Make sure trip has ended (not still "active")
-- Click on trip in history to view details
-- Run mock drive to generate data
-
-### App Crashes
-- Check Logcat: View → Tool Windows → Logcat
-- Filter by "BydStats" or "Error"
-- Most common: Ensure API 29+ emulator
-
-## 🎨 Customization
-
-### Colors
-`ui/theme/Color.kt`:
-```kotlin
-val BatteryBlue = Color(0xFF2196F3)      // Change me!
-val RegenGreen = Color(0xFF4CAF50)       // Change me!
-val AccelerationOrange = Color(0xFFFF9800) // Change me!
-```
-
-### Trip Auto-End Timeout
-`data/repository/TripRepository.kt`:
-```kotlin
-private val tripEndDelayMs = 2 * 60 * 1000L // 2 minutes
-```
-
-### Mock Drive Speed
-`mock/MockDataGenerator.kt`:
-```kotlin
-"cruising" -> 120.0 + sin(progress * 10) * 5 // Faster!
-```
-
-## 📦 What's Included
-
-- ✅ Complete source code
-- ✅ Gradle configuration (modern version catalog)
-- ✅ All dependencies configured
-- ✅ Launcher icons (all densities)
-- ✅ Room database schema
-- ✅ MQTT service
-- ✅ Mock data generator
-- ✅ All UI screens
-- ✅ Charts and visualizations
-- ✅ Material 3 theme
-
-## 🎓 Learning the Code
-
-### Start Here:
-1. `MainActivity.kt` - App entry, permissions
-2. `DashboardScreen.kt` - Main UI, see the Play button!
-3. `MockDataGenerator.kt` - How simulation works
-4. `TripRepository.kt` - How trips are detected
-5. `DashboardViewModel.kt` - Connects everything
-
-### Key Concepts:
-- **Flow**: Real-time data streams
-- **Coroutines**: Async operations
-- **Compose**: Declarative UI
-- **Room**: Local database
-- **MQTT**: Message protocol
-
-## 🚗 Next Steps
-
-### Phase 1: Test (You are here!)
-- [x] Run on emulator
-- [x] Test mock data
-- [x] Explore UI
-
-### Phase 2: Real Data
-- [ ] Configure your HiveMQ broker
-- [ ] Connect Electro app
-- [ ] Drive and test
-
-### Phase 3: Deploy
-- [ ] Build signed APK
-- [ ] Install on BYD tablet
-- [ ] Enjoy real-time stats!
-
-### Phase 4: Extend (Ideas)
-- [ ] Export trips to CSV
-- [ ] Compare trips
-- [ ] Driving score
-- [ ] Charging session tracking
-- [ ] Cloud backup
-- [ ] Add Google Maps back (optional)
-
-## 📄 License
-
-Personal use project for BYD Seal owners.
+</div>
 
 ---
 
-## 🎉 You're Ready!
+## 📖 About
 
-This is a **100% complete, working project** with:
-- Zero configuration required
-- Mock data for instant testing
-- Professional code structure  
-- Beautiful Material 3 UI
-- Optimized for tablets
+BYD Trip Stats is a free, open-source Android app that automatically tracks and analyzes your driving trips using real-time MQTT telemetry from the [Electro app](https://electro.app.br).
 
-Just open, sync, run, and click Play! 🚗⚡📊
+**Perfect for BYD Seal, Dolphin, Atto3 etc owners** who want detailed insights into their driving efficiency, energy consumption, and trip patterns.
 
-**Pro tip**: Start with mock data to understand how everything works, then configure real MQTT when ready!
+### Why BYD Trip Stats?
+
+- 🎯 **Automatic Trip Detection** - No manual start/stop needed
+- 📊 **Beautiful Analytics** - Comprehensive charts and statistics
+- 🗺️ **Route Visualization** - OpenStreetMap integration
+- 💾 **Data Export** - CSV, JSON, and text formats
+- 🔒 **Privacy First** - All data stays on your device
+- 🆓 **Completely Free** - No ads, no subscriptions, no tracking
+
+---
+
+## ✨ Features
+
+### 🎯 Smart Trip Detection
+- **Automatic trip start/stop** based on gear position (D/R/P)
+- **Manual override** option for full control
+- **Intelligent merging** for interrupted trips
+- **Stale trip handling** after car sleep/restart
+
+### 📊 Real-Time Dashboard
+- **Live telemetry display** - Power, speed, SOC, range
+- **Animated energy flow** - Battery → Motor
+- **AWD motor visualization** - Front and rear motor RPM
+- **Tyre pressure monitoring** - Color-coded alerts
+- **Battery health** - Temperature, voltage, SOH
+
+### 📈 Detailed Charts
+- **Energy Consumption** - kWh over time
+- **Speed Profile** - km/h throughout trip
+- **State of Charge** - Battery percentage tracking
+- **Motor RPM** - Front and rear motors
+- **Elevation Profile** - Altitude changes
+- **Power Distribution** - Histogram of power usage
+- **Speed Distribution** - Histogram of speed usage
+- **Route Map** - OpenStreetMap with start/end markers
+
+### 🗺️ Route Analysis
+- **GPS route visualization** with OpenStreetMap
+- **Waypoint tracking** - Start/end locations with timestamps
+- **Route segments** - Speed and power analysis per segment
+- **Energy hotspots** - Identify high-consumption areas
+- **Trip timeline** - Major events (acceleration, braking, etc.)
+
+### 💾 Export & Share
+- **Copy to clipboard** - Quick trip summary
+- **CSV export** - All data points for analysis
+- **JSON export** - Complete trip data structure
+- **Text summary** - Human-readable trip report
+- **Share anywhere** - Send via email, Drive, WhatsApp, etc.
+
+### 🔄 Background Operation
+- **Auto-start on boot** - Silently starts when car boots
+- **Foreground service** - Keeps running in background
+- **No battery drain** - Optimized for efficiency
+- **Manual disconnect** - Stop service when not needed
+
+---
+
+## 📥 Download
+
+### Latest Release: [v1.0.0](https://github.com/angoikon/byd-trip-stats/releases/latest)
+
+**Direct APK Download:**
+- [app-release.apk](https://github.com/angoikon/byd-trip-stats/releases/download/v1.0.0/app-release.apk) (69 MB)
+
+**What's New in v1.0.0:**
+- 🎉 Initial production release
+- ✅ All core features implemented
+- ✅ Tested on BYD Seal
+- ✅ Auto-start verified
+- ✅ Export functionality working
+
+---
+
+## ⚙️ Requirements
+
+### Hardware
+- ✅ **BYD Vehicle** - Seal, Dolphin, or Atto3 (other models may work)
+- ✅ **Side-loading enabled** - Ability to install APKs from unknown sources
+
+### Software
+- ✅ **[Electro App](https://electro.app.br)** - Active subscription required (~€30/year)
+- ✅ **MQTT Broker** - HiveMQ Cloud (free) or similar (configured in Electro)
+
+### Permissions
+- 📢 **Notifications** - For foreground service
+- 🚀 **Boot Completed** - For auto-start functionality
+- 🌐 **Internet** - For MQTT connection to your broker
+
+**Note:** No location permissions required! GPS data comes from MQTT telemetry.
+
+---
+
+## 🚀 Installation
+
+### Step 1: Enable Side-Loading
+
+**Since you already have installed electro, this step is already done. For reference:**
+1. For Seal, you need to downgrade to system version **2307**
+2. Enable wired and wireless debug
+3. Install the **PackageInstallerUnlocked.apk** that unlocks the installation of 3rd party apps
+4. You can safely upgrade via USB or OTA
+
+### Step 2: Download APK
+
+Download the latest `app-release.apk` from the [Releases](https://github.com/angoikon/byd-trip-stats/releases) page.
+
+**Transfer to car via:**
+- ADB (wirelessly)
+- USB stick
+- Cloud provider (Use browser to download locally at your car)
+
+### Step 3: Install
+
+1. Open the APK file on your car's file explorer
+2. Tap "Install"
+3. Grant requested permissions when prompted
+4. Open BYD Trip Stats
+
+### Step 4: Configure MQTT
+
+1. Tap **Settings** (gear icon)
+2. Enter your Electro MQTT broker details:
+   - **Broker URL:** (from your Electro settings)
+   - **Port:** Usually 8883 (SSL) or 1883
+   - **Username:** (your MQTT username)
+   - **Password:** (your MQTT password)
+   - **Topic:** `electro/telemetry/byd-seal/data` (different for other BYD cars - check electro for the correct topic)
+3. Tap **Save & Restart Service**
+4. Check that cloud icon turns **green** ✅ once it receives telemetry
+
+### Step 5: Enable Auto-Start (Important!)
+
+**For persistent operation:**
+1. Go to **Disable autostart** app (native BYD app, usually found next to file explorer)
+2. Toggle OFF the option for the **BYD Trip Stats** app (as you have already done with **Electro** app) 
+3. Restart Car's UI (10 sec hold of the central console volume button)
+4. Re-open **BYD Trip Stats** app
+
+### Step 6: Drive!
+
+That's it! Now:
+- Start your car → App auto-starts in background
+- Put car in Drive → Trip starts automatically
+- Drive normally → Data records silently
+- Park and turn off → Trip ends automatically
+- Open app anytime to see your trips! 🎉
+
+---
+
+## 🔧 Electro Configuration
+
+### Critical Settings in Electro App:
+
+**MQTT Update Interval:**
+- **When car is ON:** 1 second (max 10 seconds)
+- **When car is OFF:** Any interval (doesn't matter, longer is better for less data / battery drainage)
+
+**Why this matters:**
+- 1-second intervals = smooth charts
+- Slower intervals = choppy data
+- Same broker/credentials for both states
+
+**Finding your MQTT details:**
+1. Open Electro app
+2. Integrations -> MQTT
+3. Note your broker URL, port, username, password
+4. Use these in BYD Trip Stats
+
+---
+
+## 📸 Screenshots
+
+<div align="center">
+
+### Dashboard - Real-Time Telemetry
+![Dashboard](https://via.placeholder.com/800x450/1E1E1E/FFFFFF?text=Dashboard+Screenshot)
+
+### Trip History
+![History](https://via.placeholder.com/800x450/1E1E1E/FFFFFF?text=Trip+History+Screenshot)
+
+### Detailed Charts
+![Charts](https://via.placeholder.com/800x450/1E1E1E/FFFFFF?text=Charts+Screenshot)
+
+### Route Map
+![Route](https://via.placeholder.com/800x450/1E1E1E/FFFFFF?text=Route+Map+Screenshot)
+
+</div>
+
+*(Replace these placeholders with actual screenshots from your car tablet)*
+
+---
+
+## 🛠️ Technical Stack
+
+### Architecture
+- **Pattern:** MVVM (Model-View-ViewModel)
+- **UI:** Jetpack Compose (Material 3)
+- **Language:** Kotlin 100%
+- **Min SDK:** 29 (Android 10)
+- **Target SDK:** 34 (Android 14)
+
+### Key Libraries
+- **Database:** Room (local persistence)
+- **MQTT:** HiveMQ Client Library
+- **Charts:** Vico (Compose charts)
+- **Maps:** osmdroid (OpenStreetMap)
+- **Async:** Kotlin Coroutines + Flow
+- **Storage:** DataStore (preferences)
+
+### Code Quality
+- ✅ Null safety (Kotlin)
+- ✅ Type-safe navigation
+- ✅ Lifecycle-aware components
+- ✅ Reactive UI with StateFlow
+- ✅ Repository pattern
+- ✅ Dependency injection ready
+
+---
+
+## 📊 Data Privacy & Security
+
+### What Data is Collected?
+
+**BYD Trip Stats collects ZERO data from you.**
+
+All information stays on your device:
+- 🚗 Trip data (routes, stats, telemetry)
+- ⚙️ App settings (MQTT configuration)
+- 📍 GPS coordinates (from MQTT, not device location)
+
+### What is Sent to External Servers?
+
+**Only to YOUR MQTT broker:**
+- Subscribe to telemetry topic
+- Receive vehicle data
+
+**Nothing else.** No analytics, no crash reports, no tracking.
+
+### How to Verify?
+
+**The code is open source!** Review it yourself:
+- All network calls: `MqttClientManager.kt`
+- Data storage: `TripRepository.kt`, `BydStatsDatabase.kt`
+- No third-party SDKs except MQTT, Room, and UI libraries
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Whether it's bug fixes, new features, or documentation improvements.
+
+### How to Contribute
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+### Areas We Need Help
+
+- 🐛 **Testing** on Dolphin, Atto3 as well as other BYD models
+- 🌍 **Translations** to other languages
+- 📊 **New chart types** or visualizations
+- 🗺️ **Enhanced route analysis** features
+- 📱 **UI/UX improvements**
+- 📝 **Documentation** improvements
+
+### Reporting Bugs
+
+Found a bug? Open an [Issue](https://github.com/angoikon/byd-trip-stats/issues) with:
+- BYD model
+- Steps to reproduce
+- Logcat output (if possible)
+
+### Feature Requests
+
+Have an idea? Open an issue with the "enhancement" label!
+
+---
+
+## 🗺️ Roadmap
+
+### Planned Features (v1.1.0+)
+
+- [ ] Charging session tracking
+- [ ] Trip comparison view
+- [ ] Custom dashboard widgets
+- [ ] Export to ABRP format
+- [ ] Driving score calculation
+- [ ] Weekly/monthly statistics
+- [ ] Dark/light theme toggle
+- [ ] Multiple vehicle profiles
+- [ ] Cloud backup (optional)
+- [ ] Web dashboard (companion)
+
+### Maybe Later
+
+- [ ] Android Auto integration
+- [ ] Wear OS companion app
+- [ ] Home Assistant integration
+- [ ] Local MQTT broker option
+
+**Vote on features** by 👍 reacting to issues!
+
+---
+
+## 🐛 Known Issues
+
+### Current Limitations
+
+1. **No offline charts** - Route maps require internet first time
+2. **No trip editing** - Can't modify trip start/end times
+3. **No cloud sync** - All data is local only
+
+### Workarounds
+
+- **Route not showing:** Check that GPS coordinates in MQTT are non-zero
+- **Trip not auto-starting:** Verify auto-detection is ON, gear is D/R
+- **Service not auto-starting:** Check Autostart permission (disable toggle at disable Autostart)
+
+See [Issues](https://github.com/angoikon/byd-trip-stats/issues) for full list.
+
+---
+
+## ❓ FAQ
+
+### Q: Does this work with other EVs?
+**A:** Potentially! Any car using Electro app should work. Tested on BYD Seal only.
+
+### Q: Do I need Electro subscription?
+**A:** Yes, currently. Working on local MQTT broker alternative (no subscription needed).
+
+### Q: Will this drain my car's 12V battery?
+**A:** It uses your 12V which is always being charged via your high-voltage EV battery. Very minimal battery impact.
+
+### Q: Can I use this without side-loading?
+**A:** No. BYD no longer allows 3rd party installations. Check relevant paragraph on how to re-enable it.
+
+### Q: Is my data secure?
+**A:** Yes. All data stays on your device. The code is open source - verify yourself!
+
+### Q: Can I export to Excel?
+**A:** Export as CSV, then open in Excel, Google Sheets, etc.
+
+### Q: Does this replace Electro?
+**A:** No! BYD Trip Stats is a **companion app**. You still need Electro for MQTT telemetry (plus sentry mode - great work from electro's developer **Rory**)
+
+### Q: Why is MQTT connection failing?
+**A:** Check:
+1. Electro is running and connected
+2. MQTT credentials are corrects
+3. Internet connection is active
+4. Broker URL has no `http://` or `https://` prefix
+
+---
+
+## 📜 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+```
+MIT License - Copyright (c) 2025 Angelos Oikonomou
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+```
+
+**TL;DR:** You can do whatever you want with this code. Just keep the copyright notice.
+
+---
+
+## 🙏 Acknowledgments
+
+### Built With
+
+- [Jetpack Compose](https://developer.android.com/jetpack/compose) - Modern Android UI
+- [HiveMQ MQTT Client](https://github.com/hivemq/hivemq-mqtt-client) - MQTT library
+- [Vico](https://github.com/patrykandpatrick/vico) - Beautiful charts
+- [osmdroid](https://github.com/osmdroid/osmdroid) - OpenStreetMap for Android
+- [Room](https://developer.android.com/training/data-storage/room) - Local database
+
+### Inspired By
+
+- **Electro App** by **Rory** - For making MQTT telemetry accessible
+- **BYD Community** - For the enthusiasm and support
+
+---
+
+## 💬 Community & Support
+
+### Get Help
+- 🐛 [GitHub Issues](https://github.com/angoikon/byd-trip-stats/issues)
+- 💬 [Discussions](https://github.com/angoikon/byd-trip-stats/discussions)
+
+### Share Your Experience
+- ⭐ **Star this repo** if you find it useful!
+- 🗣️ Share on BYD communities (Reddit, Facebook)
+- 📸 Post screenshots of your trips
+
+### Stay Updated
+- 👁️ **Watch** this repo for release notifications
+- 🔔 Enable notifications for issues you're interested in
+
+---
+
+## ☕ Support Development
+
+BYD Trip Stats is **free and always will be**. But if you'd like to support development:
+
+- ⭐ **Star this repository** (it's free and motivates me!)
+- 🐛 **Report bugs** to improve the app
+- 💡 **Suggest features** you'd love to see
+- 🤝 **Contribute code** via pull requests
+- 📣 **Spread the word** in BYD communities
+
+**Optional donation:**
+- [Ko-fi](https://ko-fi.com/angoikon) ☕
+- [GitHub Sponsors](https://github.com/sponsors/angoikon) ❤️
+
+Every contribution helps make this app better for everyone!
+
+---
+
+## 📞 Contact
+
+**Angelos Oikonomou** (angoikon)
+
+- GitHub: [@angoikon](https://github.com/angoikon)
+- Issues: [Report a bug](https://github.com/angoikon/byd-trip-stats/issues)
+
+**Not affiliated with BYD, Electro, or EV Duty.** This is an independent community project.
+
+---
+
+## ⚖️ Disclaimer
+
+This software is provided "as is" without warranty of any kind. Use at your own risk.
+
+- Not affiliated with BYD Auto, Electro, or EV Duty
+- Not responsible for any vehicle damage or data loss
+- Always prioritize safe driving over app usage
+- MQTT credentials are stored locally - keep your device secure
+
+---
+
+<div align="center">
+
+**Made with ❤️ for the BYD EV community**
+
+[⬆ Back to Top](#-byd-trip-stats)
+
+</div>

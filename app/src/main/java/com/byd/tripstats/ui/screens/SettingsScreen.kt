@@ -7,6 +7,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -198,11 +199,13 @@ fun SettingsScreen(
                     )
                 }
             }
-            
-            Row(
+
+            // Action Buttons
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                // Save & Restart Button
                 Button(
                     onClick = {
                         scope.launch {
@@ -214,9 +217,8 @@ fun SettingsScreen(
                                 password = password,
                                 topic = topic
                             )
-                            
-                            // CHANGED: Use restartMqttService instead of startMqttService
-                            // This stops the old service and starts with new config
+
+                            // Restart service with new config
                             viewModel.restartMqttService(
                                 brokerUrl = brokerUrl,
                                 brokerPort = brokerPort.toIntOrNull() ?: 1883,
@@ -224,7 +226,7 @@ fun SettingsScreen(
                                 password = password.ifBlank { null },
                                 topic = topic
                             )
-                            
+
                             // Show confirmation
                             snackbarHostState.showSnackbar(
                                 message = "Settings saved and service restarted!",
@@ -232,9 +234,42 @@ fun SettingsScreen(
                             )
                         }
                     },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
                 ) {
                     Text("Save & Restart Service", fontSize = 16.sp)
+                }
+
+                // Disconnect & Stop Service Button
+                OutlinedButton(
+                    onClick = {
+                        scope.launch {
+                            viewModel.stopMqttService()
+                            snackbarHostState.showSnackbar(
+                                message = "MQTT service stopped",
+                                duration = SnackbarDuration.Short
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = mqttConnected,  // Only enable when connected
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error,
+                        disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.CloudOff,
+                        contentDescription = "Disconnect",
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = if (mqttConnected) "Disconnect & Stop Service" else "Service Not Running",
+                        fontSize = 16.sp
+                    )
                 }
             }
 
@@ -256,7 +291,7 @@ fun SettingsScreen(
                     SettingsDetailRow("App Name", "BYD Trip Stats")
                     SettingsDetailRow("Version", "1.0.0")
                     SettingsDetailRow("Created by", "Angelos Oikonomou / angoikon")
-                    SettingsDetailRow("Build", "Debug")
+                    SettingsDetailRow("Build", "Release")
                 }
             }
         }
