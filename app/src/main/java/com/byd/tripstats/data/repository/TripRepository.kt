@@ -33,22 +33,28 @@ class TripRepository private constructor(context: Context) {
     private var currentTripId: Long? = null
     private var lastTelemetry: VehicleTelemetry? = null
     private var tripStarted = false
+    private var firstTelemetryReceived = false  // Track if we've seen any data yet
 
     // Configuration
     private var autoTripDetection = true
     private var lastTelemetryTime = 0L
+    
+    // Stale trip timeout: If last data point is older than this, trip is stale
+    private val STALE_TRIP_TIMEOUT_MS = 10 * 60 * 1000L  // 10 minutes
 
     init {
-        // Check for active trip on initialization
         scope.launch {
             val activeTrip = tripDao.getActiveTrip()
             if (activeTrip != null) {
+                Log.w(TAG, "Found active trip ${activeTrip.id} from previous session")
+                
+                // Store the ID but don't set tripStarted yet
+                // We'll verify on first telemetry
                 currentTripId = activeTrip.id
-                tripStarted = true
-                Log.i(TAG, "Resumed active trip: ${activeTrip.id}")
-
-                // Note: If car is OFF when app restarts, the trip will end
-                // on the first telemetry message (which will have car_on = 0)
+                tripStarted = false
+                firstTelemetryReceived = false
+                
+                Log.i(TAG, "Will verify trip ${activeTrip.id} status on first telemetry")
             }
         }
     }
@@ -59,59 +65,147 @@ class TripRepository private constructor(context: Context) {
 
         val currentTime = System.currentTimeMillis()
 
-        // SIMPLIFIED: Check car_on state for trip ending
+        // HANDLE STALE TRIPS FROM PREVIOUS SESSION
+        if (!firstTelemetryReceived) {
+            firstTelemetryReceived = true
+            
+            if (currentTripId != null) {
+                handleStaleTrip(telemetry)
+            }
+        }
+
+        // NORMAL TRIP ENDING: Car turned off
         if (tripStarted && !telemetry.isCarOn) {
             Log.i(TAG, "Car turned OFF - ending trip")
             endCurrentTrip()
             lastTelemetry = telemetry
             lastTelemetryTime = currentTime
-            return  // Don't process further if car is off
+            return
         }
 
         lastTelemetryTime = currentTime
 
-        // Auto trip detection
+        // AUTO TRIP DETECTION
         if (autoTripDetection) {
             handleAutoTripDetection(telemetry)
         }
-
-        // If there's an active trip, record data point
-        currentTripId?.let { tripId ->
-            recordDataPoint(tripId, telemetry)
-            updateTripMetrics(tripId, telemetry)
+        
+        // RECORD DATA POINTS
+        if (tripStarted) {
+            currentTripId?.let { tripId ->
+                recordDataPoint(tripId, telemetry)
+                updateTripMetrics(tripId, telemetry)
+            }
         }
-
+        
         lastTelemetry = telemetry
+    }
+
+    private suspend fun handleStaleTrip(telemetry: VehicleTelemetry) {
+        val tripId = currentTripId ?: return
+        val trip = tripDao.getTripById(tripId) ?: return
+        
+        Log.i(TAG, "=== Handling stale trip $tripId ===")
+        
+        // Get last data point to check age
+        val dataPoints = dataPointDao.getDataPointsForTripSync(tripId)
+        
+        if (dataPoints.isEmpty()) {
+            Log.w(TAG, "Stale trip has no data points - deleting it")
+            tripDao.deleteTripById(tripId)
+            currentTripId = null
+            tripStarted = false
+            return
+        }
+        
+        val lastPoint = dataPoints.last()
+        val timeSinceLastPoint = System.currentTimeMillis() - lastPoint.timestamp
+        val isStale = timeSinceLastPoint > STALE_TRIP_TIMEOUT_MS
+        
+        Log.i(TAG, "Last data point was ${timeSinceLastPoint / 1000}s ago")
+        Log.i(TAG, "Current state: car_on=${telemetry.carOn}, gear=${telemetry.gear}")
+        
+        // DECISION LOGIC FOR STALE TRIPS
+        when {
+            // Car is OFF → definitely end the trip
+            !telemetry.isCarOn -> {
+                Log.i(TAG, "Car is OFF → ending stale trip")
+                endStaleTrip(trip, lastPoint)
+            }
+            
+            // Car is ON but in Park and trip is old → end it
+            telemetry.gear == "P" && isStale -> {
+                Log.i(TAG, "Car in Park and trip is stale → ending it")
+                endStaleTrip(trip, lastPoint)
+            }
+            
+            // Car is ON in D/R but trip is very old → end old, start new
+            telemetry.gear in listOf("D", "R") && isStale -> {
+                Log.i(TAG, "Car in D/R but trip is stale → ending old trip, will start new one")
+                endStaleTrip(trip, lastPoint)
+                // New trip will be started by auto-detection on next telemetry
+            }
+            
+            // Car is ON in D/R and trip is recent → RESUME IT
+            telemetry.gear in listOf("D", "R") && !isStale -> {
+                Log.i(TAG, "Car in D/R and trip is recent → RESUMING trip")
+                tripStarted = true
+                // Trip continues!
+            }
+            
+            // Car is ON in Park and trip is recent → wait for gear change
+            telemetry.gear == "P" && !isStale -> {
+                Log.i(TAG, "Car in Park but trip is recent → ending it, will restart on D")
+                endStaleTrip(trip, lastPoint)
+            }
+            
+            // Default: end the trip to be safe
+            else -> {
+                Log.i(TAG, "Unknown state → ending stale trip")
+                endStaleTrip(trip, lastPoint)
+            }
+        }
     }
 
     private suspend fun handleAutoTripDetection(telemetry: VehicleTelemetry) {
         val last = lastTelemetry
 
-        // Start trip when car is ON and gear changes to D/R
-        if (!tripStarted && shouldStartTrip(last, telemetry)) {
-            Log.i(TAG, "Auto-starting trip (car ON, gear D/R)")
+        // Don't start if already in trip
+        if (tripStarted) return
+        
+        // Don't start if car is off
+        if (!telemetry.isCarOn) return
+        
+        // Don't start if in Park or Neutral
+        if (telemetry.gear !in listOf("D", "R")) return
+        
+        // SMART DETECTION LOGIC
+        val shouldStart = when {
+            // No previous telemetry (app just opened while driving)
+            last == null -> {
+                Log.i(TAG, "First telemetry: car ON, gear ${telemetry.gear} → START TRIP")
+                true  // SCENARIO 2: Start immediately!
+            }
+            
+            // Gear changed from P to D/R
+            last.gear == "P" && telemetry.gear in listOf("D", "R") -> {
+                Log.i(TAG, "Gear changed P → ${telemetry.gear} → START TRIP")
+                true  // SCENARIO 1: Normal start
+            }
+            
+            // Car just turned on while in D/R (edge case)
+            !last.isCarOn && telemetry.isCarOn && telemetry.gear in listOf("D", "R") -> {
+                Log.i(TAG, "Car turned ON in gear ${telemetry.gear} → START TRIP")
+                true
+            }
+            
+            // Already in D/R, don't spam trip starts
+            else -> false
+        }
+        
+        if (shouldStart) {
             startTrip(telemetry, isManual = false)
         }
-
-        // End trip when car turns OFF (handled in processTelemetry)
-    }
-
-    private fun shouldStartTrip(last: VehicleTelemetry?, current: VehicleTelemetry): Boolean {
-        // Start trip when:
-        // 1. Car is ON
-        // 2. Gear changes from P to D or R
-
-        if (!current.isCarOn) return false
-        if (current.gear !in listOf("D", "R")) return false
-
-        // Check if this is a gear change from P
-        if (last != null) {
-            val gearChange = last.gear == "P" && current.gear in listOf("D", "R")
-            return gearChange
-        }
-
-        // If no previous telemetry, start if in D/R
-        return true
     }
     
     suspend fun startTrip(telemetry: VehicleTelemetry, isManual: Boolean = false): Long {
@@ -119,6 +213,8 @@ class TripRepository private constructor(context: Context) {
             Log.w(TAG, "Trip already active")
             return currentTripId ?: -1
         }
+
+        Log.i(TAG, "*** Starting new trip *** (manual: $isManual)")
 
         val trip = TripEntity(
             startTime = System.currentTimeMillis(),
@@ -136,7 +232,8 @@ class TripRepository private constructor(context: Context) {
         currentTripId = tripDao.insertTrip(trip)
         tripStarted = true
 
-        Log.i(TAG, "Trip started: $currentTripId (manual: $isManual)")
+        Log.i(TAG, "Trip started with ID: $currentTripId")
+        
         return currentTripId!!
     }
 
@@ -144,6 +241,8 @@ class TripRepository private constructor(context: Context) {
         val tripId = currentTripId ?: return
         val trip = tripDao.getTripById(tripId) ?: return
         val telemetry = lastTelemetry ?: return
+
+        Log.i(TAG, "*** Ending trip $tripId ***")
 
         val updatedTrip = trip.copy(
             endTime = System.currentTimeMillis(),
@@ -159,7 +258,28 @@ class TripRepository private constructor(context: Context) {
         currentTripId = null
         tripStarted = false
 
-        Log.i(TAG, "Trip ended: $tripId, distance: ${updatedTrip.distance} km, efficiency: ${updatedTrip.efficiency} kWh/100km")
+        Log.i(TAG, "Trip ended: distance ${updatedTrip.distance} km, efficiency ${updatedTrip.efficiency} kWh/100km")
+    }
+
+    private suspend fun endStaleTrip(trip: TripEntity, lastPoint: TripDataPointEntity) {
+        Log.i(TAG, "*** Ending stale trip ${trip.id} ***")
+        
+        // Use last data point as the end state
+        val updatedTrip = trip.copy(
+            endTime = lastPoint.timestamp,  // Use timestamp of last data point!
+            endOdometer = lastPoint.odometer,
+            endSoc = lastPoint.soc,
+            endTotalDischarge = lastPoint.totalDischarge,
+            isActive = false
+        )
+
+        tripDao.updateTrip(updatedTrip)
+        calculateTripStats(trip.id)
+
+        currentTripId = null
+        tripStarted = false
+
+        Log.i(TAG, "Stale trip ended with last point timestamp: ${lastPoint.timestamp}")
     }
 
     private suspend fun recordDataPoint(tripId: Long, telemetry: VehicleTelemetry) {
@@ -235,7 +355,7 @@ class TripRepository private constructor(context: Context) {
             "hard_acceleration" to dataPoints.count { it.power > 50 }.toDouble()
         )
 
-        // Speed distribution
+        // Speed distribution (histogram)
         val speedRanges = mapOf(
             "0-30" to dataPoints.count { it.speed in 0.0..30.0 }.toDouble(),
             "30-70" to dataPoints.count { it.speed in 30.0..70.0 }.toDouble(),
@@ -305,7 +425,7 @@ class TripRepository private constructor(context: Context) {
             startTotalDischarge = firstTrip.startTotalDischarge,
             endTotalDischarge = lastTrip.endTotalDischarge,
             isActive = false,
-            isManual = true, // Merged trips are considered manual
+            isManual = true,
             maxSpeed = sortedTrips.maxOf { it.maxSpeed },
             maxPower = sortedTrips.maxOf { it.maxPower },
             maxRegenPower = sortedTrips.minOf { it.maxRegenPower },

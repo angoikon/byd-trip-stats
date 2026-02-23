@@ -28,9 +28,12 @@ import com.byd.tripstats.ui.theme.BydTripStatsTheme
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import android.os.PowerManager
+import android.provider.Settings
+import android.net.Uri
 
 class MainActivity : ComponentActivity() {
-    
+
     private val viewModel: DashboardViewModel by viewModels()
     private var mqttService: MqttService? = null
     private var bound = false
@@ -64,7 +67,7 @@ class MainActivity : ComponentActivity() {
             Log.d("MainActivity", "Permissions denied!")
         }
     }
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -150,6 +153,27 @@ class MainActivity : ComponentActivity() {
         }
     }
     
+    private fun requestBatteryOptimizationExemption() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            val packageName = packageName
+
+            if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
+                Log.i("MainActivity", "Requesting battery optimization exemption...")
+                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                    data = Uri.parse("package:$packageName")
+                }
+            }
+            try {
+                startActivity(intent)
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Failed to request battery optimization exemption", e)
+            }
+        } else {
+            Log.i("MainActivity", "Already exempt from battery optimization")
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         if (bound) {
