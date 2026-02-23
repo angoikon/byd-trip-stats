@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.byd.tripstats.data.local.entity.TripEntity
+import com.byd.tripstats.data.local.entity.TripDataPointEntity
 import com.byd.tripstats.ui.components.AltitudeChart
 import com.byd.tripstats.ui.components.CondensedAltitudeChart
 import com.byd.tripstats.ui.components.CondensedEnergyChart
@@ -51,13 +53,16 @@ fun TripDetailScreen(
     val trip by viewModel.getTripDetails(tripId).collectAsState()
     val dataPoints by viewModel.getTripDataPoints(tripId).collectAsState()
     val stats by viewModel.getTripStats(tripId).collectAsState()
-    
+
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Overview", "Charts", "Route", "Analysis")
-    
-    // Simple boolean state instead of snapshot
-    var showExportDialog by remember { mutableStateOf(false) }
-    
+
+    // Capture data snapshot ONCE when dialog is requested
+    // Use nullable Pair - null means dialog is closed
+    var dialogData by remember { 
+        mutableStateOf<Pair<TripEntity, List<TripDataPointEntity>>?>(null) 
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -69,9 +74,14 @@ fun TripDetailScreen(
                 },
                 actions = {
                     // Export/Share button
-                    IconButton(onClick = { 
-                        showExportDialog = true  // FIXED: Just set boolean
-                    }) {
+                    IconButton(
+                        onClick = { 
+                            // Capture immutable snapshot when button clicked
+                            trip?.let { currentTrip ->
+                                dialogData = currentTrip to dataPoints.toList()
+                            }
+                        }
+                    ) {
                         Icon(
                             Icons.Filled.Share,
                             contentDescription = "Export trip data",
@@ -136,13 +146,16 @@ fun TripDetailScreen(
             }
         }
     }
-    
-    // FIXED: Simplified export dialog
-    if (showExportDialog && trip != null) {
+
+    // Show dialog ONLY when we have captured data
+    // Uses IMMUTABLE snapshot - won't recompose when live data updates
+    dialogData?.let { (capturedTrip, capturedPoints) ->
         ExportDialog(
-            trip = trip!!,
-            dataPoints = dataPoints,
-            onDismiss = { showExportDialog = false }
+            trip = capturedTrip,
+            dataPoints = capturedPoints,
+            onDismiss = { 
+                dialogData = null  // Clear snapshot on dismiss
+            }
         )
     }
 }
