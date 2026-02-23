@@ -157,14 +157,29 @@ fun ExportDialog(
     val context = androidx.compose.ui.platform.LocalContext.current
     val stableTrip = remember { trip }
     val stableDataPoints = remember { dataPoints.toList() }  // Create immutable copy
-    
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Export Trip Data", fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text("Choose export format:", style = MaterialTheme.typography.bodyLarge)
-                
+
+                // Copy to Clipboard option
+                OutlinedButton(
+                    onClick = {
+                        copyTripSummaryToClipboard(context, stableTrip)
+                        onDismiss()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Filled.ContentCopy, null, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Copy Summary to Clipboard")
+                }
+
+                HorizontalDivider()
+
                 // Export as CSV
                 OutlinedButton(
                     onClick = {
@@ -175,9 +190,9 @@ fun ExportDialog(
                 ) {
                     Icon(Icons.Filled.TableChart, null, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Export as CSV")
+                    Text("Share as CSV")
                 }
-                
+
                 // Export as JSON
                 OutlinedButton(
                     onClick = {
@@ -188,10 +203,10 @@ fun ExportDialog(
                 ) {
                     Icon(Icons.Filled.DataObject, null, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Export as JSON")
+                    Text("Share as JSON")
                 }
-                
-                // Save summary as text
+
+                // Save summary as text (share)
                 OutlinedButton(
                     onClick = {
                         saveTripSummaryAsText(context, stableTrip)
@@ -201,7 +216,7 @@ fun ExportDialog(
                 ) {
                     Icon(Icons.Filled.Description, null, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Save Summary as Text")
+                    Text("Share Summary as Text")
                 }
             }
         },
@@ -211,6 +226,36 @@ fun ExportDialog(
             }
         }
     )
+}
+
+// Copy summary to clipboard
+fun copyTripSummaryToClipboard(
+    context: android.content.Context,
+    trip: com.byd.tripstats.data.local.entity.TripEntity
+) {
+    val summary = buildString {
+        appendLine("🚗 BYD Trip Stats")
+        appendLine("")
+        appendLine("📅 Date: ${formatTimestamp(trip.startTime)}")
+        appendLine("🛣️ Distance: ${String.format("%.1f", trip.distance ?: 0.0)} km")
+        appendLine("⏱️ Duration: ${formatDuration(trip.duration ?: 0)}")
+        appendLine("⚡ Energy: ${String.format("%.2f", trip.energyConsumed ?: 0.0)} kWh")
+        appendLine("🌿 Consumption: ${String.format("%.1f", trip.efficiency ?: 0.0)} kWh/100km")
+        appendLine("🔋 SOC: ${String.format("%.1f", trip.startSoc)}% → ${String.format("%.1f", trip.endSoc ?: 0.0)}%")
+        appendLine("⚡ Max Power: ${trip.maxPower.toInt()} kW")
+        appendLine("🔋 Max Regen: ${kotlin.math.abs(trip.maxRegenPower).toInt()} kW")
+        appendLine("🏎️ Max Speed: ${trip.maxSpeed.toInt()} km/h")
+    }
+    
+    val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+    val clip = android.content.ClipData.newPlainText("Trip Summary", summary)
+    clipboard.setPrimaryClip(clip)
+    
+    android.widget.Toast.makeText(
+        context,
+        "Trip summary copied to clipboard!",
+        android.widget.Toast.LENGTH_SHORT
+    ).show()
 }
 
 // FIXED: Export as CSV using cache + share
