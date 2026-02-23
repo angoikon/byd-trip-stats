@@ -784,18 +784,34 @@ private fun FullscreenChartDialog(
                 // Header with close button
                 TopAppBar(
                     title = {
-                        Text(
-                            text = when (chartType) {
-                                ChartType.ENERGY -> "Energy Consumption (Detailed)"
-                                ChartType.SOC -> "State of Charge (Detailed)"
-                                ChartType.SPEED -> "Speed Profile (Detailed)"
-                                ChartType.MOTOR_RPM -> "Motor RPM (Detailed)"
-                                ChartType.ALTITUDE -> "Elevation Profile (Detailed)"
-                                ChartType.POWER -> "Power profile (Detailed)"
-                            },
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Column {
+                            // Main title
+                            Text(
+                                text = when (chartType) {
+                                    ChartType.ENERGY -> "Energy Consumption (Detailed)"
+                                    ChartType.SOC -> "State of Charge (Detailed)"
+                                    ChartType.SPEED -> "Speed Profile (Detailed)"
+                                    ChartType.MOTOR_RPM -> "Motor RPM (Detailed)"
+                                    ChartType.ALTITUDE -> "Elevation Profile (Detailed)"
+                                    ChartType.POWER -> "Power Profile (Detailed)"
+                                },
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            // Subtitle
+                            Text(
+                                text = when (chartType) {
+                                    ChartType.ENERGY -> "kWh over time"
+                                    ChartType.SOC -> "SoC% over time"
+                                    ChartType.SPEED -> "km/h over time"
+                                    ChartType.MOTOR_RPM -> "RPM over time"
+                                    ChartType.ALTITUDE -> "Altitude over time"
+                                    ChartType.POWER -> "kW over time"
+                                },
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     },
                     navigationIcon = {
                         IconButton(onClick = onDismiss) {
