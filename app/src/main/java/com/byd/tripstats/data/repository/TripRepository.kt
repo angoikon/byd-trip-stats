@@ -249,30 +249,120 @@ class TripRepository private constructor(context: Context) {
     }
 
     suspend fun endCurrentTrip() {
-        val tripId = _currentTripId.value ?: return
-        val trip = tripDao.getTripById(tripId) ?: return
-        val telemetry = lastTelemetry ?: return
+        val tripId = _currentTripId.value ?: run {
+            Log.w(TAG, "endCurrentTrip called but no active trip")
+            return
+        }
+        
+        val trip = tripDao.getTripById(tripId) ?: run {
+            Log.e(TAG, "Trip $tripId not found in database!")
+            // Clean up state anyway
+            _currentTripId.value = null
+            tripStarted = false
+            _isInTrip.value = false
+            return
+        }
 
         Log.i(TAG, "*** Ending trip $tripId ***")
+        
+        // Handle null telemetry gracefully
+        val telemetry = lastTelemetry
+        
+        if (telemetry == null) {
+            Log.w(TAG, "No current telemetry available - using last data point")
+            
+            // Fall back to last data point from database
+            try {
+                val dataPoints = dataPointDao.getDataPointsForTripSync(tripId)
+                
+                if (dataPoints.isEmpty()) {
+                    Log.e(TAG, "Cannot end trip - no data points recorded!")
+                    
+                    // Mark trip as ended anyway with current time
+                    val updatedTrip = trip.copy(
+                        endTime = System.currentTimeMillis(),
+                        endOdometer = trip.startOdometer,  // No change
+                        endSoc = trip.startSoc,
+                        endTotalDischarge = trip.startTotalDischarge,
+                        isActive = false
+                    )
+                    
+                    tripDao.updateTrip(updatedTrip)
+                    
+                    // Update state
+                    _currentTripId.value = null
+                    tripStarted = false
+                    _isInTrip.value = false
+                    
+                    Log.i(TAG, "Trip ended with no data points (emergency end)")
+                    return
+                }
+                
+                // Use last data point
+                val lastPoint = dataPoints.last()
+                endStaleTrip(trip, lastPoint)
+                return
+                
+            } catch (e: Exception) {
+                Log.e(TAG, "Error getting last data point", e)
+                
+                // Emergency end - just mark as inactive
+                try {
+                    val updatedTrip = trip.copy(
+                        endTime = System.currentTimeMillis(),
+                        isActive = false
+                    )
+                    tripDao.updateTrip(updatedTrip)
+                } catch (dbError: Exception) {
+                    Log.e(TAG, "Failed to update trip in database", dbError)
+                }
+                
+                // Always update state to prevent stuck trips
+                _currentTripId.value = null
+                tripStarted = false
+                _isInTrip.value = false
+                return
+            }
+        }
 
-        val updatedTrip = trip.copy(
-            endTime = System.currentTimeMillis(),
-            endOdometer = telemetry.odometer,
-            endSoc = telemetry.soc,
-            endTotalDischarge = telemetry.totalDischarge,
-            isActive = false
-        )
+        // Normal end with current telemetry
+        try {
+            val updatedTrip = trip.copy(
+                endTime = System.currentTimeMillis(),
+                endOdometer = telemetry.odometer,
+                endSoc = telemetry.soc,
+                endTotalDischarge = telemetry.totalDischarge,
+                isActive = false
+            )
 
-        tripDao.updateTrip(updatedTrip)
-        calculateTripStats(tripId)
+            tripDao.updateTrip(updatedTrip)
+            
+            // Calculate stats (wrap in try-catch to prevent failures)
+            try {
+                calculateTripStats(tripId)
+            } catch (statsError: Exception) {
+                Log.e(TAG, "Error calculating trip stats (non-fatal)", statsError)
+            }
 
-        _currentTripId.value = null
-        tripStarted = false
+            // Update state AFTER successful database update
+            _currentTripId.value = null
+            tripStarted = false
+            _isInTrip.value = false
 
-        // FIXED: Broadcast state change so UI updates
-        _isInTrip.value = false
-
-        Log.i(TAG, "Trip ended: distance ${updatedTrip.distance} km, efficiency ${updatedTrip.efficiency} kWh/100km")
+            Log.i(TAG, "Trip ended successfully: distance ${updatedTrip.distance} km, efficiency ${updatedTrip.efficiency} kWh/100km")
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "CRITICAL ERROR ending trip", e)
+            e.printStackTrace()
+            
+            // Still update state to prevent stuck trips
+            // Better to have inconsistent state than a stuck trip
+            _currentTripId.value = null
+            tripStarted = false
+            _isInTrip.value = false
+            
+            Log.e(TAG, "Emergency state reset after error")
+        }
     }
 
     private suspend fun endStaleTrip(trip: TripEntity, lastPoint: TripDataPointEntity) {

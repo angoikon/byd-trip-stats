@@ -36,6 +36,8 @@ import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import kotlin.math.abs
 import com.byd.tripstats.ui.components.condenseData
+import androidx.core.content.FileProvider
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -231,6 +233,7 @@ fun ExportDialog(
     )
 }
 
+// FIXED: Export as CSV using cache + share
 fun exportTripAsCSV(
     context: android.content.Context,
     trip: com.byd.tripstats.data.local.entity.TripEntity,
@@ -238,29 +241,41 @@ fun exportTripAsCSV(
 ) {
     try {
         val fileName = "trip_${trip.id}_${System.currentTimeMillis()}.csv"
+        
         val csvContent = buildString {
             // Header
-            appendLine("timestamp,latitude,longitude,altitude,speed,power,soc,odometer,batteryTemp,gear")
+            appendLine("timestamp,latitude,longitude,altitude,speed,power,soc,odometer,batteryTemp,gear,engineSpeedFront,engineSpeedRear")
+            
             // Data
             dataPoints.forEach { point ->
-                appendLine("${point.timestamp},${point.latitude},${point.longitude},${point.altitude},${point.speed},${point.power},${point.soc},${point.odometer},${point.batteryTemp},${point.gear}")
+                appendLine("${point.timestamp},${point.latitude},${point.longitude},${point.altitude},${point.speed},${point.power},${point.soc},${point.odometer},${point.batteryTemp},${point.gear},${point.engineSpeedFront},${point.engineSpeedRear}")
             }
         }
         
-        // Save to Downloads folder
-        val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(
-            android.os.Environment.DIRECTORY_DOWNLOADS
-        )
-        val file = java.io.File(downloadsDir, fileName)
+        // FIXED: Write to app cache directory (no permissions needed)
+        val cacheDir = context.cacheDir
+        val file = File(cacheDir, fileName)
         file.writeText(csvContent)
         
-        android.widget.Toast.makeText(
-            context, 
-            "Saved to Downloads/$fileName", 
-            android.widget.Toast.LENGTH_LONG
-        ).show()
+        // Create content URI using FileProvider
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file
+        )
+        
+        // Share via Intent (user chooses destination)
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/csv"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            putExtra(Intent.EXTRA_SUBJECT, "Trip Data - ${fileName}")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        
+        context.startActivity(Intent.createChooser(shareIntent, "Export Trip Data"))
         
     } catch (e: Exception) {
+        Log.e("TripDetailScreen", "Export CSV failed", e)
         android.widget.Toast.makeText(
             context, 
             "Export failed: ${e.message}", 
@@ -269,6 +284,7 @@ fun exportTripAsCSV(
     }
 }
 
+// Export as JSON using cache + share
 fun exportTripAsJSON(
     context: android.content.Context,
     trip: com.byd.tripstats.data.local.entity.TripEntity,
@@ -276,6 +292,7 @@ fun exportTripAsJSON(
 ) {
     try {
         val fileName = "trip_${trip.id}_${System.currentTimeMillis()}.json"
+
         val jsonContent = buildString {
             appendLine("{")
             appendLine("  \"tripId\": ${trip.id},")
@@ -285,7 +302,10 @@ fun exportTripAsJSON(
             appendLine("  \"duration\": ${trip.duration},")
             appendLine("  \"consumption\": ${trip.efficiency},")
             appendLine("  \"energyConsumed\": ${trip.energyConsumed},")
+            appendLine("  \"maxSpeed\": ${trip.maxSpeed},")
+            appendLine("  \"maxPower\": ${trip.maxPower},")
             appendLine("  \"dataPoints\": [")
+
             dataPoints.forEachIndexed { index, point ->
                 appendLine("    {")
                 appendLine("      \"timestamp\": ${point.timestamp},")
@@ -294,27 +314,41 @@ fun exportTripAsJSON(
                 appendLine("      \"altitude\": ${point.altitude},")
                 appendLine("      \"speed\": ${point.speed},")
                 appendLine("      \"power\": ${point.power},")
-                appendLine("      \"soc\": ${point.soc}")
+                appendLine("      \"soc\": ${point.soc},")
+                appendLine("      \"gear\": \"${point.gear}\",")
+                appendLine("      \"engineSpeedFront\": ${point.engineSpeedFront},")
+                appendLine("      \"engineSpeedRear\": ${point.engineSpeedRear}")
                 appendLine("    }${if (index < dataPoints.size - 1) "," else ""}")
             }
+
             appendLine("  ]")
             appendLine("}")
         }
-        
-        // Save to Downloads folder
-        val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(
-            android.os.Environment.DIRECTORY_DOWNLOADS
-        )
-        val file = java.io.File(downloadsDir, fileName)
+
+        // Write to app cache directory
+        val cacheDir = context.cacheDir
+        val file = File(cacheDir, fileName)
         file.writeText(jsonContent)
         
-        android.widget.Toast.makeText(
-            context, 
-            "Saved to Downloads/$fileName", 
-            android.widget.Toast.LENGTH_LONG
-        ).show()
+        // Create content URI using FileProvider
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file
+        )
+        
+        // Share via Intent
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "application/json"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            putExtra(Intent.EXTRA_SUBJECT, "Trip Data - ${fileName}")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        
+        context.startActivity(Intent.createChooser(shareIntent, "Export Trip Data"))
         
     } catch (e: Exception) {
+        Log.e("TripDetailScreen", "Export JSON failed", e)
         android.widget.Toast.makeText(
             context, 
             "Export failed: ${e.message}", 
@@ -323,12 +357,14 @@ fun exportTripAsJSON(
     }
 }
 
+// Save summary as text using cache + share
 fun saveTripSummaryAsText(
     context: android.content.Context,
     trip: com.byd.tripstats.data.local.entity.TripEntity
 ) {
     try {
         val fileName = "trip_summary_${trip.id}_${System.currentTimeMillis()}.txt"
+
         val summary = buildString {
             appendLine("🚗 BYD Trip Stats")
             appendLine("")
@@ -343,20 +379,31 @@ fun saveTripSummaryAsText(
             appendLine("🏎️ Max Speed: ${trip.maxSpeed.toInt()} km/h")
         }
         
-        // Save to Downloads folder
-        val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(
-            android.os.Environment.DIRECTORY_DOWNLOADS
-        )
-        val file = java.io.File(downloadsDir, fileName)
+        // Write to app cache directory
+        val cacheDir = context.cacheDir
+        val file = File(cacheDir, fileName)
         file.writeText(summary)
         
-        android.widget.Toast.makeText(
-            context, 
-            "Saved to Downloads/$fileName", 
-            android.widget.Toast.LENGTH_LONG
-        ).show()
+        // Create content URI using FileProvider
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file
+        )
+        
+        // Share via Intent
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            putExtra(Intent.EXTRA_SUBJECT, "Trip Summary - ${formatTimestamp(trip.startTime)}")
+            putExtra(Intent.EXTRA_TEXT, summary)  // Also include as text
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        
+        context.startActivity(Intent.createChooser(shareIntent, "Share Trip Summary"))
         
     } catch (e: Exception) {
+        Log.e("TripDetailScreen", "Export summary failed", e)
         android.widget.Toast.makeText(
             context, 
             "Export failed: ${e.message}", 

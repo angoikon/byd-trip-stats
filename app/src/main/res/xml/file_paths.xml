@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- UPDATED: Added cache-path for export functionality -->
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Cache directory for temporary export files -->
     <cache-path name="shared_files" path="." />
+    
+    <!-- External cache directory (if needed) -->
+    <external-cache-path name="external_shared_files" path="." />
 </paths>
