@@ -55,10 +55,8 @@ fun TripDetailScreen(
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Overview", "Charts", "Route", "Analysis")
     
+    // Simple boolean state instead of snapshot
     var showExportDialog by remember { mutableStateOf(false) }
-    
-    // Only capture dataPoints when dialog is requested to open
-    var exportSnapshot by remember { mutableStateOf<Pair<com.byd.tripstats.data.local.entity.TripEntity?, List<com.byd.tripstats.data.local.entity.TripDataPointEntity>>?>(null) }
     
     Scaffold(
         topBar = {
@@ -72,8 +70,7 @@ fun TripDetailScreen(
                 actions = {
                     // Export/Share button
                     IconButton(onClick = { 
-                        exportSnapshot = trip to dataPoints.toList()  // Capture immutable snapshot
-                        showExportDialog = true 
+                        showExportDialog = true  // FIXED: Just set boolean
                     }) {
                         Icon(
                             Icons.Filled.Share,
@@ -140,33 +137,14 @@ fun TripDetailScreen(
         }
     }
     
-    // Export Dialog - isolated from parent recomposition
-    exportSnapshot?.let { (snapshotTrip, snapshotData) ->
-        if (showExportDialog && snapshotTrip != null) {
-            ExportDialogHandler(
-                trip = snapshotTrip,
-                dataPoints = snapshotData,
-                onDismiss = { 
-                    showExportDialog = false
-                    exportSnapshot = null
-                }
-            )
-        }
+    // FIXED: Simplified export dialog
+    if (showExportDialog && trip != null) {
+        ExportDialog(
+            trip = trip!!,
+            dataPoints = dataPoints,
+            onDismiss = { showExportDialog = false }
+        )
     }
-}
-
-@Composable
-private fun ExportDialogHandler(
-    trip: com.byd.tripstats.data.local.entity.TripEntity,
-    dataPoints: List<com.byd.tripstats.data.local.entity.TripDataPointEntity>,
-    onDismiss: () -> Unit
-) {
-    // Completely isolated - won't recompose with parent
-    ExportDialog(
-        trip = trip,
-        dataPoints = dataPoints,
-        onDismiss = onDismiss
-    )
 }
 
 @Composable
