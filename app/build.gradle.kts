@@ -31,7 +31,16 @@ android {
             )
         }
     }
-    
+
+    // Custom APK naming: byd-trip-stats-VERSION.apk
+    applicationVariants.all {
+        outputs.all {
+            if (this is com.android.build.gradle.internal.api.BaseVariantOutputImpl) {
+                outputFileName = "byd-trip-stats-${versionName}-${name}.apk"
+            }
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
