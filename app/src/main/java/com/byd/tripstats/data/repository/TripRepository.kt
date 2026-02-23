@@ -30,10 +30,16 @@ class TripRepository private constructor(context: Context) {
     private val _latestTelemetry = MutableStateFlow<VehicleTelemetry?>(null)
     val latestTelemetry: StateFlow<VehicleTelemetry?> = _latestTelemetry.asStateFlow()
 
-    private var currentTripId: Long? = null
+    // Add public StateFlows for trip state
+    private val _isInTrip = MutableStateFlow(false)
+    val isInTrip: StateFlow<Boolean> = _isInTrip.asStateFlow()
+
+    private val _currentTripId = MutableStateFlow<Long?>(null)
+    val currentTripId: StateFlow<Long?> = _currentTripId.asStateFlow()
+
     private var lastTelemetry: VehicleTelemetry? = null
     private var tripStarted = false
-    private var firstTelemetryReceived = false  // Track if we've seen any data yet
+    private var firstTelemetryReceived = false
 
     // Configuration
     private var autoTripDetection = true
@@ -49,8 +55,7 @@ class TripRepository private constructor(context: Context) {
                 Log.w(TAG, "Found active trip ${activeTrip.id} from previous session")
                 
                 // Store the ID but don't set tripStarted yet
-                // We'll verify on first telemetry
-                currentTripId = activeTrip.id
+                _currentTripId.value = activeTrip.id
                 tripStarted = false
                 firstTelemetryReceived = false
                 
@@ -69,7 +74,7 @@ class TripRepository private constructor(context: Context) {
         if (!firstTelemetryReceived) {
             firstTelemetryReceived = true
             
-            if (currentTripId != null) {
+            if (_currentTripId.value != null) {
                 handleStaleTrip(telemetry)
             }
         }
@@ -92,7 +97,7 @@ class TripRepository private constructor(context: Context) {
         
         // RECORD DATA POINTS
         if (tripStarted) {
-            currentTripId?.let { tripId ->
+            _currentTripId.value?.let { tripId ->
                 recordDataPoint(tripId, telemetry)
                 updateTripMetrics(tripId, telemetry)
             }
@@ -102,7 +107,7 @@ class TripRepository private constructor(context: Context) {
     }
 
     private suspend fun handleStaleTrip(telemetry: VehicleTelemetry) {
-        val tripId = currentTripId ?: return
+        val tripId = _currentTripId.value ?: return
         val trip = tripDao.getTripById(tripId) ?: return
         
         Log.i(TAG, "=== Handling stale trip $tripId ===")
@@ -113,7 +118,8 @@ class TripRepository private constructor(context: Context) {
         if (dataPoints.isEmpty()) {
             Log.w(TAG, "Stale trip has no data points - deleting it")
             tripDao.deleteTripById(tripId)
-            currentTripId = null
+            _currentTripId.value = null
+            _isInTrip.value = false
             tripStarted = false
             return
         }
@@ -150,6 +156,7 @@ class TripRepository private constructor(context: Context) {
             telemetry.gear in listOf("D", "R") && !isStale -> {
                 Log.i(TAG, "Car in D/R and trip is recent → RESUMING trip")
                 tripStarted = true
+                _isInTrip.value = true  // Update state
                 // Trip continues!
             }
             
@@ -211,7 +218,7 @@ class TripRepository private constructor(context: Context) {
     suspend fun startTrip(telemetry: VehicleTelemetry, isManual: Boolean = false): Long {
         if (tripStarted) {
             Log.w(TAG, "Trip already active")
-            return currentTripId ?: -1
+            return _currentTripId.value ?: -1
         }
 
         Log.i(TAG, "*** Starting new trip *** (manual: $isManual)")
@@ -229,16 +236,20 @@ class TripRepository private constructor(context: Context) {
             minBatteryCellTemp = telemetry.batteryCellTempMin
         )
 
-        currentTripId = tripDao.insertTrip(trip)
+        val tripId = tripDao.insertTrip(trip)
+        _currentTripId.value = tripId
         tripStarted = true
 
-        Log.i(TAG, "Trip started with ID: $currentTripId")
+        // Broadcast state change so UI updates
+        _isInTrip.value = true
+
+        Log.i(TAG, "Trip started with ID: $tripId, broadcasting state change")
         
-        return currentTripId!!
+        return tripId
     }
 
     suspend fun endCurrentTrip() {
-        val tripId = currentTripId ?: return
+        val tripId = _currentTripId.value ?: return
         val trip = tripDao.getTripById(tripId) ?: return
         val telemetry = lastTelemetry ?: return
 
@@ -255,8 +266,11 @@ class TripRepository private constructor(context: Context) {
         tripDao.updateTrip(updatedTrip)
         calculateTripStats(tripId)
 
-        currentTripId = null
+        _currentTripId.value = null
         tripStarted = false
+
+        // FIXED: Broadcast state change so UI updates
+        _isInTrip.value = false
 
         Log.i(TAG, "Trip ended: distance ${updatedTrip.distance} km, efficiency ${updatedTrip.efficiency} kWh/100km")
     }
@@ -276,8 +290,11 @@ class TripRepository private constructor(context: Context) {
         tripDao.updateTrip(updatedTrip)
         calculateTripStats(trip.id)
 
-        currentTripId = null
+        _currentTripId.value = null
         tripStarted = false
+
+        // Broadcast state change
+        _isInTrip.value = false
 
         Log.i(TAG, "Stale trip ended with last point timestamp: ${lastPoint.timestamp}")
     }
@@ -475,10 +492,6 @@ class TripRepository private constructor(context: Context) {
     }
 
     fun isAutoTripDetectionEnabled(): Boolean = autoTripDetection
-
-    fun isCurrentlyInTrip(): Boolean = tripStarted
-
-    fun getCurrentTripId(): Long? = currentTripId
 
     companion object {
         @Volatile

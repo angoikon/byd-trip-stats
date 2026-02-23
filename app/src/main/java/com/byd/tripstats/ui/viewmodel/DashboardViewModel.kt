@@ -27,16 +27,28 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     private val _mqttConnectionError = MutableStateFlow<String?>(null)
     val mqttConnectionError: StateFlow<String?> = _mqttConnectionError.asStateFlow()
     
-    // Latest telemetry
-    private val _currentTelemetry = MutableStateFlow<VehicleTelemetry?>(null)
-    val currentTelemetry: StateFlow<VehicleTelemetry?> = _currentTelemetry.asStateFlow()
+    // Latest telemetry - observe from repository
+    val currentTelemetry: StateFlow<VehicleTelemetry?> = tripRepository.latestTelemetry
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
     
-    // Current trip state
-    private val _isInTrip = MutableStateFlow(false)
-    val isInTrip: StateFlow<Boolean> = _isInTrip.asStateFlow()
+    // FIXED: Current trip state - observe from repository StateFlows
+    val isInTrip: StateFlow<Boolean> = tripRepository.isInTrip
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
     
-    private val _currentTripId = MutableStateFlow<Long?>(null)
-    val currentTripId: StateFlow<Long?> = _currentTripId.asStateFlow()
+    val currentTripId: StateFlow<Long?> = tripRepository.currentTripId
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
     
     // Trip history
     val allTrips: StateFlow<List<TripEntity>> = tripRepository.getAllTrips()
@@ -51,31 +63,11 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     val autoTripDetection: StateFlow<Boolean> = _autoTripDetection.asStateFlow()
 
     init {
-        updateTripState()
-
-        // Observe telemetry from repository
-        viewModelScope.launch {
-            tripRepository.latestTelemetry.collect { telemetry ->
-                telemetry?.let {
-                    _currentTelemetry.value = it
-                }
-            }
-        }
+        // Initialize auto trip detection state
+        _autoTripDetection.value = tripRepository.isAutoTripDetectionEnabled()
     }
     
-    private fun updateTripState() {
-        viewModelScope.launch {
-            _isInTrip.value = tripRepository.isCurrentlyInTrip()
-            _currentTripId.value = tripRepository.getCurrentTripId()
-            _autoTripDetection.value = tripRepository.isAutoTripDetectionEnabled()
-        }
-    }
-    
-    // REMOVED: startMqttService() function
-    // Service is now started by BootReceiver on boot
-    // MainActivity just binds to the existing service
-    
-    // KEPT: For Settings screen to restart service with new config
+    // For Settings screen to restart service with new config
     fun restartMqttService(
         brokerUrl: String,
         brokerPort: Int,
@@ -105,10 +97,10 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     
     fun startManualTrip() {
         viewModelScope.launch {
-            val telemetry = _currentTelemetry.value
+            val telemetry = currentTelemetry.value
             if (telemetry != null) {
                 tripRepository.startTrip(telemetry, isManual = true)
-                updateTripState()
+                // No need to update state - repository will broadcast via StateFlow
             }
         }
     }
@@ -116,7 +108,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     fun endManualTrip() {
         viewModelScope.launch {
             tripRepository.endCurrentTrip()
-            updateTripState()
+            // No need to update state - repository will broadcast via StateFlow
         }
     }
 
@@ -167,12 +159,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             )
     }
 
-    // Update telemetry from service
-    fun updateTelemetry(telemetry: VehicleTelemetry) {
-        _currentTelemetry.value = telemetry
-        updateTripState()
-    }
-
     // Called from MainActivity when service binding is established
     fun observeMqttServiceState(service: MqttService) {
         viewModelScope.launch {
@@ -209,7 +195,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             val mockGenerator = com.byd.tripstats.mock.MockDataGenerator()
             mockGenerator.generateMockDrive().collect { telemetry ->
-                updateTelemetry(telemetry)
                 tripRepository.processTelemetry(telemetry)
             }
         }
