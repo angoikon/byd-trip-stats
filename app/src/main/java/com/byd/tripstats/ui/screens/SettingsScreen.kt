@@ -215,9 +215,9 @@ fun SettingsScreen(
                                 topic = topic
                             )
                             
-                            // Restart MQTT service with new settings
-                            viewModel.stopMqttService()
-                            viewModel.startMqttService(
+                            // CHANGED: Use restartMqttService instead of startMqttService
+                            // This stops the old service and starts with new config
+                            viewModel.restartMqttService(
                                 brokerUrl = brokerUrl,
                                 brokerPort = brokerPort.toIntOrNull() ?: 1883,
                                 username = username.ifBlank { null },

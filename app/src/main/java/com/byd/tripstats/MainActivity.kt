@@ -33,7 +33,8 @@ import android.provider.Settings
 import android.net.Uri
 
 class MainActivity : ComponentActivity() {
-
+    private val TAG = "MainActivity"
+    
     private val viewModel: DashboardViewModel by viewModels()
     private var mqttService: MqttService? = null
     private var bound = false
@@ -44,6 +45,8 @@ class MainActivity : ComponentActivity() {
             val binder = service as MqttService.LocalBinder
             mqttService = binder.getService()
             bound = true
+            
+            Log.i(TAG, "Service connected successfully")
 
             // Observe service connection state
             mqttService?.let { viewModel.observeMqttServiceState(it) }
@@ -52,31 +55,36 @@ class MainActivity : ComponentActivity() {
         override fun onServiceDisconnected(arg0: ComponentName) {
             bound = false
             mqttService = null
+            Log.w(TAG, "Service disconnected")
         }
     }
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        Log.d("MainActivity", "=== Permission result received ===")
+        Log.d(TAG, "=== Permission result received ===")
         val allGranted = permissions.entries.all { it.value }
-        Log.d("MainActivity", "All granted: $allGranted")
+        Log.d(TAG, "All granted: $allGranted")
+        
+        // After permissions granted, bind to service
         if (allGranted) {
-            startMqttService()
+            bindToMqttService()
         } else {
-            Log.d("MainActivity", "Permissions denied!")
+            Log.w(TAG, "Permissions denied!")
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Log.d("MainActivity", "=== onCreate() called ===")
+        Log.d(TAG, "=== onCreate() called ===")
 
         preferencesManager = PreferencesManager(applicationContext)
+        
+        // Just request permissions - don't start service!
         requestPermissions()
 
-        Log.d("MainActivity", "=== About to setContent ===")
+        Log.d(TAG, "=== About to setContent ===")
 
         setContent {
             BydTripStatsTheme {
@@ -95,82 +103,125 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun requestPermissions() {
-        Log.d("MainActivity", "=== requestPermissions() called ===")
+        Log.d(TAG, "=== requestPermissions() called ===")
         val permissions = mutableListOf<String>()
 
         // POST_NOTIFICATIONS only needed on API 33+ (Android 13+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             permissions.add(Manifest.permission.POST_NOTIFICATIONS)
-            Log.d("MainActivity", "Added POST_NOTIFICATIONS permission (API 33+)")
+            Log.d(TAG, "Added POST_NOTIFICATIONS permission (API 33+)")
         } else {
-            Log.d("MainActivity", "Skipping POST_NOTIFICATIONS (API ${Build.VERSION.SDK_INT} < 33)")
+            Log.d(TAG, "Skipping POST_NOTIFICATIONS (API ${Build.VERSION.SDK_INT} < 33)")
         }
 
         val permissionsToRequest = permissions.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
 
-        Log.d("MainActivity", "Permissions to request: ${permissionsToRequest.size}")
+        Log.d(TAG, "Permissions to request: ${permissionsToRequest.size}")
 
         if (permissionsToRequest.isNotEmpty()) {
-            Log.d("MainActivity", "Launching permission request")
+            Log.d(TAG, "Launching permission request")
             requestPermissionLauncher.launch(permissionsToRequest.toTypedArray())
         } else {
-            Log.d("MainActivity", "All permissions granted, starting service")
-            startMqttService()
+            Log.d(TAG, "All permissions granted, binding to service")
+            bindToMqttService()
         }
     }
     
-    private fun startMqttService() {
-        Log.d("MainActivity", "=== startMqttService() called ===")
-        // Load saved MQTT settings from DataStore
+    /**
+     * CRITICAL CHANGE: This now BINDS to the service instead of STARTING it
+     * 
+     * The service should already be running (started by BootReceiver on boot).
+     * MainActivity just connects to it to observe state and display UI.
+     * 
+     * If service isn't running (e.g., first app launch or after force stop),
+     * we start it first, then bind.
+     */
+    private fun bindToMqttService() {
+        Log.d(TAG, "=== bindToMqttService() called ===")
+        
         lifecycleScope.launch {
             val settings = preferencesManager.mqttSettings.first()
 
-            Log.d("MainActivity", "Settings loaded: broker=${settings.brokerUrl}, topic=${settings.topic}")
+            Log.d(TAG, "Settings loaded: broker=${settings.brokerUrl}, topic=${settings.topic}")
 
-            // Only start service if configuration is valid
+            // Only proceed if configuration is valid
             if (settings.brokerUrl.isNotBlank() && settings.topic.isNotBlank()) {
-                viewModel.startMqttService(
-                    brokerUrl = settings.brokerUrl,
-                    brokerPort = settings.brokerPort,
-                    username = settings.username.ifBlank { null },
-                    password = settings.password.ifBlank { null },
-                    topic = settings.topic
-                )
-
-                Log.d("MainActivity", "Service start called, now binding...")
-
-                Intent(this@MainActivity, MqttService::class.java).also { intent ->
-                    bindService(intent, connection, Context.BIND_AUTO_CREATE)
+                
+                // Create intent for service
+                val intent = Intent(this@MainActivity, MqttService::class.java)
+                
+                // Check if service is already running
+                val isServiceRunning = isServiceRunning(MqttService::class.java)
+                
+                if (!isServiceRunning) {
+                    Log.i(TAG, "Service not running - starting it first (e.g., first launch)")
+                    
+                    // Start service with settings
+                    // This happens on first app launch or after force stop
+                    // BootReceiver will handle it on subsequent boots
+                    MqttService.start(
+                        context = applicationContext,
+                        brokerUrl = settings.brokerUrl,
+                        brokerPort = settings.brokerPort,
+                        username = settings.username.ifBlank { null },
+                        password = settings.password.ifBlank { null },
+                        topic = settings.topic
+                    )
+                    
+                    Log.i(TAG, "Service started, now binding...")
+                } else {
+                    Log.i(TAG, "Service already running (started by BootReceiver) - just binding")
                 }
-
-                Log.d("MainActivity", "Bind service called")
+                
+                // Bind to the service (whether we just started it or it was already running)
+                bindService(intent, connection, Context.BIND_AUTO_CREATE)
+                
+                Log.d(TAG, "Bind service called")
             } else {
-                Log.d("MainActivity", "MQTT not configured - skipping service start")
+                Log.w(TAG, "MQTT not configured - skipping service")
                 viewModel.setMqttConnectionState(false)
             }
         }
     }
     
+    /**
+     * Check if a service is currently running
+     */
+    private fun isServiceRunning(serviceClass: Class<*>): Boolean {
+        val manager = getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+        @Suppress("DEPRECATION")
+        for (service in manager.getRunningServices(Int.MAX_VALUE)) {
+            if (serviceClass.name == service.service.className) {
+                return true
+            }
+        }
+        return false
+    }
+    
+    /**
+     * Request battery optimization exemption (optional but recommended)
+     * This helps ensure the service keeps running in background
+     */
     private fun requestBatteryOptimizationExemption() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
             val packageName = packageName
 
             if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
-                Log.i("MainActivity", "Requesting battery optimization exemption...")
-                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                    data = Uri.parse("package:$packageName")
+                Log.i(TAG, "Requesting battery optimization exemption...")
+                try {
+                    val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                        data = Uri.parse("package:$packageName")
+                    }
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to request battery optimization exemption", e)
                 }
+            } else {
+                Log.i(TAG, "Already exempt from battery optimization")
             }
-            try {
-                startActivity(intent)
-            } catch (e: Exception) {
-                Log.e("MainActivity", "Failed to request battery optimization exemption", e)
-            }
-        } else {
-            Log.i("MainActivity", "Already exempt from battery optimization")
         }
     }
 
@@ -180,5 +231,7 @@ class MainActivity : ComponentActivity() {
             unbindService(connection)
             bound = false
         }
+        // IMPORTANT: Don't stop the service!
+        // It should keep running in background for auto-detection
     }
 }

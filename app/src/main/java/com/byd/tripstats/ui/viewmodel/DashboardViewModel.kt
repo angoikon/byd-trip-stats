@@ -71,14 +71,22 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
     
-    fun startMqttService(
+    // REMOVED: startMqttService() function
+    // Service is now started by BootReceiver on boot
+    // MainActivity just binds to the existing service
+    
+    // KEPT: For Settings screen to restart service with new config
+    fun restartMqttService(
         brokerUrl: String,
         brokerPort: Int,
         username: String?,
         password: String?,
         topic: String
     ) {
-        // Start service - it will handle connection state internally
+        // Stop existing service
+        MqttService.stop(getApplication())
+        
+        // Start with new config
         MqttService.start(
             context = getApplication(),
             brokerUrl = brokerUrl,
@@ -87,10 +95,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             password = password,
             topic = topic
         )
-        // viewModelScope.launch {
-        //     delay(5000) // Wait 5 seconds for connection
-        //     _mqttConnected.value = true
-        // }
     }
     
     fun stopMqttService() {
