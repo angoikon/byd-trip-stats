@@ -374,7 +374,7 @@ fun EnergyFlowDiagram(
                     )
     
                     // Tyre Pressure Overlays
-                    // Left Front (recommended: 2.6 bar)
+                    // Left Front (recommended: 2.5 bar)
                     TyrePressureIndicator(
                         pressure = telemetry.tyrePressureLF,
                         isFront = true,
@@ -383,7 +383,7 @@ fun EnergyFlowDiagram(
                             .offset(x = (-10).dp, y = (-10).dp)
                     )
 
-                    // Right Front (recommended: 2.6 bar)
+                    // Right Front (recommended: 2.5 bar)
                     TyrePressureIndicator(
                         pressure = telemetry.tyrePressureRF,
                         isFront = true,
@@ -464,9 +464,9 @@ fun TyrePressureIndicator(
     // Convert PSI to bar (1 bar = 14.5038 PSI)
     val pressureBar = pressure / 14.5038
     
-    // BYD Seal recommended pressure: Front 2.6 bar, Rear 2.9 bar
+    // BYD Seal recommended pressure: Front 2.5 bar, Rear 2.9 bar
     // Tolerance: ±0.2 bar
-    val recommendedPressure = if (isFront) 2.6 else 2.9
+    val recommendedPressure = if (isFront) 2.5 else 2.9
     val minPressure = recommendedPressure - 0.2
     val maxPressure = recommendedPressure + 0.2
     
