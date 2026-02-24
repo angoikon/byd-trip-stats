@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import com.byd.tripstats.service.MqttBrokerService  // ← ADD THIS IMPORT
 import com.byd.tripstats.service.MqttService
 import com.byd.tripstats.data.preferences.PreferencesManager
 import kotlinx.coroutines.*
@@ -12,6 +13,10 @@ import kotlinx.coroutines.flow.first
 /**
  * CRITICAL: Receives BOOT_COMPLETED and starts MQTT service
  * This is what enables auto-start functionality
+ * 
+ * SUPPORTS BOTH:
+ * - Local embedded broker (127.0.0.1) - starts MqttBrokerService
+ * - External broker (HiveMQ, etc.) - skips MqttBrokerService
  * 
  * DEBUGGING: If this doesn't work, check:
  * 1. AndroidManifest has NO android:permission on <receiver>
@@ -75,10 +80,36 @@ class BootReceiver : BroadcastReceiver() {
                             Log.w(TAG, "   User needs to configure MQTT in Settings")
                             return@launch
                         }
-                        
+
+                        // Check if user wants local embedded broker
+                        val isLocalBroker = settings.brokerUrl.trim().let {
+                            it == "127.0.0.1" || it == "localhost" || it == "::1"
+                        }
+
+                        if (isLocalBroker) {
+                            Log.i(TAG, "✓ Local broker detected (${settings.brokerUrl})")
+                            Log.i(TAG, "  Starting embedded MQTT broker first...")
+
+                            try {
+                                MqttBrokerService.start(context.applicationContext)
+                                Log.i(TAG, "✓ Embedded broker service started")
+
+                                // Wait for broker to initialize before starting client
+                                Log.i(TAG, "  Waiting 2s for broker initialization...")
+                                delay(2000)
+
+                            } catch (e: Exception) {
+                                Log.e(TAG, "❌ Failed to start embedded broker", e)
+                                Log.e(TAG, "   Continuing anyway - client will try to connect")
+                            }
+                        } else {
+                            Log.i(TAG, "✓ External broker detected (${settings.brokerUrl})")
+                            Log.i(TAG, "  Skipping embedded broker, will use external")
+                        }
+
                         Log.i(TAG, "✓ Configuration valid, starting MqttService...")
-                        
-                        // Start the service in foreground
+
+                        // Start the MQTT client service
                         try {
                             MqttService.start(
                                 context = context.applicationContext,

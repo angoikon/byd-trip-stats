@@ -106,12 +106,12 @@ BYD Trip Stats is a free, open-source Android app that automatically tracks and 
 
 ### Software
 - ✅ **[Electro App](https://electro.app.br)** - Active subscription required (~€30/year)
-- ✅ **MQTT Broker** - HiveMQ Cloud (free) or similar (configured in Electro)
+- ✅ **External MQTT Broker (optional)** - HiveMQ Cloud (free) or similar (configured in Electro, though localhost via Electro beats eversything)
 
 ### Permissions
 - 📢 **Notifications** - For foreground service
 - 🚀 **Boot Completed** - For auto-start functionality
-- 🌐 **Internet** - For MQTT connection to your broker
+- 🌐 **Internet** - For MQTT connection to your external broker
 
 **Note:** No location permissions required! GPS data comes from MQTT telemetry.
 
@@ -124,12 +124,12 @@ BYD Trip Stats is a free, open-source Android app that automatically tracks and 
 **Since you already have installed electro, this step is already done. For reference:**
 1. For Seal, you need to downgrade to system version **2307**
 2. Enable wired and wireless debug
-3. Install the **PackageInstallerUnlocked.apk** that unlocks the installation of 3rd party apps
+3. Install the **PackageInstallerUnlocked.apk** that unlocks the installation of 3rd party apps. You can google it!
 4. You can safely upgrade via USB or OTA
 
 ### Step 2: Download APK
 
-Download the latest `app-release.apk` from the [Releases](https://github.com/angoikon/byd-trip-stats/releases) page.
+Download the latest `byd-trip-stats-release.apk` from the [Releases](https://github.com/angoikon/byd-trip-stats/releases) page.
 
 **Transfer to car via:**
 - ADB (wirelessly)
@@ -147,10 +147,10 @@ Download the latest `app-release.apk` from the [Releases](https://github.com/ang
 
 1. Tap **Settings** (gear icon)
 2. Enter your Electro MQTT broker details:
-   - **Broker URL:** (from your Electro settings)
-   - **Port:** Usually 8883 (SSL) or 1883
-   - **Username:** (your MQTT username)
-   - **Password:** (your MQTT password)
+   - **Broker URL:** (from your Electro settings). Default is 127.0.0.1
+   - **Port:** Usually 1883 (default) or 8883 (SSL)
+   - **Username (optional):** (your MQTT username)
+   - **Password (optional):** (your MQTT password)
    - **Topic:** `electro/telemetry/byd-seal/data` (different for other BYD cars - check electro for the correct topic)
 3. Tap **Save & Restart Service**
 4. Check that cloud icon turns **green** ✅ once it receives telemetry
@@ -179,7 +179,7 @@ That's it! Now:
 ### Critical Settings in Electro App:
 
 **MQTT Update Interval:**
-- **When car is ON:** 1 second (max 10 seconds)
+- **When car is ON:** Either 500ms or 1 second (with max 10 seconds)
 - **When car is OFF:** Any interval (doesn't matter, longer is better for less data / battery drainage)
 
 **Why this matters:**
@@ -229,6 +229,7 @@ That's it! Now:
 ### Key Libraries
 - **Database:** Room (local persistence)
 - **MQTT:** HiveMQ Client Library
+- **Moquette** : Embedded MQTT Broker
 - **Charts:** Vico (Compose charts)
 - **Maps:** osmdroid (OpenStreetMap)
 - **Async:** Kotlin Coroutines + Flow
@@ -257,7 +258,7 @@ All information stays on your device:
 
 ### What is Sent to External Servers?
 
-**Only to YOUR MQTT broker:**
+**Only to YOUR EXTERNAL MQTT broker and only if you have chosen so:**
 - Subscribe to telemetry topic
 - Receive vehicle data
 
@@ -267,6 +268,7 @@ All information stays on your device:
 
 **The code is open source!** Review it yourself:
 - All network calls: `MqttClientManager.kt`
+- Internal MQTT calls: `MqttBrokerService.kt`
 - Data storage: `TripRepository.kt`, `BydStatsDatabase.kt`
 - No third-party SDKs except MQTT, Room, and UI libraries
 
@@ -326,7 +328,7 @@ Have an idea? Open an issue with the "enhancement" label!
 - [ ] Android Auto integration
 - [ ] Wear OS companion app
 - [ ] Home Assistant integration
-- [ ] Local MQTT broker option
+- [ ] Retrieve MQTT data via API
 
 **Vote on features** by 👍 reacting to issues!
 
@@ -356,7 +358,7 @@ See [Issues](https://github.com/angoikon/byd-trip-stats/issues) for full list.
 **A:** Potentially! Any car using Electro app should work. Tested on BYD Seal only.
 
 ### Q: Do I need Electro subscription?
-**A:** Yes, currently. Working on local MQTT broker alternative (no subscription needed).
+**A:** Yes, currently. Even if you decide to use the internal MQTT Broker, you still need to retrieve MQTT data from Electro.
 
 ### Q: Will this drain my car's 12V battery?
 **A:** It uses your 12V which is always being charged via your high-voltage EV battery. Very minimal battery impact.
@@ -365,7 +367,7 @@ See [Issues](https://github.com/angoikon/byd-trip-stats/issues) for full list.
 **A:** No. BYD no longer allows 3rd party installations. Check relevant paragraph on how to re-enable it.
 
 ### Q: Is my data secure?
-**A:** Yes. All data stays on your device. The code is open source - verify yourself!
+**A:** Yes. All data stays on your device (or at YOUR external MQTT broker, if you decided to use one instead of the internal one). The code is open source - verify yourself!
 
 ### Q: Can I export to Excel?
 **A:** Export as CSV, then open in Excel, Google Sheets, etc.
@@ -410,13 +412,14 @@ copies or substantial portions of the Software.
 
 - [Jetpack Compose](https://developer.android.com/jetpack/compose) - Modern Android UI
 - [HiveMQ MQTT Client](https://github.com/hivemq/hivemq-mqtt-client) - MQTT library
+- [Moquette](https://github.com/moquette-io/moquette) - MQTT Internal Broker
 - [Vico](https://github.com/patrykandpatrick/vico) - Beautiful charts
 - [osmdroid](https://github.com/osmdroid/osmdroid) - OpenStreetMap for Android
 - [Room](https://developer.android.com/training/data-storage/room) - Local database
 
 ### Inspired By
 
-- **Electro App** by **Rory** - For making MQTT telemetry accessible
+- [Electro App](https://electro.app.br) by **Rory** - For making MQTT telemetry accessible
 - **BYD Community** - For the enthusiasm and support
 
 ---

@@ -123,4 +123,12 @@ dependencies {
 
     // osmdroid for offline maps
     implementation("org.osmdroid:osmdroid-android:6.1.18")
+
+    // Embedded MQTT Broker
+    implementation("io.moquette:moquette-broker:0.17")
+    
+    // Required dependencies for Moquette
+    implementation("io.netty:netty-all:4.1.100.Final")
+    implementation("org.slf4j:slf4j-api:2.0.9")
+    implementation("org.slf4j:slf4j-simple:2.0.9")
 }

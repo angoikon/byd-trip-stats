@@ -23,8 +23,8 @@ class PreferencesManager(private val context: Context) {
     }
     
     data class MqttSettings(
-        val brokerUrl: String = "STRING.s1.eu.hivemq.cloud",
-        val brokerPort: Int = 8883,
+        val brokerUrl: String = "127.0.0.1",
+        val brokerPort: Int = 1883,
         val username: String = "",
         val password: String = "",
         val topic: String = "electro/telemetry/byd-seal/data"
@@ -32,8 +32,8 @@ class PreferencesManager(private val context: Context) {
     
     val mqttSettings: Flow<MqttSettings> = context.dataStore.data.map { preferences ->
         MqttSettings(
-            brokerUrl = preferences[BROKER_URL] ?: "STRING.s1.eu.hivemq.cloud",
-            brokerPort = preferences[BROKER_PORT] ?: 8883,
+            brokerUrl = preferences[BROKER_URL] ?: "127.0.0.1",
+            brokerPort = preferences[BROKER_PORT] ?: 1883,
             username = preferences[USERNAME] ?: "",
             password = preferences[PASSWORD] ?: "",
             topic = preferences[TOPIC] ?: "electro/telemetry/byd-seal/data"
@@ -60,8 +60,8 @@ class PreferencesManager(private val context: Context) {
         var settings = MqttSettings()
         context.dataStore.data.collect { preferences ->
             settings = MqttSettings(
-                brokerUrl = preferences[BROKER_URL] ?: "STRING.s1.eu.hivemq.cloud",
-                brokerPort = preferences[BROKER_PORT] ?: 8883,
+                brokerUrl = preferences[BROKER_URL] ?: "127.0.0.1",
+                brokerPort = preferences[BROKER_PORT] ?: 1883,
                 username = preferences[USERNAME] ?: "",
                 password = preferences[PASSWORD] ?: "",
                 topic = preferences[TOPIC] ?: "electro/telemetry/byd-seal/data"

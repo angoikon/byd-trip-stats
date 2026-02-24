@@ -48,7 +48,14 @@
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
-        
+
+        <!-- MQTT Broker Service -->
+        <service
+            android:name=".service.MqttBrokerService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
         <!-- Boot Receiver - Auto-start on car boot -->
         <receiver
             android:name=".receiver.BootReceiver"
