@@ -23,6 +23,10 @@ import androidx.compose.ui.unit.sp
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import kotlinx.coroutines.launch
+import android.app.ActivityManager
+import android.content.Context
+import androidx.compose.material.icons.filled.BugReport
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,6 +49,26 @@ fun SettingsScreen(
     var password by remember { mutableStateOf("") }
     var topic by remember { mutableStateOf("") }
     
+    // DEBUG STATE - Add near other state variables like brokerUrl, etc.
+    var showDebugDialog by remember { mutableStateOf(false) }
+    var debugBrokerRunning by remember { mutableStateOf(false) }
+    var debugClientRunning by remember { mutableStateOf(false) }
+
+    // Auto-refresh when dialog open
+    LaunchedEffect(showDebugDialog) {
+        while (showDebugDialog) {
+            val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            
+            @Suppress("DEPRECATION")
+            val services = manager.getRunningServices(Int.MAX_VALUE)
+            
+            debugBrokerRunning = services.any { it.service.className.contains("MqttBrokerService") }
+            debugClientRunning = services.any { it.service.className.contains("MqttService") }
+            
+            delay(2000) // Refresh every 2 seconds
+        }
+    }
+
     // Update form fields when settings load
     LaunchedEffect(savedSettings) {
         brokerUrl = savedSettings.brokerUrl
@@ -306,6 +330,19 @@ fun SettingsScreen(
 
             HorizontalDivider()
             
+            // DEBUG BUTTON - Add this with your other buttons
+            OutlinedButton(
+                onClick = { showDebugDialog = true },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Icon(Icons.Filled.BugReport, null, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("🔍 Debug Connection Info", fontSize = 16.sp)
+            }
+
             Text(
                 text = "About",
                 style = MaterialTheme.typography.titleLarge,
@@ -324,6 +361,133 @@ fun SettingsScreen(
                     SettingsDetailRow("Created by", "Angelos Oikonomou / angoikon")
                     SettingsDetailRow("Build", "Release")
                 }
+            }
+            // DEBUG DIALOG - Add right before closing brace of Scaffold
+            if (showDebugDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDebugDialog = false },
+                    title = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Filled.BugReport, null, tint = MaterialTheme.colorScheme.error)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Debug Info")
+                        }
+                    },
+                    text = {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            // Services
+                            Card(colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            )) {
+                                Column(Modifier.padding(12.dp)) {
+                                    Text("Services:", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                    Spacer(Modifier.height(8.dp))
+                                    
+                                    Row(
+                                        Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text("Embedded Broker:")
+                                        Text(
+                                            if (debugBrokerRunning) "✅ RUNNING" else "❌ STOPPED",
+                                            color = if (debugBrokerRunning) Color(0xFF00FF88) else Color.Red,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                    
+                                    Row(
+                                        Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text("MQTT Client:")
+                                        Text(
+                                            if (debugClientRunning) "✅ RUNNING" else "❌ STOPPED",
+                                            color = if (debugClientRunning) Color(0xFF00FF88) else Color.Red,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
+                            
+                            // Settings
+                            Card(colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            )) {
+                                Column(Modifier.padding(12.dp)) {
+                                    Text("Settings:", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                    Spacer(Modifier.height(8.dp))
+                                    Text("Broker: ${savedSettings.brokerUrl}", fontSize = 14.sp)
+                                    Text("Port: ${savedSettings.brokerPort}", fontSize = 14.sp)
+                                    Text("Topic: ${savedSettings.topic}", fontSize = 14.sp)
+                                }
+                            }
+                            
+                            // Mode & Diagnosis
+                            val isLocal = savedSettings.brokerUrl.trim().let {
+                                it == "127.0.0.1" || it == "localhost" || it == "::1"
+                            }
+                            
+                            Card(colors = CardDefaults.cardColors(
+                                containerColor = if (isLocal) 
+                                    Color(0xFF00FF88).copy(alpha = 0.2f) 
+                                else 
+                                    Color(0xFF00D4FF).copy(alpha = 0.2f)
+                            )) {
+                                Column(Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = if (isLocal) "Mode: LOCAL BROKER" else "Mode: EXTERNAL BROKER",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp,
+                                        color = if (isLocal) Color(0xFF00AA00) else Color(0xFF0099CC)
+                                    )
+                                }
+                            }
+                            
+                            // Diagnosis
+                            Card(colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer
+                            )) {
+                                Column(Modifier.padding(12.dp)) {
+                                    Text("What To Do:", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                    Spacer(Modifier.height(8.dp))
+                                    
+                                    if (isLocal && !debugBrokerRunning) {
+                                        Text("❌ Embedded broker not running!", color = Color.Red)
+                                        Text("→ Check AndroidManifest.xml", fontWeight = FontWeight.Bold)
+                                        Text("→ Then RESTART APP", fontWeight = FontWeight.Bold)
+                                    } else if (isLocal && debugBrokerRunning) {
+                                        Text("✅ Embedded broker OK!", color = Color(0xFF00AA00))
+                                    }
+                                    
+                                    if (!debugClientRunning) {
+                                        Text("❌ MQTT client not running!", color = Color.Red)
+                                        Text("→ Click 'Save & Restart' button", fontWeight = FontWeight.Bold)
+                                    } else {
+                                        Text("✅ MQTT client OK!", color = Color(0xFF00AA00))
+                                    }
+                                    
+                                    if (isLocal && debugBrokerRunning && debugClientRunning) {
+                                        Text("🎉 Both services running!", color = Color(0xFF00AA00), fontWeight = FontWeight.Bold)
+                                        Text("If still no data:")
+                                        Text("→ Check Electro is publishing")
+                                        Text("→ Electro broker: 127.0.0.1:1883")
+                                    }
+                                }
+                            }
+                            
+                            Text(
+                                "Auto-refreshing every 2s...",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showDebugDialog = false }) {
+                            Text("Close")
+                        }
+                    }
+                )
             }
         }
     }

@@ -153,6 +153,7 @@ class MqttService : Service() {
         serviceScope.launch {
             mqttClientManager?.subscribeToTelemetry()?.collect { result ->
                 result.onSuccess { telemetry ->
+                    Log.d(TAG, "📨 MESSAGE RECEIVED! SoC=${telemetry.soc}%, Gear=${telemetry.gear}")
                     _telemetryCount.value++
                     updateNotification("Receiving data (${_telemetryCount.value} messages)")
 
