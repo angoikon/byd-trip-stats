@@ -3,8 +3,8 @@ package com.byd.tripstats.data.mqtt
 import android.util.Log
 import com.byd.tripstats.data.model.VehicleTelemetry
 import com.hivemq.client.mqtt.MqttClient
-import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient
-import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish
+import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient
+import com.hivemq.client.mqtt.mqtt3.message.publish.Mqtt3Publish
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -20,7 +20,8 @@ class MqttClientManager(
     private val TAG = "MqttClientManager"
     private val json = Json { ignoreUnknownKeys = true }
     
-    private var mqttClient: Mqtt5AsyncClient? = null
+    // CRITICAL FIX: Use MQTT 3 instead of MQTT 5
+    private var mqttClient: Mqtt3AsyncClient? = null
     private var isConnected = false
 
     fun connect(): Flow<ConnectionState> = callbackFlow {
@@ -30,10 +31,10 @@ class MqttClientManager(
         trySend(ConnectionState.Connecting)
 
         try {
-            Log.d(TAG, "Creating MQTT client...")
+            Log.d(TAG, "Creating MQTT 3.1.1 client...")
 
             val clientBuilder = MqttClient.builder()
-                .useMqttVersion5()
+                .useMqttVersion3()
                 .identifier("BydTripStats_${System.currentTimeMillis()}")
                 .serverHost(brokerUrl)
                 .serverPort(brokerPort)
@@ -74,8 +75,14 @@ class MqttClientManager(
                         trySend(ConnectionState.Error(throwable.message ?: "Connection failed"))
                     } else {
                         isConnected = true
-                        Log.i(TAG, "Connected to MQTT broker")
+                        Log.i(TAG, "✅ Connected to MQTT broker successfully!")
+                        Log.i(TAG, "   Broker: $brokerUrl:$brokerPort")
+                        Log.i(TAG, "   Topic: $topic")
+                        
+                        // CRITICAL: Emit Connected state
                         trySend(ConnectionState.Connected)
+                        
+                        Log.d(TAG, "Connection flow staying open for state updates...")
                     }
                 }
         } catch (e: Exception) {
@@ -84,31 +91,51 @@ class MqttClientManager(
         }
 
         awaitClose {
+            Log.d(TAG, "Connection flow closed, disconnecting client...")
             disconnect()
         }
     }
 
     fun subscribeToTelemetry(): Flow<Result<VehicleTelemetry>> = callbackFlow {
+        Log.d(TAG, "=== subscribeToTelemetry CALLED ===")
+        
         val client = mqttClient ?: run {
+            Log.e(TAG, "❌ MQTT client not initialized!")
             trySend(Result.failure(Exception("MQTT client not initialized")))
             close()
             return@callbackFlow
         }
         
+        if (!isConnected) {
+            Log.e(TAG, "❌ MQTT client not connected!")
+            trySend(Result.failure(Exception("MQTT client not connected")))
+            close()
+            return@callbackFlow
+        }
+        
+        Log.d(TAG, "Subscribing to topic: $topic")
+        
         client.subscribeWith()
             .topicFilter(topic)
-            .callback { publish: Mqtt5Publish ->
+            .callback { publish: Mqtt3Publish ->  // ← CHANGED FROM Mqtt5Publish
                 try {
                     val payload = String(publish.payloadAsBytes)
-                    Log.d(TAG, "=== MQTT MESSAGE RECEIVED ===")
-                    Log.d(TAG, "Topic: ${publish.topic}")
-                    Log.d(TAG, "Payload: $payload")
+                    Log.d(TAG, "═══════════════════════════════════════════════════════")
+                    Log.d(TAG, "🔔🔔🔔 MQTT MESSAGE RECEIVED! 🔔🔔🔔")
+                    Log.d(TAG, "   Topic: ${publish.topic}")
+                    Log.d(TAG, "   Payload size: ${payload.length} bytes")
+                    Log.d(TAG, "   Payload preview: ${payload.take(100)}...")
+                    Log.d(TAG, "═══════════════════════════════════════════════════════")
 
                     val telemetry = json.decodeFromString<VehicleTelemetry>(payload)
-                    Log.d(TAG, "Successfully parsed telemetry!")
+                    Log.d(TAG, "✅ Successfully parsed telemetry!")
+                    Log.d(TAG, "   SoC: ${telemetry.soc}%")
+                    Log.d(TAG, "   Speed: ${telemetry.speed} km/h")
+                    Log.d(TAG, "   Gear: ${telemetry.gear}")
+                    
                     trySend(Result.success(telemetry))
                 } catch (e: Exception) {
-                    Log.e(TAG, "Failed to parse telemetry", e)
+                    Log.e(TAG, "❌ Failed to parse telemetry", e)
                     Log.e(TAG, "Error details: ${e.message}")
                     trySend(Result.failure(e))
                 }
@@ -116,15 +143,17 @@ class MqttClientManager(
             .send()
             .whenComplete { _, throwable ->
                 if (throwable != null) {
-                    Log.e(TAG, "Subscription failed", throwable)
+                    Log.e(TAG, "❌ Subscription failed", throwable)
                     trySend(Result.failure(throwable))
                 } else {
-                    Log.i(TAG, "Subscribed to topic: $topic")
+                    Log.i(TAG, "✅ Successfully subscribed to topic: $topic")
+                    Log.i(TAG, "   Waiting for messages from Electro...")
                 }
             }
         
         awaitClose {
             try {
+                Log.d(TAG, "Unsubscribing from topic: $topic")
                 client.unsubscribeWith()
                     .topicFilter(topic)
                     .send()

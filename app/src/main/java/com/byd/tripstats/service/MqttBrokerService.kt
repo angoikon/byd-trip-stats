@@ -10,21 +10,14 @@ import androidx.core.app.NotificationCompat
 import com.byd.tripstats.R
 import io.moquette.broker.Server
 import io.moquette.broker.config.MemoryConfig
+import io.moquette.interception.AbstractInterceptHandler
+import io.moquette.interception.messages.InterceptPublishMessage
+import io.moquette.interception.messages.InterceptSubscribeMessage
+import io.moquette.interception.messages.InterceptConnectMessage
 import java.util.Properties
 
 /**
- * Embedded MQTT Broker Service
- * 
- * Runs a lightweight MQTT broker inside the app on port 1883.
- * This allows Electro and BYD Trip Stats to communicate locally
- * without any external MQTT broker (no HiveMQ, no Mosquitto, nothing!)
- * 
- * Benefits:
- * - Zero external dependencies
- * - Ultra-low latency (<1ms)
- * - No internet required
- * - Maximum privacy
- * - One-app installation
+ * Embedded MQTT Broker Service with MESSAGE INTERCEPTION for debugging
  */
 class MqttBrokerService : Service() {
 
@@ -34,11 +27,8 @@ class MqttBrokerService : Service() {
     companion object {
         private const val TAG = "MqttBrokerService"
         private const val NOTIFICATION_CHANNEL_ID = "mqtt_broker_channel"
-        private const val MQTT_PORT = 1883 // Standard MQTT port (change to 1338 if needed)
+        private const val MQTT_PORT = 1883
         
-        /**
-         * Start the MQTT broker service
-         */
         fun start(context: Context) {
             val intent = Intent(context, MqttBrokerService::class.java)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -49,9 +39,6 @@ class MqttBrokerService : Service() {
             Log.d(TAG, "MQTT Broker service start requested")
         }
         
-        /**
-         * Stop the MQTT broker service
-         */
         fun stop(context: Context) {
             context.stopService(Intent(context, MqttBrokerService::class.java))
             Log.d(TAG, "MQTT Broker service stop requested")
@@ -62,10 +49,7 @@ class MqttBrokerService : Service() {
         super.onCreate()
         Log.d(TAG, "=== MQTT Broker Service Created ===")
         
-        // Start as foreground service (required for Android O+)
         startForeground(notificationId, createNotification())
-        
-        // Start the embedded MQTT broker
         startMqttBroker()
     }
 
@@ -73,36 +57,23 @@ class MqttBrokerService : Service() {
         try {
             Log.d(TAG, "Starting embedded MQTT broker on port $MQTT_PORT...")
             
-            // Create broker configuration
             val config = Properties().apply {
-                // Network settings
                 setProperty("port", MQTT_PORT.toString())
-                setProperty("host", "0.0.0.0") // Listen on all interfaces (127.0.0.1, Wi-Fi, etc.)
-                
-                // Security (no authentication for simplicity)
+                setProperty("host", "0.0.0.0")
                 setProperty("allow_anonymous", "true")
-                
-                // SSL/TLS disabled (not needed for local communication)
                 setProperty("ssl_port", "0")
-                
-                // Persistence settings (save messages to disk)
                 setProperty("persistent_store", "${filesDir.absolutePath}/moquette_store.db")
-                setProperty("autosave_interval", "300") // Save every 5 minutes
-                
-                // Performance tuning
-                setProperty("netty.epoll_threads", "1") // Low resource usage
-                setProperty("netty.max_bytes_in_message", "16384") // 16KB max message size
-                
-                // Timeouts
-                setProperty("timeout", "10") // 10 seconds timeout
+                setProperty("autosave_interval", "300")
+                setProperty("netty.epoll_threads", "1")
+                setProperty("netty.max_bytes_in_message", "16384")
+                setProperty("timeout", "10")
             }
-            
-            // Create and start Moquette server
+
             mqttServer = Server()
             val memoryConfig = MemoryConfig(config)
-            
+
             mqttServer?.startServer(memoryConfig)
-            
+
             Log.d(TAG, "✅ MQTT Broker started successfully!")
             Log.d(TAG, "   Port: $MQTT_PORT")
             Log.d(TAG, "   Host: 0.0.0.0 (all interfaces)")
@@ -113,7 +84,6 @@ class MqttBrokerService : Service() {
             Log.e(TAG, "❌ Failed to start MQTT broker", e)
             Log.e(TAG, "   Error: ${e.message}")
             
-            // If port is in use, suggest alternative
             if (e.message?.contains("Address already in use") == true) {
                 Log.e(TAG, "   Port $MQTT_PORT is already in use!")
                 Log.e(TAG, "   Try changing MQTT_PORT to 1338 in MqttBrokerService.kt")
@@ -134,13 +104,10 @@ class MqttBrokerService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand called")
-        return START_STICKY // Restart service if killed by system
+        return START_STICKY
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        // This is a started service, not bound
-        return null
-    }
+    override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
         super.onDestroy()
@@ -152,12 +119,11 @@ class MqttBrokerService : Service() {
      * Create notification for foreground service
      */
     private fun createNotification(): Notification {
-        // Create notification channel for Android O+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 NOTIFICATION_CHANNEL_ID,
                 "MQTT Broker",
-                NotificationManager.IMPORTANCE_LOW // Low importance = no sound/vibration
+                NotificationManager.IMPORTANCE_LOW
             ).apply {
                 description = "Embedded MQTT broker for local telemetry"
                 setShowBadge(false)
@@ -169,13 +135,12 @@ class MqttBrokerService : Service() {
             notificationManager?.createNotificationChannel(channel)
         }
 
-        // Build notification
         return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle("MQTT Broker Active")
             .setContentText("Local broker running on port $MQTT_PORT")
-            .setSmallIcon(R.drawable.ic_notification) // Make sure this icon exists
+            .setSmallIcon(R.drawable.ic_notification)
             .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setOngoing(true) // Can't be dismissed
+            .setOngoing(true)
             .setShowWhen(false)
             .build()
     }
