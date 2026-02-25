@@ -20,6 +20,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.tripstats.data.model.VehicleTelemetry
+import com.byd.tripstats.ui.components.LiquidFillBattery
+import com.byd.tripstats.ui.components.StatsGlassCard
+import com.byd.tripstats.ui.components.GlassmorphicCard
+import com.byd.tripstats.ui.components.RangeProjectionChart
 import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import kotlin.math.abs
@@ -31,7 +35,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.StrokeCap
 
-private const val SHOW_MOCK_BUTTON = false  // Set to true for testing, false for production
+private const val SHOW_MOCK_BUTTON = true  // Set to true for testing, false for production
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,20 +66,6 @@ fun DashboardScreen(
                             )
                         }
                     }
-                    // // Dashboard/Home Button (always visible)
-                    // IconButton(onClick = {
-                    //     // If we're on a different screen, navigate back to dashboard
-                    //     // This is already the dashboard screen, so this might seem redundant,
-                    //     // but it's good UX to have a "home" button
-                    //     // For now, we can just scroll to top or refresh data
-                    // }) {
-                    //     Icon(
-                    //         imageVector = Icons.Filled.Home, // Analytics
-                    //         contentDescription = "View Live Data",
-                    //         tint = MaterialTheme.colorScheme.secondary,
-                    //         modifier = Modifier.size(28.dp)
-                    //     )
-                    // }
 
                     Spacer(modifier = Modifier.width(16.dp))
 
@@ -244,15 +234,15 @@ fun DashboardContent(
     Row(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Left column - Energy Flow Diagram (60%)
+        // Left column - Energy Flow Diagram (75%)
         Column(
             modifier = Modifier
-                .weight(0.6f)
+                .weight(0.75f)
                 .fillMaxHeight(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             EnergyFlowDiagram(
                 telemetry = telemetry,
@@ -272,12 +262,12 @@ fun DashboardContent(
             )
         }
 
-        // Right column - Stats (40%)
+        // Right column - Stats (25%)
         Column(
             modifier = Modifier
-                .weight(0.4f)
+                .weight(0.25f)
                 .fillMaxHeight(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             VehicleStats(
                 telemetry = telemetry,
@@ -317,22 +307,14 @@ fun EnergyFlowDiagram(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp)
+                .padding(12.dp)
         ) {
-            Text(
-                text = "Energy Flow",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             // Main energy flow visualization
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
+                    .height(110.dp),
+                contentAlignment = Alignment.TopCenter
             ) {
                 EnergyFlowCanvas(
                     power = power,
@@ -341,36 +323,29 @@ fun EnergyFlowDiagram(
                     flowOffset = flowOffset
                 )
 
-                // Battery image based on SOC and charging state
-                val batteryImage = when {
-                    isCharging -> painterResource(R.drawable.battery_charging)
-                    telemetry.soc > 85 -> painterResource(R.drawable.battery_full)
-                    telemetry.soc > 60 -> painterResource(R.drawable.battery_high)
-                    telemetry.soc >= 30 -> painterResource(R.drawable.battery_medium)
-                    else -> painterResource(R.drawable.battery_low)
-                }
-
-                Image(
-                    painter = batteryImage,
-                    contentDescription = "Battery level",
+                // Animated liquid fill battery
+                LiquidFillBattery(
+                    soc = telemetry.soc.toFloat(),
+                    isCharging = isCharging,
+                    width = 60.dp,
+                    height = 100.dp,
                     modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(start = 100.dp)
-                        .offset(x = -50.dp, y = -7.dp)
-                        .size(140.dp)
+                        .align(Alignment.TopStart)
+                        .padding(start = 90.dp)
+                        // .offset(x = -50.dp, y = -7.dp)
                 )
 
                 // AWD drivetrain with tyre pressures
                 Box(
                     modifier = Modifier
-                        .align(Alignment.Center)
-                        .offset(x = -20.dp)
+                        .align(Alignment.TopCenter)
+                        .padding(top = 12.dp)
                 ) {
                     // AWD Image
                     Image(
                         painter = painterResource(R.drawable.awd),
                         contentDescription = "AWD drivetrain",
-                        modifier = Modifier.size(120.dp)
+                        modifier = Modifier.size(90.dp)
                     )
     
                     // Tyre Pressure Overlays
@@ -412,7 +387,18 @@ fun EnergyFlowDiagram(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Range Projection Chart
+            RangeProjectionChart(
+                currentSoc = telemetry.soc,
+                currentRange = telemetry.electricDrivingRangeKm,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(190.dp)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Power metrics
             Row(
@@ -507,19 +493,19 @@ fun EnergyFlowCanvas(
     flowOffset: Float
 ) {
     Canvas(modifier = Modifier.fillMaxSize()) {
-        val width = size.width
-        val height = size.height
-        val centerX = width / 2
-        val centerY = height / 2
+
+        val topY = size.height * 0.3f + 30f  // Move up - 30% from top + 30px for better alignment with battery/motor icons
         
+        val batteryX = size.width * 0.15f
+        val batteryY = topY
+        
+        val motorX = size.width * 0.5f
+        val motorY = topY
+
         // Battery (left)
-        val batteryX = width * 0.2f
-        val batteryY = centerY
         val batterySize = 120f
 
         // Motor (center)
-        val motorX = centerX
-        val motorY = centerY
         val motorSize = 150f
 
         // Energy flow lines
@@ -537,7 +523,7 @@ fun EnergyFlowCanvas(
                 // Motor to Battery (regeneration)
                 drawEnergyFlow(
                     from = Offset(batteryX + batterySize / 3, batteryY),
-                    to = Offset(motorX - motorSize / 3, motorY),
+                    to = Offset(motorX - motorSize / 3 - 15, motorY),
                     color = flowColor,
                     dashPhase = dashPhase,
                     reverse = true
@@ -545,7 +531,7 @@ fun EnergyFlowCanvas(
             } else if (power > 0) {
                 // Battery to Motor (acceleration)
                 drawEnergyFlow(
-                    from = Offset(motorX - motorSize / 3, motorY),
+                    from = Offset(motorX - motorSize / 3 - 15, motorY),
                     to = Offset(batteryX + batterySize / 3, batteryY),
                     color = flowColor,
                     dashPhase = dashPhase,
@@ -621,7 +607,8 @@ fun PowerMetric(
     value: String,
     unit: String,
     color: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    compact: Boolean = true
 ) {
     Column(
         modifier = modifier,
@@ -629,7 +616,7 @@ fun PowerMetric(
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.labelLarge,
+            style = if (compact) MaterialTheme.typography.bodySmall else MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Row(
@@ -638,14 +625,14 @@ fun PowerMetric(
         ) {
             Text(
                 text = value,
-                style = MaterialTheme.typography.displaySmall,
+                style = if (compact) MaterialTheme.typography.headlineLarge else MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.Bold,
                 color = color
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = unit,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 4.dp)
             )
@@ -675,10 +662,19 @@ fun TripControls(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp)
+                .height(100.dp)
+                .padding(
+                    start = 8.dp,
+                    end = 8.dp,
+                    top = 8.dp,
+                    bottom = 4.dp  // ← Less bottom padding
+                )
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(30.dp)
+                    .padding(horizontal = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -693,7 +689,7 @@ fun TripControls(
                         text = "Auto",
                         style = MaterialTheme.typography.bodyLarge
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
                     Switch(
                         checked = autoTripDetection,
                         onCheckedChange = { onToggleAutoDetection() }
@@ -701,7 +697,7 @@ fun TripControls(
                 }
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -722,11 +718,11 @@ fun TripControls(
                         Icon(
                             imageVector = if (isInTrip) Icons.Filled.Stop else Icons.Filled.PlayArrow,
                             contentDescription = null,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (isInTrip) "End Trip" else "Start Trip",
+                            text = if (isInTrip) "End Trip" else "Record Trip",
                             fontSize = 18.sp
                         )
                     }
@@ -744,7 +740,7 @@ fun TripControls(
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(16.dp),
+                                    modifier = Modifier.padding(4.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     // Show actual gear letter in a circle
@@ -792,7 +788,7 @@ fun TripControls(
                                 Icon(
                                     imageVector = Icons.Filled.Stop,
                                     contentDescription = "Stop trip",
-                                    modifier = Modifier.size(24.dp)
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
                         }
@@ -804,7 +800,7 @@ fun TripControls(
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Row(
-                                modifier = Modifier.padding(16.dp),
+                                modifier = Modifier.padding(12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 // Show actual gear letter in a circle

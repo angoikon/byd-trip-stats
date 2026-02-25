@@ -13,22 +13,23 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80,
-    background = Color(0xFF121212),
-    surface = Color(0xFF1E1E1E),
-    onPrimary = Color.Black,
-    onSecondary = Color.Black,
-    onTertiary = Color.Black,
-    onBackground = Color.White,
-    onSurface = Color.White,
+    primary = BydCyanAccent,           // Cyan accent (matches car UI)
+    secondary = BydLightCyan,          // Lighter cyan for secondary elements
+    tertiary = Teal80,                 // Teal for tertiary (no more pink!)
+    background = BydDarkBackground,    // Very dark blue (matches car background)
+    surface = BydDarkSurface,          // Dark blue for cards (matches car cards)
+    surfaceVariant = BydDarkSurfaceVariant,  // Slightly lighter variant
+    onPrimary = Color.White,           // White text on cyan
+    onSecondary = Color.Black,         // Black text on light cyan
+    onTertiary = Color.Black,          // Black text on teal
+    onBackground = Color.White,        // White text on dark blue background
+    onSurface = Color.White,           // White text on dark blue surface
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = Purple40,
     secondary = PurpleGrey40,
-    tertiary = Pink40,
+    tertiary = Teal40,  // Changed from Pink40 to Teal40
     background = Color(0xFFFFFBFE),
     surface = Color(0xFFFFFBFE),
     onPrimary = Color.White,
@@ -49,7 +50,12 @@ fun BydTripStatsTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
+            // Use background color for status bar (seamless look like car UI)
+            window.statusBarColor = if (darkTheme) {
+                BydDarkBackground.toArgb()
+            } else {
+                colorScheme.primary.toArgb()
+            }
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
