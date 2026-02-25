@@ -141,7 +141,7 @@ fun LiquidFillBattery(
             
             // Create wave path
             val wavePath = Path().apply {
-                val waveAmplitude = 8f
+                val waveAmplitude = 3f
                 val waveFrequency = 0.03f
                 
                 moveTo(bodyLeft, fillTop)
@@ -208,18 +208,10 @@ fun LiquidFillBattery(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Text(
-            //     text = "${animatedSoc.toInt()}%",
-            //     fontSize = 32.sp,
-            //     fontWeight = FontWeight.Bold,
-            //     color = if (animatedSoc > 50f) Color.White else Color(0xFF333333),
-            //     style = MaterialTheme.typography.displaySmall
-            // )
-            
             if (isCharging) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "⚡ Charging",
+                    text = "⚡",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color(0xFF00D4FF)

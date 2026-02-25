@@ -83,9 +83,9 @@ fun DashboardScreen(
                     // MQTT Status indicator - properly shows connection state
                     Icon(
                         imageVector = when {
-                            mqttConnectionError != null -> Icons.Filled.CloudOff
-                            mqttConnected -> Icons.Filled.CloudDone
-                            else -> Icons.Filled.CloudOff
+                            mqttConnectionError != null -> Icons.Filled.SyncProblem
+                            mqttConnected -> Icons.Filled.Sync
+                            else -> Icons.Filled.SyncDisabled
                         },
                         contentDescription = "MQTT Status",
                         tint = when {
