@@ -117,7 +117,7 @@ fun LiquidFillBattery(
             
             // Battery nipple (top terminal)
             drawRoundRect(
-                color = Color.Gray.copy(alpha = 0.5f)
+                color = Color.Gray.copy(alpha = 0.5f),
                 topLeft = Offset(
                     x = (canvasWidth - batteryNippleWidth) / 2f,
                     y = 0f
@@ -128,7 +128,7 @@ fun LiquidFillBattery(
             
             // Battery outline
             drawRoundRect(
-                color = Color.Gray.copy(alpha = 0.9f)
+                color = Color.Gray.copy(alpha = 0.9f),
                 topLeft = Offset(bodyLeft, bodyTop),
                 size = Size(batteryBodyWidth, batteryBodyHeight),
                 cornerRadius = CornerRadius(8f, 8f),
