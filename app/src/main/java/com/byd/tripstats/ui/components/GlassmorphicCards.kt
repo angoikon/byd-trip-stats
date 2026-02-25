@@ -38,10 +38,10 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun GlassmorphicCard(
     modifier: Modifier = Modifier,
-    cornerRadius: Dp = 20.dp,
+    cornerRadius: Dp = 8.dp,
     borderWidth: Dp = 1.dp,
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
-    elevation: Dp = 4.dp,
+    elevation: Dp = 1.dp,
     content: @Composable BoxScope.() -> Unit
 ) {
     val shape = RoundedCornerShape(cornerRadius)
@@ -100,13 +100,13 @@ fun StatsGlassCard(
     GlassmorphicCard(
         modifier = modifier,
         backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
-        cornerRadius = 16.dp,
-        elevation = 2.dp
+        cornerRadius = 4.dp,
+        elevation = 1.dp
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(8.dp),
             content = content
         )
     }
