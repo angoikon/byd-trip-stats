@@ -12,10 +12,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
+import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,11 +31,12 @@ fun TripHistoryScreen(
     var selectedTrips by remember { mutableStateOf(setOf<Long>()) }
     var selectionMode by remember { mutableStateOf(false) }
     var showMergeDialog by remember { mutableStateOf(false) }
-    
+    var showDeleteSelectedDialog by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     Column {
                         Text("Trip History", fontSize = 24.sp, fontWeight = FontWeight.Bold)
                         if (!selectionMode) {
@@ -61,13 +65,24 @@ fun TripHistoryScreen(
                     }
                 },
                 actions = {
-                    if (selectionMode && selectedTrips.size >= 2) {
-                        IconButton(onClick = { showMergeDialog = true }) {
+                    if (selectionMode && selectedTrips.size >= 1) {
+                        IconButton(onClick = { showDeleteSelectedDialog = true }) {
                             Icon(
-                                Icons.Filled.MergeType,
-                                contentDescription = "Merge trips",
+                                Icons.Filled.Delete,
+                                contentDescription = "Delete selected trips",
+                                tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.size(24.dp)
                             )
+                        }
+                        if (selectedTrips.size >= 2) {
+                            IconButton(onClick = { showMergeDialog = true }) {
+                                Icon(
+                                    Icons.Filled.MergeType,
+                                    contentDescription = "Merge trips",
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(4.dp))
                         }
                         Text(
                             text = "${selectedTrips.size} selected",
@@ -75,7 +90,7 @@ fun TripHistoryScreen(
                             style = MaterialTheme.typography.titleMedium
                         )
                     } else if (!selectionMode) {
-                        TextButton(onClick = { 
+                        TextButton(onClick = {
                             selectionMode = true
                             selectedTrips = setOf()
                         }) {
@@ -129,7 +144,7 @@ fun TripHistoryScreen(
                         trip = trip,
                         isSelected = selectedTrips.contains(trip.id),
                         selectionMode = selectionMode,
-                        isActive = trip.isActive,  // Pass active state
+                        isActive = trip.isActive,
                         onClick = {
                             if (selectionMode) {
                                 // Don't allow selecting active trips
@@ -157,13 +172,12 @@ fun TripHistoryScreen(
             }
         }
     }
-    
-    // Merge confirmation dialog
+
     if (showMergeDialog) {
         AlertDialog(
             onDismissRequest = { showMergeDialog = false },
             title = { Text("Merge ${selectedTrips.size} Trips?") },
-            text = { 
+            text = {
                 Text("This will combine the selected trips into a single trip. All data points will be preserved. This action cannot be undone.")
             },
             confirmButton = {
@@ -185,6 +199,31 @@ fun TripHistoryScreen(
             }
         )
     }
+
+    if (showDeleteSelectedDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteSelectedDialog = false },
+            title = { Text("Delete ${selectedTrips.size} Trip${if (selectedTrips.size > 1) "s" else ""}?") },
+            text = { Text("This will permanently delete the selected trips and all their data. This action cannot be undone.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        selectedTrips.forEach { viewModel.deleteTrip(it) }
+                        showDeleteSelectedDialog = false
+                        selectionMode = false
+                        selectedTrips = setOf()
+                    }
+                ) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteSelectedDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -199,7 +238,45 @@ fun TripItem(
     onDelete: () -> Unit
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
-    
+
+    // Computed metrics
+    val avgSpeedKmh: Int? = remember(trip) {
+        val dist = trip.distance ?: return@remember null
+        val dur = trip.duration ?: return@remember null
+        if (dur <= 0 || dist <= 0) return@remember null
+        (dist / (dur / 3_600_000.0)).toInt()
+    }
+
+    // Trip score (0-100)
+    // Efficiency (0-40 pts): BYD Seal ideal ~15 kWh/100km, bad >=25 kWh/100km
+    // Regen      (0-30 pts): maxRegen / (maxPower + maxRegen) ratio
+    // Smoothness (0-30 pts): avgSpeed / maxSpeed - rewards steady driving
+    val tripScore: Int? = remember(trip) {
+        val efficiency = trip.efficiency ?: return@remember null
+        val dist = trip.distance ?: return@remember null
+        val dur = trip.duration ?: return@remember null
+        if (dist < 0.5 || dur <= 0) return@remember null
+
+        val effScore = when {
+            efficiency <= 15.0 -> 40
+            efficiency >= 25.0 -> 0
+            else -> ((25.0 - efficiency) / (25.0 - 15.0) * 40).toInt()
+        }
+
+        val maxRegen = abs(trip.maxRegenPower)
+        val maxPower = trip.maxPower
+        val regenScore = if (maxPower + maxRegen > 0)
+            ((maxRegen / (maxPower + maxRegen)) * 30).toInt().coerceIn(0, 30)
+        else 0
+
+        val avgSpeed = dist / (dur / 3_600_000.0)
+        val smoothScore = if (trip.maxSpeed > 0)
+            ((avgSpeed / trip.maxSpeed) * 30).toInt().coerceIn(0, 30)
+        else 0
+
+        (effScore + regenScore + smoothScore).coerceIn(0, 100)
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -216,88 +293,162 @@ fun TripItem(
             }
         )
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(16.dp)
         ) {
-            if (selectionMode) {
-                Checkbox(
-                    checked = isSelected,
-                    onCheckedChange = { onClick() },
-                    enabled = !isActive,  // Disable checkbox for active trips
-                    modifier = Modifier.padding(end = 8.dp)
+            // Header row: checkbox (left) + date + "In Progress" badge + delete (right)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Checkbox - always reserve space so date doesn't shift
+                Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) {
+                    if (selectionMode) {
+                        Checkbox(
+                            checked = isSelected,
+                            onCheckedChange = { onClick() },
+                            enabled = !isActive,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
+                Text(
+                    text = formatTimestamp(trip.startTime),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
                 )
-            }
-            
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = formatTimestamp(trip.startTime),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    
-                    // "In Progress" badge for ongoing trips
-                    if (trip.endTime == null) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            shape = MaterialTheme.shapes.small
+                if (trip.endTime == null) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = MaterialTheme.shapes.small
+                    ) {
+                        Text(
+                            text = "In Progress",
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+                // Delete icon - always reserve space so date doesn't shift
+                Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) {
+                    if (!selectionMode) {
+                        IconButton(
+                            onClick = { showDeleteDialog = true },
+                            enabled = !isActive,
+                            modifier = Modifier.size(24.dp)
                         ) {
-                            Text(
-                                text = "In Progress",
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                fontWeight = FontWeight.Bold
+                            Icon(
+                                Icons.Filled.Delete,
+                                "Delete",
+                                modifier = Modifier.size(18.dp),
+                                tint = if (isActive)
+                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                                else
+                                    MaterialTheme.colorScheme.error
                             )
                         }
                     }
                 }
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    InfoChip(
-                        icon = Icons.Filled.Route,
-                        text = "${String.format("%.1f", trip.distance ?: 0.0)} km"
-                    )
-                    InfoChip(
-                        icon = Icons.Filled.Timer,
-                        text = if (trip.endTime == null) "Ongoing..." else formatDuration(trip.duration ?: 0)
-                    )
-                    trip.efficiency?.let {
-                        InfoChip(
-                            icon = Icons.Filled.Eco,
-                            text = "${String.format("%.1f", it)} kWh / 100km"
-                        )
-                    }
-                }
             }
-            
-            if (!selectionMode) {
-                IconButton(
-                    onClick = { showDeleteDialog = true },
-                    enabled = !isActive  // Disable delete for active trips
-                ) {
-                    Icon(
-                        Icons.Filled.Delete, 
-                        "Delete", 
-                        tint = if (isActive) 
-                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)  // Grayed out
-                        else 
-                            MaterialTheme.colorScheme.error
-                    )
-                }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // ── Row 1: Distance | Duration | Avg Consumption
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                TripMetricChip(
+                    icon = Icons.Filled.Route,
+                    label = "Distance",
+                    value = "${String.format("%.1f", trip.distance ?: 0.0)} km",
+                    modifier = Modifier.weight(1f)
+                )
+                TripMetricChip(
+                    icon = Icons.Filled.Timer,
+                    label = "Duration",
+                    value = if (trip.endTime == null) "Ongoing…"
+                            else formatDuration(trip.duration ?: 0),
+                    modifier = Modifier.weight(1f)
+                )
+                TripMetricChip(
+                    icon = Icons.Filled.Eco,
+                    label = "Consumption",
+                    value = trip.efficiency
+                        ?.let { "${String.format("%.1f", it)} kWh/100" } ?: "—",
+                    iconTint = Color(0xFF4CAF50),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // ── Row 2: Energy | Max Regen | SOC | Delete icon
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TripMetricChip(
+                    icon = Icons.Filled.BatteryChargingFull,
+                    label = "Energy",
+                    value = trip.energyConsumed
+                        ?.let { "${String.format("%.2f", it)} kWh" } ?: "—",
+                    iconTint = Color(0xFFFF9800),
+                    modifier = Modifier.weight(1f)
+                )
+                TripMetricChip(
+                    icon = Icons.Filled.VolunteerActivism,
+                    label = "Max Regen",
+                    value = "${abs(trip.maxRegenPower).toInt()} kW",
+                    iconTint = Color(0xFF4CAF50),
+                    modifier = Modifier.weight(1f)
+                )
+                TripMetricChip(
+                    icon = Icons.Filled.Battery5Bar,
+                    label = "SOC",
+                    value = if (trip.endSoc != null)
+                        "${trip.startSoc.toInt()}%→${trip.endSoc!!.toInt()}%"
+                    else "—",
+                    modifier = Modifier.weight(1f)
+                )
+
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // ── Row 3: Avg Speed | Max Speed | Score
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                TripMetricChip(
+                    icon = Icons.Filled.Speed,
+                    label = "Avg Speed",
+                    value = if (avgSpeedKmh != null) "$avgSpeedKmh km/h" else "—",
+                    modifier = Modifier.weight(1f)
+                )
+                TripMetricChip(
+                    icon = Icons.Filled.TrendingUp,
+                    label = "Max Speed",
+                    value = "${trip.maxSpeed.toInt()} km/h",
+                    modifier = Modifier.weight(1f)
+                )
+                ScoreChip(
+                    score = tripScore,
+                    modifier = Modifier.weight(1f)
+                )
+
             }
         }
     }
-    
+
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
@@ -322,9 +473,140 @@ fun TripItem(
     }
 }
 
+/**
+ * Score chip - displays trip score 0-100 with colour feedback.
+ * Green >=80, Yellow 60-79, Orange 40-59, Red <40
+ */
+@Composable
+fun ScoreChip(
+    score: Int?,
+    modifier: Modifier = Modifier
+) {
+    val scoreColor = when {
+        score == null -> Color.Gray
+        score >= 80   -> Color(0xFF4CAF50)
+        score >= 60   -> Color(0xFFFFDD00)
+        score >= 40   -> Color(0xFFFF9800)
+        else          -> Color(0xFFF44336)
+    }
+    val grade = when {
+        score == null -> "—"
+        score >= 80   -> "A"
+        score >= 60   -> "B"
+        score >= 40   -> "C"
+        else          -> "D"
+    }
+
+    Surface(
+        modifier = modifier,
+        color = MaterialTheme.colorScheme.surface,
+        shape = MaterialTheme.shapes.small
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Star,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = scoreColor
+                )
+                Spacer(modifier = Modifier.width(3.dp))
+                Text(
+                    text = "Score",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Spacer(modifier = Modifier.height(2.dp))
+            if (score != null) {
+                Row(
+                    verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "$score",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = scoreColor
+                    )
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Text(
+                        text = "($grade)",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = scoreColor
+                    )
+                }
+            } else {
+                Text(
+                    text = "—",
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Compact labelled metric cell used inside TripItem rows.
+ */
+@Composable
+fun TripMetricChip(
+    icon: ImageVector,
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    iconTint: Color = MaterialTheme.colorScheme.primary
+) {
+    Surface(
+        modifier = modifier,
+        color = MaterialTheme.colorScheme.surface,
+        shape = MaterialTheme.shapes.small
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = iconTint
+                )
+                Spacer(modifier = Modifier.width(3.dp))
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+
+// ── Legacy InfoChip kept for potential reuse elsewhere ─────────────────────
+
 @Composable
 fun InfoChip(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     text: String
 ) {
     Surface(
@@ -351,15 +633,14 @@ fun InfoChip(
     }
 }
 
+// ── Helpers ─────────────────────────────────────────────────────────────────
+
 private fun formatDuration(milliseconds: Long): String {
     val seconds = milliseconds / 1000
     val hours = seconds / 3600
     val minutes = (seconds % 3600) / 60
-    return if (hours > 0) {
-        String.format("%dh %dm", hours, minutes)
-    } else {
-        String.format("%dm", minutes)
-    }
+    return if (hours > 0) String.format("%dh %dm", hours, minutes)
+    else String.format("%dm", minutes)
 }
 
 private fun formatTimestamp(timestamp: Long): String {

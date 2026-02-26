@@ -106,7 +106,7 @@ BYD Trip Stats is a free, open-source Android app that automatically tracks and 
 
 ### Software
 - ✅ **[Electro App](https://electro.app.br)** - Active subscription required (~€30/year)
-- ✅ **External MQTT Broker (optional)** - HiveMQ Cloud (free) or similar (configured in Electro, though localhost via Electro beats eversything)
+- ✅ **External MQTT Broker (optional)** - HiveMQ Cloud (free) or similar is needed. Configure publish events in Electro either way (internal/external broker)
 
 ### Permissions
 - 📢 **Notifications** - For foreground service
@@ -179,7 +179,7 @@ That's it! Now:
 ### Critical Settings in Electro App:
 
 **MQTT Update Interval:**
-- **When car is ON:** Either 500ms or 1 second (with max 10 seconds)
+- **When car is ON:** Either 1 second or 500ms
 - **When car is OFF:** Any interval (doesn't matter, longer is better for less data / battery drainage)
 
 **Why this matters:**
@@ -258,7 +258,7 @@ All information stays on your device:
 
 ### What is Sent to External Servers?
 
-**Only to YOUR EXTERNAL MQTT broker and only if you have chosen so:**
+**Only towards YOUR EXTERNAL MQTT broker and only if you have chosen so:**
 - Subscribe to telemetry topic
 - Receive vehicle data
 
