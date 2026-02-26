@@ -4,6 +4,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -507,7 +508,6 @@ fun TyrePressureIndicator(
     
     val isLow = pressureBar < minPressure
     val isHigh = pressureBar > maxPressure
-    val isNormal = !isLow && !isHigh
     
     Surface(
         modifier = modifier,
@@ -780,7 +780,9 @@ fun TripControls(
                     if (isInTrip) {
                         // Show stop button for ongoing auto trip
                         Row(
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(IntrinsicSize.Min),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Surface(
@@ -830,6 +832,7 @@ fun TripControls(
                             // Stop button for auto trip
                             Button(
                                 onClick = onEndTrip,
+                                modifier = Modifier.fillMaxHeight(),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.error
                                 )
