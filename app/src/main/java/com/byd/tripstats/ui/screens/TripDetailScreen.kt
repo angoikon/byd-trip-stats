@@ -273,7 +273,7 @@ fun saveTripAsCSV(
     dataPoints: List<com.byd.tripstats.data.local.entity.TripDataPointEntity>
 ) {
     try {
-        val fileName = "trip_${trip.id}_${System.currentTimeMillis()}.csv"
+        val fileName = "${System.currentTimeMillis()}-trip_${trip.id}_.csv"
 
         val csvContent = buildString {
             appendLine("timestamp,latitude,longitude,altitude,speed,power,soc,odometer,batteryTemp,gear,engineSpeedFront,engineSpeedRear")
@@ -299,7 +299,7 @@ fun saveTripAsJSON(
     dataPoints: List<com.byd.tripstats.data.local.entity.TripDataPointEntity>
 ) {
     try {
-        val fileName = "trip_${trip.id}_${System.currentTimeMillis()}.json"
+        val fileName = "${System.currentTimeMillis()}-trip_${trip.id}_.json"
 
         val jsonContent = buildString {
             appendLine("{")
