@@ -134,7 +134,7 @@ fun RangeProjectionChart(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp),
+                .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.Bottom
         ) {
             Column {
@@ -166,7 +166,7 @@ fun RangeProjectionChart(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .padding(horizontal = 12.dp, vertical = 4.dp)
+                .padding(horizontal = 12.dp)
         ) {
             val w = size.width
             val h = size.height

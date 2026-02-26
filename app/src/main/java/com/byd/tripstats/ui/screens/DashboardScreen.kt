@@ -385,7 +385,6 @@ fun EnergyFlowDiagram(
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .padding(start = 90.dp)
-                        // .offset(x = -50.dp, y = -7.dp)
                 )
 
                 // AWD drivetrain with tyre pressures
@@ -440,26 +439,29 @@ fun EnergyFlowDiagram(
                 }
             }
 
+            // Range Projection Chart — tap to flip to expanded view
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+            ) {
+                RangeProjectionChart(
+                    dataPoints = tripDataPoints,
+                    liveSoc = telemetry.soc,
+                    wltpRangeKm = 520, // TODO: make this dynamic based on car model via config
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable { flipped = true }
+                )
+            }
+
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Range Projection Chart — tap to flip to expanded view
-            RangeProjectionChart(
-                dataPoints = tripDataPoints,
-                liveSoc = telemetry.soc,
-                wltpRangeKm = 520, // TODO: make this dynamic based on car model via config
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(190.dp)
-                    .clickable { flipped = true }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
             // Power metrics
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
                 PowerMetric(
                     label = "Power",
                     value = "${power.toInt()}",
@@ -491,7 +493,8 @@ fun EnergyFlowDiagram(
                     unit = "km",
                     color = MaterialTheme.colorScheme.tertiary
                 )
-            }
+            }   // end Row
+        }   // end power metrics Box
         }   // end front Column
         }   // end if/else
     }       // end Card
