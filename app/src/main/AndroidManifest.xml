@@ -27,6 +27,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.BydTripStats"
+        android:requestLegacyExternalStorage="true"
         tools:targetApi="29">
         
         <!-- Main Activity -->
