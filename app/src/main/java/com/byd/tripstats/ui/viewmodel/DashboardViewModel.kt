@@ -17,8 +17,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import com.byd.tripstats.ui.components.RangeDataPoint
 
 class DashboardViewModel(application: Application) : AndroidViewModel(application) {
     private val TAG = "DashboardViewModel"
@@ -63,13 +66,89 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             initialValue = emptyList()
         )
 
+    /**
+     * Pre-computed display metrics for every trip, keyed by trip ID.
+     * Derived from allTrips on a background coroutine so the LazyColumn
+     * never does any arithmetic during scroll — just a map lookup.
+     */
+    data class TripDisplayMetrics(val avgSpeedKmh: Int?, val tripScore: Int?)
+
+    val tripDisplayMetrics: StateFlow<Map<Long, TripDisplayMetrics>> = allTrips
+        .map { trips ->
+            trips.associate { trip ->
+                val dist = trip.distance
+                val dur  = trip.duration
+                val avgSpeed = if (dist != null && dur != null && dur > 0 && dist > 0)
+                    (dist / (dur / 3_600_000.0)).toInt() else null
+
+                val score = run {
+                    val eff = trip.efficiency ?: return@run null
+                    if (dist == null || dur == null || dist < 0.5 || dur <= 0) return@run null
+                    val effScore = when {
+                        eff <= 15.0 -> 40
+                        eff >= 25.0 -> 0
+                        else -> ((25.0 - eff) / (25.0 - 15.0) * 40).toInt()
+                    }
+                    val maxRegen = kotlin.math.abs(trip.maxRegenPower)
+                    val maxPower = trip.maxPower
+                    val regenScore = if (maxPower + maxRegen > 0)
+                        ((maxRegen / (maxPower + maxRegen)) * 30).toInt().coerceIn(0, 30) else 0
+                    val avg = dist / (dur / 3_600_000.0)
+                    val smoothScore = if (trip.maxSpeed > 0)
+                        ((avg / trip.maxSpeed) * 30).toInt().coerceIn(0, 30) else 0
+                    (effScore + regenScore + smoothScore).coerceIn(0, 100)
+                }
+                trip.id to TripDisplayMetrics(avgSpeed, score)
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = Eagerly, // compute immediately and keep up-to-date for the entire app lifecycle since it's cheap to compute and used in multiple places, else SharingStarted.WhileSubscribed(5000)
+            initialValue = emptyMap()
+        )
+
     // Auto trip detection
     private val _autoTripDetection = MutableStateFlow(true)
     val autoTripDetection: StateFlow<Boolean> = _autoTripDetection.asStateFlow()
 
+    // Live range projection data points for the current trip (in-memory, not persisted)
+    private val _tripDataPoints = MutableStateFlow<List<RangeDataPoint>>(emptyList())
+    val tripDataPoints: StateFlow<List<RangeDataPoint>> = _tripDataPoints.asStateFlow()
+    private var tripStartOdometer: Double? = null
+
     init {
         // Initialize auto trip detection state
         _autoTripDetection.value = tripRepository.isAutoTripDetectionEnabled()
+
+        // Accumulate range projection data points reactively during active trips.
+        // Uses odometer delta for distance so no extra telemetry field is required.
+        viewModelScope.launch {
+            var wasInTrip = false
+            combine(isInTrip, currentTelemetry) { inTrip, telemetry ->
+                inTrip to telemetry
+            }.collect { (inTrip, telemetry) ->
+                if (telemetry == null) return@collect
+
+                when {
+                    inTrip && !wasInTrip -> {
+                        // Trip just started — anchor odometer and seed the first point
+                        tripStartOdometer = telemetry.odometer
+                        _tripDataPoints.value = listOf(RangeDataPoint(0.0, telemetry.soc))
+                    }
+                    !inTrip && wasInTrip -> {
+                        // Trip just ended — keep the points visible until next trip starts
+                        tripStartOdometer = null
+                    }
+                    inTrip -> {
+                        // Ongoing trip — append a point (throttled naturally by MQTT rate)
+                        val distKm = telemetry.odometer - (tripStartOdometer ?: telemetry.odometer)
+                        _tripDataPoints.value = _tripDataPoints.value +
+                            RangeDataPoint(distKm.coerceAtLeast(0.0), telemetry.soc)
+                    }
+                }
+                wasInTrip = inTrip
+            }
+        }
     }
 
     // For Settings screen to restart service with new config
@@ -155,8 +234,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             val telemetry = currentTelemetry.value
             if (telemetry != null) {
+                _tripDataPoints.value = emptyList() // reset before repository triggers isInTrip → true
                 tripRepository.startTrip(telemetry, isManual = true)
-                // No need to update state - repository will broadcast via StateFlow
             }
         }
     }
@@ -189,11 +268,14 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun getTripDetails(tripId: Long): StateFlow<TripEntity?> {
+        // Seed with the already-loaded list entry so the details screen never
+        // renders a null frame — eliminates the one-frame flicker on navigation.
+        val cached = allTrips.value.firstOrNull { it.id == tripId }
         return tripRepository.getTripById(tripId)
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
-                initialValue = null
+                initialValue = cached
             )
     }
 

@@ -12,6 +12,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.background
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -28,6 +30,7 @@ fun TripHistoryScreen(
     onNavigateBack: () -> Unit
 ) {
     val trips by viewModel.allTrips.collectAsState()
+    val displayMetrics by viewModel.tripDisplayMetrics.collectAsState()
     var selectedTrips by remember { mutableStateOf(setOf<Long>()) }
     var selectionMode by remember { mutableStateOf(false) }
     var showMergeDialog by remember { mutableStateOf(false) }
@@ -139,9 +142,12 @@ fun TripHistoryScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(vertical = 16.dp)
             ) {
-                items(trips) { trip ->
+                items(trips, key = { it.id }) { trip ->
+                    val metrics = displayMetrics[trip.id]
                     TripItem(
                         trip = trip,
+                        avgSpeedKmh = metrics?.avgSpeedKmh,
+                        tripScore = metrics?.tripScore,
                         isSelected = selectedTrips.contains(trip.id),
                         selectionMode = selectionMode,
                         isActive = trip.isActive,
@@ -230,6 +236,8 @@ fun TripHistoryScreen(
 @Composable
 fun TripItem(
     trip: com.byd.tripstats.data.local.entity.TripEntity,
+    avgSpeedKmh: Int?,
+    tripScore: Int?,
     isSelected: Boolean = false,
     selectionMode: Boolean = false,
     isActive: Boolean = false,
@@ -239,55 +247,17 @@ fun TripItem(
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    // Computed metrics
-    val avgSpeedKmh: Int? = remember(trip) {
-        val dist = trip.distance ?: return@remember null
-        val dur = trip.duration ?: return@remember null
-        if (dur <= 0 || dist <= 0) return@remember null
-        (dist / (dur / 3_600_000.0)).toInt()
-    }
-
-    // Trip score (0-100)
-    // Efficiency (0-40 pts): BYD Seal ideal ~15 kWh/100km, bad >=25 kWh/100km
-    // Regen      (0-30 pts): maxRegen / (maxPower + maxRegen) ratio
-    // Smoothness (0-30 pts): avgSpeed / maxSpeed - rewards steady driving
-    val tripScore: Int? = remember(trip) {
-        val efficiency = trip.efficiency ?: return@remember null
-        val dist = trip.distance ?: return@remember null
-        val dur = trip.duration ?: return@remember null
-        if (dist < 0.5 || dur <= 0) return@remember null
-
-        val effScore = when {
-            efficiency <= 15.0 -> 40
-            efficiency >= 25.0 -> 0
-            else -> ((25.0 - efficiency) / (25.0 - 15.0) * 40).toInt()
-        }
-
-        val maxRegen = abs(trip.maxRegenPower)
-        val maxPower = trip.maxPower
-        val regenScore = if (maxPower + maxRegen > 0)
-            ((maxRegen / (maxPower + maxRegen)) * 30).toInt().coerceIn(0, 30)
-        else 0
-
-        val avgSpeed = dist / (dur / 3_600_000.0)
-        val smoothScore = if (trip.maxSpeed > 0)
-            ((avgSpeed / trip.maxSpeed) * 30).toInt().coerceIn(0, 30)
-        else 0
-
-        (effScore + regenScore + smoothScore).coerceIn(0, 100)
-    }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick,
-                enabled = !isActive || !selectionMode  // Disable interaction for active trips in selection mode
+                enabled = !isActive || !selectionMode
             ),
         colors = CardDefaults.cardColors(
             containerColor = when {
-                isActive && selectionMode -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)  // Dimmed for active
+                isActive && selectionMode -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                 isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
                 else -> MaterialTheme.colorScheme.surfaceVariant
             }
@@ -497,15 +467,15 @@ fun ScoreChip(
         else          -> "D"
     }
 
-    Surface(
-        modifier = modifier,
-        color = MaterialTheme.colorScheme.surface,
-        shape = MaterialTheme.shapes.small
+    val bgColor = MaterialTheme.colorScheme.surface
+    val shape = MaterialTheme.shapes.small
+    Box(
+        modifier = modifier
+            .clip(shape)
+            .background(bgColor)
+            .padding(horizontal = 8.dp, vertical = 6.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -556,6 +526,8 @@ fun ScoreChip(
 
 /**
  * Compact labelled metric cell used inside TripItem rows.
+ * Uses Box + background instead of Surface to avoid unnecessary composition overhead
+ * when rendering many chips inside a LazyColumn.
  */
 @Composable
 fun TripMetricChip(
@@ -565,15 +537,15 @@ fun TripMetricChip(
     modifier: Modifier = Modifier,
     iconTint: Color = MaterialTheme.colorScheme.primary
 ) {
-    Surface(
-        modifier = modifier,
-        color = MaterialTheme.colorScheme.surface,
-        shape = MaterialTheme.shapes.small
+    val bgColor = MaterialTheme.colorScheme.surface
+    val shape = MaterialTheme.shapes.small
+    Box(
+        modifier = modifier
+            .clip(shape)
+            .background(bgColor)
+            .padding(horizontal = 8.dp, vertical = 6.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center

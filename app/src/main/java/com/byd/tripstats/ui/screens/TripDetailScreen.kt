@@ -50,9 +50,9 @@ fun TripDetailScreen(
     viewModel: DashboardViewModel,
     onNavigateBack: () -> Unit
 ) {
-    val trip by viewModel.getTripDetails(tripId).collectAsState()
-    val dataPoints by viewModel.getTripDataPoints(tripId).collectAsState()
-    val stats by viewModel.getTripStats(tripId).collectAsState()
+    val trip by remember(tripId) { viewModel.getTripDetails(tripId) }.collectAsState()
+    val dataPoints by remember(tripId) { viewModel.getTripDataPoints(tripId) }.collectAsState()
+    val stats by remember(tripId) { viewModel.getTripStats(tripId) }.collectAsState()
 
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Overview", "Charts", "Route", "Analysis")

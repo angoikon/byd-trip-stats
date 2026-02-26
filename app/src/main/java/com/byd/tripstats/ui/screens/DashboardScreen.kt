@@ -24,6 +24,7 @@ import com.byd.tripstats.ui.components.LiquidFillBattery
 import com.byd.tripstats.ui.components.StatsGlassCard
 import com.byd.tripstats.ui.components.GlassmorphicCard
 import com.byd.tripstats.ui.components.RangeProjectionChart
+import com.byd.tripstats.ui.components.RangeDataPoint
 import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import kotlin.math.abs
@@ -35,7 +36,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.StrokeCap
 
-private const val SHOW_MOCK_BUTTON = true  // Set to true for testing, false for production
+private const val SHOW_MOCK_BUTTON = false  // Set to true for testing, false for production
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,6 +50,7 @@ fun DashboardScreen(
     val mqttConnected by viewModel.mqttConnected.collectAsState()
     val mqttConnectionError by viewModel.mqttConnectionError.collectAsState()
     val autoTripDetection by viewModel.autoTripDetection.collectAsState()
+    val tripDataPoints by viewModel.tripDataPoints.collectAsState()
 
     Scaffold(
         topBar = {
@@ -212,6 +214,7 @@ fun DashboardScreen(
                 telemetry = telemetry!!,
                 isInTrip = isInTrip,
                 autoTripDetection = autoTripDetection,
+                tripDataPoints = tripDataPoints,
                 onStartTrip = { viewModel.startManualTrip() },
                 onEndTrip = { viewModel.endManualTrip() },
                 onToggleAutoDetection = { viewModel.toggleAutoTripDetection() },
@@ -226,6 +229,7 @@ fun DashboardContent(
     telemetry: VehicleTelemetry,
     isInTrip: Boolean,
     autoTripDetection: Boolean,
+    tripDataPoints: List<RangeDataPoint>,
     onStartTrip: () -> Unit,
     onEndTrip: () -> Unit,
     onToggleAutoDetection: () -> Unit,
@@ -246,6 +250,7 @@ fun DashboardContent(
         ) {
             EnergyFlowDiagram(
                 telemetry = telemetry,
+                tripDataPoints = tripDataPoints,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
@@ -280,6 +285,7 @@ fun DashboardContent(
 @Composable
 fun EnergyFlowDiagram(
     telemetry: VehicleTelemetry,
+    tripDataPoints: List<RangeDataPoint>,
     modifier: Modifier = Modifier
 ) {
     val power = telemetry.enginePower
@@ -391,8 +397,8 @@ fun EnergyFlowDiagram(
 
             // Range Projection Chart
             RangeProjectionChart(
-                currentSoc = telemetry.soc,
-                currentRange = telemetry.electricDrivingRangeKm,
+                dataPoints = tripDataPoints,
+                wltpRangeKm = 520, // TODO: replace with configurable value
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(190.dp)
