@@ -103,7 +103,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         }
         .stateIn(
             scope = viewModelScope,
-            started = Eagerly, // compute immediately and keep up-to-date for the entire app lifecycle since it's cheap to compute and used in multiple places, else SharingStarted.WhileSubscribed(5000)
+            started = SharingStarted.Eagerly, // compute immediately and keep up-to-date for the entire app lifecycle since it's cheap to compute and used in multiple places, else SharingStarted.WhileSubscribed(5000)
             initialValue = emptyMap()
         )
 

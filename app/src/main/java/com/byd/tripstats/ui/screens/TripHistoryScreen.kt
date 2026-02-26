@@ -40,11 +40,15 @@ fun TripHistoryScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         Text("Trip History", fontSize = 24.sp, fontWeight = FontWeight.Bold)
                         if (!selectionMode) {
+                            Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                "Click trip for more details",
+                                "(Click trip for analytics, long-press to select for merging / multiple deletion)",
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -286,9 +290,13 @@ fun TripItem(
                     }
                 }
                 Text(
-                    text = formatTimestamp(trip.startTime),
+                    text = if (trip.endTime != null)
+                        "${formatTimestamp(trip.startTime)}  →  ${formatTimestamp(trip.endTime!!)}"
+                    else
+                        formatTimestamp(trip.startTime),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     modifier = Modifier.weight(1f)
                 )
                 if (trip.endTime == null) {
