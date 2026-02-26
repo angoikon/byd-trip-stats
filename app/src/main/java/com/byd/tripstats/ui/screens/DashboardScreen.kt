@@ -321,7 +321,6 @@ fun EnergyFlowDiagram(
     Card(
         modifier = modifier
             .clipToBounds()
-            .clickable { flipped = !flipped }
             .graphicsLayer {
                 rotationY = rotation
                 cameraDistance = 12f * density
@@ -339,6 +338,7 @@ fun EnergyFlowDiagram(
                         rotationY = 180f
                         compositingStrategy = CompositingStrategy.Offscreen
                     }
+                    .clickable { flipped = false }
                     .padding(8.dp)
             ) {
                 Text(
@@ -442,7 +442,7 @@ fun EnergyFlowDiagram(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Range Projection Chart
+            // Range Projection Chart — tap to flip to expanded view
             RangeProjectionChart(
                 dataPoints = tripDataPoints,
                 liveSoc = telemetry.soc,
@@ -450,6 +450,7 @@ fun EnergyFlowDiagram(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(190.dp)
+                    .clickable { flipped = true }
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -513,6 +514,7 @@ fun TyrePressureIndicator(
     
     val isLow = pressureBar < minPressure
     val isHigh = pressureBar > maxPressure
+    val isNormal = !isLow && !isHigh
     
     Surface(
         modifier = modifier,
