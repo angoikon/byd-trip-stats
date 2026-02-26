@@ -2,6 +2,7 @@ package com.byd.tripstats.ui.screens
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -14,7 +15,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -291,7 +294,16 @@ fun EnergyFlowDiagram(
     val power = telemetry.enginePower
     val isRegenerating = telemetry.isRegenerating
     val isCharging = telemetry.isCharging
-    
+
+    // ── Card flip state ───────────────────────────────────────────────────────
+    var flipped by remember { mutableStateOf(false) }
+    val rotation by animateFloatAsState(
+        targetValue = if (flipped) 180f else 0f,
+        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing),
+        label = "card_flip"
+    )
+    val isBack = rotation > 90f
+
     // Animation for energy flow
     val infiniteTransition = rememberInfiniteTransition(label = "energy_flow")
     val flowOffset by infiniteTransition.animateFloat(
@@ -305,16 +317,45 @@ fun EnergyFlowDiagram(
     )
 
     Card(
-        modifier = modifier,
+        modifier = modifier
+            .clipToBounds()
+            .clickable { flipped = !flipped }
+            .graphicsLayer {
+                rotationY = rotation
+                cameraDistance = 12f * density
+            },
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp)
-        ) {
+        if (isBack) {
+            // ── Back face: full-size range projection chart ───────────────────
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer { rotationY = 180f }  // un-mirror text
+                    .padding(8.dp)
+            ) {
+                Text(
+                    text = "Range Projection",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 8.dp, top = 4.dp, bottom = 4.dp)
+                )
+                RangeProjectionChart(
+                    dataPoints = tripDataPoints,
+                    liveSoc = telemetry.soc,
+                    wltpRangeKm = 520, // TODO: make this dynamic based on car model via config
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        } else {
+            // ── Front face: normal energy flow + compact chart ────────────────
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(12.dp)
+            ) {
             // Main energy flow visualization
             Box(
                 modifier = Modifier
@@ -398,7 +439,8 @@ fun EnergyFlowDiagram(
             // Range Projection Chart
             RangeProjectionChart(
                 dataPoints = tripDataPoints,
-                wltpRangeKm = 520, // TODO: replace with configurable value
+                liveSoc = telemetry.soc,
+                wltpRangeKm = 520, // TODO: make this dynamic based on car model via config
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(190.dp)
@@ -443,8 +485,9 @@ fun EnergyFlowDiagram(
                     color = MaterialTheme.colorScheme.tertiary
                 )
             }
-        }
-    }
+        }   // end front Column
+        }   // end if/else
+    }       // end Card
 }
 
 @Composable

@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import com.byd.tripstats.ui.components.RangeDataPoint
@@ -66,15 +65,24 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             initialValue = emptyList()
         )
 
+    // All trip stats in one query — needed to compute regen efficiency per trip
+    private val allTripStats: StateFlow<List<TripStatsEntity>> = tripRepository.getAllTripStats()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = emptyList()
+        )
+
     /**
      * Pre-computed display metrics for every trip, keyed by trip ID.
-     * Derived from allTrips on a background coroutine so the LazyColumn
-     * never does any arithmetic during scroll — just a map lookup.
+     * Derived from allTrips + allTripStats so the LazyColumn never does
+     * any arithmetic during scroll — just a map lookup.
      */
-    data class TripDisplayMetrics(val avgSpeedKmh: Int?, val tripScore: Int?)
+    data class TripDisplayMetrics(val avgSpeedKmh: Int?, val tripScore: Int?, val regenEfficiencyPct: Double?)
 
-    val tripDisplayMetrics: StateFlow<Map<Long, TripDisplayMetrics>> = allTrips
-        .map { trips ->
+    val tripDisplayMetrics: StateFlow<Map<Long, TripDisplayMetrics>> =
+        combine(allTrips, allTripStats) { trips, stats ->
+            val statsById = stats.associateBy { it.tripId }
             trips.associate { trip ->
                 val dist = trip.distance
                 val dur  = trip.duration
@@ -98,7 +106,18 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         ((avg / trip.maxSpeed) * 30).toInt().coerceIn(0, 30) else 0
                     (effScore + regenScore + smoothScore).coerceIn(0, 100)
                 }
-                trip.id to TripDisplayMetrics(avgSpeed, score)
+
+                val tripStat = statsById[trip.id]
+                val regenPct = if (
+                    tripStat?.totalRegenEnergy != null &&
+                    trip.energyConsumed != null &&
+                    trip.energyConsumed!! > 0
+                ) {
+                    val regen = tripStat.totalRegenEnergy!!
+                    (regen / (trip.energyConsumed!! + regen)) * 100.0
+                } else null
+
+                trip.id to TripDisplayMetrics(avgSpeed, score, regenPct)
             }
         }
         .stateIn(

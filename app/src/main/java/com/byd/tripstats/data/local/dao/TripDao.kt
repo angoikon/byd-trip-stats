@@ -76,6 +76,9 @@ interface TripStatsDao {
     
     @Query("SELECT * FROM trip_stats WHERE tripId = :tripId")
     fun getStatsForTripFlow(tripId: Long): Flow<TripStatsEntity?>
+
+    @Query("SELECT * FROM trip_stats")
+    fun getAllTripStats(): Flow<List<TripStatsEntity>>
     
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertStats(stats: TripStatsEntity)

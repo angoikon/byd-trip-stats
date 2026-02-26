@@ -46,7 +46,7 @@ fun TripHistoryScreen(
                     ) {
                         Text("Trip History", fontSize = 24.sp, fontWeight = FontWeight.Bold)
                         if (!selectionMode) {
-                            Spacer(modifier = Modifier.width(12.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 "(Click trip for analytics, long-press to select for merging / multiple deletion)",
                                 fontSize = 14.sp,
@@ -152,6 +152,7 @@ fun TripHistoryScreen(
                         trip = trip,
                         avgSpeedKmh = metrics?.avgSpeedKmh,
                         tripScore = metrics?.tripScore,
+                        regenEfficiencyPct = metrics?.regenEfficiencyPct,
                         isSelected = selectedTrips.contains(trip.id),
                         selectionMode = selectionMode,
                         isActive = trip.isActive,
@@ -242,6 +243,7 @@ fun TripItem(
     trip: com.byd.tripstats.data.local.entity.TripEntity,
     avgSpeedKmh: Int?,
     tripScore: Int?,
+    regenEfficiencyPct: Double?,
     isSelected: Boolean = false,
     selectionMode: Boolean = false,
     isActive: Boolean = false,
@@ -289,16 +291,25 @@ fun TripItem(
                         )
                     }
                 }
-                Text(
-                    text = if (trip.endTime != null)
-                        "${formatTimestamp(trip.startTime)}  →  ${formatTimestamp(trip.endTime!!)}"
-                    else
-                        formatTimestamp(trip.startTime),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                    modifier = Modifier.weight(1f)
-                )
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = if (trip.endTime != null)
+                            "${formatTimestamp(trip.startTime)}  →  ${formatTimestamp(trip.endTime!!)}:"
+                        else
+                            formatTimestamp(trip.startTime),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    if (trip.endTime != null) {
+                        Spacer(modifier = Modifier.width(12.dp))
+                        ScoreChip(score = tripScore)
+                    }
+                }
                 if (trip.endTime == null) {
                     Surface(
                         color = MaterialTheme.colorScheme.primaryContainer,
@@ -357,7 +368,7 @@ fun TripItem(
                 )
                 TripMetricChip(
                     icon = Icons.Filled.Eco,
-                    label = "Consumption",
+                    label = "Avg Consumption",
                     value = trip.efficiency
                         ?.let { "${String.format("%.1f", it)} kWh/100" } ?: "—",
                     iconTint = Color(0xFF4CAF50),
@@ -367,7 +378,7 @@ fun TripItem(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // ── Row 2: Energy | Max Regen | SOC | Delete icon
+            // ── Row 2: Energy | Max Regen | Regeneration Efficiency
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -375,33 +386,31 @@ fun TripItem(
             ) {
                 TripMetricChip(
                     icon = Icons.Filled.BatteryChargingFull,
-                    label = "Energy",
+                    label = "Energy consumed",
                     value = trip.energyConsumed
                         ?.let { "${String.format("%.2f", it)} kWh" } ?: "—",
                     iconTint = Color(0xFFFF9800),
                     modifier = Modifier.weight(1f)
                 )
                 TripMetricChip(
-                    icon = Icons.Filled.VolunteerActivism,
+                    icon = Icons.Filled.BatteryChargingFull,
                     label = "Max Regen",
                     value = "${abs(trip.maxRegenPower).toInt()} kW",
                     iconTint = Color(0xFF4CAF50),
                     modifier = Modifier.weight(1f)
                 )
                 TripMetricChip(
-                    icon = Icons.Filled.Battery5Bar,
-                    label = "SOC",
-                    value = if (trip.endSoc != null)
-                        "${trip.startSoc.toInt()}%→${trip.endSoc!!.toInt()}%"
-                    else "—",
+                    icon = Icons.Filled.VolunteerActivism,
+                    label = "Regen Eff.",
+                    value = regenEfficiencyPct?.let { "%.1f%%".format(it) } ?: "—",
+                    iconTint = Color(0xFF4CAF50),
                     modifier = Modifier.weight(1f)
                 )
-
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // ── Row 3: Avg Speed | Max Speed | Score
+            // ── Row 3: Avg Speed | Max Speed | SoC
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -418,11 +427,14 @@ fun TripItem(
                     value = "${trip.maxSpeed.toInt()} km/h",
                     modifier = Modifier.weight(1f)
                 )
-                ScoreChip(
-                    score = tripScore,
+                TripMetricChip(
+                    icon = Icons.Filled.Battery4Bar,
+                    label = "SOC",
+                    value = if (trip.endSoc != null)
+                        "${trip.startSoc.toInt()}%-> ${trip.endSoc!!.toInt()}%"
+                    else "—",
                     modifier = Modifier.weight(1f)
                 )
-
             }
         }
     }

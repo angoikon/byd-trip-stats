@@ -53,6 +53,8 @@ fun TripDetailScreen(
     val trip by remember(tripId) { viewModel.getTripDetails(tripId) }.collectAsState()
     val dataPoints by remember(tripId) { viewModel.getTripDataPoints(tripId) }.collectAsState()
     val stats by remember(tripId) { viewModel.getTripStats(tripId) }.collectAsState()
+    val tripMetrics by viewModel.tripDisplayMetrics.collectAsState()
+    val regenEfficiencyPct = tripMetrics[tripId]?.regenEfficiencyPct
 
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Overview", "Charts", "Route", "Analysis")
@@ -137,7 +139,7 @@ fun TripDetailScreen(
                         .weight(1f)
                 ) {
                     when (selectedTab) {
-                        0 -> TripOverviewTab(trip = trip!!, stats = stats)
+                        0 -> TripOverviewTab(trip = trip!!, stats = stats, regenEfficiencyPct = regenEfficiencyPct)
                         1 -> TripChartsTab(dataPoints = dataPoints, stats = stats)
                         2 -> TripRouteTab(dataPoints = dataPoints)
                         3 -> RouteAnalysisTab(dataPoints = dataPoints)
@@ -453,7 +455,8 @@ fun saveTripSummaryAsText(
 @Composable
 fun TripOverviewTab(
     trip: com.byd.tripstats.data.local.entity.TripEntity,
-    stats: com.byd.tripstats.data.local.entity.TripStatsEntity?
+    stats: com.byd.tripstats.data.local.entity.TripStatsEntity?,
+    regenEfficiencyPct: Double?
 ) {
     Column(
         modifier = Modifier
@@ -547,12 +550,7 @@ fun TripOverviewTab(
                 DetailRow("Max Regen", "${abs(trip.maxRegenPower).toInt()} kW")
                 DetailRow("Energy consumed", trip.energyConsumed?.let { String.format("%.2f kWh", it) } ?: "-")
                 DetailRow("Energy regenerated", stats?.totalRegenEnergy?.let { String.format("%.2f kWh", it) } ?: "-")
-                DetailRow("Regeneration efficiency", 
-                    if (trip.energyConsumed != null && stats?.totalRegenEnergy != null && trip.energyConsumed!! > 0) {
-                        val regenPercent = (stats.totalRegenEnergy!! / (trip.energyConsumed!! + stats.totalRegenEnergy!!)) * 100
-                        String.format("%.2f%%", regenPercent)
-                    } else "-"
-                )
+                DetailRow("Regeneration efficiency", regenEfficiencyPct?.let { String.format("%.2f%%", it) } ?: "-")
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                 DetailRow("Battery Temp Range", "${trip.minBatteryCellTemp}°C - ${trip.maxBatteryCellTemp}°C")

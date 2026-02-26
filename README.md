@@ -51,6 +51,7 @@ BYD Trip Stats is a free, open-source Android app that automatically tracks and 
 - **Battery health** - Temperature, voltage, SOH
 
 ### 📈 Detailed Charts
+- **Range projection chart** - Estimated remaining range based on distance travelled during the trip
 - **Energy Consumption** - kWh over time
 - **Speed Profile** - km/h throughout trip
 - **State of Charge** - Battery percentage tracking
@@ -59,6 +60,7 @@ BYD Trip Stats is a free, open-source Android app that automatically tracks and 
 - **Power Distribution** - Histogram of power usage
 - **Speed Distribution** - Histogram of speed usage
 - **Route Map** - OpenStreetMap with start/end markers
+- **Driving score calculation**  - Score based on your consumption, regen capacity and average speed
 
 ### 🗺️ Route Analysis
 - **GPS route visualization** with OpenStreetMap
@@ -316,7 +318,6 @@ Have an idea? Open an issue with the "enhancement" label!
 - [ ] Trip comparison view
 - [ ] Custom dashboard widgets
 - [ ] Export to ABRP format
-- [ ] Driving score calculation
 - [ ] Weekly/monthly statistics
 - [ ] Dark/light theme toggle
 - [ ] Multiple vehicle profiles

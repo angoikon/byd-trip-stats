@@ -54,13 +54,14 @@ data class RangeDataPoint(
 @Composable
 fun RangeProjectionChart(
     dataPoints: List<RangeDataPoint>,
-    wltpRangeKm: Int = 520, // TODO: Get actual WLTP range for the specific model
+    liveSoc: Double = 100.0, // Current SOC from telemetry, used when no trip data yet
+    wltpRangeKm: Int = 520, // TODO: make this dynamic based on car model via config
     modifier: Modifier = Modifier
 ) {
     // ── Compute derived values ────────────────────────────────────────────────
 
-    // Derive start SOC from the first recorded point; fall back to 100% if no data
-    val startSoc = dataPoints.firstOrNull()?.soc ?: 100.0
+    // When no trip has started yet use live SOC so the header shows real remaining range
+    val startSoc = dataPoints.firstOrNull()?.soc ?: liveSoc
     val startRangeKm = startSoc / 100.0 * wltpRangeKm   // km at trip start
 
     // Normalise & sort data; guard against duplicate x values
@@ -151,11 +152,11 @@ fun RangeProjectionChart(
 
             // ── Grid & axes ───────────────────────────────────────────────────
 
-            // Y grid lines at neat km steps
+            // Y grid lines — max ~5 labels regardless of range
             val yStepKm = when {
-                startRangeKm > 400 -> 50.0
-                startRangeKm > 200 -> 25.0
-                startRangeKm > 100 -> 20.0
+                startRangeKm > 300 -> 100.0
+                startRangeKm > 150 -> 50.0
+                startRangeKm > 75  -> 25.0
                 else               -> 10.0
             }
             var yTick = (yMin / yStepKm).toInt() * yStepKm
