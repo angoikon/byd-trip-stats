@@ -141,8 +141,8 @@ fun LiquidFillBattery(
             
             // Create wave path
             val wavePath = Path().apply {
-                val waveAmplitude = 3f
-                val waveFrequency = 0.02f
+                val waveAmplitude = 4f
+                val waveFrequency = 0.08f
                 
                 moveTo(bodyLeft, fillTop)
                 
