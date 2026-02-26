@@ -18,9 +18,13 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import com.byd.tripstats.ui.components.RangeDataPoint
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class DashboardViewModel(application: Application) : AndroidViewModel(application) {
     private val TAG = "DashboardViewModel"
@@ -67,6 +71,37 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     // All trip stats in one query — needed to compute regen efficiency per trip
     private val allTripStats: StateFlow<List<TripStatsEntity>> = tripRepository.getAllTripStats()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = emptyList()
+        )
+
+    /** One entry per day for the past 7 days that has at least one completed trip. */
+    data class DailyEfficiency(val dateLabel: String, val avgKwhPer100km: Double)
+
+    val weeklyEfficiency: StateFlow<List<DailyEfficiency>> = allTrips
+        .map { trips ->
+            val fmt = SimpleDateFormat("dd-MM", Locale.getDefault())
+            val cal = Calendar.getInstance()
+            // Snap to midnight of today
+            cal.set(Calendar.HOUR_OF_DAY, 0)
+            cal.set(Calendar.MINUTE, 0)
+            cal.set(Calendar.SECOND, 0)
+            cal.set(Calendar.MILLISECOND, 0)
+            val todayMidnight = cal.timeInMillis
+
+            (6 downTo 0).mapNotNull { daysAgo ->
+                val dayStart = todayMidnight - daysAgo * 86_400_000L
+                val dayEnd   = dayStart + 86_400_000L - 1L
+                val label    = fmt.format(java.util.Date(dayStart))
+                val efficiencies = trips
+                    .filter { it.startTime in dayStart..dayEnd && it.efficiency != null && (it.distance ?: 0.0) >= 0.5 }
+                    .mapNotNull { it.efficiency }
+                if (efficiencies.isEmpty()) null
+                else DailyEfficiency(label, efficiencies.average())
+            }
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,

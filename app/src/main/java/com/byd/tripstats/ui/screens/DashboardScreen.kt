@@ -2,8 +2,12 @@ package com.byd.tripstats.ui.screens
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -16,9 +20,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -29,8 +31,10 @@ import com.byd.tripstats.ui.components.StatsGlassCard
 import com.byd.tripstats.ui.components.GlassmorphicCard
 import com.byd.tripstats.ui.components.RangeProjectionChart
 import com.byd.tripstats.ui.components.RangeDataPoint
-import com.byd.tripstats.ui.theme.*
+import com.byd.tripstats.ui.components.WeeklyEnergyThumbnail
+import com.byd.tripstats.ui.components.WeeklyEnergyChartExpanded
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
+import com.byd.tripstats.ui.theme.*
 import kotlin.math.abs
 import com.byd.tripstats.R
 import androidx.compose.animation.core.tween
@@ -38,7 +42,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.StrokeCap
 
 private const val SHOW_MOCK_BUTTON = false  // Set to true for testing, false for production
@@ -56,6 +59,7 @@ fun DashboardScreen(
     val mqttConnectionError by viewModel.mqttConnectionError.collectAsState()
     val autoTripDetection by viewModel.autoTripDetection.collectAsState()
     val tripDataPoints by viewModel.tripDataPoints.collectAsState()
+    val weeklyEfficiency by viewModel.weeklyEfficiency.collectAsState()
 
     Scaffold(
         topBar = {
@@ -220,6 +224,7 @@ fun DashboardScreen(
                 isInTrip = isInTrip,
                 autoTripDetection = autoTripDetection,
                 tripDataPoints = tripDataPoints,
+                weeklyEfficiency = weeklyEfficiency,
                 onStartTrip = { viewModel.startManualTrip() },
                 onEndTrip = { viewModel.endManualTrip() },
                 onToggleAutoDetection = { viewModel.toggleAutoTripDetection() },
@@ -235,6 +240,7 @@ fun DashboardContent(
     isInTrip: Boolean,
     autoTripDetection: Boolean,
     tripDataPoints: List<RangeDataPoint>,
+    weeklyEfficiency: List<DashboardViewModel.DailyEfficiency>,
     onStartTrip: () -> Unit,
     onEndTrip: () -> Unit,
     onToggleAutoDetection: () -> Unit,
@@ -256,6 +262,7 @@ fun DashboardContent(
             EnergyFlowDiagram(
                 telemetry = telemetry,
                 tripDataPoints = tripDataPoints,
+                weeklyEfficiency = weeklyEfficiency,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
@@ -291,20 +298,23 @@ fun DashboardContent(
 fun EnergyFlowDiagram(
     telemetry: VehicleTelemetry,
     tripDataPoints: List<RangeDataPoint>,
+    weeklyEfficiency: List<DashboardViewModel.DailyEfficiency>,
     modifier: Modifier = Modifier
 ) {
     val power = telemetry.enginePower
     val isRegenerating = telemetry.isRegenerating
     val isCharging = telemetry.isCharging
 
-    // ── Card flip state ───────────────────────────────────────────────────────
-    var flipped by remember { mutableStateOf(false) }
+    // Two independent expanded states
+    var weeklyExpanded by remember { mutableStateOf(false) }
+    var rangeFlipped   by remember { mutableStateOf(false) }
+
     val rotation by animateFloatAsState(
-        targetValue = if (flipped) 180f else 0f,
+        targetValue = if (rangeFlipped) 180f else 0f,
         animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing),
-        label = "card_flip"
+        label = "range_flip"
     )
-    val isBack = rotation > 90f
+    val isRangeBack = rotation > 90f
 
     // Animation for energy flow
     val infiniteTransition = rememberInfiniteTransition(label = "energy_flow")
@@ -329,7 +339,7 @@ fun EnergyFlowDiagram(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
     ) {
-        if (isBack) {
+        if (isRangeBack) {
             // ── Back face: full-size range projection chart ───────────────────
             Column(
                 modifier = Modifier
@@ -338,7 +348,7 @@ fun EnergyFlowDiagram(
                         rotationY = 180f
                         compositingStrategy = CompositingStrategy.Offscreen
                     }
-                    .clickable { flipped = false }
+                    .clickable { rangeFlipped = false }
                     .padding(8.dp)
             ) {
                 Text(
@@ -354,150 +364,195 @@ fun EnergyFlowDiagram(
                     modifier = Modifier.fillMaxSize()
                 )
             }
+        } else if (weeklyExpanded) {
+            // ── Expanded weekly energy chart ──────────────────────────────────
+            Box(modifier = Modifier.fillMaxSize()) {
+                WeeklyEnergyChartExpanded(
+                    data = weeklyEfficiency,
+                    modifier = Modifier.fillMaxSize()
+                )
+                IconButton(
+                    onClick = { weeklyExpanded = false },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = "Close chart",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         } else {
-            // ── Front face: normal energy flow + compact chart ────────────────
+            // ── Normal front face ─────────────────────────────────────────────
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
                     .padding(12.dp)
             ) {
-            // Main energy flow visualization
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(110.dp),
-                contentAlignment = Alignment.TopCenter
-            ) {
-                EnergyFlowCanvas(
-                    power = power,
-                    isRegenerating = isRegenerating,
-                    isCharging = isCharging,
-                    flowOffset = flowOffset
-                )
-
-                // Animated liquid fill battery
-                LiquidFillBattery(
-                    soc = telemetry.soc.toFloat(),
-                    isCharging = isCharging,
-                    width = 60.dp,
-                    height = 100.dp,
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(start = 90.dp)
-                )
-
-                // AWD drivetrain with tyre pressures
+                // Energy flow row — visualization + thumbnail side by side
                 Box(
                     modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = 12.dp)
+                        .fillMaxWidth()
+                        .height(110.dp),
+                        // contentAlignment = Alignment.TopCenter
                 ) {
-                    // AWD Image
-                    Image(
-                        painter = painterResource(R.drawable.awd),
-                        contentDescription = "AWD drivetrain",
-                        modifier = Modifier.size(90.dp)
+                    EnergyFlowCanvas(
+                        power = power,
+                        isRegenerating = isRegenerating,
+                        isCharging = isCharging,
+                        flowOffset = flowOffset
                     )
-    
-                    // Tyre Pressure Overlays
-                    // Left Front (recommended: 2.5 bar)
-                    TyrePressureIndicator(
-                        pressure = telemetry.tyrePressureLF,
-                        isFront = true,
+
+                // Animated liquid fill battery
+                    LiquidFillBattery(
+                        soc = telemetry.soc.toFloat(),
+                        isCharging = isCharging,
+                        width = 60.dp,
+                        height = 100.dp,
                         modifier = Modifier
                             .align(Alignment.TopStart)
-                            .offset(x = (-10).dp, y = (-10).dp)
+                            .padding(start = 90.dp)
                     )
 
-                    // Right Front (recommended: 2.5 bar)
-                    TyrePressureIndicator(
-                        pressure = telemetry.tyrePressureRF,
-                        isFront = true,
+                // AWD drivetrain with tyre pressures
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = 12.dp)
+                    ) {
+                        // AWD Image
+                        Image(
+                            painter = painterResource(R.drawable.awd),
+                            contentDescription = "AWD drivetrain",
+                            modifier = Modifier.size(90.dp)
+                        )
+
+                        // Tyre Pressure Overlays
+                        // Left Front (recommended: 2.5 bar)
+                        TyrePressureIndicator(
+                            pressure = telemetry.tyrePressureLF,
+                            isFront = true,
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .offset(x = (-10).dp, y = (-10).dp)
+                        )
+
+                        // Right Front (recommended: 2.5 bar)
+                        TyrePressureIndicator(
+                            pressure = telemetry.tyrePressureRF,
+                            isFront = true,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .offset(x = 10.dp, y = (-10).dp)
+                        )
+
+                        // Left Rear (recommended: 2.9 bar)
+                        TyrePressureIndicator(
+                            pressure = telemetry.tyrePressureLR,
+                            isFront = false,
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .offset(x = (-10).dp, y = (10).dp)
+                        )
+
+                        // Right Rear (recommended: 2.9 bar)
+                        TyrePressureIndicator(
+                            pressure = telemetry.tyrePressureRR,
+                            isFront = false,
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .offset(x = 10.dp, y = (10).dp)
+                        )
+                    }
+
+                    // Weekly energy thumbnail — top-right corner, tap to expand
+                    Column(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .offset(x = 10.dp, y = (-10).dp)
-                    )
+                            .width(80.dp)
+                            .fillMaxHeight()
+                            .background(
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.55f),
+                                RoundedCornerShape(8.dp)
+                            )
+                            .clickable { weeklyExpanded = true }
+                            .padding(4.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "7d kWh",
+                            fontSize = 9.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(2.dp))
+                        WeeklyEnergyThumbnail(
+                            data = weeklyEfficiency,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                        )
+                    }
+                }
 
-                    // Left Rear (recommended: 2.9 bar)
-                    TyrePressureIndicator(
-                        pressure = telemetry.tyrePressureLR,
-                        isFront = false,
+                // Range Projection Chart — tap to flip to expanded view
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                ) {
+                    RangeProjectionChart(
+                        dataPoints = tripDataPoints,
+                        liveSoc = telemetry.soc,
+                    wltpRangeKm = 520, // TODO: make this dynamic based on car model via config
                         modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .offset(x = (-10).dp, y = (10).dp)
-                    )
-
-                    // Right Rear (recommended: 2.9 bar)
-                    TyrePressureIndicator(
-                        pressure = telemetry.tyrePressureRR,
-                        isFront = false,
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .offset(x = 10.dp, y = (10).dp)
+                            .fillMaxSize()
+                            .clickable { rangeFlipped = true }
                     )
                 }
-            }
 
-            // Range Projection Chart — tap to flip to expanded view
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-            ) {
-                RangeProjectionChart(
-                    dataPoints = tripDataPoints,
-                    liveSoc = telemetry.soc,
-                    wltpRangeKm = 520, // TODO: make this dynamic based on car model via config
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clickable { flipped = true }
-                )
-            }
+                Spacer(modifier = Modifier.height(4.dp))
 
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Power metrics
-            Box(modifier = Modifier.fillMaxWidth()) {
+                // Power metrics
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                PowerMetric(
-                    label = "Power",
-                    value = "${power.toInt()}",
-                    unit = "kW",
-                    color = when {
-                        isRegenerating -> RegenGreen
-                        power > 0 -> AccelerationOrange
-                        else -> Color.Gray
-                    }
-                )
-
-                PowerMetric(
-                    label = "Speed",
-                    value = "${telemetry.speed.toInt()}",
-                    unit = "km/h",
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                PowerMetric(
-                    label = "Battery",
-                    value = "${telemetry.soc.toInt()}",
-                    unit = "%",
-                    color = BatteryBlue
-                )
-
-                PowerMetric(
-                    label = "Range",
-                    value = "${telemetry.electricDrivingRangeKm}",
-                    unit = "km",
-                    color = MaterialTheme.colorScheme.tertiary
-                )
-            }   // end Row
-        }   // end power metrics Box
-        }   // end front Column
-        }   // end if/else
-    }       // end Card
+                    PowerMetric(
+                        label = "Power",
+                        value = "${power.toInt()}",
+                        unit = "kW",
+                        color = when {
+                            isRegenerating -> RegenGreen
+                            power > 0 -> AccelerationOrange
+                            else -> Color.Gray
+                        }
+                    )
+                    PowerMetric(
+                        label = "Speed",
+                        value = "${telemetry.speed.toInt()}",
+                        unit = "km/h",
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    PowerMetric(
+                        label = "Battery",
+                        value = "${telemetry.soc.toInt()}",
+                        unit = "%",
+                        color = BatteryBlue
+                    )
+                    PowerMetric(
+                        label = "Range",
+                        value = "${telemetry.electricDrivingRangeKm}",
+                        unit = "km",
+                        color = MaterialTheme.colorScheme.tertiary
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable

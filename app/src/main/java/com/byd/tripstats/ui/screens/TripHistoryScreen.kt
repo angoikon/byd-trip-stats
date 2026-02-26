@@ -48,7 +48,7 @@ fun TripHistoryScreen(
                         if (!selectionMode) {
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                "(Click trip for analytics, long-press to select for merging / multiple deletion)",
+                                "(Touch trip for analytics, long-press to select for merging / multiple deletion)",
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
