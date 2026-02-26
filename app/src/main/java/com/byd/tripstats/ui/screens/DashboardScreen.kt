@@ -38,6 +38,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.StrokeCap
 
 private const val SHOW_MOCK_BUTTON = false  // Set to true for testing, false for production
@@ -300,7 +301,7 @@ fun EnergyFlowDiagram(
     var flipped by remember { mutableStateOf(false) }
     val rotation by animateFloatAsState(
         targetValue = if (flipped) 180f else 0f,
-        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing),
+        animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing),
         label = "card_flip"
     )
     val isBack = rotation > 90f
@@ -334,7 +335,10 @@ fun EnergyFlowDiagram(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .graphicsLayer { rotationY = 180f }  // un-mirror text
+                    .graphicsLayer {
+                        rotationY = 180f
+                        compositingStrategy = CompositingStrategy.Offscreen
+                    }
                     .padding(8.dp)
             ) {
                 Text(
@@ -355,6 +359,7 @@ fun EnergyFlowDiagram(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
                     .padding(12.dp)
             ) {
             // Main energy flow visualization
