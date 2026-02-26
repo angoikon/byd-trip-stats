@@ -62,7 +62,7 @@ fun RangeProjectionChart(
 
     // When no trip has started yet use live SOC so the header shows real remaining range
     val startSoc = dataPoints.firstOrNull()?.soc ?: liveSoc
-    val startRangeKm = startSoc / 100.0 * wltpRangeKm   // km at trip start
+    val startRangeKm = startSoc / 100.0 * wltpRangeKm   // km at trip start (rated anchor)
 
     // Normalise & sort data; guard against duplicate x values
     val points = remember(dataPoints) {
@@ -73,17 +73,53 @@ fun RangeProjectionChart(
 
     val maxDistanceKm = points.lastOrNull()?.distanceKm?.coerceAtLeast(1.0) ?: 1.0
     val currentSoc    = points.lastOrNull()?.soc ?: startSoc
-    val currentRange  = currentSoc / 100.0 * wltpRangeKm
+
+    // ── Observed consumption-based range projection ───────────────────────────
+    // Once we have enough distance (≥3 km), compute km-per-soc-percent directly
+    // from trip data rather than relying on WLTP. Falls back to WLTP × SOC below
+    // the threshold to avoid division instability from tiny SOC changes.
+    val MIN_DISTANCE_FOR_OBSERVED_KM = 3.0  // km before switching to data-driven
+
+    val currentRange: Double = run {
+        val distDriven = points.lastOrNull()?.distanceKm ?: 0.0
+        val socDropPct = startSoc - currentSoc
+
+        if (distDriven >= MIN_DISTANCE_FOR_OBSERVED_KM && socDropPct > 0.5) {
+            // Observed: how many km per SOC percent consumed so far
+            val kmPerSocPct = distDriven / socDropPct
+            currentSoc * kmPerSocPct   // project remaining range
+        } else {
+            // Not enough data yet — fall back to WLTP ratio
+            currentSoc / 100.0 * wltpRangeKm
+        }
+    }
+
+    // Build a per-point actual range series using the same logic so the curve
+    // reflects the evolving observed efficiency, not a fixed WLTP constant.
+    val actualRangePoints: List<Pair<Double, Double>> = remember(points) {
+        points.mapIndexedNotNull { index, p ->
+            if (index == 0) return@mapIndexedNotNull p.distanceKm to (startSoc / 100.0 * wltpRangeKm)
+            val distDriven = p.distanceKm
+            val socDrop    = startSoc - p.soc
+            val range = if (distDriven >= MIN_DISTANCE_FOR_OBSERVED_KM && socDrop > 0.5) {
+                val kmPerSocPct = distDriven / socDrop
+                p.soc * kmPerSocPct
+            } else {
+                p.soc / 100.0 * wltpRangeKm
+            }
+            p.distanceKm to range
+        }
+    }
 
     // Rated range at the current distance (straight line: startRange - distanceDriven)
     val ratedRangeNow = (startRangeKm - maxDistanceKm).coerceAtLeast(0.0)
 
     val deltaKm  = currentRange - ratedRangeNow
     val beating  = deltaKm >= 0
-    val accentColor = if (beating) RegenGreen else Color(0xFFF5A623)  // green or amber
+    val accentColor = if (beating) RegenGreen else Color(0xFFF5A623)
 
-    // Y-axis: show a bit of headroom above the start value
-    val yMax = startRangeKm * 1.05
+    // Y-axis: headroom above whichever is higher — rated start or actual projection
+    val yMax = maxOf(startRangeKm, currentRange) * 1.05
     val yMin = 0.0
 
     // ── Theme colours (must be extracted outside Canvas) ─────────────────────
@@ -230,27 +266,27 @@ fun RangeProjectionChart(
             )
 
             // ── Actual path and fill ──────────────────────────────────────────
-            if (points.isNotEmpty()) {
+            if (actualRangePoints.isNotEmpty()) {
                 // Build the actual curve path
                 val actualPath = Path().apply {
-                    val first = points.first()
-                    moveTo(xOf(0.0), yOf(startRangeKm))                // anchor at start
-                    points.forEach { p ->
-                        lineTo(xOf(p.distanceKm), yOf(p.soc / 100.0 * wltpRangeKm))
+                    val first = actualRangePoints.first()
+                    moveTo(xOf(first.first), yOf(first.second))
+                    actualRangePoints.drop(1).forEach { (dist, range) ->
+                        lineTo(xOf(dist), yOf(range))
                     }
                 }
 
                 // Build fill polygon: actual curve + rated curve reversed
                 val fillPath = Path().apply {
-                    // Forward along actual
-                    moveTo(xOf(0.0), yOf(startRangeKm))
-                    points.forEach { p ->
-                        lineTo(xOf(p.distanceKm), yOf(p.soc / 100.0 * wltpRangeKm))
+                    val first = actualRangePoints.first()
+                    moveTo(xOf(first.first), yOf(first.second))
+                    actualRangePoints.drop(1).forEach { (dist, range) ->
+                        lineTo(xOf(dist), yOf(range))
                     }
                     // Back along rated
-                    val lastDist = points.last().distanceKm
+                    val lastDist = actualRangePoints.last().first
                     lineTo(xOf(lastDist), yOf((startRangeKm - lastDist).coerceAtLeast(0.0)))
-                    lineTo(xOf(0.0),      yOf(startRangeKm))
+                    lineTo(xOf(actualRangePoints.first().first), yOf(startRangeKm))
                     close()
                 }
 
@@ -266,8 +302,9 @@ fun RangeProjectionChart(
                 )
 
                 // Current position dot
-                val dotX = xOf(points.last().distanceKm)
-                val dotY = yOf(currentRange)
+                val lastPoint = actualRangePoints.last()
+                val dotX = xOf(lastPoint.first)
+                val dotY = yOf(lastPoint.second)
                 drawCircle(color = accentColor.copy(alpha = 0.28f), radius = 18f, center = Offset(dotX, dotY))
                 drawCircle(color = accentColor,                      radius = 8f,  center = Offset(dotX, dotY))
                 drawCircle(color = Color.White,                      radius = 3f,  center = Offset(dotX, dotY))
