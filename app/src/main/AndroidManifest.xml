@@ -34,6 +34,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTask"
             android:resizeableActivity="true"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/Theme.BydTripStats">
@@ -48,6 +49,7 @@
             android:name=".service.MqttService"
             android:enabled="true"
             android:exported="false"
+            android:stopWithTask="false"
             android:foregroundServiceType="dataSync" />
 
         <!-- MQTT Broker Service -->
@@ -55,6 +57,7 @@
             android:name=".service.MqttBrokerService"
             android:enabled="true"
             android:exported="false"
+            android:stopWithTask="false"
             android:foregroundServiceType="dataSync" />
 
         <!-- Boot Receiver - Auto-start on car boot -->
@@ -71,16 +74,5 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
-        
-        <!-- FileProvider for sharing exported files -->
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
     </application>
 </manifest>

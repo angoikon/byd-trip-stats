@@ -69,18 +69,17 @@ BYD Trip Stats is a free, open-source Android app that automatically tracks and 
 - **Energy hotspots** - Identify high-consumption areas
 - **Trip timeline** - Major events (acceleration, braking, etc.)
 
-### 💾 Export & Share
+### 💾 Export & Save internally
 - **Copy to clipboard** - Quick trip summary
 - **CSV export** - All data points for analysis
 - **JSON export** - Complete trip data structure
-- **Text summary** - Human-readable trip report
-- **Share anywhere** - Send via email, Drive, WhatsApp, etc.
 
 ### 🔄 Background Operation
 - **Auto-start on boot** - Silently starts when car boots
 - **Foreground service** - Keeps running in background
 - **No battery drain** - Optimized for efficiency
 - **Manual disconnect** - Stop service when not needed
+- **Run MQTT Services independently** - Don't kill the services if the activity is swiped away or the task is removed 
 
 ---
 
@@ -164,6 +163,7 @@ Download the latest `byd-trip-stats-release.apk` from the [Releases](https://git
 2. Toggle OFF the option for the **BYD Trip Stats** app (as you have already done with **Electro** app) 
 3. Restart Car's UI (10 sec hold of the central console volume button)
 4. Re-open **BYD Trip Stats** app
+5. Rinse and repeat for **every app update**
 
 ### Step 6: Drive!
 
