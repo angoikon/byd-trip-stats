@@ -39,6 +39,9 @@ import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import kotlin.math.abs
 import com.byd.tripstats.ui.components.condenseData
+import com.byd.tripstats.data.backup.SdCardManager
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -166,22 +169,20 @@ fun ExportDialog(
     onDismiss: () -> Unit
 ) {
     // Capture stable references
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val stableTrip = remember { trip }
-    val stableDataPoints = remember { dataPoints.toList() }  // Create immutable copy
+    val context          = androidx.compose.ui.platform.LocalContext.current
+    val stableTrip       = remember { trip }
+    val stableDataPoints = remember { dataPoints.toList() }
+    val sdManager        = remember { SdCardManager.getInstance(context) }
+    val sdFolder         by sdManager.selectedFolder.collectAsState()
+    val scope            = rememberCoroutineScope()
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Export Trip Data", fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(
-                    "Files are saved to the Downloads folder on this device.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
 
-                // Copy to Clipboard — still useful, works everywhere
+                // ── Clipboard ─────────────────────────────────────────────────
                 OutlinedButton(
                     onClick = {
                         copyTripSummaryToClipboard(context, stableTrip)
@@ -196,7 +197,13 @@ fun ExportDialog(
 
                 HorizontalDivider()
 
-                // Save CSV directly to Downloads
+                // ── Downloads ─────────────────────────────────────────────────
+                Text(
+                    "Save to Downloads folder:",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
                 OutlinedButton(
                     onClick = {
                         saveTripAsCSV(context, stableTrip, stableDataPoints)
@@ -209,7 +216,6 @@ fun ExportDialog(
                     Text("Save as CSV (Downloads)")
                 }
 
-                // Save JSON directly to Downloads
                 OutlinedButton(
                     onClick = {
                         saveTripAsJSON(context, stableTrip, stableDataPoints)
@@ -220,6 +226,55 @@ fun ExportDialog(
                     Icon(Icons.Filled.DataObject, null, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(8.dp))
                     Text("Save as JSON (Downloads)")
+                }
+
+                // ── SD Card ───────────────────────────────────────────────────
+                HorizontalDivider()
+
+                if (sdFolder != null) {
+                    Text(
+                        "Save to SD card ($sdFolder):",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    OutlinedButton(
+                        onClick = {
+                            val csv = buildTripCsv(stableTrip, stableDataPoints)
+                            val fileName = "trip_${stableTrip.id}_${System.currentTimeMillis()}.csv"
+                            scope.launch {
+                                sdManager.writeTextFile(fileName, "text/csv", csv)
+                            }
+                            onDismiss()
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Filled.SdCard, null, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Save as CSV (SD Card)")
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            val json = buildTripJson(stableTrip, stableDataPoints)
+                            val fileName = "trip_${stableTrip.id}_${System.currentTimeMillis()}.json"
+                            scope.launch {
+                                sdManager.writeTextFile(fileName, "application/json", json)
+                            }
+                            onDismiss()
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Filled.SdCard, null, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Save as JSON (SD Card)")
+                    }
+                } else {
+                    Text(
+                        "SD card export: set up a folder in Settings → Backup & Restore.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         },
@@ -267,23 +322,24 @@ fun copyTripSummaryToClipboard(
  * Uses MediaStore.Downloads (API 29+) — no WRITE_EXTERNAL_STORAGE permission needed.
  * The file will appear in Downloads and be accessible via any file manager on the device.
  */
+fun buildTripCsv(
+    trip: com.byd.tripstats.data.local.entity.TripEntity,
+    dataPoints: List<com.byd.tripstats.data.local.entity.TripDataPointEntity>
+): String = buildString {
+    appendLine("timestamp,latitude,longitude,altitude,speed,power,soc,odometer,batteryTemp,gear,engineSpeedFront,engineSpeedRear")
+    dataPoints.forEach { point ->
+        appendLine("${point.timestamp},${point.latitude},${point.longitude},${point.altitude},${point.speed},${point.power},${point.soc},${point.odometer},${point.batteryTemp},${point.gear},${point.engineSpeedFront},${point.engineSpeedRear}")
+    }
+}
+
 fun saveTripAsCSV(
     context: android.content.Context,
     trip: com.byd.tripstats.data.local.entity.TripEntity,
     dataPoints: List<com.byd.tripstats.data.local.entity.TripDataPointEntity>
 ) {
     try {
-        val fileName = "${System.currentTimeMillis()}-trip_${trip.id}_.csv"
-
-        val csvContent = buildString {
-            appendLine("timestamp,latitude,longitude,altitude,speed,power,soc,odometer,batteryTemp,gear,engineSpeedFront,engineSpeedRear")
-            dataPoints.forEach { point ->
-                appendLine("${point.timestamp},${point.latitude},${point.longitude},${point.altitude},${point.speed},${point.power},${point.soc},${point.odometer},${point.batteryTemp},${point.gear},${point.engineSpeedFront},${point.engineSpeedRear}")
-            }
-        }
-
-        saveToDownloads(context, fileName, "text/csv", csvContent)
-
+        val fileName = "trip_${trip.id}_${System.currentTimeMillis()}.csv"
+        saveToDownloads(context, fileName, "text/csv", buildTripCsv(trip, dataPoints))
     } catch (e: Exception) {
         Log.e("TripDetailScreen", "Save CSV failed", e)
         android.widget.Toast.makeText(context, "Save failed: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
@@ -293,46 +349,47 @@ fun saveTripAsCSV(
 /**
  * Save trip data as JSON directly to the device's Downloads folder.
  */
+fun buildTripJson(
+    trip: com.byd.tripstats.data.local.entity.TripEntity,
+    dataPoints: List<com.byd.tripstats.data.local.entity.TripDataPointEntity>
+): String = buildString {
+    appendLine("{")
+    appendLine("  \"tripId\": ${trip.id},")
+    appendLine("  \"startTime\": ${trip.startTime},")
+    appendLine("  \"endTime\": ${trip.endTime},")
+    appendLine("  \"distance\": ${trip.distance},")
+    appendLine("  \"duration\": ${trip.duration},")
+    appendLine("  \"consumption\": ${trip.efficiency},")
+    appendLine("  \"energyConsumed\": ${trip.energyConsumed},")
+    appendLine("  \"maxSpeed\": ${trip.maxSpeed},")
+    appendLine("  \"maxPower\": ${trip.maxPower},")
+    appendLine("  \"dataPoints\": [")
+    dataPoints.forEachIndexed { index, point ->
+        appendLine("    {")
+        appendLine("      \"timestamp\": ${point.timestamp},")
+        appendLine("      \"latitude\": ${point.latitude},")
+        appendLine("      \"longitude\": ${point.longitude},")
+        appendLine("      \"altitude\": ${point.altitude},")
+        appendLine("      \"speed\": ${point.speed},")
+        appendLine("      \"power\": ${point.power},")
+        appendLine("      \"soc\": ${point.soc},")
+        appendLine("      \"gear\": \"${point.gear}\",")
+        appendLine("      \"engineSpeedFront\": ${point.engineSpeedFront},")
+        appendLine("      \"engineSpeedRear\": ${point.engineSpeedRear}")
+        appendLine("    }${if (index < dataPoints.size - 1) "," else ""}")
+    }
+    appendLine("  ]")
+    appendLine("}")
+}
+
 fun saveTripAsJSON(
     context: android.content.Context,
     trip: com.byd.tripstats.data.local.entity.TripEntity,
     dataPoints: List<com.byd.tripstats.data.local.entity.TripDataPointEntity>
 ) {
     try {
-        val fileName = "${System.currentTimeMillis()}-trip_${trip.id}_.json"
-
-        val jsonContent = buildString {
-            appendLine("{")
-            appendLine("  \"tripId\": ${trip.id},")
-            appendLine("  \"startTime\": ${trip.startTime},")
-            appendLine("  \"endTime\": ${trip.endTime},")
-            appendLine("  \"distance\": ${trip.distance},")
-            appendLine("  \"duration\": ${trip.duration},")
-            appendLine("  \"consumption\": ${trip.efficiency},")
-            appendLine("  \"energyConsumed\": ${trip.energyConsumed},")
-            appendLine("  \"maxSpeed\": ${trip.maxSpeed},")
-            appendLine("  \"maxPower\": ${trip.maxPower},")
-            appendLine("  \"dataPoints\": [")
-            dataPoints.forEachIndexed { index, point ->
-                appendLine("    {")
-                appendLine("      \"timestamp\": ${point.timestamp},")
-                appendLine("      \"latitude\": ${point.latitude},")
-                appendLine("      \"longitude\": ${point.longitude},")
-                appendLine("      \"altitude\": ${point.altitude},")
-                appendLine("      \"speed\": ${point.speed},")
-                appendLine("      \"power\": ${point.power},")
-                appendLine("      \"soc\": ${point.soc},")
-                appendLine("      \"gear\": \"${point.gear}\",")
-                appendLine("      \"engineSpeedFront\": ${point.engineSpeedFront},")
-                appendLine("      \"engineSpeedRear\": ${point.engineSpeedRear}")
-                appendLine("    }${if (index < dataPoints.size - 1) "," else ""}")
-            }
-            appendLine("  ]")
-            appendLine("}")
-        }
-
-        saveToDownloads(context, fileName, "application/json", jsonContent)
-
+        val fileName = "trip_${trip.id}_${System.currentTimeMillis()}.json"
+        saveToDownloads(context, fileName, "application/json", buildTripJson(trip, dataPoints))
     } catch (e: Exception) {
         Log.e("TripDetailScreen", "Save JSON failed", e)
         android.widget.Toast.makeText(context, "Save failed: ${e.message}", android.widget.Toast.LENGTH_LONG).show()

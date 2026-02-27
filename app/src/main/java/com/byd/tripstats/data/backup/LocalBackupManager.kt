@@ -225,6 +225,57 @@ class LocalBackupManager private constructor(private val context: Context) {
         }
     }
 
+    // ── SD card backup ────────────────────────────────────────────────────────
+
+    /**
+     * Backs up the database to the user-selected SD card folder via SdCardManager.
+     * Requires the user to have already selected a folder (one-time SAF permission).
+     */
+    suspend fun backupDatabaseToSd() = withContext(Dispatchers.IO) {
+        try {
+            val sdManager = SdCardManager.getInstance(context)
+            if (!sdManager.hasFolder) {
+                _state.value = BackupState.Error(
+                    "No SD card folder selected.\nTap 'Select SD Card Folder' first."
+                )
+                return@withContext
+            }
+
+            _state.value = BackupState.InProgress("Preparing database…")
+
+            val dbFile = context.getDatabasePath(DATABASE_NAME)
+            if (!dbFile.exists()) {
+                _state.value = BackupState.Error("Database file not found: ${dbFile.path}")
+                return@withContext
+            }
+
+            _state.value = BackupState.InProgress("Flushing database…")
+            flushWal(dbFile)
+
+            val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm", Locale.getDefault()).format(Date())
+            val fileName = "byd_stats_backup_$timestamp.db"
+
+            _state.value = BackupState.InProgress("Writing to SD card…")
+
+            val uri = sdManager.writeFile(fileName, BACKUP_MIME_TYPE, dbFile.readBytes())
+
+            if (uri != null) {
+                val sizeMb = "%.1f".format(dbFile.length() / 1_048_576.0)
+                _state.value = BackupState.Success(
+                    "Saved to SD card: $fileName ($sizeMb MB)"
+                )
+                Log.i(TAG, "SD backup saved: $fileName")
+            } else {
+                _state.value = BackupState.Error(
+                    "Failed to write to SD card.\nCheck the folder is still accessible."
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "SD backup failed", e)
+            _state.value = BackupState.Error("SD backup failed: ${e.message}")
+        }
+    }
+
     fun resetState() {
         _state.value = BackupState.Idle
     }

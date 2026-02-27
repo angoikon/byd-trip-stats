@@ -1,6 +1,5 @@
 package com.byd.tripstats.ui.screens
 
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -22,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.tripstats.data.backup.LocalBackupManager
+import com.byd.tripstats.data.backup.SdCardManager
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -32,19 +32,22 @@ import java.util.Locale
 fun LocalBackupScreen(
     onNavigateBack: () -> Unit
 ) {
-    val context = LocalContext.current
-    val manager = remember { LocalBackupManager.getInstance(context) }
-    val scope   = rememberCoroutineScope()
+    val context   = LocalContext.current
+    val manager   = remember { LocalBackupManager.getInstance(context) }
+    val sdManager = remember { SdCardManager.getInstance(context) }
+    val scope     = rememberCoroutineScope()
 
     val backupState  by manager.state.collectAsState()
     val localBackups by manager.localBackups.collectAsState()
+    val sdFolder     by sdManager.selectedFolder.collectAsState()
 
-    var restoreTarget      by remember { mutableStateOf<LocalBackupManager.BackupFile?>(null) }
-    var pickerRestoreUri   by remember { mutableStateOf<Uri?>(null) }
-    var filePickerError    by remember { mutableStateOf<String?>(null) }
+    val isBusy = backupState is LocalBackupManager.BackupState.InProgress
 
-    // ── File picker launcher ──────────────────────────────────────────────────
-    // Tries to open the system file manager so the user can navigate to any .db
+    var restoreTarget    by remember { mutableStateOf<LocalBackupManager.BackupFile?>(null) }
+    var pickerRestoreUri by remember { mutableStateOf<Uri?>(null) }
+    var filePickerError  by remember { mutableStateOf<String?>(null) }
+
+    // ── Restore file picker ───────────────────────────────────────────────────
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
@@ -55,6 +58,13 @@ fun LocalBackupScreen(
             )
             pickerRestoreUri = uri
         }
+    }
+
+    // ── SD card folder picker (one-time setup) ────────────────────────────────
+    val sdFolderLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        if (uri != null) sdManager.onFolderSelected(context, uri)
     }
 
     // ── Auto-restart after successful restore ─────────────────────────────────
@@ -107,36 +117,36 @@ fun LocalBackupScreen(
                         loading = true
                     )
                     is LocalBackupManager.BackupState.Success -> StatusBanner(
-                        text     = s.message,
-                        color    = Color(0xFF1B5E20).copy(alpha = 0.15f),
-                        icon     = Icons.Filled.CheckCircle,
-                        iconTint = Color(0xFF4CAF50),
+                        text      = s.message,
+                        color     = Color(0xFF1B5E20).copy(alpha = 0.15f),
+                        icon      = Icons.Filled.CheckCircle,
+                        iconTint  = Color(0xFF4CAF50),
                         onDismiss = { manager.resetState() }
                     )
                     is LocalBackupManager.BackupState.Error -> StatusBanner(
-                        text     = s.message,
-                        color    = MaterialTheme.colorScheme.errorContainer,
-                        icon     = Icons.Filled.Error,
-                        iconTint = MaterialTheme.colorScheme.error,
+                        text      = s.message,
+                        color     = MaterialTheme.colorScheme.errorContainer,
+                        icon      = Icons.Filled.Error,
+                        iconTint  = MaterialTheme.colorScheme.error,
                         onDismiss = { manager.resetState() }
                     )
                     else -> {}
                 }
-
                 filePickerError?.let {
+                    Spacer(Modifier.height(8.dp))
                     StatusBanner(
-                        text     = it,
-                        color    = MaterialTheme.colorScheme.errorContainer,
-                        icon     = Icons.Filled.Warning,
-                        iconTint = MaterialTheme.colorScheme.error,
+                        text      = it,
+                        color     = MaterialTheme.colorScheme.errorContainer,
+                        icon      = Icons.Filled.Warning,
+                        iconTint  = MaterialTheme.colorScheme.error,
                         onDismiss = { filePickerError = null }
                     )
                 }
             }
 
-            // ── Backup section ────────────────────────────────────────────────
+            // ── Backup to Downloads ───────────────────────────────────────────
             item {
-                SectionCard(title = "Backup", icon = Icons.Filled.CloudUpload) {
+                SectionCard(title = "Backup to Downloads", icon = Icons.Filled.CloudUpload) {
                     Text(
                         "Saves the full trip database to:\n" +
                             "Downloads/BydTripStats/byd_stats_backup_DATE.db",
@@ -149,11 +159,10 @@ fun LocalBackupScreen(
                             manager.resetState()
                             scope.launch { manager.backupDatabase() }
                         },
-                        enabled = backupState !is LocalBackupManager.BackupState.InProgress,
+                        enabled = !isBusy,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        val busy = backupState is LocalBackupManager.BackupState.InProgress
-                        if (busy) {
+                        if (isBusy) {
                             CircularProgressIndicator(
                                 modifier    = Modifier.size(18.dp),
                                 strokeWidth = 2.dp,
@@ -163,12 +172,104 @@ fun LocalBackupScreen(
                             Icon(Icons.Filled.Save, null, modifier = Modifier.size(20.dp))
                         }
                         Spacer(Modifier.width(8.dp))
-                        Text(if (busy) "Working…" else "Backup Now")
+                        Text(if (isBusy) "Working…" else "Backup Now")
                     }
                 }
             }
 
-            // ── Restore section ───────────────────────────────────────────────
+            // ── Backup to SD Card ─────────────────────────────────────────────
+            item {
+                SectionCard(title = "Backup to SD Card", icon = Icons.Filled.SdCard) {
+
+                    // Folder status row
+                    Row(
+                        modifier              = Modifier.fillMaxWidth(),
+                        verticalAlignment     = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Icon(
+                            imageVector      = if (sdFolder != null) Icons.Filled.CheckCircle
+                                               else Icons.Filled.RadioButtonUnchecked,
+                            contentDescription = null,
+                            modifier         = Modifier.size(20.dp),
+                            tint             = if (sdFolder != null) Color(0xFF4CAF50)
+                                               else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                sdFolder ?: "No folder selected",
+                                style      = MaterialTheme.typography.bodyMedium,
+                                fontWeight = if (sdFolder != null) FontWeight.Medium
+                                             else FontWeight.Normal,
+                                color      = if (sdFolder != null)
+                                                 MaterialTheme.colorScheme.onSurface
+                                             else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            if (sdFolder == null) {
+                                Text(
+                                    "Select once — all future backups go there automatically.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(10.dp))
+
+                    // Select / change folder
+                    OutlinedButton(
+                        onClick  = { sdFolderLauncher.launch(null) },
+                        enabled  = !isBusy,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Filled.FolderOpen, null, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            if (sdFolder != null) "Change SD Card Folder"
+                            else "Select SD Card Folder"
+                        )
+                    }
+
+                    // Backup button — visible only once a folder is set
+                    if (sdFolder != null) {
+                        Spacer(Modifier.height(6.dp))
+                        Button(
+                            onClick = {
+                                manager.resetState()
+                                scope.launch { manager.backupDatabaseToSd() }
+                            },
+                            enabled  = !isBusy,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            if (isBusy) {
+                                CircularProgressIndicator(
+                                    modifier    = Modifier.size(18.dp),
+                                    strokeWidth = 2.dp,
+                                    color       = MaterialTheme.colorScheme.onPrimary
+                                )
+                            } else {
+                                Icon(Icons.Filled.SdCard, null, modifier = Modifier.size(20.dp))
+                            }
+                            Spacer(Modifier.width(8.dp))
+                            Text(if (isBusy) "Working…" else "Backup to SD Card")
+                        }
+
+                        TextButton(
+                            onClick  = { sdManager.clearFolder() },
+                            enabled  = !isBusy
+                        ) {
+                            Text(
+                                "Remove saved folder",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                }
+            }
+
+            // ── Restore ───────────────────────────────────────────────────────
             item {
                 SectionCard(title = "Restore", icon = Icons.Filled.CloudDownload) {
                     Text(
@@ -190,7 +291,7 @@ fun LocalBackupScreen(
                                     "Use the folder scan below instead."
                             }
                         },
-                        enabled = backupState !is LocalBackupManager.BackupState.InProgress,
+                        enabled  = !isBusy,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Icon(Icons.Filled.FolderOpen, null, modifier = Modifier.size(20.dp))
@@ -204,17 +305,17 @@ fun LocalBackupScreen(
 
                     // Option B: folder scan
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier              = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment     = Alignment.CenterVertically
                     ) {
                         Text(
                             "Or pick from Downloads/BydTripStats/:",
                             style = MaterialTheme.typography.bodyMedium
                         )
                         IconButton(
-                            onClick = { scope.launch { manager.scanLocalBackups() } },
-                            enabled = backupState !is LocalBackupManager.BackupState.InProgress
+                            onClick  = { scope.launch { manager.scanLocalBackups() } },
+                            enabled  = !isBusy
                         ) {
                             Icon(Icons.Filled.Refresh, "Refresh", modifier = Modifier.size(22.dp))
                         }
@@ -222,22 +323,22 @@ fun LocalBackupScreen(
                 }
             }
 
-            // ── Local backup list ─────────────────────────────────────────────
+            // ── Downloads backup list ─────────────────────────────────────────
             if (localBackups.isEmpty()) {
                 item {
                     Text(
                         "No backups found in Downloads/BydTripStats/.\n" +
                             "Run a backup first, or place a .db file there manually.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style    = MaterialTheme.typography.bodySmall,
+                        color    = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 4.dp)
                     )
                 }
             } else {
                 items(localBackups, key = { it.uri.toString() }) { backup ->
                     BackupListItem(
-                        backup   = backup,
-                        enabled  = backupState !is LocalBackupManager.BackupState.InProgress,
+                        backup    = backup,
+                        enabled   = !isBusy,
                         onRestore = { restoreTarget = backup }
                     )
                 }
@@ -245,7 +346,7 @@ fun LocalBackupScreen(
         }
     }
 
-    // ── File picker confirm dialog ─────────────────────────────────────────────
+    // ── Restore confirm — file picker ─────────────────────────────────────────
     pickerRestoreUri?.let { uri ->
         RestoreConfirmDialog(
             description = "the selected file",
@@ -259,7 +360,7 @@ fun LocalBackupScreen(
         )
     }
 
-    // ── Folder scan confirm dialog ────────────────────────────────────────────
+    // ── Restore confirm — folder scan ─────────────────────────────────────────
     restoreTarget?.let { backup ->
         RestoreConfirmDialog(
             description = backup.name,
@@ -283,24 +384,23 @@ private fun SectionCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        ),
+        colors   = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            modifier              = Modifier.fillMaxWidth().padding(16.dp),
+            verticalArrangement   = Arrangement.spacedBy(4.dp)
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment     = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(icon, null, modifier = Modifier.size(22.dp))
-                Text(title, style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold)
+                Text(
+                    title,
+                    style      = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
             }
             Spacer(Modifier.height(4.dp))
             content()
@@ -318,15 +418,13 @@ private fun StatusBanner(
     onDismiss: (() -> Unit)? = null
 ) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = color),
-        shape  = RoundedCornerShape(8.dp),
+        colors   = CardDefaults.cardColors(containerColor = color),
+        shape    = RoundedCornerShape(8.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            modifier              = Modifier.fillMaxWidth().padding(12.dp),
+            verticalAlignment     = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             if (loading) {
@@ -356,28 +454,24 @@ private fun BackupListItem(
 
     OutlinedCard(modifier = Modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+            modifier          = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 Icons.Filled.Backup, null,
                 modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.primary
+                tint     = MaterialTheme.colorScheme.primary
             )
             Spacer(Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(backup.name,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style      = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium)
                 Text("$date  ·  $sizeMb",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            TextButton(onClick = onRestore, enabled = enabled) {
-                Text("Restore")
-            }
+            TextButton(onClick = onRestore, enabled = enabled) { Text("Restore") }
         }
     }
 }
@@ -392,7 +486,7 @@ private fun RestoreConfirmDialog(
         onDismissRequest = onDismiss,
         icon  = {
             Icon(Icons.Filled.Warning, null,
-                tint = MaterialTheme.colorScheme.error,
+                tint     = MaterialTheme.colorScheme.error,
                 modifier = Modifier.size(32.dp))
         },
         title = { Text("Restore Database?") },
@@ -405,9 +499,7 @@ private fun RestoreConfirmDialog(
         confirmButton = {
             Button(
                 onClick = onConfirm,
-                colors  = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error
-                )
+                colors  = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
             ) { Text("Restore") }
         },
         dismissButton = {
