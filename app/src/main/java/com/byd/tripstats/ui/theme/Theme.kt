@@ -24,6 +24,10 @@ private val DarkColorScheme = darkColorScheme(
     onTertiary = Color.Black,          // Black text on teal
     onBackground = Color.White,        // White text on dark blue background
     onSurface = Color.White,           // White text on dark blue surface
+    error = BydErrorRed,               // Vivid red — not Material 3's default pink
+    onError = Color.White,
+    errorContainer = BydErrorContainer,
+    onErrorContainer = BydOnErrorContainer,
 )
 
 private val LightColorScheme = lightColorScheme(

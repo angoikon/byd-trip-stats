@@ -25,3 +25,9 @@ val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 val Teal40 = Color(0xFF00838F)  // Darker teal for light mode tertiary
+
+// Error reds — replacing Material 3's default pinkish error in dark mode
+val BydErrorRed          = Color(0xFFE53935)   // Vivid red for buttons/icons
+val BydErrorRedDark      = Color(0xFFEF9A9A)   // Softer red for text/icons on dark bg
+val BydErrorContainer    = Color(0xFF7F0000)   // Dark red container background
+val BydOnErrorContainer  = Color(0xFFFFDAD6)   // Light tint text on dark container

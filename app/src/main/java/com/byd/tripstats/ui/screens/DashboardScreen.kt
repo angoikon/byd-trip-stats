@@ -307,11 +307,14 @@ fun EnergyFlowDiagram(
 
     // Two independent expanded states
     var weeklyExpanded by remember { mutableStateOf(false) }
-    var rangeFlipped   by remember { mutableStateOf(false) }
+    var rangeFlipped by remember { mutableStateOf(false) }
 
     val rotation by animateFloatAsState(
         targetValue = if (rangeFlipped) 180f else 0f,
-        animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing),
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMediumLow
+        ),
         label = "range_flip"
     )
     val isRangeBack = rotation > 90f
@@ -767,10 +770,7 @@ fun TripControls(
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
-            containerColor = if (isInTrip) 
-                MaterialTheme.colorScheme.primaryContainer 
-            else 
-                MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
     ) {
         Column(
