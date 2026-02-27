@@ -25,6 +25,7 @@ import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import kotlinx.coroutines.launch
 import android.app.ActivityManager
 import android.content.Context
+import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.BugReport
 import kotlinx.coroutines.delay
 
@@ -32,7 +33,8 @@ import kotlinx.coroutines.delay
 @Composable
 fun SettingsScreen(
     viewModel: DashboardViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToBackup: () -> Unit
 ) {
     val context = LocalContext.current
     val preferencesManager = remember { PreferencesManager(context) }
@@ -342,6 +344,63 @@ fun SettingsScreen(
                 Spacer(Modifier.width(8.dp))
                 Text("🔍 Debug Connection Info", fontSize = 16.sp)
             }
+
+            HorizontalDivider()
+
+            Text(
+                text = "Data Management",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Database Backup & Restore",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Save the full trip database to local storage, or restore from a previous backup.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = "WARNING: Restoring a backup will replace ALL current trips!",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Button(
+                        onClick = onNavigateToBackup,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary
+                        )
+                    ) {
+                        Icon(
+                            Icons.Filled.Backup,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text("Backup & Restore", fontSize = 16.sp)
+                    }
+                }
+            }
+
+            HorizontalDivider()
 
             Text(
                 text = "About",

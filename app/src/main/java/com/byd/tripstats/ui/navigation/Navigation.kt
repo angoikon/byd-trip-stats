@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.byd.tripstats.ui.screens.DashboardScreen
+import com.byd.tripstats.ui.screens.LocalBackupScreen
 import com.byd.tripstats.ui.screens.SettingsScreen
 import com.byd.tripstats.ui.screens.TripDetailScreen
 import com.byd.tripstats.ui.screens.TripHistoryScreen
@@ -20,6 +21,7 @@ sealed class Screen(val route: String) {
         fun createRoute(tripId: Long) = "trip_detail/$tripId"
     }
     object Settings : Screen("settings")
+    object LocalBackup : Screen("local_backup")
 }
 
 @Composable
@@ -76,6 +78,17 @@ fun AppNavigation(
         composable(Screen.Settings.route) {
             SettingsScreen(
                 viewModel = viewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToBackup = {
+                    navController.navigate(Screen.LocalBackup.route)
+                }
+            )
+        }
+
+        composable(Screen.LocalBackup.route) {
+            LocalBackupScreen(
                 onNavigateBack = {
                     navController.popBackStack()
                 }
