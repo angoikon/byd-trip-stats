@@ -15,9 +15,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.tripstats.data.preferences.PreferencesManager
@@ -28,6 +31,8 @@ import android.content.Context
 import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.BugReport
 import kotlinx.coroutines.delay
+
+private const val DEBUG_CONNECTIONS = false  // Set to true for connection debugging during development
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -122,14 +127,22 @@ fun SettingsScreen(
                 ) {
                     Column {
                         Text(
-                            text = "Embedded MQTT Broker",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "Running on port 1883",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            text = buildAnnotatedString {
+                                withStyle(SpanStyle(
+                                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )) {
+                                    append("Embedded MQTT Broker")
+                                }
+                                append("  ")
+                                withStyle(SpanStyle(
+                                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                                    color = MaterialTheme.colorScheme.primary
+                                )) {
+                                    append("(Running on port 1883)")
+                                }
+                            }
                         )
                     }
                 }
@@ -153,17 +166,23 @@ fun SettingsScreen(
                 ) {
                     Column {
                         Text(
-                            text = "MQTT Connection",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = if (mqttConnected) "Connected" else "Disconnected",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = if (mqttConnected) 
-                                MaterialTheme.colorScheme.primary
-                            else
-                                MaterialTheme.colorScheme.onSurfaceVariant
+                            text = buildAnnotatedString {
+                                withStyle(SpanStyle(
+                                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )) {
+                                    append("MQTT Connection Status:")
+                                }
+                                append("  ")
+                                withStyle(SpanStyle(
+                                    fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                                    color = if (mqttConnected) MaterialTheme.colorScheme.primary
+                                            else MaterialTheme.colorScheme.onSurfaceVariant
+                                )) {
+                                    append(if (mqttConnected) "Connected" else "Disconnected")
+                                }
+                            }
                         )
                     }
                 }
@@ -250,7 +269,8 @@ fun SettingsScreen(
                         modifier = Modifier.size(24.dp)
                     )
                     Text(
-                        text = "Please make sure that in Electro you have set the interval to 1s (up to a maximum of 10s) when the car is ON and whatever interval you want for when the car is OFF. You must use the same URL / port / user / password for both cases.",
+                        text = "Please make sure that in Electro you have set the interval to 1s (or 500ms) for when the car is ON and whatever interval you want for when the car is OFF (preferably 5 minutes).\n" +
+                        "Use 127.0.0.1 and 1883 port (no SSL / username / password) for internal MQTT broker. For telemetry topic, get it from electro (default for Seal is: electro/telemetry/byd-seal/data)",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -332,20 +352,21 @@ fun SettingsScreen(
 
             HorizontalDivider()
             
-            // DEBUG BUTTON - Add this with your other buttons
-            OutlinedButton(
-                onClick = { showDebugDialog = true },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error
-                )
-            ) {
-                Icon(Icons.Filled.BugReport, null, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(8.dp))
-                Text("🔍 Debug Connection Info", fontSize = 16.sp)
+            // Debug button to show MQTT connection status and service diagnostics
+            if (DEBUG_CONNECTIONS) {
+                OutlinedButton(
+                    onClick = { showDebugDialog = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Icon(Icons.Filled.BugReport, null, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("🔍 Debug Connection Info", fontSize = 16.sp)
+                }
+                HorizontalDivider()
             }
-
-            HorizontalDivider()
 
             Text(
                 text = "Data Management",

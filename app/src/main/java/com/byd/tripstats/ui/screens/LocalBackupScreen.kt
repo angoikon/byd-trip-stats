@@ -349,7 +349,7 @@ fun LocalBackupScreen(
                         ) {
                             Text(
                                 "Disconnect bot",
-                                style = MaterialTheme.typography.bodySmall,
+                                style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.error
                             )
                         }
