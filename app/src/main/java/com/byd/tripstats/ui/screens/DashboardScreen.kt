@@ -416,7 +416,7 @@ fun EnergyFlowDiagram(
                         height = 100.dp,
                         modifier = Modifier
                             .align(Alignment.TopStart)
-                            .padding(start = 90.dp)
+                            .padding(start = 16.dp)
                     )
 
                 // AWD drivetrain with tyre pressures
