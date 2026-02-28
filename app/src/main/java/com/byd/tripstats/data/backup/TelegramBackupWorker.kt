@@ -57,7 +57,7 @@ class TelegramBackupWorker(
             val tempFile = File(context.cacheDir, fileName)
             dbFile.copyTo(tempFile, overwrite = true)
 
-            val caption = "\uD83D\uDCCB BYD Trip Stats — Weekly Backup\n\uD83D\uDCC5 $timestamp"
+            val caption = "BYD Trip Stats - Auto Backup\n$timestamp"
             telegramManager.sendFile(tempFile, caption)
 
             tempFile.delete()

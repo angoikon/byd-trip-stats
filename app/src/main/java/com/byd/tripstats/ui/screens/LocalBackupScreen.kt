@@ -3,9 +3,6 @@ package com.byd.tripstats.ui.screens
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Intent
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.tripstats.data.backup.LocalBackupManager
 import com.byd.tripstats.data.backup.TelegramManager
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -34,42 +32,44 @@ import java.util.Locale
 fun LocalBackupScreen(
     onNavigateBack: () -> Unit
 ) {
-    val context   = LocalContext.current
-    val manager   = remember { LocalBackupManager.getInstance(context) }
-    val scope     = rememberCoroutineScope()
+    val context = LocalContext.current
+    val manager = remember { LocalBackupManager.getInstance(context) }
+    val scope = rememberCoroutineScope()
 
-    val backupState  by manager.state.collectAsState()
+    val backupState by manager.state.collectAsState()
     val localBackups by manager.localBackups.collectAsState()
 
     val telegramManager = remember { TelegramManager.getInstance(context) }
     val telegramState by telegramManager.state.collectAsState()
-    val telegramConfig = telegramManager.config
-    val lastAutoBackup = telegramManager.lastAutoBackup
+    val telegramConfig by telegramManager.config.collectAsState()      // StateFlow — reactive
+    val telegramSchedule by telegramManager.schedule.collectAsState()
+    val telegramAuto by telegramManager.autoEnabled.collectAsState()
 
     val isBusy = backupState is LocalBackupManager.BackupState.InProgress
+    val telegramBusy = telegramState is TelegramManager.TelegramState.InProgress
 
-    var restoreTarget    by remember { mutableStateOf<LocalBackupManager.BackupFile?>(null) }
-    var pickerRestoreUri by remember { mutableStateOf<Uri?>(null) }
-    var filePickerError  by remember { mutableStateOf<String?>(null) }
+    var restoreTarget by remember { mutableStateOf<LocalBackupManager.BackupFile?>(null) }
 
-    // ── Restore file picker ───────────────────────────────────────────────────
-    val filePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
-    ) { uri ->
-        if (uri != null) {
-            // Persist read permission across restarts
-            context.contentResolver.takePersistableUriPermission(
-                uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
-            )
-            pickerRestoreUri = uri
+    // ── Auto-dismiss Success banners after 4 seconds ──────────────────────────
+    LaunchedEffect(backupState) {
+        if (backupState is LocalBackupManager.BackupState.Success &&
+            !(backupState as LocalBackupManager.BackupState.Success).restartRequired) {
+            delay(4000)
+            manager.resetState()
+        }
+    }
+    LaunchedEffect(telegramState) {
+        if (telegramState is TelegramManager.TelegramState.Success) {
+            delay(4000)
+            telegramManager.resetState()
         }
     }
 
+    // ── Auto-restart after successful restore ─────────────────────────────────
     LaunchedEffect(backupState) {
         val s = backupState
         if (s is LocalBackupManager.BackupState.Success && s.restartRequired) {
-            kotlinx.coroutines.delay(2000)
-            // Schedule relaunch before killing — AlarmManager survives process death
+            delay(2000)
             val launchIntent = context.packageManager
                 .getLaunchIntentForPackage(context.packageName)
                 ?.apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK) }
@@ -116,7 +116,7 @@ fun LocalBackupScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            // ── Status banner ─────────────────────────────────────────────────
+            // ── Backup state banner ───────────────────────────────────────────
             item {
                 when (val s = backupState) {
                     is LocalBackupManager.BackupState.InProgress -> StatusBanner(
@@ -141,24 +141,13 @@ fun LocalBackupScreen(
                     )
                     else -> {}
                 }
-                filePickerError?.let {
-                    Spacer(Modifier.height(8.dp))
-                    StatusBanner(
-                        text      = it,
-                        color     = MaterialTheme.colorScheme.errorContainer,
-                        icon      = Icons.Filled.Warning,
-                        iconTint  = MaterialTheme.colorScheme.error,
-                        onDismiss = { filePickerError = null }
-                    )
-                }
             }
 
             // ── Backup to Downloads ───────────────────────────────────────────
             item {
                 SectionCard(title = "Backup to Downloads", icon = Icons.Filled.CloudUpload) {
                     Text(
-                        "Saves the full trip database to:\n" +
-                            "Downloads/BydTripStats/byd_stats_backup_DATE.db",
+                        "Saves the full trip database to:\nDownloads/BydTripStats/byd_stats_backup_DATE.db",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -186,11 +175,9 @@ fun LocalBackupScreen(
                 }
             }
 
-
-            // ── Telegram backup ─────────────────────────────────────────────────
+            // ── Telegram backup ───────────────────────────────────────────────
             item {
                 var tokenInput by remember { mutableStateOf(telegramConfig?.token ?: "") }
-                val telegramBusy = telegramState is TelegramManager.TelegramState.InProgress
 
                 SectionCard(title = "Telegram Backup", icon = Icons.Filled.Send) {
                     // Telegram status banner
@@ -221,37 +208,34 @@ fun LocalBackupScreen(
                     Spacer(Modifier.height(8.dp))
 
                     if (telegramConfig != null) {
-                        // Configured state — show bot info + backup button
+                        // ── Connected state ───────────────────────────────────
+
+                        // Bot info row
                         Row(
-                            modifier              = Modifier.fillMaxWidth(),
-                            verticalAlignment     = Alignment.CenterVertically,
+                            modifier          = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Icon(
                                 Icons.Filled.CheckCircle,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp),
-                                tint     = Color(0xFF4CAF50)
+                                tint = Color(0xFF4CAF50)
                             )
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    "@${telegramConfig.botName}",
-                                    style      = MaterialTheme.typography.bodyMedium,
+                                    "@${telegramConfig!!.botName}",
+                                    style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.Medium
                                 )
                                 Text(
-                                    "Chat ID: ${telegramConfig.chatId}",
+                                    "Chat ID: ${telegramConfig!!.chatId}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                                Text(
-                                    "Weekly auto-backup: on",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color(0xFF4CAF50)
-                                )
-                                if (lastAutoBackup != null) {
+                                telegramManager.lastAutoBackup?.let {
                                     Text(
-                                        "Last auto-backup: $lastAutoBackup",
+                                        "Last auto-backup: $it",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -259,8 +243,82 @@ fun LocalBackupScreen(
                             }
                         }
 
-                        Spacer(Modifier.height(10.dp))
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
 
+                        // Auto-backup toggle + schedule selector
+                        Row(
+                            modifier          = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "Automatic backup",
+                                style    = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Switch(
+                                checked         = telegramAuto,
+                                onCheckedChange = { telegramManager.setAutoEnabled(it) }
+                            )
+                        }
+
+                        if (telegramAuto) {
+                            var scheduleChanged by remember { mutableStateOf<String?>(null) }
+
+                            // Auto-clear the "schedule changed" notice after 3 seconds
+                            LaunchedEffect(scheduleChanged) {
+                                if (scheduleChanged != null) {
+                                    delay(3000)
+                                    scheduleChanged = null
+                                }
+                            }
+
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                "Backup interval",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+
+                            TelegramManager.Schedule.entries.forEach { s ->
+                                Row(
+                                    modifier          = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 2.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    RadioButton(
+                                        selected = s == telegramSchedule,
+                                        onClick  = {
+                                            if (s != telegramSchedule) {
+                                                telegramManager.setSchedule(s)
+                                                scheduleChanged = s.label
+                                            }
+                                        }
+                                    )
+                                    Text(
+                                        text  = s.label,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        modifier = Modifier.padding(start = 4.dp)
+                                    )
+                                }
+                            }
+
+                            scheduleChanged?.let { label ->
+                                Spacer(Modifier.height(4.dp))
+                                StatusBanner(
+                                    text     = "Schedule updated to $label. Next auto-backup will follow the new interval.",
+                                    color    = Color(0xFF1B5E20).copy(alpha = 0.15f),
+                                    icon     = Icons.Filled.CheckCircle,
+                                    iconTint = Color(0xFF4CAF50),
+                                    onDismiss = { scheduleChanged = null }
+                                )
+                            }
+                        }
+
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
+
+                        // Manual send button
                         Button(
                             onClick = {
                                 telegramManager.resetState()
@@ -279,12 +337,15 @@ fun LocalBackupScreen(
                                 Icon(Icons.Filled.Send, null, modifier = Modifier.size(20.dp))
                             }
                             Spacer(Modifier.width(8.dp))
-                            Text(if (telegramBusy) "Sending…" else "Send Backup to Telegram")
+                            Text(if (telegramBusy) "Sending…" else "Send Backup Now")
                         }
+
+                        Spacer(Modifier.height(4.dp))
 
                         TextButton(
                             onClick  = { telegramManager.clearConfig() },
-                            enabled  = !telegramBusy
+                            enabled  = !telegramBusy,
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
                                 "Disconnect bot",
@@ -294,13 +355,14 @@ fun LocalBackupScreen(
                         }
 
                     } else {
-                        // Setup state — show token input
+                        // ── Setup state ───────────────────────────────────────
+
                         StatusBanner(
-                            text  = "Once connected, backups are sent manually or automatically every week. " +
-                                    "Each backup lands as a .db file in your private chat with the bot, " +
-                                    "accessible from any device with Telegram.",
+                            text = "Once connected, backups can be sent manually or on a schedule. " +
+                                       "Each backup lands as a .db file in your private chat, " +
+                                       "accessible from any device with Telegram.",
                             color = MaterialTheme.colorScheme.primaryContainer,
-                            icon  = Icons.Filled.Info,
+                            icon = Icons.Filled.Info,
                             iconTint = MaterialTheme.colorScheme.primary
                         )
 
@@ -329,9 +391,7 @@ fun LocalBackupScreen(
                         Spacer(Modifier.height(8.dp))
 
                         Button(
-                            onClick = {
-                                scope.launch { telegramManager.validateAndSave(tokenInput) }
-                            },
+                            onClick  = { scope.launch { telegramManager.validateAndSave(tokenInput) } },
                             enabled  = tokenInput.isNotBlank() && !telegramBusy,
                             modifier = Modifier.fillMaxWidth()
                         ) {
@@ -356,44 +416,21 @@ fun LocalBackupScreen(
                 SectionCard(title = "Restore", icon = Icons.Filled.CloudDownload) {
                     Text(
                         "Restoring will replace ALL current trip data. The app will close and reopen automatically.",
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.error
                     )
+
                     Spacer(Modifier.height(12.dp))
 
-                    // Option A: file picker
-                    OutlinedButton(
-                        onClick = {
-                            try {
-                                filePickerLauncher.launch(
-                                    arrayOf("application/octet-stream", "*/*")
-                                )
-                            } catch (e: Exception) {
-                                filePickerError = "No file manager found on this device.\n" +
-                                    "Use the folder scan below instead."
-                            }
-                        },
-                        enabled  = !isBusy,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(Icons.Filled.FolderOpen, null, modifier = Modifier.size(20.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text("Pick File (File Manager)")
-                    }
-
-                    Spacer(Modifier.height(8.dp))
-                    HorizontalDivider()
-                    Spacer(Modifier.height(8.dp))
-
-                    // Option B: folder scan
                     Row(
                         modifier              = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment     = Alignment.CenterVertically
                     ) {
                         Text(
-                            "Or pick from Downloads/BydTripStats/:",
-                            style = MaterialTheme.typography.bodyMedium
+                            "Available backups:",
+                            style      = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold
                         )
                         IconButton(
                             onClick  = { scope.launch { manager.scanLocalBackups() } },
@@ -402,47 +439,31 @@ fun LocalBackupScreen(
                             Icon(Icons.Filled.Refresh, "Refresh", modifier = Modifier.size(22.dp))
                         }
                     }
-                }
-            }
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
-            // ── Downloads backup list ─────────────────────────────────────────
-            if (localBackups.isEmpty()) {
-                item {
-                    Text(
-                        "No backups found in Downloads/BydTripStats/.\n" +
-                            "Run a backup first, or place a .db file there manually.",
-                        style    = MaterialTheme.typography.bodySmall,
-                        color    = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 4.dp)
-                    )
-                }
-            } else {
-                items(localBackups, key = { it.uri.toString() }) { backup ->
-                    BackupListItem(
-                        backup    = backup,
-                        enabled   = !isBusy,
-                        onRestore = { restoreTarget = backup }
-                    )
+                    if (localBackups.isEmpty()) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "No backups found. Run a backup first.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        localBackups.forEachIndexed { index, backup ->
+                            if (index > 0) HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                            BackupListItem(
+                                backup    = backup,
+                                enabled   = !isBusy,
+                                onRestore = { restoreTarget = backup }
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 
-    // ── Restore confirm — file picker ─────────────────────────────────────────
-    pickerRestoreUri?.let { uri ->
-        RestoreConfirmDialog(
-            description = "the selected file",
-            onConfirm = {
-                val u = uri
-                pickerRestoreUri = null
-                manager.resetState()
-                scope.launch { manager.restoreFromUri(u) }
-            },
-            onDismiss = { pickerRestoreUri = null }
-        )
-    }
-
-    // ── Restore confirm — folder scan ─────────────────────────────────────────
+    // ── Restore confirm dialog ────────────────────────────────────────────────
     restoreTarget?.let { backup ->
         RestoreConfirmDialog(
             description = backup.name,
@@ -466,12 +487,12 @@ private fun SectionCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
-        colors   = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors   = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
-            modifier              = Modifier.fillMaxWidth().padding(16.dp),
-            verticalArrangement   = Arrangement.spacedBy(4.dp)
+            modifier            = Modifier.fillMaxWidth().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Row(
                 verticalAlignment     = Alignment.CenterVertically,
@@ -534,32 +555,30 @@ private fun BackupListItem(
     val sizeMb  = "%.1f MB".format(backup.sizeBytes / 1_048_576.0)
     val date    = remember(backup.dateModified) { dateFmt.format(Date(backup.dateModified)) }
 
-    OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier          = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                Icons.Filled.Backup, null,
-                modifier = Modifier.size(24.dp),
-                tint     = MaterialTheme.colorScheme.primary
-            )
-            Spacer(Modifier.width(10.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(backup.name,
-                    style      = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium)
-                Text("$date  ·  $sizeMb",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (backup.source.isNotEmpty()) {
-                    Text(backup.source,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary)
-                }
+    Row(
+        modifier          = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            Icons.Filled.Backup, null,
+            modifier = Modifier.size(22.dp),
+            tint     = MaterialTheme.colorScheme.primary
+        )
+        Spacer(Modifier.width(10.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(backup.name,
+                style      = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium)
+            Text("$date  ·  $sizeMb",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (backup.source.isNotEmpty()) {
+                Text(backup.source,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary)
             }
-            TextButton(onClick = onRestore, enabled = enabled) { Text("Restore") }
         }
+        TextButton(onClick = onRestore, enabled = enabled) { Text("Restore") }
     }
 }
 
@@ -580,7 +599,7 @@ private fun RestoreConfirmDialog(
         text  = {
             Text(
                 "This will permanently replace ALL current trip data with $description.\n\n" +
-                    "The app will close and reopen automatically after restore."
+                "The app will close and reopen automatically after restore."
             )
         },
         confirmButton = {

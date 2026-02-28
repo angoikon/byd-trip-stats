@@ -47,6 +47,8 @@ class TelegramManager private constructor(private val context: Context) {
         private const val KEY_CHAT_ID = "chat_id"
         private const val KEY_BOT_NAME = "bot_name"
         private const val KEY_LAST_AUTO_BACKUP = "last_auto_backup"
+        private const val KEY_SCHEDULE = "backup_schedule"
+        private const val KEY_AUTO_ENABLED = "auto_backup_enabled"
         private const val BASE_URL = "https://api.telegram.org/bot"
 
         @Volatile private var INSTANCE: TelegramManager? = null
@@ -57,6 +59,16 @@ class TelegramManager private constructor(private val context: Context) {
             }
         }
     }
+
+    // ── Schedule ──────────────────────────────────────────────────────────────
+
+    enum class Schedule(val label: String, val days: Long) {
+        DAILY("Daily", 1L),
+        WEEKLY("Weekly", 7L),
+        MONTHLY("Monthly", 30L)
+    }
+
+    // ── State ─────────────────────────────────────────────────────────────────
 
     sealed class TelegramState {
         object Idle : TelegramState()
@@ -76,21 +88,34 @@ class TelegramManager private constructor(private val context: Context) {
     private val _state = MutableStateFlow<TelegramState>(TelegramState.Idle)
     val state: StateFlow<TelegramState> = _state.asStateFlow()
 
-    val config: TelegramConfig?
-        get() {
-            val token = prefs.getString(KEY_TOKEN, null) ?: return null
-            val chatId = prefs.getString(KEY_CHAT_ID, null) ?: return null
-            val botName = prefs.getString(KEY_BOT_NAME, "") ?: ""
-            return TelegramConfig(token, chatId, botName)
-        }
+    // Config as StateFlow so UI reacts immediately to connect/disconnect
+    private val _config = MutableStateFlow(loadConfig())
+    val config: StateFlow<TelegramConfig?> = _config.asStateFlow()
 
-    val isConfigured: Boolean get() = config != null
+    // Schedule as StateFlow for reactive UI
+    private val _schedule = MutableStateFlow(loadSchedule())
+    val schedule: StateFlow<Schedule> = _schedule.asStateFlow()
+
+    // Auto-backup toggle as StateFlow
+    private val _autoEnabled = MutableStateFlow(prefs.getBoolean(KEY_AUTO_ENABLED, true))
+    val autoEnabled: StateFlow<Boolean> = _autoEnabled.asStateFlow()
 
     val lastAutoBackup: String?
         get() = prefs.getString(KEY_LAST_AUTO_BACKUP, null)
 
-    val weeklyBackupEnabled: Boolean
-        get() = isConfigured
+    // ── Private loaders ───────────────────────────────────────────────────────
+
+    private fun loadConfig(): TelegramConfig? {
+        val token = prefs.getString(KEY_TOKEN, null) ?: return null
+        val chatId = prefs.getString(KEY_CHAT_ID, null) ?: return null
+        val botName = prefs.getString(KEY_BOT_NAME, "") ?: ""
+        return TelegramConfig(token, chatId, botName)
+    }
+
+    private fun loadSchedule(): Schedule {
+        val name = prefs.getString(KEY_SCHEDULE, Schedule.WEEKLY.name) ?: Schedule.WEEKLY.name
+        return Schedule.entries.firstOrNull { it.name == name } ?: Schedule.WEEKLY
+    }
 
     // ── Setup ─────────────────────────────────────────────────────────────────
 
@@ -148,11 +173,13 @@ class TelegramManager private constructor(private val context: Context) {
                 .putString(KEY_BOT_NAME, botName)
                 .apply()
 
-            _state.value = TelegramState.Success(
-                "Connected to @$botName\nChat ID: $chatId"
-            )
+            // Update StateFlow so UI reacts immediately
+            _config.value = TelegramConfig(trimmedToken, chatId, botName)
+
+            _state.value = TelegramState.Success("Connected to @$botName")
             Log.i(TAG, "Telegram configured: bot=@$botName chatId=$chatId")
-            scheduleWeeklyBackup()
+
+            if (_autoEnabled.value) scheduleAutoBackup()
 
         } catch (e: Exception) {
             Log.e(TAG, "Setup failed", e)
@@ -161,14 +188,40 @@ class TelegramManager private constructor(private val context: Context) {
     }
 
     fun clearConfig() {
-        cancelWeeklyBackup()
+        cancelAutoBackup()
         prefs.edit()
             .remove(KEY_TOKEN)
             .remove(KEY_CHAT_ID)
             .remove(KEY_BOT_NAME)
             .remove(KEY_LAST_AUTO_BACKUP)
             .apply()
+        // Update StateFlow so UI reacts immediately
+        _config.value = null
         _state.value = TelegramState.Idle
+    }
+
+    // ── Schedule settings ─────────────────────────────────────────────────────
+
+    fun setSchedule(newSchedule: Schedule) {
+        prefs.edit().putString(KEY_SCHEDULE, newSchedule.name).apply()
+        _schedule.value = newSchedule
+        _state.value = TelegramState.Idle   // clear any stale banner
+        if (_autoEnabled.value && _config.value != null) {
+            scheduleAutoBackup()
+        }
+        Log.i(TAG, "Backup schedule set to ${newSchedule.label}")
+    }
+
+    fun setAutoEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_AUTO_ENABLED, enabled).apply()
+        _autoEnabled.value = enabled
+        _state.value = TelegramState.Idle   // clear any stale error/success banner
+        if (enabled && _config.value != null) {
+            scheduleAutoBackup()
+        } else {
+            cancelAutoBackup()
+        }
+        Log.i(TAG, "Auto backup ${if (enabled) "enabled" else "disabled"}")
     }
 
     // ── Send ──────────────────────────────────────────────────────────────────
@@ -180,7 +233,7 @@ class TelegramManager private constructor(private val context: Context) {
      */
     suspend fun sendFile(file: File, caption: String = "") = withContext(Dispatchers.IO) {
         try {
-            val cfg = config ?: throw Exception("Telegram not configured.")
+            val cfg = _config.value ?: throw Exception("Telegram not configured.")
             _state.value = TelegramState.InProgress("Sending to Telegram…")
 
             val boundary = "----BydBackup${System.currentTimeMillis()}"
@@ -192,29 +245,33 @@ class TelegramManager private constructor(private val context: Context) {
                 setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
             }
 
+            // Use write(ByteArray) instead of writeBytes() — writeBytes() only writes
+            // the low byte of each char (ISO-8859-1), which mangles any non-ASCII content
+            // (emoji, en-dashes, etc.) and causes Telegram to reject with UTF-8 errors.
+            fun DataOutputStream.utf8(s: String) = write(s.toByteArray(Charsets.UTF_8))
+
             DataOutputStream(conn.outputStream).use { out ->
                 // chat_id field
-                out.writeBytes("--$boundary\r\n")
-                out.writeBytes("Content-Disposition: form-data; name=\"chat_id\"\r\n\r\n")
-                out.writeBytes("${cfg.chatId}\r\n")
+                out.utf8("--$boundary\r\n")
+                out.utf8("Content-Disposition: form-data; name=\"chat_id\"\r\n\r\n")
+                out.utf8("${cfg.chatId}\r\n")
 
                 // caption field (optional)
                 if (caption.isNotEmpty()) {
-                    out.writeBytes("--$boundary\r\n")
-                    out.writeBytes("Content-Disposition: form-data; name=\"caption\"\r\n\r\n")
-                    out.writeBytes("$caption\r\n")
+                    out.utf8("--$boundary\r\n")
+                    out.utf8("Content-Disposition: form-data; name=\"caption\"\r\n\r\n")
+                    out.utf8("$caption\r\n")
                 }
 
                 // document field — stream directly from disk
-                out.writeBytes("--$boundary\r\n")
-                out.writeBytes(
+                out.utf8("--$boundary\r\n")
+                out.utf8(
                     "Content-Disposition: form-data; name=\"document\"; filename=\"${file.name}\"\r\n"
                 )
-                out.writeBytes("Content-Type: application/octet-stream\r\n\r\n")
+                out.utf8("Content-Type: application/octet-stream\r\n\r\n")
                 FileInputStream(file).use { fis -> fis.copyTo(out) }
-                out.writeBytes("\r\n")
-
-                out.writeBytes("--$boundary--\r\n")
+                out.utf8("\r\n")
+                out.utf8("--$boundary--\r\n")
             }
 
             val responseCode = conn.responseCode
@@ -227,9 +284,7 @@ class TelegramManager private constructor(private val context: Context) {
 
             val json = JSONObject(responseBody)
             if (json.getBoolean("ok")) {
-                _state.value = TelegramState.Success(
-                    "Sent to Telegram ✓\n${file.name}"
-                )
+                _state.value = TelegramState.Success("Sent to Telegram ✓\n${file.name}")
                 Log.i(TAG, "Telegram send success: ${file.name}")
             } else {
                 val desc = json.optString("description", "Unknown error")
@@ -242,27 +297,27 @@ class TelegramManager private constructor(private val context: Context) {
         }
     }
 
-    // ── Weekly backup scheduling ──────────────────────────────────────────────
+    // ── Auto backup scheduling ────────────────────────────────────────────────
 
-    /**
-     * Enqueues a periodic WorkManager task that fires once a week.
-     * KEEP policy means an existing schedule is preserved (not reset) if already running.
-     * REPLACE is used only when explicitly re-scheduling (e.g. after re-connecting).
-     */
-    fun scheduleWeeklyBackup() {
-        val request = PeriodicWorkRequestBuilder<TelegramBackupWorker>(7, TimeUnit.DAYS)
+    fun scheduleAutoBackup() {
+        val days = _schedule.value.days
+        val request = PeriodicWorkRequestBuilder<TelegramBackupWorker>(days, TimeUnit.DAYS)
+            // Without an initial delay, WorkManager fires the worker immediately on first
+            // enqueue (and on every UPDATE re-enqueue). Delaying by the full period means
+            // the first run happens after one interval, matching user expectations.
+            .setInitialDelay(days, TimeUnit.DAYS)
             .build()
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             TelegramBackupWorker.WORK_NAME,
             ExistingPeriodicWorkPolicy.UPDATE,
             request
         )
-        Log.i(TAG, "Weekly Telegram backup scheduled")
+        Log.i(TAG, "Auto backup scheduled every $days day(s), first run in $days day(s)")
     }
 
-    fun cancelWeeklyBackup() {
+    fun cancelAutoBackup() {
         WorkManager.getInstance(context).cancelUniqueWork(TelegramBackupWorker.WORK_NAME)
-        Log.i(TAG, "Weekly Telegram backup cancelled")
+        Log.i(TAG, "Auto backup cancelled")
     }
 
     /** Called by TelegramBackupWorker after a successful run to persist the timestamp. */

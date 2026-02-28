@@ -8,12 +8,11 @@ Your trip data lives in a single SQLite database file on the car's infotainment 
 
 - [Backup Methods](#backup-methods)
   - [Downloads Folder](#1-downloads-folder)
-  - [Telegram](#3-telegram)
-  - [Wireless ADB](#4-wireless-adb)
+  - [Telegram](#2-telegram)
+  - [Wireless ADB](#3-wireless-adb)
 - [Restore Methods](#restore-methods)
   - [From the backup list](#1-from-the-backup-list)
-  - [Using the file picker](#2-using-the-file-picker)
-  - [Using ADB push](#3-using-adb-push)
+  - [Using ADB push](#2-using-adb-push)
 - [Notes](#notes)
 
 ---
@@ -42,17 +41,30 @@ Sends the backup file to a private Telegram chat. Accessible from any device wit
 1. Open Telegram and message **@BotFather**
 2. Send `/newbot` and follow the prompts to create a bot
 3. Copy the token BotFather gives you (format: `123456789:ABCdefGHI...`)
-4. **Send any message to your new bot** (this is required so the app can find your chat ID)
+4. **Send any message to your new bot** (required so the app can find your chat ID)
 5. Open the app → **Settings** → **Backup & Restore** → *Telegram Backup*
 6. Paste the token and tap **Validate & Save**
 7. The app contacts Telegram, confirms the token, and saves your chat ID automatically
 
-**Backup:**
-1. Tap **Send Backup to Telegram**
-2. The `.db` file arrives in your private chat with the bot, captioned with the date and time
+**Manual backup:**
+1. Tap **Send Backup Now**
+2. The `.db` file arrives in your private chat with the bot, captioned with the timestamp
 3. Access it from any device via the Telegram app
 
-> To disconnect, tap **Disconnect bot**. Your previous backups in Telegram are unaffected.
+**Automatic backup:**
+
+Once connected, you can enable automatic scheduled backups using the toggle in the Telegram section. Three intervals are available via radio buttons: **Daily**, **Weekly**, or **Monthly**.
+
+Key behaviours to be aware of:
+
+- The first automatic backup runs after one full interval from the moment you enable it — enabling the toggle does **not** send a backup immediately
+- Changing the interval reschedules from that point forward; again, no immediate send
+- If a backup attempt fails (e.g. no network at the scheduled time), the system retries automatically with exponential backoff before giving up until the next scheduled window
+- If the car is powered off when a scheduled backup is due, it runs automatically on the next boot — it will not be silently skipped. If the car was off for longer than the full interval, only one backup fires on boot (no catch-up runs), and the cadence resets from that point
+
+The *Last auto-backup* timestamp shown in Settings confirms when the most recent automatic run completed.
+
+> To disconnect, tap **Disconnect bot**. This cancels the automatic schedule and clears all saved credentials. Your previous backups in Telegram are unaffected.
 
 ---
 
@@ -91,37 +103,22 @@ adb -s 192.168.x.x:5555 shell run-as com.byd.tripstats \
 
 ### 1. From the Backup List
 
-The easiest restore path. The app scans all known backup locations and shows them in a single list.
+The app scans all known backup locations (Downloads folder and private ADB directory) and shows them in a single list inside the Restore section.
 
 **Steps:**
 1. Open the app → **Settings** → **Backup & Restore**
-2. Scroll down to the backup list below the *Restore* section
+2. Scroll to the *Restore* section — available backups are listed directly below the warning
 3. Tap **Restore** next to the backup you want
 4. Confirm the warning dialog
-5. The app restores the database and restarts
+5. The app restores the database and restarts automatically
 
-Each entry shows the filename, date, size, and source location (*Downloads*, *SD Card*, or *Internal (ADB)*).
-
----
-
-### 2. Using the File Picker
-
-Use this if the backup is stored somewhere not covered by the automatic scan (e.g. a USB drive, or a file downloaded from Telegram).
-
-**Steps:**
-1. Open the app → **Settings** → **Backup & Restore**
-2. Under *Restore*, tap **Pick File (File Manager)**
-3. Navigate to the `.db` file in the system file picker and select it
-4. Confirm the warning dialog
-5. The app restores the database and restarts
-
-> If the car's infotainment has no file manager registered, this button will show an error. Use the backup list or ADB push instead.
+Each entry shows the filename, date, size, and source location (*Downloads* or *Internal (ADB)*). Tap the refresh icon to re-scan if you have just created a new backup or pushed a file via ADB.
 
 ---
 
-### 3. Using ADB Push
+### 2. Using ADB Push
 
-Use this to restore a backup from your PC directly to the car over WiFi.
+Use this to restore a backup from your PC directly to the car over WiFi, then pick it from the in-app list.
 
 **Steps:**
 
@@ -140,11 +137,12 @@ adb -s 192.168.x.x:5555 push byd_stats_backup_2026-02-28_10-30.db \
 3. Open the app → **Settings** → **Backup & Restore**
 4. The pushed file appears in the backup list — tap **Restore** and confirm
 
+> To restore a Telegram backup: download the `.db` file from your Telegram chat to your PC, then push it to the car via ADB using the steps above.
+
 ---
 
 ## Notes
 
 - **Before pulling via ADB**, trigger an in-app backup first. This flushes the SQLite Write-Ahead Log (WAL) and ensures the `.db` file is self-consistent. Pulling the raw file while the app is running may result in an incomplete snapshot.
-- **All backup methods** write the same file format — a standard SQLite 3 database. You can open it with any SQLite browser (e.g. SQLiteStudio, SQLPro Studio, DB Browser for SQLite) for inspection or manual queries.
-- **Telegram backups are not restorable from within the app** — download the `.db` file from your Telegram chat to your device or PC, then restore via the file picker or ADB push.
+- **All backup methods** produce the same file format — a standard SQLite 3 database. You can open it with any SQLite browser (e.g. DB Browser for SQLite, SQLiteStudio) for inspection or manual queries.
 - The app validates that any file selected for restore is a genuine SQLite database before touching the live data.
