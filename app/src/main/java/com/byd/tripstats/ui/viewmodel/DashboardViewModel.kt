@@ -108,6 +108,65 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             initialValue = emptyList()
         )
 
+    /** One entry per day for the past 30 days that has at least one completed trip. */
+    val monthlyEfficiency: StateFlow<List<DailyEfficiency>> = allTrips
+        .map { trips ->
+            val fmt = SimpleDateFormat("dd/MM", Locale.getDefault())
+            val cal = Calendar.getInstance()
+            cal.set(Calendar.HOUR_OF_DAY, 0)
+            cal.set(Calendar.MINUTE, 0)
+            cal.set(Calendar.SECOND, 0)
+            cal.set(Calendar.MILLISECOND, 0)
+            val todayMidnight = cal.timeInMillis
+
+            (29 downTo 0).mapNotNull { daysAgo ->
+                val dayStart = todayMidnight - daysAgo * 86_400_000L
+                val dayEnd   = dayStart + 86_400_000L - 1L
+                val label    = fmt.format(java.util.Date(dayStart))
+                val efficiencies = trips
+                    .filter { it.startTime in dayStart..dayEnd && it.efficiency != null && (it.distance ?: 0.0) >= 0.5 }
+                    .mapNotNull { it.efficiency }
+                if (efficiencies.isEmpty()) null
+                else DailyEfficiency(label, efficiencies.average())
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = emptyList()
+        )
+
+    /** One entry per calendar month for the past 12 months that has at least one completed trip. */
+    val yearlyEfficiency: StateFlow<List<DailyEfficiency>> = allTrips
+        .map { trips ->
+            val labelFmt = SimpleDateFormat("MMM", Locale.getDefault())
+            val cal = Calendar.getInstance()
+            cal.set(Calendar.DAY_OF_MONTH, 1)
+            cal.set(Calendar.HOUR_OF_DAY, 0)
+            cal.set(Calendar.MINUTE, 0)
+            cal.set(Calendar.SECOND, 0)
+            cal.set(Calendar.MILLISECOND, 0)
+
+            (11 downTo 0).mapNotNull { monthsAgo ->
+                val monthCal = cal.clone() as Calendar
+                monthCal.add(Calendar.MONTH, -monthsAgo)
+                val monthStart = monthCal.timeInMillis
+                monthCal.add(Calendar.MONTH, 1)
+                val monthEnd = monthCal.timeInMillis - 1L
+                val label = labelFmt.format(java.util.Date(monthStart))
+                val efficiencies = trips
+                    .filter { it.startTime in monthStart..monthEnd && it.efficiency != null && (it.distance ?: 0.0) >= 0.5 }
+                    .mapNotNull { it.efficiency }
+                if (efficiencies.isEmpty()) null
+                else DailyEfficiency(label, efficiencies.average())
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = emptyList()
+        )
+
     /**
      * Pre-computed display metrics for every trip, keyed by trip ID.
      * Derived from allTrips + allTripStats so the LazyColumn never does

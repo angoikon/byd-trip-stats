@@ -32,7 +32,7 @@ import com.byd.tripstats.ui.components.GlassmorphicCard
 import com.byd.tripstats.ui.components.RangeProjectionChart
 import com.byd.tripstats.ui.components.RangeDataPoint
 import com.byd.tripstats.ui.components.WeeklyEnergyThumbnail
-import com.byd.tripstats.ui.components.WeeklyEnergyChartExpanded
+import com.byd.tripstats.ui.components.ConsumptionChartExpanded
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import com.byd.tripstats.ui.theme.*
 import kotlin.math.abs
@@ -60,6 +60,8 @@ fun DashboardScreen(
     val autoTripDetection by viewModel.autoTripDetection.collectAsState()
     val tripDataPoints by viewModel.tripDataPoints.collectAsState()
     val weeklyEfficiency by viewModel.weeklyEfficiency.collectAsState()
+    val monthlyEfficiency by viewModel.monthlyEfficiency.collectAsState()
+    val yearlyEfficiency by viewModel.yearlyEfficiency.collectAsState()
 
     Scaffold(
         topBar = {
@@ -225,6 +227,8 @@ fun DashboardScreen(
                 autoTripDetection = autoTripDetection,
                 tripDataPoints = tripDataPoints,
                 weeklyEfficiency = weeklyEfficiency,
+                monthlyEfficiency = monthlyEfficiency,
+                yearlyEfficiency = yearlyEfficiency,
                 onStartTrip = { viewModel.startManualTrip() },
                 onEndTrip = { viewModel.endManualTrip() },
                 onToggleAutoDetection = { viewModel.toggleAutoTripDetection() },
@@ -241,6 +245,8 @@ fun DashboardContent(
     autoTripDetection: Boolean,
     tripDataPoints: List<RangeDataPoint>,
     weeklyEfficiency: List<DashboardViewModel.DailyEfficiency>,
+    monthlyEfficiency: List<DashboardViewModel.DailyEfficiency>,
+    yearlyEfficiency: List<DashboardViewModel.DailyEfficiency>,
     onStartTrip: () -> Unit,
     onEndTrip: () -> Unit,
     onToggleAutoDetection: () -> Unit,
@@ -263,6 +269,8 @@ fun DashboardContent(
                 telemetry = telemetry,
                 tripDataPoints = tripDataPoints,
                 weeklyEfficiency = weeklyEfficiency,
+                monthlyEfficiency = monthlyEfficiency,
+                yearlyEfficiency = yearlyEfficiency,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
@@ -299,6 +307,8 @@ fun EnergyFlowDiagram(
     telemetry: VehicleTelemetry,
     tripDataPoints: List<RangeDataPoint>,
     weeklyEfficiency: List<DashboardViewModel.DailyEfficiency>,
+    monthlyEfficiency: List<DashboardViewModel.DailyEfficiency>,
+    yearlyEfficiency: List<DashboardViewModel.DailyEfficiency>,
     modifier: Modifier = Modifier
 ) {
     val power = telemetry.enginePower
@@ -306,8 +316,8 @@ fun EnergyFlowDiagram(
     val isCharging = telemetry.isCharging
 
     // Two independent expanded states
-    var weeklyExpanded by remember { mutableStateOf(false) }
-    var rangeFlipped by remember { mutableStateOf(false) }
+    var consumptionExpanded by remember { mutableStateOf(false) }
+    var rangeFlipped   by remember { mutableStateOf(false) }
 
     val rotation by animateFloatAsState(
         targetValue = if (rangeFlipped) 180f else 0f,
@@ -367,26 +377,15 @@ fun EnergyFlowDiagram(
                     modifier = Modifier.fillMaxSize()
                 )
             }
-        } else if (weeklyExpanded) {
-            // ── Expanded weekly energy chart ──────────────────────────────────
-            Box(modifier = Modifier.fillMaxSize()) {
-                WeeklyEnergyChartExpanded(
-                    data = weeklyEfficiency,
-                    modifier = Modifier.fillMaxSize()
-                )
-                IconButton(
-                    onClick = { weeklyExpanded = false },
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Close,
-                        contentDescription = "Close chart",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+        } else if (consumptionExpanded) {
+            // ── Expanded consumption chart (tabbed: 7d / 30d / 12m) ───────────
+            ConsumptionChartExpanded(
+                weeklyData  = weeklyEfficiency,
+                monthlyData = monthlyEfficiency,
+                yearlyData  = yearlyEfficiency,
+                onClose     = { consumptionExpanded = false },
+                modifier    = Modifier.fillMaxSize()
+            )
         } else {
             // ── Normal front face ─────────────────────────────────────────────
             Column(
@@ -434,7 +433,7 @@ fun EnergyFlowDiagram(
                         )
 
                         // Tyre Pressure Overlays
-                        // Left Front (recommended: 2.5 bar)
+                        // Left Front (recommended: 2.6 bar)
                         TyrePressureIndicator(
                             pressure = telemetry.tyrePressureLF,
                             isFront = true,
@@ -443,7 +442,7 @@ fun EnergyFlowDiagram(
                                 .offset(x = (-10).dp, y = (-10).dp)
                         )
 
-                        // Right Front (recommended: 2.5 bar)
+                        // Right Front (recommended: 2.6 bar)
                         TyrePressureIndicator(
                             pressure = telemetry.tyrePressureRF,
                             isFront = true,
@@ -471,23 +470,23 @@ fun EnergyFlowDiagram(
                         )
                     }
 
-                    // Weekly energy thumbnail — top-right corner, tap to expand
+                    // Consumption charts thumbnail — tap to open tabbed chart
                     Column(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .width(80.dp)
+                            .width(120.dp)
                             .fillMaxHeight()
                             .background(
                                 MaterialTheme.colorScheme.surface.copy(alpha = 0.55f),
                                 RoundedCornerShape(8.dp)
                             )
-                            .clickable { weeklyExpanded = true }
+                            .clickable { consumptionExpanded = true }
                             .padding(4.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "7d kWh",
+                            text = "consumption charts",
                             fontSize = 9.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.SemiBold
@@ -567,15 +566,14 @@ fun TyrePressureIndicator(
     // Convert PSI to bar (1 bar = 14.5038 PSI)
     val pressureBar = pressure / 14.5038
     
-    // BYD Seal recommended pressure: Front 2.5 bar, Rear 2.9 bar
+    // BYD Seal recommended pressure: Front 2.6 bar, Rear 2.9 bar
     // Tolerance: ±0.2 bar
-    val recommendedPressure = if (isFront) 2.5 else 2.9
+    val recommendedPressure = if (isFront) 2.6 else 2.9 // TODO: make this dynamic via config
     val minPressure = recommendedPressure - 0.2
     val maxPressure = recommendedPressure + 0.2
     
     val isLow = pressureBar < minPressure
     val isHigh = pressureBar > maxPressure
-    val isNormal = !isLow && !isHigh
     
     Surface(
         modifier = modifier,

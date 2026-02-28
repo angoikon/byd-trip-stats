@@ -134,7 +134,11 @@ fun RangeProjectionChart(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(
+                    top = 16.dp,      // Added specific top padding
+                    start = 16.dp,    // Original horizontal start
+                    end = 16.dp       // Original horizontal end
+            ),
             verticalAlignment = Alignment.Bottom
         ) {
             Column {
@@ -155,7 +159,7 @@ fun RangeProjectionChart(
             }
             Spacer(Modifier.weight(1f))
             Text(
-                text = "WLTP $wltpRangeKm km",
+                text = "WLTP ($wltpRangeKm km)",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -347,7 +351,13 @@ fun RangeProjectionChart(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(Modifier.width(16.dp))
+            Spacer(Modifier.width(4.dp))
+            Text(
+                text  = "(based on WLTP)",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+            )
+            Spacer(Modifier.width(20.dp))
             Canvas(modifier = Modifier.size(20.dp, 3.dp)) {
                 drawLine(
                     color       = accentColor,
