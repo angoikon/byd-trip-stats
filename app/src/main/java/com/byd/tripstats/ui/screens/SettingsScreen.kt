@@ -376,11 +376,6 @@ fun SettingsScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = "WARNING: Restoring a backup will replace ALL current trips!",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.error
-                    )
                     Spacer(Modifier.height(4.dp))
                     Button(
                         onClick = onNavigateToBackup,
