@@ -298,7 +298,7 @@ fun TripItem(
                 ) {
                     Text(
                         text = if (trip.endTime != null)
-                            "${formatTimestamp(trip.startTime)}  →  ${formatTimestamp(trip.endTime!!)}:"
+                            "${formatTimestamp(trip.startTime)}  →  ${formatTimestamp(trip.endTime!!)} -> "
                         else
                             formatTimestamp(trip.startTime),
                         style = MaterialTheme.typography.titleMedium,
