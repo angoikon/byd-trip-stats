@@ -21,7 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.tripstats.data.backup.LocalBackupManager
-import com.byd.tripstats.data.backup.SdCardManager
+import com.byd.tripstats.data.backup.TelegramManager
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -34,12 +34,14 @@ fun LocalBackupScreen(
 ) {
     val context   = LocalContext.current
     val manager   = remember { LocalBackupManager.getInstance(context) }
-    val sdManager = remember { SdCardManager.getInstance(context) }
     val scope     = rememberCoroutineScope()
 
     val backupState  by manager.state.collectAsState()
     val localBackups by manager.localBackups.collectAsState()
-    val sdFolder     by sdManager.selectedFolder.collectAsState()
+
+    val telegramManager = remember { TelegramManager.getInstance(context) }
+    val telegramState by telegramManager.state.collectAsState()
+    val telegramConfig = telegramManager.config
 
     val isBusy = backupState is LocalBackupManager.BackupState.InProgress
 
@@ -60,14 +62,6 @@ fun LocalBackupScreen(
         }
     }
 
-    // ── SD card folder picker (one-time setup) ────────────────────────────────
-    val sdFolderLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocumentTree()
-    ) { uri ->
-        if (uri != null) sdManager.onFolderSelected(context, uri)
-    }
-
-    // ── Auto-restart after successful restore ─────────────────────────────────
     LaunchedEffect(backupState) {
         val s = backupState
         if (s is LocalBackupManager.BackupState.Success && s.restartRequired) {
@@ -177,93 +171,143 @@ fun LocalBackupScreen(
                 }
             }
 
-            // ── Backup to SD Card ─────────────────────────────────────────────
-            item {
-                SectionCard(title = "Backup to SD Card", icon = Icons.Filled.SdCard) {
 
-                    // Folder status row
-                    Row(
-                        modifier              = Modifier.fillMaxWidth(),
-                        verticalAlignment     = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Icon(
-                            imageVector      = if (sdFolder != null) Icons.Filled.CheckCircle
-                                               else Icons.Filled.RadioButtonUnchecked,
-                            contentDescription = null,
-                            modifier         = Modifier.size(20.dp),
-                            tint             = if (sdFolder != null) Color(0xFF4CAF50)
-                                               else MaterialTheme.colorScheme.onSurfaceVariant
+            // ── Telegram backup ─────────────────────────────────────────────────
+            item {
+                var tokenInput by remember { mutableStateOf(telegramConfig?.token ?: "") }
+                val telegramBusy = telegramState is TelegramManager.TelegramState.InProgress
+
+                SectionCard(title = "Telegram Backup", icon = Icons.Filled.Send) {
+                    // Telegram status banner
+                    when (val s = telegramState) {
+                        is TelegramManager.TelegramState.InProgress -> StatusBanner(
+                            text    = s.message,
+                            color   = MaterialTheme.colorScheme.primaryContainer,
+                            icon    = Icons.Filled.HourglassTop,
+                            loading = true
                         )
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                sdFolder ?: "No folder selected",
-                                style      = MaterialTheme.typography.bodyMedium,
-                                fontWeight = if (sdFolder != null) FontWeight.Medium
-                                             else FontWeight.Normal,
-                                color      = if (sdFolder != null)
-                                                 MaterialTheme.colorScheme.onSurface
-                                             else MaterialTheme.colorScheme.onSurfaceVariant
+                        is TelegramManager.TelegramState.Success -> StatusBanner(
+                            text      = s.message,
+                            color     = Color(0xFF1B5E20).copy(alpha = 0.15f),
+                            icon      = Icons.Filled.CheckCircle,
+                            iconTint  = Color(0xFF4CAF50),
+                            onDismiss = { telegramManager.resetState() }
+                        )
+                        is TelegramManager.TelegramState.Error -> StatusBanner(
+                            text      = s.message,
+                            color     = MaterialTheme.colorScheme.errorContainer,
+                            icon      = Icons.Filled.Error,
+                            iconTint  = MaterialTheme.colorScheme.error,
+                            onDismiss = { telegramManager.resetState() }
+                        )
+                        else -> {}
+                    }
+
+                    Spacer(Modifier.height(8.dp))
+
+                    if (telegramConfig != null) {
+                        // Configured state — show bot info + backup button
+                        Row(
+                            modifier              = Modifier.fillMaxWidth(),
+                            verticalAlignment     = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.CheckCircle,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp),
+                                tint     = Color(0xFF4CAF50)
                             )
-                            if (sdFolder == null) {
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    "Select once — all future backups go there automatically.",
+                                    "@${telegramConfig.botName}",
+                                    style      = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    "Chat ID: ${telegramConfig.chatId}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
-                    }
 
-                    Spacer(Modifier.height(10.dp))
+                        Spacer(Modifier.height(10.dp))
 
-                    // Select / change folder
-                    OutlinedButton(
-                        onClick  = { sdFolderLauncher.launch(null) },
-                        enabled  = !isBusy,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(Icons.Filled.FolderOpen, null, modifier = Modifier.size(20.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            if (sdFolder != null) "Change SD Card Folder"
-                            else "Select SD Card Folder"
-                        )
-                    }
-
-                    // Backup button — visible only once a folder is set
-                    if (sdFolder != null) {
-                        Spacer(Modifier.height(6.dp))
                         Button(
                             onClick = {
-                                manager.resetState()
-                                scope.launch { manager.backupDatabaseToSd() }
+                                telegramManager.resetState()
+                                scope.launch { manager.backupToTelegram() }
                             },
-                            enabled  = !isBusy,
+                            enabled  = !isBusy && !telegramBusy,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            if (isBusy) {
+                            if (telegramBusy) {
                                 CircularProgressIndicator(
                                     modifier    = Modifier.size(18.dp),
                                     strokeWidth = 2.dp,
                                     color       = MaterialTheme.colorScheme.onPrimary
                                 )
                             } else {
-                                Icon(Icons.Filled.SdCard, null, modifier = Modifier.size(20.dp))
+                                Icon(Icons.Filled.Send, null, modifier = Modifier.size(20.dp))
                             }
                             Spacer(Modifier.width(8.dp))
-                            Text(if (isBusy) "Working…" else "Backup to SD Card")
+                            Text(if (telegramBusy) "Sending…" else "Send Backup to Telegram")
                         }
 
                         TextButton(
-                            onClick  = { sdManager.clearFolder() },
-                            enabled  = !isBusy
+                            onClick  = { telegramManager.clearConfig() },
+                            enabled  = !telegramBusy
                         ) {
                             Text(
-                                "Remove saved folder",
+                                "Disconnect bot",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.error
                             )
+                        }
+
+                    } else {
+                        // Setup state — show token input
+                        Text(
+                            "1. Message @BotFather on Telegram → /newbot → copy the token\n" +
+                            "2. Send any message to your new bot\n" +
+                            "3. Paste the token below and tap Validate",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        Spacer(Modifier.height(10.dp))
+
+                        OutlinedTextField(
+                            value         = tokenInput,
+                            onValueChange = { tokenInput = it },
+                            label         = { Text("Bot Token") },
+                            placeholder   = { Text("123456789:ABCdef…") },
+                            singleLine    = true,
+                            modifier      = Modifier.fillMaxWidth(),
+                            enabled       = !telegramBusy
+                        )
+
+                        Spacer(Modifier.height(8.dp))
+
+                        Button(
+                            onClick = {
+                                scope.launch { telegramManager.validateAndSave(tokenInput) }
+                            },
+                            enabled  = tokenInput.isNotBlank() && !telegramBusy,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            if (telegramBusy) {
+                                CircularProgressIndicator(
+                                    modifier    = Modifier.size(18.dp),
+                                    strokeWidth = 2.dp,
+                                    color       = MaterialTheme.colorScheme.onPrimary
+                                )
+                            } else {
+                                Icon(Icons.Filled.Check, null, modifier = Modifier.size(20.dp))
+                            }
+                            Spacer(Modifier.width(8.dp))
+                            Text(if (telegramBusy) "Validating…" else "Validate & Save")
                         }
                     }
                 }

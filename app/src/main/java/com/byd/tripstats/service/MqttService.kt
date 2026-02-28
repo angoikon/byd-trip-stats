@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
+import android.content.SharedPreferences
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
@@ -31,6 +32,39 @@ class MqttService : Service() {
     private val NOTIFICATION_ID = 1
     
     private val binder = LocalBinder()
+
+    companion object {
+        private const val PREFS_NAME = "mqtt_service_prefs"
+        private const val KEY_BROKER_URL = "broker_url"
+        private const val KEY_BROKER_PORT = "broker_port"
+        private const val KEY_USERNAME = "username"
+        private const val KEY_PASSWORD = "password"
+        private const val KEY_TOPIC = "topic"
+
+        fun start(
+            context: Context,
+            brokerUrl: String,
+            brokerPort: Int,
+            username: String?,
+            password: String?,
+            topic: String
+        ) {
+            val intent = Intent(context, MqttService::class.java).apply {
+                putExtra("broker_url", brokerUrl)
+                putExtra("broker_port", brokerPort)
+                putExtra("username", username)
+                putExtra("password", password)
+                putExtra("topic", topic)
+            }
+            context.startForegroundService(intent)
+        }
+
+        fun stop(context: Context) {
+            context.stopService(Intent(context, MqttService::class.java))
+        }
+    }
+
+    private lateinit var prefs: SharedPreferences
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     
     private var mqttClientManager: MqttClientManager? = null
@@ -62,24 +96,50 @@ class MqttService : Service() {
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "Service created")
+        prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         createNotificationChannel()
         acquireWakeLock()
     }
     
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d(TAG, "Service started")
+        Log.d(TAG, "Service started (intent=${if (intent == null) "null — restarted by system" else "normal"})")
 
-        val brokerUrl = intent?.getStringExtra("broker_url")
-        val brokerPort = intent?.getIntExtra("broker_port", 1883)
-        val username = intent?.getStringExtra("username")
-        val password = intent?.getStringExtra("password")
-        val topic = intent?.getStringExtra("topic")
+        // If intent has config, persist it. If null (START_STICKY restart), reload from prefs.
+        val brokerUrl: String?
+        val brokerPort: Int
+        val username: String?
+        val password: String?
+        val topic: String?
 
-        // Validate configuration
+        if (intent != null && !intent.getStringExtra("broker_url").isNullOrBlank()) {
+            brokerUrl = intent.getStringExtra("broker_url")
+            brokerPort = intent.getIntExtra("broker_port", 1883)
+            username = intent.getStringExtra("username")
+            password = intent.getStringExtra("password")
+            topic = intent.getStringExtra("topic")
+
+            // Persist so we can recover after a crash restart
+            prefs.edit()
+                .putString(KEY_BROKER_URL, brokerUrl)
+                .putInt(KEY_BROKER_PORT, brokerPort)
+                .putString(KEY_USERNAME, username)
+                .putString(KEY_PASSWORD, password)
+                .putString(KEY_TOPIC, topic)
+                .apply()
+            Log.d(TAG, "Config saved to prefs")
+        } else {
+            // Reload from prefs (crash restart or null intent)
+            brokerUrl = prefs.getString(KEY_BROKER_URL, null)
+            brokerPort = prefs.getInt(KEY_BROKER_PORT, 1883)
+            username = prefs.getString(KEY_USERNAME, null)
+            password = prefs.getString(KEY_PASSWORD, null)
+            topic = prefs.getString(KEY_TOPIC, null)
+            Log.d(TAG, "Config restored from prefs")
+        }
+
         if (brokerUrl.isNullOrBlank() || topic.isNullOrBlank()) {
-            Log.e(TAG, "Invalid MQTT configuration")
-            _connectionState.value = ConnectionState.Error("Invalid configuration")
-            updateNotification("Configuration error")
+            Log.e(TAG, "No MQTT configuration available — waiting for explicit start")
+            startForeground(NOTIFICATION_ID, createNotification("Waiting for configuration…"))
             return START_STICKY
         }
 
@@ -87,18 +147,16 @@ class MqttService : Service() {
         Log.d(TAG, "Broker: $brokerUrl:$brokerPort")
         Log.d(TAG, "Topic: $topic")
 
-        startForeground(NOTIFICATION_ID, createNotification("Starting..."))
+        startForeground(NOTIFICATION_ID, createNotification("Starting…"))
 
-        // Initialize MQTT client
         mqttClientManager = MqttClientManager(
             brokerUrl = brokerUrl,
-            brokerPort = brokerPort ?: 1883,
+            brokerPort = brokerPort,
             username = username,
             password = password,
             topic = topic
         )
 
-        // Initialize repository
         tripRepository = TripRepository.getInstance(applicationContext)
 
         startMqttConnection()
@@ -209,7 +267,7 @@ class MqttService : Service() {
             PowerManager.PARTIAL_WAKE_LOCK,
             "BydStats::MqttServiceWakeLock"
         ).apply {
-            acquire(10 * 60 * 1000L) // 10 minutes, will be renewed
+            acquire() // held until service is destroyed
         }
     }
     
@@ -222,28 +280,4 @@ class MqttService : Service() {
         super.onDestroy()
     }
     
-    companion object {
-        fun start(
-            context: Context,
-            brokerUrl: String,
-            brokerPort: Int,
-            username: String?,
-            password: String?,
-            topic: String
-        ) {
-            val intent = Intent(context, MqttService::class.java).apply {
-                putExtra("broker_url", brokerUrl)
-                putExtra("broker_port", brokerPort)
-                putExtra("username", username)
-                putExtra("password", password)
-                putExtra("topic", topic)
-            }
-            context.startForegroundService(intent)
-        }
-        
-        fun stop(context: Context) {
-            val intent = Intent(context, MqttService::class.java)
-            context.stopService(intent)
-        }
-    }
 }

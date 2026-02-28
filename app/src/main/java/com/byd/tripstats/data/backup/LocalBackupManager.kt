@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
-import androidx.documentfile.provider.DocumentFile
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -227,16 +226,13 @@ class LocalBackupManager private constructor(private val context: Context) {
             // Also scan private app dir (accessible via ADB)
             val privateResults = scanPrivateBackups()
 
-            // Also scan SD card folder if one is configured
-            val sdResults = scanSdBackups()
-
             // Merge, deduplicate by name, sort newest first
-            val merged = (results + privateResults + sdResults)
+            val merged = (results + privateResults)
                 .distinctBy { it.name }
                 .sortedByDescending { it.dateModified }
 
             _localBackups.value = merged
-            Log.i(TAG, "Found ${merged.size} backup(s) (${results.size} Downloads, ${privateResults.size} internal, ${sdResults.size} SD)")
+            Log.i(TAG, "Found ${merged.size} backup(s) (${results.size} Downloads, ${privateResults.size} internal)")
 
         } catch (e: Exception) {
             Log.e(TAG, "Scan failed", e)
@@ -244,32 +240,6 @@ class LocalBackupManager private constructor(private val context: Context) {
         }
     }
 
-    /** Scans the user-selected SD card folder via SdCardManager. */
-    private fun scanSdBackups(): List<BackupFile> {
-        return try {
-            val sdManager = SdCardManager.getInstance(context)
-            if (!sdManager.hasFolder) return emptyList()
-
-            val treeUri = sdManager.treeUri ?: return emptyList()
-            val tree = DocumentFile.fromTreeUri(context, treeUri) ?: return emptyList()
-
-            tree.listFiles()
-                .filter { it.isFile && it.name?.endsWith(".db") == true }
-                .sortedByDescending { it.lastModified() }
-                .map { doc ->
-                    BackupFile(
-                        name = doc.name ?: "unknown.db",
-                        uri = doc.uri,
-                        sizeBytes = doc.length(),
-                        dateModified = doc.lastModified(),
-                        source = "SD Card"
-                    )
-                }
-        } catch (e: Exception) {
-            Log.w(TAG, "SD backup scan failed: ${e.message}")
-            emptyList()
-        }
-    }
 
     /** Scans the private app db_backup/ folder. No permissions needed. */
     private fun scanPrivateBackups(): List<BackupFile> {
@@ -293,56 +263,6 @@ class LocalBackupManager private constructor(private val context: Context) {
         }
     }
 
-    // ── SD card backup ────────────────────────────────────────────────────────
-
-    /**
-     * Backs up the database to the user-selected SD card folder via SdCardManager.
-     * Requires the user to have already selected a folder (one-time SAF permission).
-     */
-    suspend fun backupDatabaseToSd() = withContext(Dispatchers.IO) {
-        try {
-            val sdManager = SdCardManager.getInstance(context)
-            if (!sdManager.hasFolder) {
-                _state.value = BackupState.Error(
-                    "No SD card folder selected.\nTap 'Select SD Card Folder' first."
-                )
-                return@withContext
-            }
-
-            _state.value = BackupState.InProgress("Preparing database…")
-
-            val dbFile = context.getDatabasePath(DATABASE_NAME)
-            if (!dbFile.exists()) {
-                _state.value = BackupState.Error("Database file not found: ${dbFile.path}")
-                return@withContext
-            }
-
-            _state.value = BackupState.InProgress("Flushing database…")
-            flushWal(dbFile)
-
-            val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm", Locale.getDefault()).format(Date())
-            val fileName = "byd_stats_backup_$timestamp.db"
-
-            _state.value = BackupState.InProgress("Writing to SD card…")
-
-            val uri = sdManager.writeFile(fileName, BACKUP_MIME_TYPE, dbFile.readBytes())
-
-            if (uri != null) {
-                val sizeMb = "%.1f".format(dbFile.length() / 1_048_576.0)
-                _state.value = BackupState.Success(
-                    "Saved to SD card: $fileName ($sizeMb MB)"
-                )
-                Log.i(TAG, "SD backup saved: $fileName")
-            } else {
-                _state.value = BackupState.Error(
-                    "Failed to write to SD card.\nCheck the folder is still accessible."
-                )
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "SD backup failed", e)
-            _state.value = BackupState.Error("SD backup failed: ${e.message}")
-        }
-    }
 
     // ── Private app dir backup ───────────────────────────────────────────────
 
@@ -365,6 +285,33 @@ class LocalBackupManager private constructor(private val context: Context) {
             }
         } catch (e: Exception) {
             Log.w(TAG, "Private backup copy failed (non-fatal): ${e.message}")
+        }
+    }
+
+    // ── Telegram backup ─────────────────────────────────────────────────
+
+    /**
+     * Flushes WAL, copies db to cache, then delegates to TelegramManager.sendFile().
+     * Progress and result are exposed via TelegramManager.state, not BackupState.
+     */
+    suspend fun backupToTelegram() = withContext(Dispatchers.IO) {
+        val telegramManager = TelegramManager.getInstance(context)
+        try {
+            val dbFile = context.getDatabasePath(DATABASE_NAME)
+            if (!dbFile.exists()) throw Exception("Database file not found.")
+
+            flushWal(dbFile)
+
+            val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm", Locale.getDefault()).format(Date())
+            val fileName = "byd_stats_backup_$timestamp.db"
+            val tempFile = File(context.cacheDir, fileName)
+            dbFile.copyTo(tempFile, overwrite = true)
+
+            telegramManager.sendFile(tempFile, caption = "BYD Trip Stats backup — $timestamp")
+
+            tempFile.delete()
+        } catch (e: Exception) {
+            Log.e(TAG, "Telegram backup prep failed", e)
         }
     }
 

@@ -39,7 +39,6 @@ import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import kotlin.math.abs
 import com.byd.tripstats.ui.components.condenseData
-import com.byd.tripstats.data.backup.SdCardManager
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 
@@ -172,8 +171,6 @@ fun ExportDialog(
     val context          = androidx.compose.ui.platform.LocalContext.current
     val stableTrip       = remember { trip }
     val stableDataPoints = remember { dataPoints.toList() }
-    val sdManager        = remember { SdCardManager.getInstance(context) }
-    val sdFolder         by sdManager.selectedFolder.collectAsState()
     val scope            = rememberCoroutineScope()
 
     AlertDialog(
@@ -226,55 +223,6 @@ fun ExportDialog(
                     Icon(Icons.Filled.DataObject, null, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(8.dp))
                     Text("Save as JSON (Downloads)")
-                }
-
-                // ── SD Card ───────────────────────────────────────────────────
-                HorizontalDivider()
-
-                if (sdFolder != null) {
-                    Text(
-                        "Save to SD card ($sdFolder):",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    OutlinedButton(
-                        onClick = {
-                            val csv = buildTripCsv(stableTrip, stableDataPoints)
-                            val fileName = "trip_${stableTrip.id}_${System.currentTimeMillis()}.csv"
-                            scope.launch {
-                                sdManager.writeTextFile(fileName, "text/csv", csv)
-                            }
-                            onDismiss()
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(Icons.Filled.SdCard, null, modifier = Modifier.size(20.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text("Save as CSV (SD Card)")
-                    }
-
-                    OutlinedButton(
-                        onClick = {
-                            val json = buildTripJson(stableTrip, stableDataPoints)
-                            val fileName = "trip_${stableTrip.id}_${System.currentTimeMillis()}.json"
-                            scope.launch {
-                                sdManager.writeTextFile(fileName, "application/json", json)
-                            }
-                            onDismiss()
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(Icons.Filled.SdCard, null, modifier = Modifier.size(20.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text("Save as JSON (SD Card)")
-                    }
-                } else {
-                    Text(
-                        "SD card export: set up a folder in Settings → Backup & Restore.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
             }
         },
