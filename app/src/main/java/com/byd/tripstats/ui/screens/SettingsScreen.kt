@@ -356,7 +356,7 @@ fun SettingsScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
                 )
             ) {
                 Column(
