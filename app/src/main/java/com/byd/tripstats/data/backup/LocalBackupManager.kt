@@ -349,7 +349,7 @@ class LocalBackupManager private constructor(private val context: Context) {
         tempFile.delete()
 
         _state.value = BackupState.Success(
-            "Database restored successfully.\nThe app will now restart.",
+            "Database restored successfully.\nThe app will close and reopen automatically.",
             restartRequired = true
         )
         Log.i(TAG, "Restore complete, process will be killed")

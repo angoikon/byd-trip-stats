@@ -1,5 +1,7 @@
 package com.byd.tripstats.ui.screens
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -66,6 +68,18 @@ fun LocalBackupScreen(
         val s = backupState
         if (s is LocalBackupManager.BackupState.Success && s.restartRequired) {
             kotlinx.coroutines.delay(2000)
+            // Schedule relaunch before killing — AlarmManager survives process death
+            val launchIntent = context.packageManager
+                .getLaunchIntentForPackage(context.packageName)
+                ?.apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK) }
+            if (launchIntent != null) {
+                val pending = PendingIntent.getActivity(
+                    context, 0, launchIntent,
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                )
+                val alarm = context.getSystemService(android.app.AlarmManager::class.java)
+                alarm.set(AlarmManager.RTC, System.currentTimeMillis() + 500L, pending)
+            }
             android.os.Process.killProcess(android.os.Process.myPid())
         }
     }
@@ -317,7 +331,7 @@ fun LocalBackupScreen(
             item {
                 SectionCard(title = "Restore", icon = Icons.Filled.CloudDownload) {
                     Text(
-                        "Restoring will replace ALL current trip data and restart the app.",
+                        "Restoring will replace ALL current trip data. The app will close and reopen automatically.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error
                     )
@@ -542,7 +556,7 @@ private fun RestoreConfirmDialog(
         text  = {
             Text(
                 "This will permanently replace ALL current trip data with $description.\n\n" +
-                    "The app will restart automatically after restore."
+                    "The app will close and reopen automatically after restore."
             )
         },
         confirmButton = {
