@@ -2,6 +2,10 @@ package com.byd.tripstats.data.backup
 
 import android.content.Context
 import android.util.Log
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -42,6 +46,7 @@ class TelegramManager private constructor(private val context: Context) {
         private const val KEY_TOKEN = "bot_token"
         private const val KEY_CHAT_ID = "chat_id"
         private const val KEY_BOT_NAME = "bot_name"
+        private const val KEY_LAST_AUTO_BACKUP = "last_auto_backup"
         private const val BASE_URL = "https://api.telegram.org/bot"
 
         @Volatile private var INSTANCE: TelegramManager? = null
@@ -80,6 +85,12 @@ class TelegramManager private constructor(private val context: Context) {
         }
 
     val isConfigured: Boolean get() = config != null
+
+    val lastAutoBackup: String?
+        get() = prefs.getString(KEY_LAST_AUTO_BACKUP, null)
+
+    val weeklyBackupEnabled: Boolean
+        get() = isConfigured
 
     // ── Setup ─────────────────────────────────────────────────────────────────
 
@@ -141,6 +152,7 @@ class TelegramManager private constructor(private val context: Context) {
                 "Connected to @$botName\nChat ID: $chatId"
             )
             Log.i(TAG, "Telegram configured: bot=@$botName chatId=$chatId")
+            scheduleWeeklyBackup()
 
         } catch (e: Exception) {
             Log.e(TAG, "Setup failed", e)
@@ -149,7 +161,13 @@ class TelegramManager private constructor(private val context: Context) {
     }
 
     fun clearConfig() {
-        prefs.edit().remove(KEY_TOKEN).remove(KEY_CHAT_ID).remove(KEY_BOT_NAME).apply()
+        cancelWeeklyBackup()
+        prefs.edit()
+            .remove(KEY_TOKEN)
+            .remove(KEY_CHAT_ID)
+            .remove(KEY_BOT_NAME)
+            .remove(KEY_LAST_AUTO_BACKUP)
+            .apply()
         _state.value = TelegramState.Idle
     }
 
@@ -222,6 +240,34 @@ class TelegramManager private constructor(private val context: Context) {
             Log.e(TAG, "Send failed", e)
             _state.value = TelegramState.Error("Send failed: ${e.message}")
         }
+    }
+
+    // ── Weekly backup scheduling ──────────────────────────────────────────────
+
+    /**
+     * Enqueues a periodic WorkManager task that fires once a week.
+     * KEEP policy means an existing schedule is preserved (not reset) if already running.
+     * REPLACE is used only when explicitly re-scheduling (e.g. after re-connecting).
+     */
+    fun scheduleWeeklyBackup() {
+        val request = PeriodicWorkRequestBuilder<TelegramBackupWorker>(7, TimeUnit.DAYS)
+            .build()
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            TelegramBackupWorker.WORK_NAME,
+            ExistingPeriodicWorkPolicy.UPDATE,
+            request
+        )
+        Log.i(TAG, "Weekly Telegram backup scheduled")
+    }
+
+    fun cancelWeeklyBackup() {
+        WorkManager.getInstance(context).cancelUniqueWork(TelegramBackupWorker.WORK_NAME)
+        Log.i(TAG, "Weekly Telegram backup cancelled")
+    }
+
+    /** Called by TelegramBackupWorker after a successful run to persist the timestamp. */
+    fun recordAutoBackup(timestamp: String) {
+        prefs.edit().putString(KEY_LAST_AUTO_BACKUP, timestamp).apply()
     }
 
     fun resetState() {

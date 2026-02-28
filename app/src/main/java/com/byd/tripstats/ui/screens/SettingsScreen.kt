@@ -375,24 +375,19 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(Modifier.height(4.dp))
-                    Spacer(Modifier.height(4.dp))
-                    Button(
-                        onClick = onNavigateToBackup,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.secondary
-                        )
-                    ) {
-                        Icon(
-                            Icons.Filled.Backup,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text("Backup & Restore", fontSize = 16.sp)
-                    }
                 }
+            }
+            Button(
+                onClick = onNavigateToBackup,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    Icons.Filled.Backup,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text("Backup & Restore", fontSize = 16.sp)
             }
 
             HorizontalDivider()

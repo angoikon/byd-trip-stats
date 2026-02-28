@@ -44,6 +44,7 @@ fun LocalBackupScreen(
     val telegramManager = remember { TelegramManager.getInstance(context) }
     val telegramState by telegramManager.state.collectAsState()
     val telegramConfig = telegramManager.config
+    val lastAutoBackup = telegramManager.lastAutoBackup
 
     val isBusy = backupState is LocalBackupManager.BackupState.InProgress
 
@@ -243,6 +244,18 @@ fun LocalBackupScreen(
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
+                                Text(
+                                    "Weekly auto-backup: on",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color(0xFF4CAF50)
+                                )
+                                if (lastAutoBackup != null) {
+                                    Text(
+                                        "Last auto-backup: $lastAutoBackup",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
                         }
 
@@ -282,6 +295,17 @@ fun LocalBackupScreen(
 
                     } else {
                         // Setup state — show token input
+                        StatusBanner(
+                            text  = "Once connected, backups are sent manually or automatically every week. " +
+                                    "Each backup lands as a .db file in your private chat with the bot, " +
+                                    "accessible from any device with Telegram.",
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            icon  = Icons.Filled.Info,
+                            iconTint = MaterialTheme.colorScheme.primary
+                        )
+
+                        Spacer(Modifier.height(10.dp))
+
                         Text(
                             "1. Message @BotFather on Telegram → /newbot → copy the token\n" +
                             "2. Send any message to your new bot\n" +
