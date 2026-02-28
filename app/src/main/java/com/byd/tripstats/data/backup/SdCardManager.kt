@@ -58,6 +58,7 @@ class SdCardManager private constructor(private val context: Context) {
     val selectedFolder: StateFlow<String?> = _selectedFolder.asStateFlow()
 
     val hasFolder: Boolean get() = loadTreeUri() != null
+    val treeUri: Uri? get() = loadTreeUri()
 
     init {
         // Restore display label from saved URI on startup

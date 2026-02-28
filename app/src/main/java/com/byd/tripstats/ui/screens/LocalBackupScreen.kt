@@ -470,6 +470,11 @@ private fun BackupListItem(
                 Text("$date  ·  $sizeMb",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (backup.source.isNotEmpty()) {
+                    Text(backup.source,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary)
+                }
             }
             TextButton(onClick = onRestore, enabled = enabled) { Text("Restore") }
         }

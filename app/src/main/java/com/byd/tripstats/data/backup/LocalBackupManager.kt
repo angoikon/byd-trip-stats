@@ -10,8 +10,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
+import androidx.documentfile.provider.DocumentFile
 import java.io.File
+import androidx.documentfile.provider.DocumentFile
 import java.io.FileInputStream
+import androidx.documentfile.provider.DocumentFile
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -20,11 +23,12 @@ import java.util.Locale
 /**
  * Manages local database backup and restore operations.
  *
- * Backup  → saves .db to public Downloads/BydTripStats/ via MediaStore (no permissions needed)
+ * Backup  → saves .db to TWO locations simultaneously:
+ *     1. Downloads/BydTripStats/   (MediaStore, visible in file manager)
+ *     2. files/db_backup/          (private app dir, accessible via ADB run-as)
  * Restore → two strategies:
  *   1. File picker (OpenDocument intent) — lets user navigate to any .db file
- *   2. Folder scan — lists all .db files found in Downloads/BydTripStats/
- *      (fallback if the car's infotainment has no file manager registered)
+ *   2. Folder scan — lists .db files from both Downloads and private db_backup/
  *
  * DATABASE_NAME must match the string in Room.databaseBuilder() in BydStatsDatabase.kt
  */
@@ -37,9 +41,11 @@ class LocalBackupManager private constructor(private val context: Context) {
         const val DATABASE_NAME = "byd_stats_database"   // verify in BydStatsDatabase.kt
         // ─────────────────────────────────────────────────────────────────────
 
-        const val BACKUP_SUBFOLDER  = "BydTripStats"
-        const val BACKUP_MIME_TYPE  = "application/octet-stream"
-        const val BACKUP_EXTENSION  = ".db"
+        const val BACKUP_SUBFOLDER = "BydTripStats"
+        const val BACKUP_MIME_TYPE = "application/octet-stream"
+        const val BACKUP_EXTENSION = ".db"
+        const val PRIVATE_BACKUP_DIR = "db_backup"
+        const val PRIVATE_BACKUP_MAX = 5   // keep newest N backups in private dir
 
         @Volatile private var INSTANCE: LocalBackupManager? = null
 
@@ -61,9 +67,10 @@ class LocalBackupManager private constructor(private val context: Context) {
 
     data class BackupFile(
         val name: String,
-        val uri: Uri,           // content:// URI from MediaStore
+        val uri: Uri,            // content:// (MediaStore) or file:// (private dir)
         val sizeBytes: Long,
-        val dateModified: Long  // epoch ms
+        val dateModified: Long,  // epoch ms
+        val source: String = "" // "Downloads" or "Internal (ADB)"
     )
 
     private val _state = MutableStateFlow<BackupState>(BackupState.Idle)
@@ -118,9 +125,12 @@ class LocalBackupManager private constructor(private val context: Context) {
             values.put(MediaStore.Downloads.IS_PENDING, 0)
             resolver.update(uri, values, null, null)
 
+            // Also write to private app dir for ADB access
+            copyToPrivateBackup(dbFile, fileName)
+
             val sizeMb = "%.1f".format(dbFile.length() / 1_048_576.0)
             _state.value = BackupState.Success(
-                "Saved: $fileName ($sizeMb MB)\nLocation: Downloads/$BACKUP_SUBFOLDER/"
+                "Saved: $fileName ($sizeMb MB)\nDownloads/$BACKUP_SUBFOLDER/ + internal storage"
             )
             Log.i(TAG, "Backup saved: $fileName")
 
@@ -216,12 +226,72 @@ class LocalBackupManager private constructor(private val context: Context) {
                 }
             }
 
-            _localBackups.value = results
-            Log.i(TAG, "Found ${results.size} local backup(s)")
+            // Also scan private app dir (accessible via ADB)
+            val privateResults = scanPrivateBackups()
+
+            // Also scan SD card folder if one is configured
+            val sdResults = scanSdBackups()
+
+            // Merge, deduplicate by name, sort newest first
+            val merged = (results + privateResults + sdResults)
+                .distinctBy { it.name }
+                .sortedByDescending { it.dateModified }
+
+            _localBackups.value = merged
+            Log.i(TAG, "Found ${merged.size} backup(s) (${results.size} Downloads, ${privateResults.size} internal, ${sdResults.size} SD)")
 
         } catch (e: Exception) {
             Log.e(TAG, "Scan failed", e)
             _localBackups.value = emptyList()
+        }
+    }
+
+    /** Scans the user-selected SD card folder via SdCardManager. */
+    private fun scanSdBackups(): List<BackupFile> {
+        return try {
+            val sdManager = SdCardManager.getInstance(context)
+            if (!sdManager.hasFolder) return emptyList()
+
+            val treeUri = sdManager.treeUri ?: return emptyList()
+            val tree = DocumentFile.fromTreeUri(context, treeUri) ?: return emptyList()
+
+            tree.listFiles()
+                .filter { it.isFile && it.name?.endsWith(".db") == true }
+                .sortedByDescending { it.lastModified() }
+                .map { doc ->
+                    BackupFile(
+                        name = doc.name ?: "unknown.db",
+                        uri = doc.uri,
+                        sizeBytes = doc.length(),
+                        dateModified = doc.lastModified(),
+                        source = "SD Card"
+                    )
+                }
+        } catch (e: Exception) {
+            Log.w(TAG, "SD backup scan failed: ${e.message}")
+            emptyList()
+        }
+    }
+
+    /** Scans the private app db_backup/ folder. No permissions needed. */
+    private fun scanPrivateBackups(): List<BackupFile> {
+        return try {
+            val dir = File(context.filesDir, PRIVATE_BACKUP_DIR)
+            if (!dir.exists()) return emptyList()
+            dir.listFiles { f -> f.extension == "db" }
+                ?.sortedByDescending { it.lastModified() }
+                ?.map { f ->
+                    BackupFile(
+                        name = f.name,
+                        uri = Uri.fromFile(f),
+                        sizeBytes = f.length(),
+                        dateModified = f.lastModified(),
+                        source = "Internal (ADB)"
+                    )
+                } ?: emptyList()
+        } catch (e: Exception) {
+            Log.w(TAG, "Private backup scan failed: ${e.message}")
+            emptyList()
         }
     }
 
@@ -276,6 +346,30 @@ class LocalBackupManager private constructor(private val context: Context) {
         }
     }
 
+    // ── Private app dir backup ───────────────────────────────────────────────
+
+    /** Copies the database to files/db_backup/. Keeps newest PRIVATE_BACKUP_MAX files. */
+    private fun copyToPrivateBackup(dbFile: File, fileName: String) {
+        try {
+            val dir = File(context.filesDir, PRIVATE_BACKUP_DIR)
+            dir.mkdirs()
+
+            val dest = File(dir, fileName)
+            dbFile.copyTo(dest, overwrite = true)
+            Log.i(TAG, "Private backup written: ${dest.path}")
+
+            // Prune old backups — keep newest PRIVATE_BACKUP_MAX
+            val files = dir.listFiles { f -> f.extension == "db" }
+                ?.sortedByDescending { it.lastModified() } ?: return
+            files.drop(PRIVATE_BACKUP_MAX).forEach {
+                it.delete()
+                Log.i(TAG, "Pruned old private backup: ${it.name}")
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Private backup copy failed (non-fatal): ${e.message}")
+        }
+    }
+
     fun resetState() {
         _state.value = BackupState.Idle
     }
@@ -287,11 +381,16 @@ class LocalBackupManager private constructor(private val context: Context) {
         val walFile = File(dbFile.path + "-wal")
         val shmFile = File(dbFile.path + "-shm")
 
-        // Copy to temp first so we can validate before touching live DB
+        // Copy to temp first — supports both content:// (MediaStore) and file:// (private dir)
         val tempFile = File(context.cacheDir, "restore_temp.db")
-        resolver.openInputStream(uri)?.use { input ->
+        val inputStream = if (uri.scheme == "file") {
+            FileInputStream(File(uri.path!!))
+        } else {
+            resolver.openInputStream(uri) ?: throw Exception("Could not read backup stream")
+        }
+        inputStream.use { input ->
             FileOutputStream(tempFile).use { out -> input.copyTo(out) }
-        } ?: throw Exception("Could not read backup stream")
+        }
 
         // Remove WAL files — they'd conflict with the restored DB
         walFile.delete()
