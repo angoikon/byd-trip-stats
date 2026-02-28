@@ -164,7 +164,7 @@ Download the latest `byd-trip-stats-release.apk` from the [Releases](https://git
 2. Toggle OFF the option for the **BYD Trip Stats** app (as you have already done with **Electro** app) 
 3. Restart Car's UI (10 sec hold of the central console volume button)
 4. Re-open **BYD Trip Stats** app
-5. Rinse and repeat for **every app update**
+5. Rinse and repeat for **every** new app update
 
 ### Step 6: Drive!
 
