@@ -233,7 +233,7 @@ That's it! Now:
 - **Database:** Room (local persistence)
 - **MQTT:** HiveMQ Client Library
 - **Moquette** : Embedded MQTT Broker
-- **Charts:** Vico (Compose charts)
+- **Charts:** Canvas charts
 - **Maps:** osmdroid (OpenStreetMap)
 - **Async:** Kotlin Coroutines + Flow
 - **Storage:** DataStore (preferences)
@@ -414,7 +414,6 @@ copies or substantial portions of the Software.
 - [Jetpack Compose](https://developer.android.com/jetpack/compose) - Modern Android UI
 - [HiveMQ MQTT Client](https://github.com/hivemq/hivemq-mqtt-client) - MQTT library
 - [Moquette](https://github.com/moquette-io/moquette) - MQTT Internal Broker
-- [Vico](https://github.com/patrykandpatrick/vico) - Beautiful charts
 - [osmdroid](https://github.com/osmdroid/osmdroid) - OpenStreetMap for Android
 - [Room](https://developer.android.com/training/data-storage/room) - Local database
 
@@ -422,6 +421,7 @@ copies or substantial portions of the Software.
 
 - [Electro App](https://electro.app.br) by **Rory** - For making MQTT telemetry accessible
 - **BYD Community** - For the enthusiasm and support
+- **Official BYD** - For the inexcusable and unjustified lack of trip statistics
 
 ---
 

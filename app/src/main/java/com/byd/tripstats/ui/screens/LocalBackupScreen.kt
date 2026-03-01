@@ -417,7 +417,7 @@ fun LocalBackupScreen(
                 SectionCard(title = "Restore", icon = Icons.Filled.CloudDownload) {
                     Text(
                         "Restoring will replace ALL current trip data. The app will close and reopen automatically.",
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.error
                     )
 

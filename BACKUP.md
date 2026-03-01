@@ -128,14 +128,20 @@ adb -s 192.168.x.x:5555 shell run-as com.byd.tripstats \
     mkdir -p /data/data/com.byd.tripstats/files/db_backup
 ```
 
-2. Push the backup file from your PC:
+2. Push the backup file from your PC to your car's download folder:
 ```bash
 adb -s 192.168.x.x:5555 push byd_stats_backup_2026-02-28_10-30.db \
-    /data/data/com.byd.tripstats/files/db_backup/byd_stats_backup_2026-02-28_10-30.db
+    /sdcard/Download/BydTripStats/byd_stats_backup_2026-02-28_10-30.db
 ```
 
-3. Open the app → **Settings** → **Backup & Restore**
-4. The pushed file appears in the backup list — tap **Restore** and confirm
+3. Copy the file while using run-as (overrides permissions):
+```bash
+adb -s 192.168.x.x:5555 shell run-as com.byd.tripstats \
+    cp /sdcard/Download/BydTripStats/byd_stats_backup_2026-02-28_10-30.db /data/data/com.byd.tripstats/files/db_backup/
+```
+
+4. Open the app → **Settings** → **Backup & Restore**
+5. The pushed file appears in the backup list — tap **Restore** and confirm
 
 > To restore a Telegram backup: download the `.db` file from your Telegram chat to your PC, then push it to the car via ADB using the steps above.
 

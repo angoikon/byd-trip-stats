@@ -14,6 +14,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -261,6 +263,9 @@ fun TripItem(
                 onClick = onClick,
                 onLongClick = onLongClick,
                 enabled = !isActive || !selectionMode
+            )            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant
             ),
         colors = CardDefaults.cardColors(
             containerColor = when {

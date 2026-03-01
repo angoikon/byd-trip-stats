@@ -27,7 +27,7 @@ fun OsmRouteMap(
     dataPoints: List<TripDataPointEntity>,
     modifier: Modifier = Modifier
 ) {
-    val ROUTE_COLOR = 0xFF00CCFF.toInt() // BydElectricBlue
+    val ROUTE_COLOR = 0xFF2196F3.toInt() // BatteryBlue
     if (dataPoints.isEmpty()) {
         Box(
             modifier = modifier.fillMaxSize(),

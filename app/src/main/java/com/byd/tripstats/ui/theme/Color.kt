@@ -23,10 +23,10 @@ val BydArcticBlueDeep    = Color(0xFF1A3A4A)
 
 // Backgrounds — the "Midnight Navy" gradient layers the car uses
 val BydStatusBar         = Color(0xFF0A0E14)   // top bar / deepest layer
-val BydBackground        = Color(0xFF0E121A)   // main background (Deep Slate Blue)
-val BydSurface           = Color(0xFF1A1F2B)   // card surface (Dark Charcoal Blue)
-val BydSurfaceVariant    = Color(0xFF243040)   // slightly lifted surface
-val BydSurfaceHigh       = Color(0xFF2C3A50)   // active widget / glow layer
+val BydBackground        = Color(0xFF0D1525)   // ← was #0E121A (add more blue)
+val BydSurface           = Color(0xFF1A2840)   // ← was #1A1F2B (too grey/charcoal)
+val BydSurfaceVariant    = Color(0xFF1F3050)   // ← was #243040 (too grey)
+val BydSurfaceHigh       = Color(0xFF283D5E)   // ← was #2C3A50 (adjust accordingly)
 
 // Text
 val BydTextPrimary       = Color(0xFFFFFFFF)
@@ -40,17 +40,23 @@ val BydOutlineVariant    = Color(0xFF2A3648)
 // ── BYD DiLink Ocean Series — Light UI Palette ────────────────────────────────
 // The car's lighter theme references Aurora White bodywork + ocean depth blues.
 
-val BydOceanBlue         = Color(0xFF005FA3)   // deep ocean blue — primary for light mode
-val BydOceanBlueLight    = Color(0xFFCCEEFF)   // washed-out container on white
-val BydOceanBlueDark     = Color(0xFF002233)   // text/icons on light containers
-val BydTealLight         = Color(0xFF006B61)   // teal secondary for light mode
-val BydTealLightContainer = Color(0xFFB2FFF5)
-val BydAuroraWhite       = Color(0xFFF7F9FB)   // Aurora White — cool-toned background
-val BydAtlantisGrey      = Color(0xFF3B444B)   // Atlantis Grey — secondary text on white
-val BydSurfaceLight      = Color(0xFFECF4FA)   // light blue-tinted card surface
-val BydSurfaceVariantLight = Color(0xFFDCECF5) // slightly more saturated variant
-val BydOutlineLight      = Color(0xFF7BA5BE)
-val BydOutlineVariantLight = Color(0xFFBDD6E6)
+val BydOceanBlue         = Color(0xFF1A6EC8)   // ← was #005FA3 (too dark navy), now: cobalt blue matching Sport btn
+val BydOceanBlueLight    = Color(0xFFDEEAF7)   // ← was #CCEEFF (too cyan-tinted), now: subtle blue-white wash
+val BydOceanBlueDark     = Color(0xFF0D2A4A)   // ← was #002233 (ok, slightly warmer)
+val BydSecondaryLight         = Color(0xFF5B8DB8)   // ← was #006B61 (TEAL — wrong!)
+                                                //   reuse the same cobalt as secondary,
+                                                //   or pick a muted blue-grey (see note)
+val BydSecondaryLightContainer = Color(0xFFDEEAF7)  // ← was #B2FFF5 (mint green, very off)
+val BydAuroraWhite       = Color(0xFFF5F7F9)   // ← was #F7F9FB (fine, minimal change)
+val BydAtlantisGrey      = Color(0xFF374151)   // ← was #3B444B (slightly cooler grey)
+val BydSurfaceLight      = Color(0xFFFFFFFF)   // ← was #ECF4FA (too blue-tinted for cards)
+val BydSurfaceVariantLight = Color(0xFFF0F4F8) // ← was #DCECF5 (too saturated blue)
+val BydOutlineLight      = Color(0xFF8FA3B8)   // ← was #7BA5BE (ok, very close)
+val BydOutlineVariantLight = Color(0xFFCDD8E3) // ← was #BDD6E6 (slightly less blue)
+
+// The actual interactive button color used in both themes:
+val BydCobaltBlue        = Color(0xFF1A6EC8)   // segment buttons, toggles, active tabs
+val BydCobaltBlueDeep    = Color(0xFF0D2A4A)   // container / deep variant
 
 // ── Semantic / functional colors (shared across themes) ───────────────────────
 

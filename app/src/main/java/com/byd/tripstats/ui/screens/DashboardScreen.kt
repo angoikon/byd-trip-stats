@@ -44,7 +44,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.StrokeCap
 
-private const val SHOW_MOCK_BUTTON = true  // Set to true for testing, false for production
+private const val SHOW_MOCK_BUTTON = false  // Set to true for testing, false for production
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -636,20 +636,25 @@ fun EnergyFlowCanvas(
             // Create animated flow effect
             val dashPhase = flowOffset * 30f
             
+            // Endpoints sit flush with each icon's facing edge so the line
+            // visually "docks" into the icon rather than stopping short.
+            val batteryEdge = Offset(batteryX + batterySize / 2f, batteryY)
+            val motorEdge   = Offset(motorX   - motorSize   / 2f, motorY)
+
             if (isRegenerating) {
-                // Motor to Battery (regeneration)
+                // Motor → Battery (regeneration): arrows travel right-to-left
                 drawEnergyFlow(
-                    from = Offset(batteryX + batterySize / 3, batteryY),
-                    to = Offset(motorX - motorSize / 3 - 15, motorY),
+                    from = batteryEdge,
+                    to   = motorEdge,
                     color = flowColor,
                     dashPhase = dashPhase,
                     reverse = true
                 )
             } else if (power > 0) {
-                // Battery to Motor (acceleration)
+                // Battery → Motor (acceleration): arrows travel left-to-right
                 drawEnergyFlow(
-                    from = Offset(motorX - motorSize / 3 - 15, motorY),
-                    to = Offset(batteryX + batterySize / 3, batteryY),
+                    from = motorEdge,
+                    to   = batteryEdge,
                     color = flowColor,
                     dashPhase = dashPhase,
                     reverse = true
@@ -980,7 +985,7 @@ fun VehicleStats(
             value = "${telemetry.batteryTempAvg.toInt()}°C",
             subtitle = "Cells: ${telemetry.batteryCellTempMin}°C - ${telemetry.batteryCellTempMax}°C",
             icon = Icons.Filled.Thermostat,
-            color = BydErrorRedLight
+            color = BydErrorRed
         )
         
         StatCard(

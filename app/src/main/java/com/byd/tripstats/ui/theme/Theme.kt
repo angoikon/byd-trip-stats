@@ -14,53 +14,48 @@ import androidx.core.view.WindowCompat
 
 // ── Dark scheme — BYD DiLink "Ocean" night mode ───────────────────────────────
 // Matches the Seal / Di3+ infotainment default dark theme:
-//   Deep Slate Blue background (#0E121A), Electric Blue accent (#00CCFF),
-//   Eco Teal secondary (#00FAD9), Arctic Blue tertiary.
 private val DarkColorScheme = darkColorScheme(
-    // Primary — Electric Blue (#00CCFF): active buttons, highlights, selected tabs
-    primary                = BydElectricBlue,
-    onPrimary              = BydOnElectricBlue,
-    primaryContainer       = BydElectricBlueDeep,
-    onPrimaryContainer     = BydElectricBlue,
+    // Primary — COBALT blue for buttons, selected states (NOT cyan)
+    // The car uses the same cobalt in both light and dark themes for interactive chrome
+    primary                = BydCobaltBlue,        // ← was BydElectricBlue (#00CCFF)
+    onPrimary              = Color.White,           // ← was BydOnElectricBlue (near-black)
+    primaryContainer       = BydCobaltBlueDeep,    // ← was BydElectricBlueDeep
+    onPrimaryContainer     = BydElectricBlue,      // cyan label on deep container — ok
 
-    // Secondary — Eco Teal (#00FAD9): regen/energy indicators, secondary actions
-    secondary              = BydEcoTeal,
-    onSecondary            = BydOnEcoTeal,
-    secondaryContainer     = BydEcoTealDeep,
-    onSecondaryContainer   = BydEcoTeal,
+    // Secondary — Electric Cyan (#00CCFF): toggles, sliders, energy indicators
+    // This is what the toggle track in the photo actually is
+    secondary              = BydElectricBlue,      // ← was BydEcoTeal
+    onSecondary            = BydOnElectricBlue,
+    secondaryContainer     = BydElectricBlueDeep,
+    onSecondaryContainer   = BydElectricBlue,
 
-    // Tertiary — Arctic Blue: softer accent for informational elements
-    tertiary               = BydArcticBlue,
-    onTertiary             = BydTextOnDark,
-    tertiaryContainer      = BydArcticBlueDeep,
-    onTertiaryContainer    = BydArcticBlue,
+    // Tertiary — Eco Teal: regen / energy-specific accents only
+    tertiary               = BydEcoTeal,
+    onTertiary             = BydOnEcoTeal,
+    tertiaryContainer      = BydEcoTealDeep,
+    onTertiaryContainer    = BydEcoTeal,
 
-    // Backgrounds
-    background             = BydBackground,        // #0E121A Deep Slate Blue
+    // Backgrounds — bluer navy, matching the photo
+    background             = BydBackground,        // #0D1525
     onBackground           = BydTextPrimary,
 
-    // Surfaces — card layers lifting above the background
-    surface                = BydSurface,           // #1A1F2B Dark Charcoal Blue
+    surface                = BydSurface,           // #1A2840 — blue-navy cards
     onSurface              = BydTextPrimary,
-    surfaceVariant         = BydSurfaceVariant,    // #243040 lifted variant
-    onSurfaceVariant       = BydTextSecondary,     // #A0AEC0 muted grey
+    surfaceVariant         = BydSurfaceVariant,    // #1F3050
+    onSurfaceVariant       = BydTextSecondary,
 
-    // Outline / dividers
     outline                = BydOutline,
     outlineVariant         = BydOutlineVariant,
 
-    // Inverse (used for snackbars, tooltips)
     inverseSurface         = BydTextPrimary,
     inverseOnSurface       = BydBackground,
-    inversePrimary         = BydOceanBlue,
+    inversePrimary         = BydCobaltBlue,        // ← was BydOceanBlue (now unified)
 
-    // Error
     error                  = BydErrorRed,
     onError                = Color.White,
     errorContainer         = BydErrorContainer,
     onErrorContainer       = BydOnErrorContainer,
 
-    // Scrim (modal overlays)
     scrim                  = Color(0xFF000000),
 )
 
@@ -75,9 +70,9 @@ private val LightColorScheme = lightColorScheme(
     onPrimaryContainer     = BydOceanBlueDark,     // #002233 dark text on light container
 
     // Secondary — muted teal
-    secondary              = BydTealLight,
+    secondary              = BydSecondaryLight,   // #5B8DB8 muted cobalt (replacing teal, which is too close to primary)
     onSecondary            = Color.White,
-    secondaryContainer     = BydTealLightContainer,
+    secondaryContainer     = BydSecondaryLightContainer, // #DEEAF7 very light wash (replacing mint green, which is too far)
     onSecondaryContainer   = BydEcoTealDeep,
 
     // Tertiary — Atlantis Grey (stormy blue-grey, from Seal paint palette)
@@ -130,7 +125,7 @@ fun BydTripStatsTheme(
             window.statusBarColor = if (darkTheme) {
                 BydStatusBar.toArgb()    // #0A0E14 — even darker than the background
             } else {
-                BydOceanBlue.toArgb()   // deep blue on light mode
+                BydAuroraWhite.toArgb()     // ← was BydOceanBlue (deep blue, wrong for light mode)
             }
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }

@@ -104,11 +104,9 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.core)
     
-    // Charts - Vico for beautiful compose charts
-    implementation(libs.vico.compose)
-    implementation(libs.vico.compose.m3)
-    implementation(libs.vico.core)
-    
+    // AppCompat for legacy support
+    implementation("androidx.appcompat:appcompat:1.7.0")
+
     // DataStore for preferences
     implementation(libs.androidx.datastore.preferences)
     

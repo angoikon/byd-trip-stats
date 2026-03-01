@@ -505,19 +505,7 @@ fun TripChartsTab(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Energy consumption over time
-        ClickableChartCard(
-            title = "Energy Consumption",
-            subtitle = "kWh over time",
-            onClick = { expandedChart = ChartType.ENERGY }
-        ) {
-            CondensedEnergyChart(
-                dataPoints = dataPoints,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-        
-        // Speed over time
+        // 1. Speed Profile
         ClickableChartCard(
             title = "Speed Profile",
             subtitle = "km/h over time",
@@ -529,19 +517,7 @@ fun TripChartsTab(
             )
         }
 
-        // SoC over time
-        ClickableChartCard(
-            title = "State of Charge",
-            subtitle = "SoC% over time",
-            onClick = { expandedChart = ChartType.SOC }
-        ) {
-            CondensedSocChart(
-                dataPoints = dataPoints,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-
-        // Motor RPM Chart
+        // 2. Motor RPM
         ClickableChartCard(
             title = "Motor RPM",
             subtitle = "RPM over time",
@@ -552,20 +528,8 @@ fun TripChartsTab(
                 modifier = Modifier.fillMaxSize()
             )
         }
-        
-        // Altitude/Elevation Profile
-        ClickableChartCard(
-            title = "Elevation Profile",
-            subtitle = "Altitude over time",
-            onClick = { expandedChart = ChartType.ALTITUDE }
-        ) {
-            CondensedAltitudeChart(
-                dataPoints = dataPoints,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
 
-        // Power Profile
+        // 3. Power Profile
         ClickableChartCard(
             title = "Power Profile",
             subtitle = "kW over time",
@@ -577,14 +541,50 @@ fun TripChartsTab(
             )
         }
 
-        // Power distribution (no expansion needed - it's already a summary)
+        // 4. Energy Consumption
+        ClickableChartCard(
+            title = "Energy Consumption",
+            subtitle = "kWh over time",
+            onClick = { expandedChart = ChartType.ENERGY }
+        ) {
+            CondensedEnergyChart(
+                dataPoints = dataPoints,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        // 5. State of Charge
+        ClickableChartCard(
+            title = "State of Charge",
+            subtitle = "SoC% over time",
+            onClick = { expandedChart = ChartType.SOC }
+        ) {
+            CondensedSocChart(
+                dataPoints = dataPoints,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        // 6. Elevation Profile
+        ClickableChartCard(
+            title = "Elevation Profile",
+            subtitle = "Altitude over time",
+            onClick = { expandedChart = ChartType.ALTITUDE }
+        ) {
+            CondensedAltitudeChart(
+                dataPoints = dataPoints,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        // 7. Power Distribution
         if (stats != null) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(300.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -592,6 +592,11 @@ fun TripChartsTab(
                         text = "Power Distribution",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Samples over time",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     PowerDistributionChart(
@@ -602,14 +607,14 @@ fun TripChartsTab(
             }
         }
 
-        // Speed distribution
+        // 8. Speed Distribution
         if (stats != null) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(300.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -617,6 +622,11 @@ fun TripChartsTab(
                         text = "Speed Distribution",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Samples over time",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     SpeedDistributionChart(
@@ -706,7 +716,7 @@ private fun FullscreenChartDialog(
     ) {
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
+            color = MaterialTheme.colorScheme.surface
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 // Header with close button
@@ -747,7 +757,7 @@ private fun FullscreenChartDialog(
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
                     )
                 )
                 
