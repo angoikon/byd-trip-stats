@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.byd.tripstats.ui.theme.*
 
 /**
  * Glassmorphic Card - Modern semi-transparent card with blur effect
@@ -94,7 +95,7 @@ fun GlassmorphicCard(
 @Composable
 fun StatsGlassCard(
     modifier: Modifier = Modifier,
-    accentColor: Color = Color(0xFF00D4FF),
+    accentColor: Color = BydElectricBlue,
     content: @Composable ColumnScope.() -> Unit
 ) {
     GlassmorphicCard(
@@ -120,7 +121,7 @@ fun StatsGlassCard(
 @Composable
 fun PremiumGlassCard(
     modifier: Modifier = Modifier,
-    accentColor: Color = Color(0xFF00D4FF),
+    accentColor: Color = BydElectricBlue,
     content: @Composable BoxScope.() -> Unit
 ) {
     Box(modifier = modifier) {
@@ -215,11 +216,9 @@ fun DarkGlassCard(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val darkBackground = Color(0xFF1A1A1A)
-    
     GlassmorphicCard(
         modifier = modifier,
-        backgroundColor = darkBackground,
+        backgroundColor = BydBackground,
         cornerRadius = 20.dp,
         borderWidth = 1.dp,
         elevation = 6.dp

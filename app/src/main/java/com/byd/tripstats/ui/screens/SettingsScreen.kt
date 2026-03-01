@@ -21,6 +21,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.withStyle
+import com.byd.tripstats.ui.theme.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.tripstats.data.preferences.PreferencesManager
@@ -460,7 +461,7 @@ fun SettingsScreen(
                                         Text("Embedded Broker:")
                                         Text(
                                             if (debugBrokerRunning) "✅ RUNNING" else "❌ STOPPED",
-                                            color = if (debugBrokerRunning) Color(0xFF00FF88) else Color.Red,
+                                            color = if (debugBrokerRunning) Color(0xFF00FF88) else BydErrorRed,
                                             fontWeight = FontWeight.Bold
                                         )
                                     }
@@ -472,7 +473,7 @@ fun SettingsScreen(
                                         Text("MQTT Client:")
                                         Text(
                                             if (debugClientRunning) "✅ RUNNING" else "❌ STOPPED",
-                                            color = if (debugClientRunning) Color(0xFF00FF88) else Color.Red,
+                                            color = if (debugClientRunning) Color(0xFF00FF88) else BydErrorRed,
                                             fontWeight = FontWeight.Bold
                                         )
                                     }
@@ -501,7 +502,7 @@ fun SettingsScreen(
                                 containerColor = if (isLocal) 
                                     Color(0xFF00FF88).copy(alpha = 0.2f) 
                                 else 
-                                    Color(0xFF00D4FF).copy(alpha = 0.2f)
+                                    BydElectricBlue.copy(alpha = 0.2f)
                             )) {
                                 Column(Modifier.padding(12.dp)) {
                                     Text(
@@ -522,18 +523,18 @@ fun SettingsScreen(
                                     Spacer(Modifier.height(8.dp))
                                     
                                     if (isLocal && !debugBrokerRunning) {
-                                        Text("❌ Embedded broker not running!", color = Color.Red)
+                                        Text("❌ Embedded broker not running!", color = BydErrorRed)
                                         Text("→ Check AndroidManifest.xml", fontWeight = FontWeight.Bold)
                                         Text("→ Then RESTART APP", fontWeight = FontWeight.Bold)
                                     } else if (isLocal && debugBrokerRunning) {
-                                        Text("✅ Embedded broker OK!", color = Color(0xFF00AA00))
+                                        Text("✅ Embedded broker OK!", color = RegenGreen)
                                     }
                                     
                                     if (!debugClientRunning) {
-                                        Text("❌ MQTT client not running!", color = Color.Red)
+                                        Text("❌ MQTT client not running!", color = BydErrorRed)
                                         Text("→ Click 'Save & Restart' button", fontWeight = FontWeight.Bold)
                                     } else {
-                                        Text("✅ MQTT client OK!", color = Color(0xFF00AA00))
+                                        Text("✅ MQTT client OK!", color = RegenGreen)
                                     }
                                     
                                     if (isLocal && debugBrokerRunning && debugClientRunning) {

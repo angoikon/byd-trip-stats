@@ -15,8 +15,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.byd.tripstats.ui.theme.BatteryBlue
-import com.byd.tripstats.ui.theme.RegenGreen
+import com.byd.tripstats.ui.theme.*
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -116,7 +115,7 @@ fun RangeProjectionChart(
 
     val deltaKm  = currentRange - ratedRangeNow
     val beating  = deltaKm >= 0
-    val accentColor = if (beating) RegenGreen else Color(0xFFF5A623)
+    val accentColor = if (beating) RegenGreen else AccelerationOrange
 
     // Y-axis: headroom above whichever is higher — rated start or actual projection
     val yMax = maxOf(startRangeKm, currentRange) * 1.05
@@ -295,7 +294,7 @@ fun RangeProjectionChart(
                 }
 
                 val fillColor = if (beating) RegenGreen.copy(alpha = 0.18f)
-                                else         Color(0xFFF5A623).copy(alpha = 0.15f)
+                                else         AccelerationOrange.copy(alpha = 0.15f)
                 drawPath(path = fillPath, color = fillColor)
 
                 // Actual curve stroke

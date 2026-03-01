@@ -27,6 +27,7 @@ fun OsmRouteMap(
     dataPoints: List<TripDataPointEntity>,
     modifier: Modifier = Modifier
 ) {
+    val ROUTE_COLOR = 0xFF00CCFF.toInt() // BydElectricBlue
     if (dataPoints.isEmpty()) {
         Box(
             modifier = modifier.fillMaxSize(),
@@ -82,7 +83,7 @@ fun OsmRouteMap(
                 
                 // Create route polyline
                 val routeLine = Polyline().apply {
-                    outlinePaint.color = Color.BLUE
+                    outlinePaint.color = ROUTE_COLOR
                     outlinePaint.strokeWidth = 8f
                     
                     // Add all valid GPS points
@@ -124,7 +125,7 @@ fun OsmRouteMap(
             mapView.overlays.clear()
             
             val routeLine = Polyline().apply {
-                outlinePaint.color = Color.BLUE
+                outlinePaint.color = ROUTE_COLOR
                 outlinePaint.strokeWidth = 8f
                 
                 val geoPoints = validPoints.map { point ->

@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import kotlin.math.abs
 
@@ -371,7 +372,7 @@ fun TripItem(
                     label = "Avg Consumption",
                     value = trip.efficiency
                         ?.let { "${String.format("%.1f", it)} kWh/100" } ?: "—",
-                    iconTint = Color(0xFF4CAF50),
+                    iconTint = RegenGreen,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -389,21 +390,21 @@ fun TripItem(
                     label = "Energy consumed",
                     value = trip.energyConsumed
                         ?.let { "${String.format("%.2f", it)} kWh" } ?: "—",
-                    iconTint = Color(0xFFFF9800),
+                    iconTint = AccelerationOrange,
                     modifier = Modifier.weight(1f)
                 )
                 TripMetricChip(
                     icon = Icons.Filled.BatteryChargingFull,
                     label = "Max Regen",
                     value = "${abs(trip.maxRegenPower).toInt()} kW",
-                    iconTint = Color(0xFF4CAF50),
+                    iconTint = RegenGreen,
                     modifier = Modifier.weight(1f)
                 )
                 TripMetricChip(
                     icon = Icons.Filled.VolunteerActivism,
                     label = "Regen Eff.",
                     value = regenEfficiencyPct?.let { "%.1f%%".format(it) } ?: "—",
-                    iconTint = Color(0xFF4CAF50),
+                    iconTint = RegenGreen,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -473,11 +474,11 @@ fun ScoreChip(
     modifier: Modifier = Modifier
 ) {
     val scoreColor = when {
-        score == null -> Color.Gray
-        score >= 80   -> Color(0xFF4CAF50)
+        score == null -> MaterialTheme.colorScheme.onSurfaceVariant
+        score >= 80   -> RegenGreen
         score >= 60   -> Color(0xFFFFDD00)
-        score >= 40   -> Color(0xFFFF9800)
-        else          -> Color(0xFFF44336)
+        score >= 40   -> AccelerationOrange
+        else          -> BydErrorRed
     }
     val grade = when {
         score == null -> "—"

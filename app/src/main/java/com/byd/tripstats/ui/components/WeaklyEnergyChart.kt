@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 
 // BYD Seal average consumption reference line
@@ -37,7 +38,7 @@ fun WeeklyEnergyThumbnail(
     data: List<DashboardViewModel.DailyEfficiency>,
     modifier: Modifier = Modifier
 ) {
-    val lineColor = Color(0xFF64B5F6)  // light blue
+    val lineColor = BydElectricBlue.copy(alpha = 0.8f)  // light blue
 
     Canvas(modifier = modifier) {
         if (data.size < 2) return@Canvas
@@ -162,9 +163,9 @@ private fun ConsumptionCanvas(
     labelEvery: Int,
     modifier: Modifier = Modifier
 ) {
-    val lineColor     = Color(0xFF64B5F6)
-    val pointColor    = Color(0xFF1E88E5)
-    val sealLineColor = Color(0xFFF5A623).copy(alpha = 0.85f)
+    val lineColor     = BydElectricBlue.copy(alpha = 0.8f)
+    val pointColor    = BydElectricBlueDim
+    val sealLineColor = AccelerationOrange.copy(alpha = 0.85f)
     val textColor     = MaterialTheme.colorScheme.onSurface
     val gridColor     = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f)
     val axisColor     = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)

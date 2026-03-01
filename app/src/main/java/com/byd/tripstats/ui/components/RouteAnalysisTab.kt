@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
 import com.byd.tripstats.ui.theme.AccelerationOrange
+import com.byd.tripstats.ui.theme.BydErrorRed
 import com.byd.tripstats.ui.theme.RegenGreen
 import java.text.SimpleDateFormat
 import java.util.*
@@ -92,7 +93,7 @@ private fun WaypointsCard(dataPoints: List<TripDataPointEntity>) {
                 label = "Start",
                 time = timeFormat.format(Date(startPoint.timestamp)),
                 soc = "${startPoint.soc.toInt()}%",
-                color = Color.Green
+                color = RegenGreen
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -103,7 +104,7 @@ private fun WaypointsCard(dataPoints: List<TripDataPointEntity>) {
                 label = "End",
                 time = timeFormat.format(Date(endPoint.timestamp)),
                 soc = "${endPoint.soc.toInt()}%",
-                color = Color.Red
+                color = BydErrorRed
             )
         }
     }
@@ -293,7 +294,7 @@ private fun TripTimelineCard(dataPoints: List<TripDataPointEntity>) {
         time = timeFormat.format(Date(dataPoints.first().timestamp)),
         title = "Trip Started",
         icon = Icons.Filled.FlagCircle,
-        color = Color.Green
+        color = RegenGreen
     ))
     
     // Find acceleration/braking events
@@ -317,7 +318,7 @@ private fun TripTimelineCard(dataPoints: List<TripDataPointEntity>) {
         time = timeFormat.format(Date(dataPoints.last().timestamp)),
         title = "Trip Ended",
         icon = Icons.Filled.LocationOn,
-        color = Color.Red
+        color = BydErrorRed
     ))
     
     Card(

@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.byd.tripstats.ui.theme.*
 import kotlin.math.sin
 
 /**
@@ -194,7 +195,7 @@ fun LiquidFillBattery(
             // Charging glow effect
             if (isCharging) {
                 drawRoundRect(
-                    color = Color(0xFF00D4FF).copy(alpha = glowAlpha),
+                    color = BydElectricBlue.copy(alpha = glowAlpha),
                     topLeft = Offset(bodyLeft - 8f, bodyTop - 8f),
                     size = Size(batteryBodyWidth + 16f, batteryBodyHeight + 16f),
                     cornerRadius = CornerRadius(24f, 24f),
@@ -214,7 +215,7 @@ fun LiquidFillBattery(
                     text = "⚡",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color(0xFF00D4FF)
+                    color = BydElectricBlue
                 )
             }
         }
@@ -293,7 +294,7 @@ fun CompactBattery(
             Text(
                 text = "⚡",
                 fontSize = 16.sp,
-                color = Color(0xFF00D4FF)
+                color = BydElectricBlue
             )
         }
     }

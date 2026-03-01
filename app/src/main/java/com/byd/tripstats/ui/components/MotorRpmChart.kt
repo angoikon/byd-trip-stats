@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
+import com.byd.tripstats.ui.theme.*
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
@@ -54,7 +55,7 @@ fun MotorRpmChart(
     )
 
     Column(modifier = modifier) {
-        // Legend - ALWAYS VISIBLE
+        // Legend
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -62,9 +63,9 @@ fun MotorRpmChart(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            LegendItem(color = Color(0xFF1976D2), label = "Rear Motor")
+            LegendItem(color = BydElectricBlue, label = "Rear Motor")
             Spacer(modifier = Modifier.width(24.dp))
-            LegendItem(color = Color(0xFF7821F3), label = "Front Motor")
+            LegendItem(color = BydEcoTeal, label = "Front Motor")
         }
         
         // Chart
@@ -72,8 +73,8 @@ fun MotorRpmChart(
             Chart(
                 chart = lineChart(
                     lines = listOf(
-                        lineSpec(lineColor = Color(0xFF1976D2)), // Dark blue for rear motor
-                        lineSpec(lineColor = Color(0xFF7821F3)) // Magenta for front motor
+                        lineSpec(lineColor = BydElectricBlue),
+                        lineSpec(lineColor = BydEcoTeal)
                     )
                 ),
                 model = chartEntryModel,

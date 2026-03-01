@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.tripstats.data.backup.LocalBackupManager
 import com.byd.tripstats.data.backup.TelegramManager
+import com.byd.tripstats.ui.theme.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -127,9 +128,9 @@ fun LocalBackupScreen(
                     )
                     is LocalBackupManager.BackupState.Success -> StatusBanner(
                         text      = s.message,
-                        color     = Color(0xFF1B5E20).copy(alpha = 0.15f),
+                        color     = RegenGreen.copy(alpha = 0.15f),
                         icon      = Icons.Filled.CheckCircle,
-                        iconTint  = Color(0xFF4CAF50),
+                        iconTint  = RegenGreen,
                         onDismiss = { manager.resetState() }
                     )
                     is LocalBackupManager.BackupState.Error -> StatusBanner(
@@ -190,9 +191,9 @@ fun LocalBackupScreen(
                         )
                         is TelegramManager.TelegramState.Success -> StatusBanner(
                             text      = s.message,
-                            color     = Color(0xFF1B5E20).copy(alpha = 0.15f),
+                            color     = RegenGreen.copy(alpha = 0.15f),
                             icon      = Icons.Filled.CheckCircle,
-                            iconTint  = Color(0xFF4CAF50),
+                            iconTint  = RegenGreen,
                             onDismiss = { telegramManager.resetState() }
                         )
                         is TelegramManager.TelegramState.Error -> StatusBanner(
@@ -220,7 +221,7 @@ fun LocalBackupScreen(
                                 Icons.Filled.CheckCircle,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp),
-                                tint = Color(0xFF4CAF50)
+                                tint = RegenGreen
                             )
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
@@ -308,9 +309,9 @@ fun LocalBackupScreen(
                                 Spacer(Modifier.height(4.dp))
                                 StatusBanner(
                                     text     = "Schedule updated to $label. Next auto-backup will follow the new interval.",
-                                    color    = Color(0xFF1B5E20).copy(alpha = 0.15f),
+                                    color    = RegenGreen.copy(alpha = 0.15f),
                                     icon     = Icons.Filled.CheckCircle,
-                                    iconTint = Color(0xFF4CAF50),
+                                    iconTint = RegenGreen,
                                     onDismiss = { scheduleChanged = null }
                                 )
                             }

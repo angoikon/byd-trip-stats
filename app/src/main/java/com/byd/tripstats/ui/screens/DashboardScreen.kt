@@ -103,8 +103,8 @@ fun DashboardScreen(
                         contentDescription = "MQTT Status",
                         tint = when {
                             mqttConnectionError != null -> MaterialTheme.colorScheme.error
-                            mqttConnected -> Color.Green
-                            else -> Color.Gray
+                            mqttConnected -> RegenGreen
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
                         },
                         modifier = Modifier.size(28.dp)
                     )
@@ -530,7 +530,7 @@ fun EnergyFlowDiagram(
                         color = when {
                             isRegenerating -> RegenGreen
                             power > 0 -> AccelerationOrange
-                            else -> Color.Gray
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
                         }
                     )
                     PowerMetric(
@@ -579,10 +579,10 @@ fun TyrePressureIndicator(
         modifier = modifier,
         shape = RoundedCornerShape(4.dp),
         color = when {
-            pressureBar < 0.1 -> Color.Gray.copy(alpha = 0.9f)  // Gray for no data
-            isLow -> Color(0xFFFF9800).copy(alpha = 0.9f)  // Orange for low
-            isHigh -> Color(0xFFF44336).copy(alpha = 0.9f) // Red for high
-            else -> Color(0xFF4CAF50).copy(alpha = 0.9f)   // Green for normal
+            pressureBar < 0.1 -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)  // Gray for no data
+            isLow -> AccelerationOrange.copy(alpha = 0.9f)  // Orange for low
+            isHigh -> BydErrorRed.copy(alpha = 0.9f) // Red for high
+            else -> RegenGreen.copy(alpha = 0.9f)   // Green for normal
         }
     ) {
         Box(
@@ -607,6 +607,8 @@ fun EnergyFlowCanvas(
     isCharging: Boolean,
     flowOffset: Float
 ) {
+    val idleColor = MaterialTheme.colorScheme.onSurfaceVariant
+
     Canvas(modifier = Modifier.fillMaxSize()) {
 
         val topY = size.height * 0.3f + 30f  // Move up - 30% from top + 30px for better alignment with battery/motor icons
@@ -628,7 +630,7 @@ fun EnergyFlowCanvas(
             val flowColor = when {
                 isRegenerating -> RegenGreen
                 power > 0 -> AccelerationOrange
-                else -> Color.Gray
+                else -> idleColor
             }
             
             // Create animated flow effect
@@ -863,7 +865,7 @@ fun TripControls(
                                         shape = CircleShape,
                                         color = when {
                                             telemetry.gear == "D" -> MaterialTheme.colorScheme.primary
-                                            telemetry.gear == "R" -> Color(0xFFFF9800) // Orange for reverse
+                                            telemetry.gear == "R" -> AccelerationOrange // Orange for reverse
                                             else -> MaterialTheme.colorScheme.primary
                                         }
                                     ) {
@@ -922,7 +924,7 @@ fun TripControls(
                                 Surface(
                                     modifier = Modifier.size(28.dp),
                                     shape = CircleShape,
-                                    color = Color.Gray
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 ) {
                                     Box(
                                         contentAlignment = Alignment.Center,
@@ -978,7 +980,7 @@ fun VehicleStats(
             value = "${telemetry.batteryTempAvg.toInt()}°C",
             subtitle = "Cells: ${telemetry.batteryCellTempMin}°C - ${telemetry.batteryCellTempMax}°C",
             icon = Icons.Filled.Thermostat,
-            color = MaterialTheme.colorScheme.tertiary
+            color = BydErrorRedLight
         )
         
         StatCard(
@@ -998,7 +1000,7 @@ fun VehicleStats(
                 "0 / 0 kW"
             },
             iconRes = R.drawable.ic_motor_axle,
-            color = Color(0xFF1976D2)
+            color = BydElectricBlue
         )
 
         StatCard(
