@@ -13,6 +13,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -46,7 +50,7 @@ import androidx.compose.ui.graphics.StrokeCap
 
 private const val SHOW_MOCK_BUTTON = false  // Set to true for testing, false for production
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun DashboardScreen(
     viewModel: DashboardViewModel,
@@ -62,6 +66,10 @@ fun DashboardScreen(
     val weeklyEfficiency by viewModel.weeklyEfficiency.collectAsState()
     val monthlyEfficiency by viewModel.monthlyEfficiency.collectAsState()
     val yearlyEfficiency by viewModel.yearlyEfficiency.collectAsState()
+
+    val activity = LocalContext.current as androidx.activity.ComponentActivity
+    val windowSizeClass = calculateWindowSizeClass(activity)
+    val widthSizeClass = windowSizeClass.widthSizeClass
 
     Scaffold(
         topBar = {
@@ -232,12 +240,14 @@ fun DashboardScreen(
                 onStartTrip = { viewModel.startManualTrip() },
                 onEndTrip = { viewModel.endManualTrip() },
                 onToggleAutoDetection = { viewModel.toggleAutoTripDetection() },
+                widthSizeClass = widthSizeClass,
                 modifier = Modifier.padding(paddingValues)
             )
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun DashboardContent(
     telemetry: VehicleTelemetry,
@@ -250,54 +260,154 @@ fun DashboardContent(
     onStartTrip: () -> Unit,
     onEndTrip: () -> Unit,
     onToggleAutoDetection: () -> Unit,
+    widthSizeClass: WindowWidthSizeClass = WindowWidthSizeClass.Expanded,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        // Left column - Energy Flow Diagram (75%)
-        Column(
-            modifier = Modifier
-                .weight(0.75f)
-                .fillMaxHeight(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            EnergyFlowDiagram(
-                telemetry = telemetry,
-                tripDataPoints = tripDataPoints,
-                weeklyEfficiency = weeklyEfficiency,
-                monthlyEfficiency = monthlyEfficiency,
-                yearlyEfficiency = yearlyEfficiency,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            )
+    // Expanded  (>840 dp) → full landscape: side-by-side 75/25 — original layout
+    // Medium    (600–840dp) → split-screen landscape or large tablet portrait: side-by-side 65/35
+    // Compact   (<600 dp) → split-screen portrait or phone portrait: stacked vertically
+    when (widthSizeClass) {
+        WindowWidthSizeClass.Compact -> {
+            // ── Compact: stacked portrait / narrow split-screen ───────────────
+            // Stats moves above the energy diagram so nothing gets squeezed.
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Stats row at top — condensed horizontal strip
+                VehicleStats(
+                    telemetry = telemetry,
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-            TripControls(
-                telemetry = telemetry,
-                isInTrip = isInTrip,
-                autoTripDetection = autoTripDetection,
-                onStartTrip = onStartTrip,
-                onEndTrip = onEndTrip,
-                onToggleAutoDetection = onToggleAutoDetection,
-                modifier = Modifier.fillMaxWidth()
-            )
+                // Energy flow / range card
+                EnergyFlowDiagram(
+                    telemetry = telemetry,
+                    tripDataPoints = tripDataPoints,
+                    weeklyEfficiency = weeklyEfficiency,
+                    monthlyEfficiency = monthlyEfficiency,
+                    yearlyEfficiency = yearlyEfficiency,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 320.dp)   // guaranteed minimum height in portrait
+                )
+
+                // Trip controls
+                TripControls(
+                    telemetry = telemetry,
+                    isInTrip = isInTrip,
+                    autoTripDetection = autoTripDetection,
+                    onStartTrip = onStartTrip,
+                    onEndTrip = onEndTrip,
+                    onToggleAutoDetection = onToggleAutoDetection,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
 
-        // Right column - Stats (25%)
-        Column(
-            modifier = Modifier
-                .weight(0.25f)
-                .fillMaxHeight(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            VehicleStats(
-                telemetry = telemetry,
-                modifier = Modifier.fillMaxWidth()
-            )
+        WindowWidthSizeClass.Medium -> {
+            // ── Medium: split-screen landscape or large portrait ─────────────
+            // Same side-by-side structure but slightly wider right column so
+            // stats don't get too cramped at 600–840 dp.
+            Row(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+        // Left column - Energy Flow Diagram
+                Column(
+                    modifier = Modifier
+                        .weight(0.65f)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    EnergyFlowDiagram(
+                        telemetry = telemetry,
+                        tripDataPoints = tripDataPoints,
+                        weeklyEfficiency = weeklyEfficiency,
+                        monthlyEfficiency = monthlyEfficiency,
+                        yearlyEfficiency = yearlyEfficiency,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    )
+                    TripControls(
+                        telemetry = telemetry,
+                        isInTrip = isInTrip,
+                        autoTripDetection = autoTripDetection,
+                        onStartTrip = onStartTrip,
+                        onEndTrip = onEndTrip,
+                        onToggleAutoDetection = onToggleAutoDetection,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                Column(
+                    modifier = Modifier
+                        .weight(0.35f)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    VehicleStats(
+                        telemetry = telemetry,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
+
+        else -> {
+            // ── Expanded: full landscape — original 75/25 layout ─────────────
+            Row(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .weight(0.75f)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    EnergyFlowDiagram(
+                        telemetry = telemetry,
+                        tripDataPoints = tripDataPoints,
+                        weeklyEfficiency = weeklyEfficiency,
+                        monthlyEfficiency = monthlyEfficiency,
+                        yearlyEfficiency = yearlyEfficiency,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    )
+                    TripControls(
+                        telemetry = telemetry,
+                        isInTrip = isInTrip,
+                        autoTripDetection = autoTripDetection,
+                        onStartTrip = onStartTrip,
+                        onEndTrip = onEndTrip,
+                        onToggleAutoDetection = onToggleAutoDetection,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+        // Right column - Stats
+                Column(
+                    modifier = Modifier
+                        .weight(0.25f)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    VehicleStats(
+                        telemetry = telemetry,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
         }
     }
 }
