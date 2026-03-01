@@ -246,17 +246,32 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     inTrip && !wasInTrip -> {
                         // Trip just started — anchor odometer and seed the first point
                         tripStartOdometer = telemetry.odometer
-                        _tripDataPoints.value = listOf(RangeDataPoint(0.0, telemetry.soc))
+                        _tripDataPoints.value = listOf(
+                            RangeDataPoint(
+                                distanceKm             = 0.0,
+                                soc                    = telemetry.soc,
+                                electricDrivingRangeKm = telemetry.electricDrivingRangeKm
+                            )
+                        )
                     }
                     !inTrip && wasInTrip -> {
-                        // Trip just ended — keep the points visible until next trip starts
+                        // Trip just ended — keep points visible until next trip starts
                         tripStartOdometer = null
                     }
                     inTrip -> {
-                        // Ongoing trip — append a point (throttled naturally by MQTT rate)
-                        val distKm = telemetry.odometer - (tripStartOdometer ?: telemetry.odometer)
-                        _tripDataPoints.value = _tripDataPoints.value +
-                            RangeDataPoint(distKm.coerceAtLeast(0.0), telemetry.soc)
+                        // Throttle to one point per 100 m of odometer change.
+                        // At ~1 Hz MQTT a 2-hour drive would otherwise accumulate
+                        // 7,200 points; 100 m spacing keeps it under ~300 per trip.
+                        val distKm = (telemetry.odometer - (tripStartOdometer ?: telemetry.odometer))
+                            .coerceAtLeast(0.0)
+                        val lastDist = _tripDataPoints.value.lastOrNull()?.distanceKm ?: 0.0
+                        if (distKm - lastDist >= 0.1) { // You can tighten it to 0.05 (50 m) if you want finer granularity on short city trips.
+                            _tripDataPoints.value = _tripDataPoints.value + RangeDataPoint(
+                                distanceKm             = distKm,
+                                soc                    = telemetry.soc,
+                                electricDrivingRangeKm = telemetry.electricDrivingRangeKm
+                            )
+                        }
                     }
                 }
                 wasInTrip = inTrip

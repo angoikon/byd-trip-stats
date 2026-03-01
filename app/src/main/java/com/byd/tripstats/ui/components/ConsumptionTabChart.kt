@@ -65,9 +65,9 @@ fun WeeklyEnergyThumbnail(
 // ── Unified expanded chart ────────────────────────────────────────────────────
 
 private enum class ConsumptionTab(val label: String) {
-    WEEK("Daily"),
-    MONTH("Monthly"),
-    YEAR("Yearly")
+    WEEK("Daily consumption"),
+    MONTH("Monthly consumption"),
+    YEAR("Yearly consumption");
 }
 
 /**
@@ -101,78 +101,79 @@ fun ConsumptionChartExpanded(
 
     Column(modifier = modifier.fillMaxSize()) {
 
-        // ── Tab navbar ────────────────────────────────────────────────────────
-        // Outer container: one shade above the page background so the bar reads
-        // as a distinct control group, not just floating buttons.
+        // ── Tab navbar + close button ─────────────────────────────────────────
+        // Close button lives OUTSIDE the clipped pill container so the Yearly
+        // pill's right outline never gets cropped by the parent clip boundary.
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .padding(4.dp)                       // inner inset so pills don't bleed to edge
         ) {
-            ConsumptionTab.entries.forEach { tab ->
-                val isSelected = tab == selectedTab
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(36.dp)
-                        // Selected: solid cobalt fill. Unselected: no fill — relies on
-                        // the outline border below to communicate "this is tappable".
-                        .clip(RoundedCornerShape(7.dp))
-                        .background(
-                            if (isSelected) MaterialTheme.colorScheme.primary
-                            else Color.Transparent
+            // Pill container — only the three tabs live inside the clip
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .padding(4.dp)
+            ) {
+                ConsumptionTab.entries.forEach { tab ->
+                    val isSelected = tab == selectedTab
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(36.dp)
+                            .clip(RoundedCornerShape(7.dp))
+                            .background(
+                                if (isSelected) MaterialTheme.colorScheme.primary
+                                else Color.Transparent
+                            )
+                            .then(
+                                if (!isSelected) Modifier.outline(
+                                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                                    cornerRadius = 7.dp,
+                                    strokeWidth = 1.dp
+                                ) else Modifier
+                            )
+                            .clickable { selectedTab = tab }
+                            .padding(vertical = 6.dp, horizontal = 4.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = tab.label,
+                            fontSize = 12.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                            color = if (isSelected)
+                                MaterialTheme.colorScheme.onPrimary
+                            else
+                                MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        // Outline on unselected only — gives it shape without competing
-                        // with the selected fill for attention.
-                        .then(
-                            if (!isSelected) Modifier.outline(
-                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                                cornerRadius = 7.dp,
-                                strokeWidth = 1.dp
-                            ) else Modifier
-                        )
-                        .clickable { selectedTab = tab }
-                        .padding(vertical = 6.dp, horizontal = 4.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = tab.label,
-                        fontSize = 12.sp,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                        // Selected: white (onPrimary). Unselected: onSurfaceVariant at
-                        // full opacity — previously this was too faint.
-                        color = if (isSelected)
-                            MaterialTheme.colorScheme.onPrimary
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                    }
 
-                // Small gap between pills
-                if (tab != ConsumptionTab.entries.last()) {
-                    Spacer(Modifier.width(4.dp))
+                    if (tab != ConsumptionTab.entries.last()) {
+                        Spacer(Modifier.width(4.dp))
+                    }
                 }
             }
 
-            Spacer(Modifier.width(4.dp))
+            Spacer(Modifier.width(8.dp))
 
-            // Close button — clearly separated from the tab group
+            // Close button — outside the clip so it never interferes with pill borders.
+            // 48 dp is the Material minimum recommended touch target.
             IconButton(
                 onClick = onClose,
                 modifier = Modifier
-                    .size(36.dp)
-                    .clip(RoundedCornerShape(7.dp))
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(10.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Icon(
                     imageVector = Icons.Filled.Close,
                     contentDescription = "Close chart",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(22.dp)
                 )
             }
         }
@@ -218,11 +219,10 @@ private fun ConsumptionCanvas(
     modifier: Modifier = Modifier
 ) {
     // Resolve all theme-aware colors before entering DrawScope
-    val lineColor     = BydCobaltBlue.copy(alpha = 0.9f)     // cobalt — matches primary/buttons
-    val areaColor     = BydCobaltBlue.copy(alpha = 0.08f)    // subtle fill under the line
-    val pointFill     = BydCobaltBlue                        // solid dot center
-    val pointGlow     = BydCobaltBlue.copy(alpha = 0.20f)    // halo around each dot
-    val sealLineColor = AccelerationOrange.copy(alpha = 0.9f) // clearly different from line
+    val lineColor     = BydCobaltBlue.copy(alpha = 0.9f)
+    val pointFill     = BydCobaltBlue
+    val pointGlow     = BydCobaltBlue.copy(alpha = 0.20f)
+    val sealLineColor = AccelerationOrange.copy(alpha = 0.9f)
     val textColor     = MaterialTheme.colorScheme.onSurface
     val gridColor     = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)
     val axisColor     = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)
@@ -340,7 +340,7 @@ private fun ConsumptionCanvas(
             labelPaint
         )
 
-        // Area fill under the data line (adds depth, helps line stand out vs grid)
+        // Area fill under the data line — vertical gradient matching other charts
         if (data.size >= 2) {
             val areaPath = Path().apply {
                 moveTo(xOf(0), yOf(values[0]))
@@ -349,10 +349,13 @@ private fun ConsumptionCanvas(
                 lineTo(xOf(0), padT + chartH)
                 close()
             }
-            drawPath(areaPath, areaColor)
+            drawPath(areaPath, Brush.verticalGradient(
+                colors = listOf(BydCobaltBlue.copy(alpha = 0.35f), BydCobaltBlue.copy(alpha = 0f)),
+                startY = yOf(values.max()), endY = padT + chartH
+            ))
         }
 
-        // Data line — cobalt, slightly thicker than before for readability on car screen
+        // Data line
         if (data.size >= 2) {
             val linePath = Path().apply {
                 moveTo(xOf(0), yOf(values[0]))
@@ -364,22 +367,22 @@ private fun ConsumptionCanvas(
             )
         }
 
-        // Data points — layered: glow halo → filled dot → white core
-        // White core gives the dot a distinct "pin" look vs just a colored blob
+        // Data points — always draw glow+dot+pin on every point.
+        // Value label above the dot: always shown on all points.
+        // X date label density is controlled separately by labelEvery (passed in from the tab).
         data.forEachIndexed { i, d ->
             val x = xOf(i)
             val y = yOf(d.avgKwhPer100km)
 
-            drawCircle(pointGlow,  16f, Offset(x, y))   // soft outer halo
-            drawCircle(pointFill,   7f, Offset(x, y))   // cobalt body
-            drawCircle(Color.White, 3f, Offset(x, y))   // white center pin
+            drawCircle(pointGlow,  16f, Offset(x, y))
+            drawCircle(pointFill,   7f, Offset(x, y))
+            drawCircle(Color.White, 3f, Offset(x, y))
 
-            if (i % labelEvery == 0 || i == data.size - 1) {
-                labelPaint.color     = textColor.toArgb()
-                labelPaint.textSize  = 20f
-                labelPaint.textAlign = android.graphics.Paint.Align.CENTER
-                nc.drawText("%.1f".format(d.avgKwhPer100km), x, y - 20f, labelPaint)
-            }
+            // Value label always shown above every dot
+            labelPaint.color     = textColor.toArgb()
+            labelPaint.textSize  = 20f
+            labelPaint.textAlign = android.graphics.Paint.Align.CENTER
+            nc.drawText("%.1f".format(d.avgKwhPer100km), x, y - 20f, labelPaint)
         }
     }
 }

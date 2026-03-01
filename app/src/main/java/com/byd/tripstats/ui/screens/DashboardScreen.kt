@@ -373,7 +373,7 @@ fun EnergyFlowDiagram(
                 RangeProjectionChart(
                     dataPoints = tripDataPoints,
                     liveSoc = telemetry.soc,
-                    wltpRangeKm = 520, // TODO: make this dynamic based on car model via config
+                    liveElectricRangeKm = telemetry.electricDrivingRangeKm,
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -509,7 +509,7 @@ fun EnergyFlowDiagram(
                     RangeProjectionChart(
                         dataPoints = tripDataPoints,
                         liveSoc = telemetry.soc,
-                    wltpRangeKm = 520, // TODO: make this dynamic based on car model via config
+                        liveElectricRangeKm = telemetry.electricDrivingRangeKm,
                         modifier = Modifier
                             .fillMaxSize()
                             .clickable { rangeFlipped = true }
@@ -546,7 +546,7 @@ fun EnergyFlowDiagram(
                         color = BatteryBlue
                     )
                     PowerMetric(
-                        label = "Range",
+                        label = "Range (BMS)",
                         value = "${telemetry.electricDrivingRangeKm}",
                         unit = "km",
                         color = MaterialTheme.colorScheme.tertiary

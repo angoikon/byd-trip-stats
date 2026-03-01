@@ -14,21 +14,26 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.byd.tripstats.ui.theme.*
-import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
  * A single telemetry snapshot recorded during a trip.
  *
- * @param distanceKm  Cumulative km driven since trip start
- * @param soc         Battery state-of-charge at this point (0..100)
+ * @param distanceKm             Cumulative km driven since trip start
+ * @param soc                    Battery state-of-charge at this point (0..100)
+ * @param electricDrivingRangeKm Car's BMS-reported remaining range (used as secondary reference)
  */
 data class RangeDataPoint(
     val distanceKm: Double,
-    val soc: Double
+    val soc: Double,
+    val electricDrivingRangeKm: Int
 )
+
+// Minimum trip distance before switching from the SOC-ratio fallback to
+// the observed efficiency calculation. Below this, a 0.1% SOC flicker
+// would swing the projected range by hundreds of km.
+private const val MIN_KM_FOR_OBSERVED = 3.0
 
 /**
  * Range Projection Chart
@@ -37,131 +42,106 @@ data class RangeDataPoint(
  * Y-axis : Estimated remaining range (km)
  *
  * Two curves are drawn:
- *  • Rated  (gray)   – straight line assuming perfect WLTP efficiency (1 km driven = 1 km lost)
- *  • Actual (orange) – real remaining range derived from SOC × wltpRangeKm
+ *  • Observed projection (colored, main) — "given how efficiently I've actually been
+ *    driving this trip, how far will I realistically get?"
+ *    Formula: (kmDriven / socDrop) × currentSoc
+ *    Below MIN_KM_FOR_OBSERVED it falls back to (soc / startSoc) × startBmsRange
+ *    to avoid instability from tiny early SOC noise.
  *
- * The area between them is filled green when actual > rated (efficient driving)
- * and orange/amber when actual < rated (inefficient driving).
+ *  • BMS estimate (gray dashed, secondary) — the car's own electricDrivingRangeKm.
+ *    Shown for reference only. With aggressive driving this is typically optimistic.
  *
- * A dot marks the most recent point on the actual curve.
- *
- * @param dataPoints   List of telemetry snapshots for this trip (can be empty).
- *                     When empty the chart gracefully shows "no data yet".
- * @param startSoc     Battery % at trip start (used to anchor both curves at x=0).
- * @param wltpRangeKm  Full-charge rated range. Default 520 km (BYD Seal AWD WLTP).
+ * Area fill:
+ *  • Green  → observed > BMS  (you're doing better than the car expects)
+ *  • Orange → observed < BMS  (you're burning more than the car expects)
  */
 @Composable
 fun RangeProjectionChart(
     dataPoints: List<RangeDataPoint>,
-    liveSoc: Double = 100.0, // Current SOC from telemetry, used when no trip data yet
-    wltpRangeKm: Int = 520, // TODO: make this dynamic based on car model via config
+    liveSoc: Double = 100.0,
+    liveElectricRangeKm: Int = 0,
     modifier: Modifier = Modifier
 ) {
-    // ── Compute derived values ────────────────────────────────────────────────
+    // ── Derived values ────────────────────────────────────────────────────────
 
-    // When no trip has started yet use live SOC so the header shows real remaining range
-    val startSoc = dataPoints.firstOrNull()?.soc ?: liveSoc
-    val startRangeKm = startSoc / 100.0 * wltpRangeKm   // km at trip start (rated anchor)
-
-    // Normalise & sort data; guard against duplicate x values
     val points = remember(dataPoints) {
         dataPoints
             .sortedBy { it.distanceKm }
             .distinctBy { (it.distanceKm * 10).roundToInt() }
     }
 
+    val startSoc      = points.firstOrNull()?.soc ?: liveSoc
+    // BMS range at trip start — used as the fallback anchor and Y-axis scale
+    val startBmsRange = points.firstOrNull()?.electricDrivingRangeKm?.toDouble()
+        ?: liveElectricRangeKm.toDouble().takeIf { it > 0 }
+        ?: (liveSoc / 100.0 * 400.0)   // last-resort rough fallback
+
     val maxDistanceKm = points.lastOrNull()?.distanceKm?.coerceAtLeast(1.0) ?: 1.0
     val currentSoc    = points.lastOrNull()?.soc ?: startSoc
 
-    // ── Observed consumption-based range projection ───────────────────────────
-    // Once we have enough distance (≥3 km), compute km-per-soc-percent directly
-    // from trip data rather than relying on WLTP. Falls back to WLTP × SOC below
-    // the threshold to avoid division instability from tiny SOC changes.
-    val MIN_DISTANCE_FOR_OBSERVED_KM = 3.0  // km before switching to data-driven
-
-    val currentRange: Double = run {
-        val distDriven = points.lastOrNull()?.distanceKm ?: 0.0
-        val socDropPct = startSoc - currentSoc
-
-        if (distDriven >= MIN_DISTANCE_FOR_OBSERVED_KM && socDropPct > 0.5) {
-            // Observed: how many km per SOC percent consumed so far
-            val kmPerSocPct = distDriven / socDropPct
-            currentSoc * kmPerSocPct   // project remaining range
+    // Observed efficiency projection for a single point
+    fun observedRange(distDriven: Double, soc: Double): Double {
+        val socDrop = startSoc - soc
+        return if (distDriven >= MIN_KM_FOR_OBSERVED && socDrop > 0.5) {
+            (distDriven / socDrop) * soc            // observed km/SOC% × remaining SOC
         } else {
-            // Not enough data yet — fall back to WLTP ratio
-            currentSoc / 100.0 * wltpRangeKm
+            (soc / startSoc) * startBmsRange        // stable fallback: scale by SOC ratio
         }
     }
 
-    // Build a per-point actual range series using the same logic so the curve
-    // reflects the evolving observed efficiency, not a fixed WLTP constant.
-    val actualRangePoints: List<Pair<Double, Double>> = remember(points) {
-        points.mapIndexedNotNull { index, p ->
-            if (index == 0) return@mapIndexedNotNull p.distanceKm to (startSoc / 100.0 * wltpRangeKm)
-            val distDriven = p.distanceKm
-            val socDrop    = startSoc - p.soc
-            val range = if (distDriven >= MIN_DISTANCE_FOR_OBSERVED_KM && socDrop > 0.5) {
-                val kmPerSocPct = distDriven / socDrop
-                p.soc * kmPerSocPct
-            } else {
-                p.soc / 100.0 * wltpRangeKm
-            }
-            p.distanceKm to range
-        }
+    // Per-point observed projection series (drives the main curve)
+    val observedPoints: List<Pair<Double, Double>> = remember(points) {
+        points.map { p -> p.distanceKm to observedRange(p.distanceKm, p.soc) }
     }
 
-    // Rated range at the current distance (straight line: startRange - distanceDriven)
-    val ratedRangeNow = (startRangeKm - maxDistanceKm).coerceAtLeast(0.0)
+    // Current observed projection — the headline number
+    val currentObserved = observedRange(
+        points.lastOrNull()?.distanceKm ?: 0.0,
+        currentSoc
+    )
 
-    val deltaKm  = currentRange - ratedRangeNow
-    val beating  = deltaKm >= 0
+    // BMS series — secondary reference line
+    val bmsPoints: List<Pair<Double, Double>> = remember(points) {
+        points.map { it.distanceKm to it.electricDrivingRangeKm.toDouble() }
+    }
+    val currentBms = points.lastOrNull()?.electricDrivingRangeKm?.toDouble() ?: startBmsRange
+
+    // Positive delta = our observed projection is higher than BMS (beating expectations)
+    val deltaKm     = currentObserved - currentBms
+    val beating     = deltaKm >= 0
     val accentColor = if (beating) RegenGreen else AccelerationOrange
 
-    // Y-axis: headroom above whichever is higher — rated start or actual projection
-    val yMax = maxOf(startRangeKm, currentRange) * 1.05
+    val yMax = maxOf(startBmsRange, currentObserved, currentBms) * 1.08
     val yMin = 0.0
 
-    // ── Theme colours (must be extracted outside Canvas) ─────────────────────
-    val ratedLineColor   = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
-    val gridLineColor    = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.18f)
-    val axisColor        = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-    val textColor        = MaterialTheme.colorScheme.onSurface
+    // ── Theme colors ──────────────────────────────────────────────────────────
+    val bmsLineColor  = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+    val gridLineColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.18f)
+    val axisColor     = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+    val textColor     = MaterialTheme.colorScheme.onSurface
 
     // ── Header ────────────────────────────────────────────────────────────────
     Column(modifier = modifier.fillMaxSize()) {
-        // Summary row
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(
-                    top = 16.dp,      // Added specific top padding
-                    start = 16.dp,    // Original horizontal start
-                    end = 16.dp       // Original horizontal end
-            ),
+                .padding(top = 16.dp, start = 16.dp, end = 16.dp),
             verticalAlignment = Alignment.Bottom
         ) {
             Column {
                 Text(
-                    text = "%.1f km remaining".format(currentRange),
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.SemiBold
-                    ),
+                    text  = "%.0f km projected (BMS)".format(currentObserved),
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = textColor
                 )
-                val sign  = if (beating) "+" else ""
-                val label = if (beating) "ahead of rated" else "behind rated"
+                val sign = if (beating) "+" else ""
                 Text(
-                    text = "$sign${"%.1f".format(deltaKm)} km $label",
+                    text  = "$sign${"%.0f".format(deltaKm)} km vs BMS estimate",
                     style = MaterialTheme.typography.bodySmall,
                     color = accentColor
                 )
             }
             Spacer(Modifier.weight(1f))
-            Text(
-                text = "WLTP ($wltpRangeKm km)",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
 
         // ── Canvas ────────────────────────────────────────────────────────────
@@ -174,153 +154,128 @@ fun RangeProjectionChart(
             val w = size.width
             val h = size.height
 
-            val padL = 52f   // left  – Y labels
-            val padR = 12f   // right
-            val padT = 12f   // top
-            val padB = 36f   // bottom – X labels
+            val padL = 80f
+            val padR = 12f
+            val padT = 12f
+            val padB = 36f
 
             val chartW = w - padL - padR
             val chartH = h - padT - padB
 
-            // Helper: data → canvas coordinates
+            val nc = drawContext.canvas.nativeCanvas
+
             fun xOf(distKm: Double) = padL + (distKm / maxDistanceKm * chartW).toFloat()
             fun yOf(rangeKm: Double): Float {
                 val fraction = (rangeKm - yMin) / (yMax - yMin)
                 return (padT + chartH * (1f - fraction)).toFloat()
             }
 
-            // ── Grid & axes ───────────────────────────────────────────────────
+            // Paint objects — created once, reused across all draw calls
+            val labelPaint = android.graphics.Paint().apply {
+                color = textColor.copy(alpha = 0.7f).toArgb()
+                textSize = 20f; textAlign = android.graphics.Paint.Align.RIGHT; isAntiAlias = true
+            }
+            val xLabelPaint = android.graphics.Paint().apply {
+                color = textColor.copy(alpha = 0.6f).toArgb()
+                textSize = 19f; textAlign = android.graphics.Paint.Align.CENTER; isAntiAlias = true
+            }
+            val yAxisPaint = android.graphics.Paint().apply {
+                color = textColor.copy(alpha = 0.55f).toArgb()
+                textSize = 19f; textAlign = android.graphics.Paint.Align.CENTER; isAntiAlias = true
+            }
 
-            // Y grid lines — max ~5 labels regardless of range
+            // Rotated Y-axis label
+            nc.save()
+            nc.rotate(-90f, 18f, padT + chartH / 2f)
+            nc.drawText("km", 18f, padT + chartH / 2f, yAxisPaint)
+            nc.restore()
+
+            // Y grid lines + labels
             val yStepKm = when {
-                startRangeKm > 300 -> 100.0
-                startRangeKm > 150 -> 50.0
-                startRangeKm > 75  -> 25.0
-                else               -> 10.0
+                startBmsRange > 300 -> 100.0
+                startBmsRange > 150 -> 50.0
+                startBmsRange > 75  -> 25.0
+                else                -> 10.0
             }
             var yTick = (yMin / yStepKm).toInt() * yStepKm
             while (yTick <= yMax) {
                 val y = yOf(yTick)
-                drawLine(
-                    color = gridLineColor,
-                    start = Offset(padL, y),
-                    end   = Offset(w - padR, y),
-                    strokeWidth = 1f
-                )
-                drawContext.canvas.nativeCanvas.drawText(
-                    "${yTick.roundToInt()}",
-                    padL - 6f,
-                    y + 5f,
-                    android.graphics.Paint().apply {
-                        color     = textColor.copy(alpha = 0.7f).toArgb()
-                        textSize  = 20f
-                        textAlign = android.graphics.Paint.Align.RIGHT
-                    }
-                )
+                drawLine(gridLineColor, Offset(padL, y), Offset(w - padR, y), 1f)
+                nc.drawText("${yTick.roundToInt()}", padL - 6f, y + 5f, labelPaint)
                 yTick += yStepKm
             }
 
-            // X axis line
-            drawLine(
-                color       = axisColor,
-                start       = Offset(padL, padT + chartH),
-                end         = Offset(w - padR, padT + chartH),
-                strokeWidth = 1.5f
-            )
+            // X axis
+            drawLine(axisColor, Offset(padL, padT + chartH), Offset(w - padR, padT + chartH), 1.5f)
 
-            // X ticks — 5 even labels
+            // X ticks — 5 evenly spaced labels
             val xStep = maxDistanceKm / 4.0
             for (i in 0..4) {
                 val dist = i * xStep
-                val x    = xOf(dist)
-                drawLine(
-                    color       = axisColor,
-                    start       = Offset(x, padT + chartH),
-                    end         = Offset(x, padT + chartH + 5f),
-                    strokeWidth = 1.5f
-                )
-                drawContext.canvas.nativeCanvas.drawText(
-                    "%.1f".format(dist),
-                    x,
-                    h - 4f,
-                    android.graphics.Paint().apply {
-                        color     = textColor.copy(alpha = 0.6f).toArgb()
-                        textSize  = 19f
-                        textAlign = android.graphics.Paint.Align.CENTER
-                    }
-                )
+                val x = xOf(dist)
+                drawLine(axisColor, Offset(x, padT + chartH), Offset(x, padT + chartH + 5f), 1.5f)
+                nc.drawText("%.1f".format(dist), x, h - 4f, xLabelPaint)
             }
 
-            // ── Rated line (gray, dashed) ─────────────────────────────────────
-            val ratedPath = Path().apply {
-                moveTo(xOf(0.0), yOf(startRangeKm))
-                // Rated line ends when range hits 0 or at max trip distance
-                val ratedEndDist = startRangeKm.coerceAtMost(maxDistanceKm)
-                lineTo(xOf(ratedEndDist), yOf((startRangeKm - ratedEndDist).coerceAtLeast(0.0)))
-            }
-            drawPath(
-                path  = ratedPath,
-                color = ratedLineColor,
-                style = Stroke(
-                    width      = 2.5f,
-                    cap        = StrokeCap.Round,
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 8f))
-                )
-            )
+            if (observedPoints.isNotEmpty()) {
 
-            // ── Actual path and fill ──────────────────────────────────────────
-            if (actualRangePoints.isNotEmpty()) {
-                // Build the actual curve path
-                val actualPath = Path().apply {
-                    val first = actualRangePoints.first()
-                    moveTo(xOf(first.first), yOf(first.second))
-                    actualRangePoints.drop(1).forEach { (dist, range) ->
-                        lineTo(xOf(dist), yOf(range))
+                // ── Fill between observed and BMS curves ──────────────────────
+                // Walk observed forward, then BMS backward to close the polygon
+                if (bmsPoints.isNotEmpty()) {
+                    val fillPath = Path().apply {
+                        moveTo(xOf(observedPoints.first().first), yOf(observedPoints.first().second))
+                        observedPoints.drop(1).forEach { (d, r) -> lineTo(xOf(d), yOf(r)) }
+                        bmsPoints.reversed().forEach { (d, r) -> lineTo(xOf(d), yOf(r)) }
+                        close()
                     }
+                    val fillColor = if (beating) RegenGreen.copy(alpha = 0.15f)
+                                    else         AccelerationOrange.copy(alpha = 0.12f)
+                    drawPath(fillPath, fillColor)
                 }
 
-                // Build fill polygon: actual curve + rated curve reversed
-                val fillPath = Path().apply {
-                    val first = actualRangePoints.first()
-                    moveTo(xOf(first.first), yOf(first.second))
-                    actualRangePoints.drop(1).forEach { (dist, range) ->
-                        lineTo(xOf(dist), yOf(range))
+                // ── BMS reference line (gray dashed, secondary) ───────────────
+                if (bmsPoints.size >= 2) {
+                    val bmsPath = Path().apply {
+                        moveTo(xOf(bmsPoints.first().first), yOf(bmsPoints.first().second))
+                        bmsPoints.drop(1).forEach { (d, r) -> lineTo(xOf(d), yOf(r)) }
                     }
-                    // Back along rated
-                    val lastDist = actualRangePoints.last().first
-                    lineTo(xOf(lastDist), yOf((startRangeKm - lastDist).coerceAtLeast(0.0)))
-                    lineTo(xOf(actualRangePoints.first().first), yOf(startRangeKm))
-                    close()
+                    drawPath(
+                        path  = bmsPath,
+                        color = bmsLineColor,
+                        style = Stroke(
+                            width      = 2f,
+                            cap        = StrokeCap.Round,
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 8f))
+                        )
+                    )
                 }
 
-                val fillColor = if (beating) RegenGreen.copy(alpha = 0.18f)
-                                else         AccelerationOrange.copy(alpha = 0.15f)
-                drawPath(path = fillPath, color = fillColor)
-
-                // Actual curve stroke
+                // ── Observed projection line (main, colored) ──────────────────
+                val observedPath = Path().apply {
+                    moveTo(xOf(observedPoints.first().first), yOf(observedPoints.first().second))
+                    observedPoints.drop(1).forEach { (d, r) -> lineTo(xOf(d), yOf(r)) }
+                }
                 drawPath(
-                    path  = actualPath,
+                    path  = observedPath,
                     color = accentColor,
                     style = Stroke(width = 3f, cap = StrokeCap.Round, join = StrokeJoin.Round)
                 )
 
-                // Current position dot
-                val lastPoint = actualRangePoints.last()
-                val dotX = xOf(lastPoint.first)
-                val dotY = yOf(lastPoint.second)
-                drawCircle(color = accentColor.copy(alpha = 0.28f), radius = 18f, center = Offset(dotX, dotY))
-                drawCircle(color = accentColor,                      radius = 8f,  center = Offset(dotX, dotY))
-                drawCircle(color = Color.White,                      radius = 3f,  center = Offset(dotX, dotY))
+                // Current position dot on observed line
+                val last = observedPoints.last()
+                val dotX = xOf(last.first); val dotY = yOf(last.second)
+                drawCircle(accentColor.copy(alpha = 0.25f), 18f, Offset(dotX, dotY))
+                drawCircle(accentColor,                      8f,  Offset(dotX, dotY))
+                drawCircle(Color.White,                      3f,  Offset(dotX, dotY))
+
             } else {
-                // No telemetry yet – show faded message
-                drawContext.canvas.nativeCanvas.drawText(
+                nc.drawText(
                     "No trip data yet",
                     padL + chartW / 2f,
                     padT + chartH / 2f,
                     android.graphics.Paint().apply {
-                        color     = textColor.copy(alpha = 0.3f).toArgb()
-                        textSize  = 28f
-                        textAlign = android.graphics.Paint.Align.CENTER
+                        color = textColor.copy(alpha = 0.3f).toArgb()
+                        textSize = 28f; textAlign = android.graphics.Paint.Align.CENTER; isAntiAlias = true
                     }
                 )
             }
@@ -334,48 +289,31 @@ fun RangeProjectionChart(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Rated indicator
             Canvas(modifier = Modifier.size(20.dp, 3.dp)) {
                 drawLine(
-                    color       = ratedLineColor,
-                    start       = Offset(0f, size.height / 2),
-                    end         = Offset(size.width, size.height / 2),
-                    strokeWidth = 3f,
-                    pathEffect  = PathEffect.dashPathEffect(floatArrayOf(6f, 4f))
+                    color = bmsLineColor, start = Offset(0f, size.height / 2),
+                    end = Offset(size.width, size.height / 2), strokeWidth = 3f,
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 4f))
                 )
             }
             Spacer(Modifier.width(5.dp))
             Text(
-                text  = "Rated",
+                text  = "BMS estimate",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(Modifier.width(4.dp))
-            Text(
-                text  = "(based on WLTP)",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
             )
             Spacer(Modifier.width(20.dp))
             Canvas(modifier = Modifier.size(20.dp, 3.dp)) {
                 drawLine(
-                    color       = accentColor,
-                    start       = Offset(0f, size.height / 2),
-                    end         = Offset(size.width, size.height / 2),
-                    strokeWidth = 3f
+                    color = accentColor, start = Offset(0f, size.height / 2),
+                    end = Offset(size.width, size.height / 2), strokeWidth = 3f
                 )
             }
             Spacer(Modifier.width(5.dp))
             Text(
-                text  = "Actual",
+                text  = "Observed projection",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(Modifier.width(4.dp))
-            Text(
-                text  = "(km driven →)",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
             )
         }
 
