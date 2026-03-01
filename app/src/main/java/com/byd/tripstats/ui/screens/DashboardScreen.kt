@@ -44,7 +44,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.StrokeCap
 
-private const val SHOW_MOCK_BUTTON = false  // Set to true for testing, false for production
+private const val SHOW_MOCK_BUTTON = true  // Set to true for testing, false for production
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -824,9 +824,9 @@ fun TripControls(
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (isInTrip) 
-                                MaterialTheme.colorScheme.error 
+                                BydErrorRed 
                             else 
-                                MaterialTheme.colorScheme.primary
+                                BydCobaltBlue
                         )
                     ) {
                         Icon(
@@ -988,7 +988,7 @@ fun VehicleStats(
             value = "${telemetry.batteryTotalVoltage} V / ${String.format("%.2f", telemetry.battery12vVoltage)} V",
             subtitle = "Cell: ${String.format("%.3f", telemetry.batteryCellVoltageMin)} - ${String.format("%.3f", telemetry.batteryCellVoltageMax)} V",
             icon = Icons.Filled.Bolt,
-            color = MaterialTheme.colorScheme.secondary
+            color = BydEcoTealDim
         )
 
         StatCard(
