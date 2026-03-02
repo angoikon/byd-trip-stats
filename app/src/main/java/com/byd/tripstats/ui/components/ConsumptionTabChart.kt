@@ -354,10 +354,10 @@ private fun ConsumptionCanvas(
         )
         labelPaint.color     = sealLineColor.toArgb()
         labelPaint.textSize  = 19f
-        labelPaint.textAlign = android.graphics.Paint.Align.RIGHT
+        labelPaint.textAlign = android.graphics.Paint.Align.LEFT
         nc.drawText(
             "BYD Seal avg (${SEAL_AVERAGE_KWH.toInt()} kWh)",
-            w - padR - 4f,
+            padL + 6f,
             sealY - 6f,
             labelPaint
         )
@@ -400,11 +400,19 @@ private fun ConsumptionCanvas(
             drawCircle(pointFill,   7f, Offset(x, y))
             drawCircle(Color.White, 3f, Offset(x, y))
 
-            // Value label always shown above every dot
+            // Value label always shown above every dot.
+            // First point: LEFT-align so it doesn't bleed into Y-axis labels.
+            // All others: CENTER.
+            // Vertical: draw above dot normally, but if that would go above padT
+            // (i.e. top of chart), draw below the dot instead.
             labelPaint.color     = textColor.toArgb()
             labelPaint.textSize  = 20f
-            labelPaint.textAlign = android.graphics.Paint.Align.CENTER
-            nc.drawText("%.1f".format(d.avgKwhPer100km), x, y - 20f, labelPaint)
+            labelPaint.textAlign = if (i == 0)
+                android.graphics.Paint.Align.LEFT
+            else
+                android.graphics.Paint.Align.CENTER
+            val labelY = if (y - 20f < padT + 20f) y + 32f else y - 20f
+            nc.drawText("%.1f".format(d.avgKwhPer100km), x, labelY, labelPaint)
         }
     }
 }

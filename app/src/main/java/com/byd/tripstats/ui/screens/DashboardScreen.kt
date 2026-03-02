@@ -450,10 +450,11 @@ fun EnergyFlowDiagram(
 
     val rotation by animateFloatAsState(
         targetValue = if (rangeFlipped) 180f else 0f,
-        animationSpec = tween(
-            durationMillis = 500,
-            easing = FastOutSlowInEasing  // Starts fast, decelerates smoothly
-        ),
+        animationSpec = spring(
+        // Low stiffness + medium damping creates a "heavy" fluid feel
+        dampingRatio = Spring.DampingRatioLowBouncy, 
+        stiffness = Spring.StiffnessLow
+    ),
         label = "range_flip"
     )
     val isRangeBack = rotation > 90f
