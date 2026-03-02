@@ -89,9 +89,8 @@ fun AppNavigation(
 
         composable(Screen.LocalBackup.route) {
             LocalBackupScreen(
-                onNavigateBack = {
-                    navController.popBackStack()
-                }
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

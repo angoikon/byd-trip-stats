@@ -21,7 +21,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import com.byd.tripstats.ui.components.RangeDataPoint
+import com.byd.tripstats.data.local.BydStatsDatabase
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -203,11 +206,11 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
                 val tripStat = statsById[trip.id]
                 val regenPct = if (
-                    tripStat?.totalRegenEnergy != null &&
+                    tripStat != null &&
                     trip.energyConsumed != null &&
                     trip.energyConsumed!! > 0
                 ) {
-                    val regen = tripStat.totalRegenEnergy!!
+                    val regen = tripStat.totalRegenEnergy
                     (regen / (trip.energyConsumed!! + regen)) * 100.0
                 } else null
 
@@ -221,7 +224,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         )
 
     // Auto trip detection
-    private val _autoTripDetection = MutableStateFlow(true)
+    private val _autoTripDetection = MutableStateFlow(false)
     val autoTripDetection: StateFlow<Boolean> = _autoTripDetection.asStateFlow()
 
     // Live range projection data points for the current trip (in-memory, not persisted)
@@ -464,5 +467,33 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 tripRepository.processTelemetry(telemetry)
             }
         }
+    }
+
+    // ── Database management ───────────────────────────────────────────────────
+
+    /**
+     * Creates a timestamped backup of the SQLite file.
+     * Safe to call from a Settings "Back up trips" button.
+     * Returns the backup file path string, or null if it failed.
+     */
+    suspend fun backupDatabase(): File? = withContext(Dispatchers.IO) {
+        BydStatsDatabase.backupDatabase(getApplication())
+    }
+
+    /**
+     * Lists all available backups sorted newest-first.
+     * Use to show a "Last backed up: X" summary in Settings.
+     */
+    fun listDatabaseBackups(): List<File> {
+        return BydStatsDatabase.listBackups(getApplication())
+    }
+
+    /**
+     * Wipes all trip data. Should always be preceded by backupDatabase().
+     * Call from a Settings "Reset all data" button with a confirmation dialog.
+     * After this, all StateFlows will emit empty/null — UI reacts automatically.
+     */
+    fun resetDatabase() {
+        BydStatsDatabase.resetDatabase(getApplication())
     }
 }

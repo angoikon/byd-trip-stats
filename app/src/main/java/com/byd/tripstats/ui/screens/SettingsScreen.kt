@@ -31,6 +31,7 @@ import android.app.ActivityManager
 import android.content.Context
 import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.DeleteForever
 import kotlinx.coroutines.delay
 
 private const val DEBUG_CONNECTIONS = false  // Set to true for connection debugging during development
@@ -375,6 +376,16 @@ fun SettingsScreen(
                 fontWeight = FontWeight.Bold
             )
 
+            // Show last backup timestamp so user knows at a glance whether they're protected
+            val lastBackup = remember { viewModel.listDatabaseBackups().firstOrNull() }
+            val lastBackupLabel = remember(lastBackup) {
+                if (lastBackup == null) "Never backed up"
+                else {
+                    val sdf = java.text.SimpleDateFormat("dd MMM yyyy, HH:mm", java.util.Locale.getDefault())
+                    "Last backup: ${sdf.format(java.util.Date(lastBackup.lastModified()))}"
+                }
+            }
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -385,7 +396,7 @@ fun SettingsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
                         text = "Database Backup & Restore",
@@ -396,6 +407,16 @@ fun SettingsScreen(
                         text = "Save the full trip database to local storage, or restore from a previous backup.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = lastBackupLabel,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Medium,
+                        color = if (lastBackup == null)
+                            MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
+                        else
+                            MaterialTheme.colorScheme.primary
                     )
                 }
             }

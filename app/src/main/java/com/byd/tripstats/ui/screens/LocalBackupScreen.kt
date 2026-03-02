@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import com.byd.tripstats.data.backup.LocalBackupManager
 import com.byd.tripstats.data.backup.TelegramManager
 import com.byd.tripstats.ui.theme.*
+import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -31,6 +32,7 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LocalBackupScreen(
+    viewModel: DashboardViewModel,
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -50,6 +52,11 @@ fun LocalBackupScreen(
     val telegramBusy = telegramState is TelegramManager.TelegramState.InProgress
 
     var restoreTarget by remember { mutableStateOf<LocalBackupManager.BackupFile?>(null) }
+    // Hoisted out of item{} so it survives LazyColumn recycling
+    var tokenInput by remember { mutableStateOf("") }
+    LaunchedEffect(telegramConfig) {
+        tokenInput = telegramConfig?.token ?: ""
+    }
 
     // ── Auto-dismiss Success banners after 4 seconds ──────────────────────────
     LaunchedEffect(backupState) {
@@ -178,8 +185,6 @@ fun LocalBackupScreen(
 
             // ── Telegram backup ───────────────────────────────────────────────
             item {
-                var tokenInput by remember { mutableStateOf(telegramConfig?.token ?: "") }
-
                 SectionCard(title = "Telegram Backup", icon = Icons.Filled.Send) {
                     // Telegram status banner
                     when (val s = telegramState) {
@@ -461,7 +466,87 @@ fun LocalBackupScreen(
                     }
                 }
             }
-        }
+
+            // ── Danger Zone ───────────────────────────────────────────────────
+            item {
+                var showResetConfirm by remember { mutableStateOf(false) }
+                val resetBusy = backupState is LocalBackupManager.BackupState.InProgress
+
+                SectionCard(title = "Danger Zone", icon = Icons.Filled.DeleteForever) {
+                    Text(
+                        text = "Permanently delete all trips, data points and statistics. " +
+                               "A local backup is created automatically before the reset.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = BydErrorRed
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Button(
+                        onClick  = { showResetConfirm = true },
+                        enabled  = !resetBusy && !isBusy,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors   = ButtonDefaults.buttonColors(
+                            containerColor = BydErrorRed
+                        )
+                    ) {
+                        Icon(Icons.Filled.DeleteForever, null, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Reset all trip data")
+                    }
+
+                    if (showResetConfirm) {
+                        AlertDialog(
+                            onDismissRequest = { showResetConfirm = false },
+                            icon = {
+                                Icon(Icons.Filled.Warning, null,
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(32.dp))
+                            },
+                            title = { Text("Reset all trip data?", fontWeight = FontWeight.Bold) },
+                            text  = {
+                                Text(
+                                    "This will permanently delete all trips and statistics.\n\n" +
+                                    "A backup will be saved to Downloads automatically before the reset. " +
+                                    "The app will close and reopen.",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            },
+                            confirmButton = {
+                                Button(
+                                    onClick = {
+                                        showResetConfirm = false
+                                        scope.launch {
+                                            // 1. Back up first via LocalBackupManager so it
+                                            //    appears in the Downloads list like any other backup
+                                            manager.backupDatabase()
+                                            // 2. Wipe via ViewModel (closes Room, deletes file)
+                                            viewModel.resetDatabase()
+                                            // 3. Restart app so Room recreates the schema cleanly
+                                            val launchIntent = context.packageManager
+                                                .getLaunchIntentForPackage(context.packageName)
+                                                ?.apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK) }
+                                            if (launchIntent != null) {
+                                                val pending = PendingIntent.getActivity(
+                                                    context, 1, launchIntent,
+                                                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                                                )
+                                                val alarm = context.getSystemService(android.app.AlarmManager::class.java)
+                                                alarm.set(android.app.AlarmManager.RTC, System.currentTimeMillis() + 800L, pending)
+                                            }
+                                            android.os.Process.killProcess(android.os.Process.myPid())
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = BydErrorRed
+                                    )
+                                ) { Text("Yes, reset everything") }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showResetConfirm = false }) { Text("Cancel") }
+                            }
+                        )
+                    }
+                }
+            }
     }
 
     // ── Restore confirm dialog ────────────────────────────────────────────────
@@ -477,6 +562,7 @@ fun LocalBackupScreen(
             onDismiss = { restoreTarget = null }
         )
     }
+}
 }
 
 // ── Composable helpers ────────────────────────────────────────────────────────
@@ -553,7 +639,10 @@ private fun BackupListItem(
     onRestore: () -> Unit
 ) {
     val dateFmt = remember { SimpleDateFormat("dd MMM yyyy  HH:mm", Locale.getDefault()) }
-    val sizeMb  = "%.1f MB".format(backup.sizeBytes / 1_048_576.0)
+    val sizeMb  = if (backup.sizeBytes < 1_048_576L)
+        "%.0f KB".format(backup.sizeBytes / 1_024.0)
+    else
+        "%.1f MB".format(backup.sizeBytes / 1_048_576.0)
     val date    = remember(backup.dateModified) { dateFmt.format(Date(backup.dateModified)) }
 
     Row(
