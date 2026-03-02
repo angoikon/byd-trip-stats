@@ -24,8 +24,8 @@ data class TripEntity(
     val maxRegenPower: Double = 0.0,
     val avgBatteryTemp: Double = 0.0,
     val minSoc: Double = 100.0,
-    val maxBatteryCellTemp: Int = 0,
-    val minBatteryCellTemp: Int = 0
+    val maxBatteryCellTemp: Int = Int.MIN_VALUE,   // sentinel: unset until first reading
+    val minBatteryCellTemp: Int = Int.MAX_VALUE    // sentinel: unset until first reading
 ) {
     // Computed properties
     val duration: Long?
@@ -67,10 +67,32 @@ data class TripDataPointEntity(
     val gear: String,
     val isRegenerating: Boolean,
     val engineSpeedFront: Int = 0,
-    val engineSpeedRear: Int = 0
+    val engineSpeedRear: Int = 0,
+    // BMS-reported remaining range — stored so TripDetailScreen can replay the
+    // range projection chart from historical data, not just from live telemetry.
+    val electricDrivingRangeKm: Int = 0,
+    // Tyre pressures (PSI) — stored per data point so pressure history is
+    // available for future analysis. 0.0 means not reported by this firmware.
+    val tyrePressureLF: Double = 0.0,
+    val tyrePressureRF: Double = 0.0,
+    val tyrePressureLR: Double = 0.0,
+    val tyrePressureRR: Double = 0.0,
+    // Battery health & voltage snapshot per data point
+    val soh: Int = 0,
+    val batteryTotalVoltage: Int = 0,
+    val battery12vVoltage: Double = 0.0,
+    val batteryCellVoltageMax: Double = 0.0,
+    val batteryCellVoltageMin: Double = 0.0,
+    // Escape hatch for future MQTT keys that don't yet have a first-class column.
+    // Store as JSON: {"tyrePressureFL": 2.5, "hvacPower": 1.2, ...}
+    // When a new key becomes stable/important, promote it to its own column
+    // via a migration and remove it from this blob. This way new telemetry
+    // fields are captured immediately without a schema change.
+    val rawJson: String = "{}"
 )
 
 @Entity(tableName = "trip_stats")
+@TypeConverters(Converters::class)
 data class TripStatsEntity(
     @PrimaryKey
     val tripId: Long,
@@ -83,10 +105,8 @@ data class TripStatsEntity(
     val maxSpeed: Double,
     val maxPower: Double,
     val maxRegenPower: Double,
-    @TypeConverters(Converters::class)
-    val powerDistribution: Map<String, Double>, // Power ranges histogram
-    @TypeConverters(Converters::class)
-    val speedDistribution: Map<String, Double>, // Speed ranges histogram
+    val powerDistribution: Map<String, Double>,
+    val speedDistribution: Map<String, Double>,
     val startLatitude: Double,
     val startLongitude: Double,
     val endLatitude: Double,

@@ -41,7 +41,7 @@ interface TripDao {
     @Query("SELECT SUM(endOdometer - startOdometer) FROM trips WHERE endOdometer IS NOT NULL")
     suspend fun getTotalDistance(): Double?
     
-    @Query("SELECT AVG((endTotalDischarge - startTotalDischarge) / (endOdometer - startOdometer) * 100) FROM trips WHERE endOdometer IS NOT NULL AND endTotalDischarge IS NOT NULL AND (endOdometer - startOdometer) > 0")
+    @Query("SELECT AVG((endTotalDischarge - startTotalDischarge) / (endOdometer - startOdometer) * 100) FROM trips WHERE endOdometer IS NOT NULL AND endTotalDischarge IS NOT NULL AND (endOdometer - startOdometer) >= 0.5")
     suspend fun getAverageEfficiency(): Double?
 }
 

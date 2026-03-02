@@ -24,6 +24,9 @@ class TripRepository private constructor(context: Context) {
     private val dataPointDao = database.tripDataPointDao()
     private val statsDao = database.tripStatsDao()
 
+    // Persistent settings — survives reboots/process death
+    private val prefs = context.getSharedPreferences("trip_prefs", Context.MODE_PRIVATE)
+
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     // Latest telemetry for UI
@@ -41,8 +44,11 @@ class TripRepository private constructor(context: Context) {
     private var tripStarted = false
     private var firstTelemetryReceived = false
 
-    // Configuration
-    private var autoTripDetection = true
+    // In-memory cache of the current trip row — avoids a DB read on every telemetry point
+    private var cachedCurrentTrip: TripEntity? = null
+
+    // Configuration — persisted; default false so first-run is manual mode
+    private var autoTripDetection = prefs.getBoolean(PREF_AUTO_TRIP, false)
     private var lastTelemetryTime = 0L
     
     // Stale trip timeout: If last data point is older than this, trip is stale
@@ -239,6 +245,7 @@ class TripRepository private constructor(context: Context) {
         val tripId = tripDao.insertTrip(trip)
         _currentTripId.value = tripId
         tripStarted = true
+        cachedCurrentTrip = trip.copy(id = tripId)  // seed cache immediately
 
         // Broadcast state change so UI updates
         _isInTrip.value = true
@@ -345,6 +352,7 @@ class TripRepository private constructor(context: Context) {
             }
 
             // Update state AFTER successful database update
+            cachedCurrentTrip = null
             _currentTripId.value = null
             tripStarted = false
             _isInTrip.value = false
@@ -356,11 +364,11 @@ class TripRepository private constructor(context: Context) {
             e.printStackTrace()
             
             // Still update state to prevent stuck trips
-            // Better to have inconsistent state than a stuck trip
+            cachedCurrentTrip = null
             _currentTripId.value = null
             tripStarted = false
             _isInTrip.value = false
-            
+
             Log.e(TAG, "Emergency state reset after error")
         }
     }
@@ -380,6 +388,7 @@ class TripRepository private constructor(context: Context) {
         tripDao.updateTrip(updatedTrip)
         calculateTripStats(trip.id)
 
+        cachedCurrentTrip = null
         _currentTripId.value = null
         tripStarted = false
 
@@ -393,6 +402,17 @@ class TripRepository private constructor(context: Context) {
         val dataPoint = TripDataPointEntity(
             tripId = tripId,
             timestamp = System.currentTimeMillis(),
+            electricDrivingRangeKm = telemetry.electricDrivingRangeKm,
+            tyrePressureLF = telemetry.tyrePressureLF,
+            tyrePressureRF = telemetry.tyrePressureRF,
+            tyrePressureLR = telemetry.tyrePressureLR,
+            tyrePressureRR = telemetry.tyrePressureRR,
+            soh = telemetry.soh,
+            batteryTotalVoltage = telemetry.batteryTotalVoltage,
+            battery12vVoltage = telemetry.battery12vVoltage,
+            batteryCellVoltageMax = telemetry.batteryCellVoltageMax,
+            batteryCellVoltageMin = telemetry.batteryCellVoltageMin,
+            rawJson = telemetry.toRawJson(),
             latitude = telemetry.locationLatitude,
             longitude = telemetry.locationLongitude,
             altitude = telemetry.locationAltitude,
@@ -412,7 +432,9 @@ class TripRepository private constructor(context: Context) {
     }
 
     private suspend fun updateTripMetrics(tripId: Long, telemetry: VehicleTelemetry) {
-        val trip = tripDao.getTripById(tripId) ?: return
+        // Use in-memory cache to avoid a DB read on every ~1 Hz telemetry point.
+        // The cache is seeded at trip start and kept in sync here on every write.
+        val trip = cachedCurrentTrip ?: tripDao.getTripById(tripId) ?: return
 
         val updated = trip.copy(
             maxSpeed = maxOf(trip.maxSpeed, telemetry.speed),
@@ -427,6 +449,7 @@ class TripRepository private constructor(context: Context) {
             minBatteryCellTemp = minOf(trip.minBatteryCellTemp, telemetry.batteryCellTempMin)
         )
 
+        cachedCurrentTrip = updated   // keep cache in sync before the DB write
         tripDao.updateTrip(updated)
     }
 
@@ -443,7 +466,15 @@ class TripRepository private constructor(context: Context) {
 
         // Calculate regeneration energy
         val regenPoints = dataPoints.filter { it.isRegenerating }
-        val totalRegenEnergy = regenPoints.sumOf { abs(it.power) } / 3600.0 // Approximate kWh
+        // Time-weighted regen energy: kWh = Σ(kW × Δt_seconds / 3600)
+        // Zip consecutive regen points and use the time gap between them.
+        // This is correct regardless of MQTT sampling rate.
+        val totalRegenEnergy = if (regenPoints.size < 2) 0.0 else {
+            regenPoints.zipWithNext { a, b ->
+                val dtHours = (b.timestamp - a.timestamp) / 3_600_000.0
+                abs(a.power) * dtHours
+            }.sum()
+        }
 
         // Calculate averages
         val avgSpeed = if (dataPoints.isNotEmpty()) {
@@ -453,22 +484,24 @@ class TripRepository private constructor(context: Context) {
         val avgEfficiency = trip.efficiency ?: 0.0
 
         // Power distribution (histogram)
+        // Half-open ranges [low, high) so boundary values are counted exactly once.
         val powerRanges = mapOf(
-            "regen_strong" to dataPoints.count { it.power < -30 }.toDouble(),
-            "regen_medium" to dataPoints.count { it.power in -30.0..-10.0 }.toDouble(),
-            "regen_light" to dataPoints.count { it.power in -10.0..0.0 }.toDouble(),
-            "cruising" to dataPoints.count { it.power in 0.0..20.0 }.toDouble(),
-            "acceleration" to dataPoints.count { it.power in 20.0..50.0 }.toDouble(),
-            "hard_acceleration" to dataPoints.count { it.power > 50 }.toDouble()
+            "regen_strong"     to dataPoints.count { it.power < -30.0 }.toDouble(),
+            "regen_medium"     to dataPoints.count { it.power >= -30.0 && it.power < -10.0 }.toDouble(),
+            "regen_light"      to dataPoints.count { it.power >= -10.0 && it.power < 0.0 }.toDouble(),
+            "cruising"         to dataPoints.count { it.power >= 0.0 && it.power < 20.0 }.toDouble(),
+            "acceleration"     to dataPoints.count { it.power >= 20.0 && it.power < 50.0 }.toDouble(),
+            "hard_acceleration" to dataPoints.count { it.power >= 50.0 }.toDouble()
         )
 
         // Speed distribution (histogram)
+        // Half-open ranges [low, high) so boundary values are counted exactly once.
         val speedRanges = mapOf(
-            "0-30" to dataPoints.count { it.speed in 0.0..30.0 }.toDouble(),
-            "30-70" to dataPoints.count { it.speed in 30.0..70.0 }.toDouble(),
-            "70-100" to dataPoints.count { it.speed in 70.0..100.0 }.toDouble(),
-            "100-130" to dataPoints.count { it.speed in 100.0..130.0 }.toDouble(),
-            "130+" to dataPoints.count { it.speed > 130 }.toDouble()
+            "0-30"   to dataPoints.count { it.speed >= 0.0 && it.speed < 30.0 }.toDouble(),
+            "30-70"  to dataPoints.count { it.speed >= 30.0 && it.speed < 70.0 }.toDouble(),
+            "70-100" to dataPoints.count { it.speed >= 70.0 && it.speed < 100.0 }.toDouble(),
+            "100-130" to dataPoints.count { it.speed >= 100.0 && it.speed < 130.0 }.toDouble(),
+            "130+"   to dataPoints.count { it.speed >= 130.0 }.toDouble()
         )
 
         val firstPoint = dataPoints.first()
@@ -581,11 +614,14 @@ class TripRepository private constructor(context: Context) {
 
     fun setAutoTripDetection(enabled: Boolean) {
         autoTripDetection = enabled
+        prefs.edit().putBoolean(PREF_AUTO_TRIP, enabled).apply()
     }
 
     fun isAutoTripDetectionEnabled(): Boolean = autoTripDetection
 
     companion object {
+        private const val PREF_AUTO_TRIP = "auto_trip_detection"
+
         @Volatile
         private var INSTANCE: TripRepository? = null
 
