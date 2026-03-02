@@ -450,9 +450,9 @@ fun EnergyFlowDiagram(
 
     val rotation by animateFloatAsState(
         targetValue = if (rangeFlipped) 180f else 0f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioNoBouncy,
-            stiffness = Spring.StiffnessMediumLow
+        animationSpec = tween(
+            durationMillis = 500,
+            easing = FastOutSlowInEasing  // Starts fast, decelerates smoothly
         ),
         label = "range_flip"
     )
@@ -475,7 +475,7 @@ fun EnergyFlowDiagram(
             .clipToBounds()
             .graphicsLayer {
                 rotationY = rotation
-                cameraDistance = 12f * density
+                cameraDistance = 24f * density
             },
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
@@ -488,6 +488,7 @@ fun EnergyFlowDiagram(
                     .fillMaxSize()
                     .graphicsLayer {
                         rotationY = 180f
+                        cameraDistance = 24f * density
                         compositingStrategy = CompositingStrategy.Offscreen
                     }
                     .clickable { rangeFlipped = false }
