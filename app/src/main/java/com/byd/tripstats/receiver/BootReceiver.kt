@@ -95,8 +95,8 @@ class BootReceiver : BroadcastReceiver() {
                                 Log.i(TAG, "✓ Embedded broker service started")
 
                                 // Wait for broker to initialize before starting client
-                                Log.i(TAG, "  Waiting 2s for broker initialization...")
-                                delay(2000)
+                                Log.i(TAG, "  Waiting 1s for broker initialization...")
+                                delay(1000)
 
                             } catch (e: Exception) {
                                 Log.e(TAG, "❌ Failed to start embedded broker", e)
