@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
+import com.byd.tripstats.data.local.BydStatsDatabase
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -326,7 +327,8 @@ class LocalBackupManager private constructor(private val context: Context) {
         val walFile = File(dbFile.path + "-wal")
         val shmFile = File(dbFile.path + "-shm")
 
-        // Copy to temp first — supports both content:// (MediaStore) and file:// (private dir)
+        // Step 1: Copy backup to a temp file first.
+        // We do this before touching Room so we know the source read works.
         val tempFile = File(context.cacheDir, "restore_temp.db")
         val inputStream = if (uri.scheme == "file") {
             FileInputStream(File(uri.path!!))
@@ -337,14 +339,20 @@ class LocalBackupManager private constructor(private val context: Context) {
             FileOutputStream(tempFile).use { out -> input.copyTo(out) }
         }
 
-        // Remove WAL files — they'd conflict with the restored DB
+        // Step 2: Close Room's connection BEFORE touching the database files.
+        // Room auto-checkpoints WAL on close, so closing is sufficient — no need
+        // to run a separate PRAGMA wal_checkpoint afterwards.
+        BydStatsDatabase.closeDatabase()
+        Log.i(TAG, "Room connection closed before restore")
+
+        // Step 3: Delete WAL/SHM files now that Room has flushed and closed them.
+        // If we deleted them while Room was open the process would crash on next access.
         walFile.delete()
         shmFile.delete()
+        Log.i(TAG, "WAL/SHM files cleared")
 
-        // Ensure parent directory exists
+        // Step 4: Replace the live database file with the backup.
         dbFile.parentFile?.mkdirs()
-
-        // Replace the live database
         tempFile.copyTo(dbFile, overwrite = true)
         tempFile.delete()
 
@@ -352,10 +360,14 @@ class LocalBackupManager private constructor(private val context: Context) {
             "Database restored successfully.\nThe app will close and reopen automatically.",
             restartRequired = true
         )
-        Log.i(TAG, "Restore complete, process will be killed")
+        Log.i(TAG, "Restore complete — process will restart")
     }
 
-    /** Flush SQLite WAL to ensure the .db file is self-consistent before copying. */
+    /**
+     * Flush SQLite WAL before a BACKUP (not restore — Room.close() handles that).
+     * Opens a raw connection only when Room may still be running; safe for backup
+     * since it is read-only from Room's perspective.
+     */
     private fun flushWal(dbFile: File) {
         try {
             val db = android.database.sqlite.SQLiteDatabase.openDatabase(
