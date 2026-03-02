@@ -510,8 +510,11 @@ fun TripOverviewTab(
 
                 DetailRow("Max Power", "${trip.maxPower.toInt()} kW")
                 DetailRow("Max Regen", "${abs(trip.maxRegenPower).toInt()} kW")
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp),color = (MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)))
+
                 DetailRow("Energy consumed", trip.energyConsumed?.let { String.format("%.2f kWh", it) } ?: "-")
                 DetailRow("Energy regenerated", stats?.totalRegenEnergy?.let { String.format("%.2f kWh", it) } ?: "-")
+                DetailRow("Gross energy consumed", String.format("%.2f kWh", (trip.energyConsumed ?: 0.0) + (stats?.totalRegenEnergy ?: 0.0)))
                 DetailRow("Regeneration efficiency", regenEfficiencyPct?.let { String.format("%.2f%%", it) } ?: "-")
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp),color = (MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)))
 
