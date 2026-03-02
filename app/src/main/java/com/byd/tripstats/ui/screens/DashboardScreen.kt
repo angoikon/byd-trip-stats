@@ -568,7 +568,7 @@ fun EnergyFlowDiagram(
                             isFront = true,
                             modifier = Modifier
                                 .align(Alignment.TopStart)
-                                .offset(x = (-10).dp, y = (-10).dp)
+                                .offset(x = (-13).dp, y = (-10).dp)
                         )
 
                         // Right Front (recommended: 2.6 bar)
@@ -577,7 +577,7 @@ fun EnergyFlowDiagram(
                             isFront = true,
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
-                                .offset(x = 10.dp, y = (-10).dp)
+                                .offset(x = 15.dp, y = (-10).dp)
                         )
 
                         // Left Rear (recommended: 2.9 bar)
@@ -586,7 +586,7 @@ fun EnergyFlowDiagram(
                             isFront = false,
                             modifier = Modifier
                                 .align(Alignment.BottomStart)
-                                .offset(x = (-10).dp, y = (10).dp)
+                                .offset(x = (-13).dp, y = (10).dp)
                         )
 
                         // Right Rear (recommended: 2.9 bar)
@@ -595,7 +595,7 @@ fun EnergyFlowDiagram(
                             isFront = false,
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
-                                .offset(x = 10.dp, y = (10).dp)
+                                .offset(x = 15.dp, y = (10).dp)
                         )
                     }
 
