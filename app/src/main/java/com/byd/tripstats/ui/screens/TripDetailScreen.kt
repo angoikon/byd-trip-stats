@@ -211,7 +211,7 @@ fun ExportDialog(
                 ) {
                     Icon(Icons.Filled.TableChart, null, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Save as CSV (Downloads)")
+                    Text("Save as CSV")
                 }
 
                 OutlinedButton(
@@ -223,7 +223,7 @@ fun ExportDialog(
                 ) {
                     Icon(Icons.Filled.DataObject, null, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Save as JSON (Downloads)")
+                    Text("Save as JSON")
                 }
             }
         },
