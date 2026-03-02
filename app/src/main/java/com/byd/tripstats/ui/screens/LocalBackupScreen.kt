@@ -3,9 +3,11 @@ package com.byd.tripstats.ui.screens
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Intent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -264,9 +266,19 @@ fun LocalBackupScreen(
                             Switch(
                                 checked         = telegramAuto,
                                 onCheckedChange = { telegramManager.setAutoEnabled(it) },
+                                thumbContent = if (!telegramAuto) {
+                                    {
+                                        // Donut effect: white outer thumb + coloured inner circle
+                                        Box(
+                                            modifier = Modifier
+                                                .size(12.dp)
+                                                .background(ToggleUncheckedTrack, CircleShape)
+                                        )
+                                    }
+                                } else null,
                                 colors = SwitchDefaults.colors(
-                                    uncheckedTrackColor = ToggleUncheckedTrack,
-                                    uncheckedThumbColor = ToggleUncheckedThumb,
+                                    uncheckedThumbColor  = Color.White,
+                                    uncheckedTrackColor  = ToggleUncheckedTrack,
                                     uncheckedBorderColor = ToggleUncheckedTrack
                                 )
                             )

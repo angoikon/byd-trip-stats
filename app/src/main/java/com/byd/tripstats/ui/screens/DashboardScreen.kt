@@ -956,9 +956,19 @@ fun TripControls(
                     Switch(
                         checked = autoTripDetection,
                         onCheckedChange = { onToggleAutoDetection() },
+                        thumbContent = if (!autoTripDetection) {
+                            {
+                                // Donut effect: white outer thumb + coloured inner circle
+                                Box(
+                                    modifier = Modifier
+                                        .size(12.dp)
+                                        .background(ToggleUncheckedTrack, CircleShape)
+                                )
+                            }
+                        } else null,
                         colors = SwitchDefaults.colors(
-                            uncheckedTrackColor = ToggleUncheckedTrack,
-                            uncheckedThumbColor = ToggleUncheckedThumb,
+                            uncheckedThumbColor  = Color.White,
+                            uncheckedTrackColor  = ToggleUncheckedTrack,
                             uncheckedBorderColor = ToggleUncheckedTrack
                         )
                     )

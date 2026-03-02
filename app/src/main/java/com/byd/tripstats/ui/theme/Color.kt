@@ -59,8 +59,8 @@ val BydElectricAzure        = Color(0xFF2196F3)   // segment buttons, toggles, a
 val BydElectricAzureDeep    = Color(0xFF0D2340)   // container / deep variant
 // #f4f8fc
 // ── Toggle / Switch unchecked state ──────────────────────────────────────────
-val ToggleUncheckedTrack  = Color(0xFF9E9E9E)   // medium grey track when off
-val ToggleUncheckedThumb  = Color(0xFFE0E0E0)   // light grey thumb when off
+val ToggleUncheckedTrack  = Color(0xFFBDBDBD)   // light silver track when off — matches native BYD toggle
+val ToggleUncheckedThumb  = Color(0xFFF5F5F5)   // near-white thumb when off — matches native BYD toggle
 
 // ── Semantic / functional colors (shared across themes) ───────────────────────
 
