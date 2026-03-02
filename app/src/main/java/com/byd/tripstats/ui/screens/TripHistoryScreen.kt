@@ -272,8 +272,9 @@ fun TripItem(
             containerColor = when {
                 isActive && selectionMode -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                 isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                else -> MaterialTheme.colorScheme.surfaceVariant
-            }
+                else -> MaterialTheme.colorScheme.primaryContainer
+            },
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
     ) {
         Column(
@@ -566,7 +567,7 @@ fun TripMetricChip(
     modifier: Modifier = Modifier,
     iconTint: Color = MaterialTheme.colorScheme.primary
 ) {
-    val bgColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.05f)
+    val bgColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.03f)
     val shape = MaterialTheme.shapes.small
     Box(
         modifier = modifier

@@ -14,9 +14,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
-import com.byd.tripstats.ui.theme.AccelerationOrange
-import com.byd.tripstats.ui.theme.BydElectricAzure
-import com.byd.tripstats.ui.theme.RegenGreen
+import com.byd.tripstats.ui.theme.*
 
 /**
  * Power distribution bar chart.
@@ -57,7 +55,7 @@ fun PowerDistributionChart(
         RegenGreen.copy(alpha = 0.7f), // light regen — slightly muted
         BydElectricAzure,          // cruising
         AccelerationOrange.copy(alpha = 0.75f), // acceleration
-        AccelerationOrange,     // hard acceleration
+        BydErrorRed,     // hard acceleration
     )
 
     val values = remember(powerDistribution) {

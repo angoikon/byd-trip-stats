@@ -477,7 +477,8 @@ fun TripOverviewTab(
                     shape = MaterialTheme.shapes.medium
                 ),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
             )
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
@@ -707,7 +708,8 @@ private fun ClickableChartCard(
                 shape = MaterialTheme.shapes.medium
             ),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -762,7 +764,7 @@ private fun FullscreenChartDialog(
     ) {
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.surface
+            color = MaterialTheme.colorScheme.primaryContainer
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 // Header with close button
@@ -876,7 +878,8 @@ fun MetricCard(
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
     ) {
         Column(

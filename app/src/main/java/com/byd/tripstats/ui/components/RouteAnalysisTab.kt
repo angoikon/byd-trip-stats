@@ -83,7 +83,8 @@ private fun WaypointsCard(dataPoints: List<TripDataPointEntity>) {
                 )
         ,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -171,7 +172,8 @@ private fun RouteSegmentsCard(dataPoints: List<TripDataPointEntity>) {
                 )
         ,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -196,13 +198,7 @@ private fun RouteSegmentsCard(dataPoints: List<TripDataPointEntity>) {
                 )
 
                 if (index < segments.size - 1) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                            HorizontalDivider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f)
-        )
+                    Spacer(modifier = Modifier.height(8.dp)) 
                 }
             }
         }
@@ -220,7 +216,7 @@ private fun SegmentItem(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = MaterialTheme.colorScheme.surface,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.03f),
                 shape = RoundedCornerShape(8.dp)
             )
             .padding(12.dp),
@@ -271,7 +267,8 @@ private fun EnergyHeatmapCard(dataPoints: List<TripDataPointEntity>) {
             )    
         ,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -359,7 +356,8 @@ private fun TripTimelineCard(dataPoints: List<TripDataPointEntity>) {
             )    
         ,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {

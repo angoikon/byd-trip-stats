@@ -22,7 +22,7 @@ val BydArcticBlue        = Color(0xFF79B5CE)
 val BydArcticBlueDeep    = Color(0xFF1A3A4A)
 
 // Backgrounds — the "Midnight Navy" gradient layers the car uses
-val BydStatusBar         = Color(0xFF060B12)   // top bar / deepest layer
+val BydStatusBar         = Color(0xFF060B12)   // top bar / deepest layer #060B12
 val BydBackground        = Color(0xFF08101A)   // ← was #0D1525 (add more blue)
 val BydSurface           = Color(0xFF182540)   // ← was #1A2840 (too grey/charcoal)
 val BydSurfaceVariant    = Color(0xFF1D2E4C)   // ← was #1F3050 (too grey)
