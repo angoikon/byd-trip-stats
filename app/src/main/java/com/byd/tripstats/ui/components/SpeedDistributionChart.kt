@@ -16,11 +16,11 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import com.byd.tripstats.ui.theme.AccelerationOrange
-import com.byd.tripstats.ui.theme.BydCobaltBlue
+import com.byd.tripstats.ui.theme.BydElectricAzure
 
 /**
  * Speed distribution bar chart.
- * Bars graduate from BydCobaltBlue (low speed) → AccelerationOrange (high speed),
+ * Bars graduate from BydElectricAzure (low speed) → AccelerationOrange (high speed),
  * giving an immediate visual sense of speed intensity across buckets.
  */
 @Composable
@@ -111,7 +111,7 @@ fun SpeedDistributionChart(
 
         buckets.forEachIndexed { i, bucket ->
             val t = i / (n - 1).toFloat()
-            val barColor = lerp(BydCobaltBlue, AccelerationOrange, t)
+            val barColor = lerp(BydElectricAzure, AccelerationOrange, t)
 
             val barX = padL + gapW * (i + 1) + barW * i
             val barTop = yOf(values[i])

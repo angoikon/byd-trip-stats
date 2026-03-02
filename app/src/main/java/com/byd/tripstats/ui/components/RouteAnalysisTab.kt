@@ -1,6 +1,7 @@
 package com.byd.tripstats.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -73,7 +74,14 @@ private fun WaypointsCard(dataPoints: List<TripDataPointEntity>) {
     val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
     
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+                    shape = MaterialTheme.shapes.medium
+                )
+        ,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
@@ -154,7 +162,14 @@ private fun RouteSegmentsCard(dataPoints: List<TripDataPointEntity>) {
     val segments = dataPoints.chunked(segmentSize).take(5)
     
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+                    shape = MaterialTheme.shapes.medium
+                )
+        ,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
@@ -182,6 +197,12 @@ private fun RouteSegmentsCard(dataPoints: List<TripDataPointEntity>) {
 
                 if (index < segments.size - 1) {
                     Spacer(modifier = Modifier.height(8.dp))
+                            HorizontalDivider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f)
+        )
                 }
             }
         }
@@ -241,7 +262,14 @@ private fun EnergyHeatmapCard(dataPoints: List<TripDataPointEntity>) {
     }.sortedByDescending { it.second }.take(5)
     
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+                    shape = MaterialTheme.shapes.medium
+            )    
+        ,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
@@ -322,7 +350,14 @@ private fun TripTimelineCard(dataPoints: List<TripDataPointEntity>) {
     ))
     
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+                    shape = MaterialTheme.shapes.medium
+            )    
+        ,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         )

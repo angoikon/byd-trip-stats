@@ -263,7 +263,12 @@ fun LocalBackupScreen(
                             )
                             Switch(
                                 checked         = telegramAuto,
-                                onCheckedChange = { telegramManager.setAutoEnabled(it) }
+                                onCheckedChange = { telegramManager.setAutoEnabled(it) },
+                                colors = SwitchDefaults.colors(
+                                    uncheckedTrackColor = ToggleUncheckedTrack,
+                                    uncheckedThumbColor = ToggleUncheckedThumb,
+                                    uncheckedBorderColor = ToggleUncheckedTrack
+                                )
                             )
                         }
 

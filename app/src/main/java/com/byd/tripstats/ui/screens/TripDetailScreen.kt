@@ -1,6 +1,7 @@
 package com.byd.tripstats.ui.screens
 
 import android.util.Log
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -406,7 +407,13 @@ fun TripOverviewTab(
                 unit = "km",
                 icon = Icons.Filled.Route,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+                        shape = MaterialTheme.shapes.medium
+                    )
             )
             
             MetricCard(
@@ -415,7 +422,13 @@ fun TripOverviewTab(
                 unit = "",
                 icon = Icons.Filled.Timer,
                 color = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+                        shape = MaterialTheme.shapes.medium
+                    )
             )
         }
         
@@ -424,27 +437,45 @@ fun TripOverviewTab(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             MetricCard(
-                title = "Energy Used",
+                title = "Energy consumed",
                 value = String.format("%.2f", trip.energyConsumed ?: 0.0),
                 unit = "kWh",
                 icon = Icons.Filled.BatteryChargingFull,
                 color = AccelerationOrange,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+                        shape = MaterialTheme.shapes.medium
+                    )
             )
             
             MetricCard(
-                title = "Consumption",
+                title = "Average consumption",
                 value = String.format("%.2f", trip.efficiency ?: 0.0),
                 unit = "kWh / 100km",
                 icon = Icons.Filled.Eco,
                 color = RegenGreen,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+                        shape = MaterialTheme.shapes.medium
+                    )
             )
         }
         
         // Detailed stats
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+                    shape = MaterialTheme.shapes.medium
+                ),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant
             )
@@ -460,28 +491,28 @@ fun TripOverviewTab(
 
                 DetailRow("Start Time", formatTimestamp(trip.startTime))
                 DetailRow("End Time", trip.endTime?.let { formatTimestamp(it) } ?: "In Progress")
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp),color = (MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)))
 
                 DetailRow("Initial mileage", "${String.format("%.1f", trip.startOdometer)} km")
                 DetailRow("Final mileage", trip.endOdometer?.let { "${String.format("%.1f", it)} km" } ?: "-")
                 DetailRow("Trip distance", trip.distance?.let { "${String.format("%.1f", it)} km" } ?: "-")
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp),color = (MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)))
 
                 DetailRow("Start SOC", "${String.format("%.1f", trip.startSoc)}%")
                 DetailRow("End SOC", trip.endSoc?.let { "${String.format("%.1f", it)}%" } ?: "-")
                 DetailRow("SOC Change", trip.socDelta?.let { "${String.format("%.1f", it)}%" } ?: "-")
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp),color = (MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)))
 
                 DetailRow("Max Speed", "${trip.maxSpeed.toInt()} km/h")
                 DetailRow("Avg Speed", stats?.avgSpeed?.toInt()?.toString()?.plus(" km/h") ?: "-")
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp),color = (MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)))
 
                 DetailRow("Max Power", "${trip.maxPower.toInt()} kW")
                 DetailRow("Max Regen", "${abs(trip.maxRegenPower).toInt()} kW")
                 DetailRow("Energy consumed", trip.energyConsumed?.let { String.format("%.2f kWh", it) } ?: "-")
                 DetailRow("Energy regenerated", stats?.totalRegenEnergy?.let { String.format("%.2f kWh", it) } ?: "-")
                 DetailRow("Regeneration efficiency", regenEfficiencyPct?.let { String.format("%.2f%%", it) } ?: "-")
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp),color = (MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)))
 
                 DetailRow("Battery Temp Range", "${trip.minBatteryCellTemp}°C - ${trip.maxBatteryCellTemp}°C")
                 DetailRow("Avg Battery Temp", "${trip.avgBatteryTemp.toInt()}°C")
@@ -582,7 +613,12 @@ fun TripChartsTab(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp),
+                    .height(300.dp)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+                        shape = MaterialTheme.shapes.medium
+                    ),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
@@ -612,7 +648,12 @@ fun TripChartsTab(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp),
+                    .height(300.dp)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+                        shape = MaterialTheme.shapes.medium
+                    ),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
@@ -659,7 +700,12 @@ private fun ClickableChartCard(
         modifier = Modifier
             .fillMaxWidth()
             .height(300.dp)
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+                shape = MaterialTheme.shapes.medium
+            ),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
@@ -816,16 +862,6 @@ fun TripRouteTab(
             modifier = Modifier.fillMaxSize()
         )
     }
-}
-
-@Composable
-fun TripAnalysisTab(
-    dataPoints: List<com.byd.tripstats.data.local.entity.TripDataPointEntity>
-) {
-    RouteAnalysisTab(
-        dataPoints = dataPoints,
-        modifier = Modifier.fillMaxSize()
-    )
 }
 
 @Composable

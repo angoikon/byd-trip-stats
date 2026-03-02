@@ -22,7 +22,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
-import com.byd.tripstats.ui.theme.BydCobaltBlue
+import com.byd.tripstats.ui.theme.BydElectricAzure
 import com.byd.tripstats.ui.theme.RegenGreen
 import kotlin.math.roundToInt
 
@@ -39,7 +39,7 @@ fun PowerChart(
         return
     }
 
-    val accelColor = BydCobaltBlue
+    val accelColor = BydElectricAzure
     val regenColor = RegenGreen
     val textColor  = MaterialTheme.colorScheme.onSurface
     val gridColor  = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)

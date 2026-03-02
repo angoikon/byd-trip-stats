@@ -26,7 +26,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
-import com.byd.tripstats.ui.theme.BydCobaltBlue
+import com.byd.tripstats.ui.theme.BydElectricAzure
 import com.byd.tripstats.ui.theme.BydEcoTeal
 import kotlin.math.roundToInt
 
@@ -43,7 +43,7 @@ fun MotorRpmChart(
         return
     }
 
-    val rearColor  = BydCobaltBlue
+    val rearColor  = BydElectricAzure
     val frontColor = BydEcoTeal
     val textColor  = MaterialTheme.colorScheme.onSurface
     val gridColor  = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)

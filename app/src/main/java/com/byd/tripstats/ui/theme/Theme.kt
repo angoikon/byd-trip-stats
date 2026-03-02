@@ -17,17 +17,17 @@ import androidx.core.view.WindowCompat
 private val DarkColorScheme = darkColorScheme(
     // Primary — COBALT blue for buttons, selected states (NOT cyan)
     // The car uses the same cobalt in both light and dark themes for interactive chrome
-    primary                = BydCobaltBlue,        // ← was BydElectricBlue (#00CCFF)
+    primary                = BydElectricAzure,        // ← was BydElectricBlue (#00CCFF)
     onPrimary              = Color.White,           // ← was BydOnElectricBlue (near-black)
-    primaryContainer       = BydCobaltBlueDeep,    // ← was BydElectricBlueDeep
+    primaryContainer       = BydElectricAzureDeep,    // ← was BydElectricBlueDeep
     onPrimaryContainer     = BydElectricBlue,      // cyan label on deep container — ok
 
     // Secondary — Electric Cyan (#00CCFF): toggles, sliders, energy indicators
     // This is what the toggle track in the photo actually is
-    secondary              = BydElectricBlue,      // ← was BydEcoTeal
-    onSecondary            = BydOnElectricBlue,
-    secondaryContainer     = BydElectricBlueDeep,
-    onSecondaryContainer   = BydElectricBlue,
+    secondary              = BydEcoTeal,      // ← was BydEcoTeal
+    onSecondary            = BydOnEcoTeal,
+    secondaryContainer     = BydEcoTealDeep,
+    onSecondaryContainer   = BydEcoTeal,
 
     // Tertiary — Eco Teal: regen / energy-specific accents only
     tertiary               = BydEcoTeal,
@@ -49,7 +49,7 @@ private val DarkColorScheme = darkColorScheme(
 
     inverseSurface         = BydTextPrimary,
     inverseOnSurface       = BydBackground,
-    inversePrimary         = BydCobaltBlue,        // ← was BydOceanBlue (now unified)
+    inversePrimary         = BydElectricAzure,        // ← was BydOceanBlue (now unified)
 
     error                  = BydErrorRed,
     onError                = Color.White,

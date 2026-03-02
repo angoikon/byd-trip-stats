@@ -45,6 +45,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.StrokeCap
 
@@ -80,9 +81,9 @@ fun DashboardScreen(
                     if (SHOW_MOCK_BUTTON) {
                         IconButton(onClick = { viewModel.startMockDrive() }) {
                             Icon(
-                                imageVector = Icons.Filled.Analytics,
+                                imageVector = Icons.Filled.PlayArrow,
                                 contentDescription = "Mock Drive",
-                                tint = MaterialTheme.colorScheme.secondary,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(28.dp)
                             )
                         }
@@ -95,6 +96,7 @@ fun DashboardScreen(
                         Icon(
                             imageVector = Icons.Filled.History,
                             contentDescription = "Trip History",
+                            tint = BatteryBlue,
                             modifier = Modifier.size(28.dp)
                         )
                     }
@@ -250,6 +252,7 @@ fun DashboardScreen(
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun DashboardContent(
+    modifier: Modifier = Modifier,
     telemetry: VehicleTelemetry,
     isInTrip: Boolean,
     autoTripDetection: Boolean,
@@ -260,9 +263,10 @@ fun DashboardContent(
     onStartTrip: () -> Unit,
     onEndTrip: () -> Unit,
     onToggleAutoDetection: () -> Unit,
-    widthSizeClass: WindowWidthSizeClass = WindowWidthSizeClass.Expanded,
-    modifier: Modifier = Modifier
+    widthSizeClass: WindowWidthSizeClass = WindowWidthSizeClass.Expanded
 ) {
+    val styledModifier = modifier.background(MaterialTheme.colorScheme.background)
+
     // Expanded  (>840 dp) → full landscape: side-by-side 75/25 — original layout
     // Medium    (600–840dp) → split-screen landscape or large tablet portrait: side-by-side 65/35
     // Compact   (<600 dp) → split-screen portrait or phone portrait: stacked vertically
@@ -271,7 +275,7 @@ fun DashboardContent(
             // ── Compact: stacked portrait / narrow split-screen ───────────────
             // Stats moves above the energy diagram so nothing gets squeezed.
             Column(
-                modifier = modifier
+                modifier = styledModifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
                     .padding(12.dp),
@@ -292,7 +296,12 @@ fun DashboardContent(
                     yearlyEfficiency = yearlyEfficiency,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 320.dp)   // guaranteed minimum height in portrait
+                        .heightIn(min = 320.dp)
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                            shape = RoundedCornerShape(12.dp)
+                        )
                 )
 
                 // Trip controls
@@ -313,7 +322,7 @@ fun DashboardContent(
             // Same side-by-side structure but slightly wider right column so
             // stats don't get too cramped at 600–840 dp.
             Row(
-                modifier = modifier
+                modifier = styledModifier
                     .fillMaxSize()
                     .padding(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -334,6 +343,11 @@ fun DashboardContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outlineVariant,
+                                shape = RoundedCornerShape(12.dp)
+                            )
                     )
                     TripControls(
                         telemetry = telemetry,
@@ -363,7 +377,7 @@ fun DashboardContent(
         else -> {
             // ── Expanded: full landscape — original 75/25 layout ─────────────
             Row(
-                modifier = modifier
+                modifier = styledModifier
                     .fillMaxSize()
                     .padding(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -383,6 +397,11 @@ fun DashboardContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
+                                .border(
+                                    width = 1.dp,
+                                    color = MaterialTheme.colorScheme.outlineVariant,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
                     )
                     TripControls(
                         telemetry = telemetry,
@@ -587,11 +606,16 @@ fun EnergyFlowDiagram(
                             .width(120.dp)
                             .fillMaxHeight()
                             .background(
-                                MaterialTheme.colorScheme.surface.copy(alpha = 0.55f),
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f),
                                 RoundedCornerShape(8.dp)
                             )
                             .clickable { consumptionExpanded = true }
-                            .padding(4.dp),
+                            .padding(4.dp)
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outlineVariant,
+                                shape = RoundedCornerShape(8.dp)
+                            ),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
@@ -647,7 +671,7 @@ fun EnergyFlowDiagram(
                         label = "Speed",
                         value = "${telemetry.speed.toInt()}",
                         unit = "km/h",
-                        color = MaterialTheme.colorScheme.primary
+                        color = BydEcoTealDim
                     )
                     PowerMetric(
                         label = "Battery",
@@ -746,9 +770,11 @@ fun EnergyFlowCanvas(
             // Create animated flow effect
             val dashPhase = flowOffset * 30f
             
-            // Endpoints sit flush with each icon's facing edge so the line
-            // visually "docks" into the icon rather than stopping short.
-            val batteryEdge = Offset(batteryX + batterySize / 2f, batteryY)
+            // batteryEdge is derived from the actual LiquidFillBattery icon geometry:
+            //   padding(start = 16.dp), width = 60.dp → right edge at 76.dp from left.
+            // This ensures the flow line docks flush into the battery icon regardless
+            // of canvas width, instead of relying on the guessed batteryX proportion.
+            val batteryEdge = Offset((16.dp + 60.dp).toPx(), batteryY)
             val motorEdge   = Offset(motorX   - motorSize   / 2f, motorY)
 
             if (isRegenerating) {
@@ -883,7 +909,12 @@ fun TripControls(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier,
+        modifier = modifier
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant,
+                shape = RoundedCornerShape(12.dp)
+            ),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
@@ -921,7 +952,12 @@ fun TripControls(
                     Spacer(modifier = Modifier.width(12.dp))
                     Switch(
                         checked = autoTripDetection,
-                        onCheckedChange = { onToggleAutoDetection() }
+                        onCheckedChange = { onToggleAutoDetection() },
+                        colors = SwitchDefaults.colors(
+                            uncheckedTrackColor = ToggleUncheckedTrack,
+                            uncheckedThumbColor = ToggleUncheckedThumb,
+                            uncheckedBorderColor = ToggleUncheckedTrack
+                        )
                     )
                 }
             }
@@ -941,7 +977,7 @@ fun TripControls(
                             containerColor = if (isInTrip) 
                                 BydErrorRed 
                             else 
-                                BydCobaltBlue
+                                BydElectricAzure
                         )
                     ) {
                         Icon(
@@ -1145,7 +1181,13 @@ fun StatCard(
     subtitle: String? = null,
 ) {
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant,
+                shape = RoundedCornerShape(12.dp)
+            ),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         )

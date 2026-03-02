@@ -15,14 +15,14 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import com.byd.tripstats.ui.theme.AccelerationOrange
-import com.byd.tripstats.ui.theme.BydCobaltBlue
+import com.byd.tripstats.ui.theme.BydElectricAzure
 import com.byd.tripstats.ui.theme.RegenGreen
 
 /**
  * Power distribution bar chart.
  * Color per bucket communicates the driving mode at a glance:
  *   Regen buckets → RegenGreen (recovering energy)
- *   Cruising       → BydCobaltBlue (neutral efficient state)
+ *   Cruising       → BydElectricAzure (neutral efficient state)
  *   Accel buckets → AccelerationOrange (consuming energy)
  */
 @Composable
@@ -47,7 +47,7 @@ fun PowerDistributionChart(
             Bucket("regen_light",        "Light regen"),
             Bucket("cruising",           "Cruise"),
             Bucket("acceleration",       "Accel"),
-            Bucket("hard_acceleration",  "Stole it 🚀"),
+            Bucket("hard_acceleration",  "Drive like you stole it"),
         )
     }
 
@@ -55,7 +55,7 @@ fun PowerDistributionChart(
         RegenGreen,             // strong regen
         RegenGreen,             // medium regen
         RegenGreen.copy(alpha = 0.7f), // light regen — slightly muted
-        BydCobaltBlue,          // cruising
+        BydElectricAzure,          // cruising
         AccelerationOrange.copy(alpha = 0.75f), // acceleration
         AccelerationOrange,     // hard acceleration
     )

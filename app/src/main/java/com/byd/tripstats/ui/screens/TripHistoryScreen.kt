@@ -368,6 +368,7 @@ fun TripItem(
                 )
                 TripMetricChip(
                     icon = Icons.Filled.Timer,
+                    iconTint = MaterialTheme.colorScheme.secondary,
                     label = "Duration",
                     value = if (trip.endTime == null) "Ongoing…"
                             else formatDuration(trip.duration ?: 0),
@@ -431,6 +432,7 @@ fun TripItem(
                 TripMetricChip(
                     icon = Icons.Filled.TrendingUp,
                     label = "Max Speed",
+                    iconTint = BydErrorRed,
                     value = "${trip.maxSpeed.toInt()} km/h",
                     modifier = Modifier.weight(1f)
                 )
@@ -564,7 +566,7 @@ fun TripMetricChip(
     modifier: Modifier = Modifier,
     iconTint: Color = MaterialTheme.colorScheme.primary
 ) {
-    val bgColor = MaterialTheme.colorScheme.surface
+    val bgColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.05f)
     val shape = MaterialTheme.shapes.small
     Box(
         modifier = modifier

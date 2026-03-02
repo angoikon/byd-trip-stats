@@ -2,6 +2,7 @@ package com.byd.tripstats.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,10 +16,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -40,25 +43,44 @@ fun WeeklyEnergyThumbnail(
     data: List<DashboardViewModel.DailyEfficiency>,
     modifier: Modifier = Modifier
 ) {
-    val lineColor = BydCobaltBlue.copy(alpha = 0.8f)
+    val lineColor = BydElectricAzure.copy(alpha = 0.8f)
 
-    Canvas(modifier = modifier) {
+    // clipToBounds prevents the line from bleeding outside the parent container
+    Canvas(modifier = modifier.clipToBounds()) {
         if (data.size < 2) return@Canvas
 
-        val w = size.width
-        val h = size.height
+        val padding = 8.dp.toPx() // Keep the line away from the actual edges
+        val w = size.width - (padding * 2)
+        val h = size.height - (padding * 2)
+        
         val values = data.map { it.avgKwhPer100km.toFloat() }
-        val vMin = values.min() * 0.9f
-        val vMax = values.max() * 1.1f
+        val vMin = values.minOrNull() ?: 0f
+        val vMax = values.maxOrNull() ?: 1f
+        val range = (vMax - vMin).coerceAtLeast(1f) // Avoid div by zero
 
-        fun xOf(i: Int) = i / (data.size - 1).toFloat() * w
-        fun yOf(v: Float) = h - (v - vMin) / (vMax - vMin) * h
+        // Offset the entire drawing by the padding
+        translate(left = padding, top = padding) {
+            fun xOf(i: Int) = i / (data.size - 1).toFloat() * w
+            fun yOf(v: Float) = h - (v - vMin) / range * h
 
-        val path = Path().apply {
-            moveTo(xOf(0), yOf(values[0]))
-            values.drop(1).forEachIndexed { i, v -> lineTo(xOf(i + 1), yOf(v)) }
+            val path = Path().apply {
+                val firstY = yOf(values[0])
+                moveTo(xOf(0), firstY)
+                values.indices.drop(1).forEach { i ->
+                    lineTo(xOf(i), yOf(values[i]))
+                }
+            }
+            
+            drawPath(
+                path = path,
+                color = lineColor,
+                style = Stroke(
+                    width = 2.5f, 
+                    cap = StrokeCap.Round, 
+                    join = StrokeJoin.Round
+                )
+            )
         }
-        drawPath(path, lineColor, style = Stroke(width = 2.5f, cap = StrokeCap.Round, join = StrokeJoin.Round))
     }
 }
 
@@ -172,7 +194,7 @@ fun ConsumptionChartExpanded(
                 Icon(
                     imageVector = Icons.Filled.Close,
                     contentDescription = "Close chart",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = BydErrorRedLight,
                     modifier = Modifier.size(22.dp)
                 )
             }
@@ -219,9 +241,9 @@ private fun ConsumptionCanvas(
     modifier: Modifier = Modifier
 ) {
     // Resolve all theme-aware colors before entering DrawScope
-    val lineColor     = BydCobaltBlue.copy(alpha = 0.9f)
-    val pointFill     = BydCobaltBlue
-    val pointGlow     = BydCobaltBlue.copy(alpha = 0.20f)
+    val lineColor     = BydElectricAzure.copy(alpha = 0.9f)
+    val pointFill     = BydElectricAzure
+    val pointGlow     = BydElectricAzure.copy(alpha = 0.20f)
     val sealLineColor = AccelerationOrange.copy(alpha = 0.9f)
     val textColor     = MaterialTheme.colorScheme.onSurface
     val gridColor     = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)
@@ -350,7 +372,7 @@ private fun ConsumptionCanvas(
                 close()
             }
             drawPath(areaPath, Brush.verticalGradient(
-                colors = listOf(BydCobaltBlue.copy(alpha = 0.35f), BydCobaltBlue.copy(alpha = 0f)),
+                colors = listOf(BydElectricAzure.copy(alpha = 0.35f), BydElectricAzure.copy(alpha = 0f)),
                 startY = yOf(values.max()), endY = padT + chartH
             ))
         }
