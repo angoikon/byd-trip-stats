@@ -21,7 +21,7 @@ import java.io.IOException
         TripDataPointEntity::class,
         TripStatsEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -38,6 +38,7 @@ abstract class BydStatsDatabase : RoomDatabase() {
         private var INSTANCE: BydStatsDatabase? = null
 
         // ── Migration template — copy this block for every future schema change ──
+        // Baseline: version = 2. Next schema change → version = 3, Migration(2, 3)
         // private val MIGRATION_X_Y = object : Migration(X, Y) {
         //     override fun migrate(database: SupportSQLiteDatabase) {
         //         // Example: new MQTT field becomes a first-class column
