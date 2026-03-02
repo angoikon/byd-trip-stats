@@ -392,6 +392,13 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
+    /** Deletes multiple trips in a single DB transaction. */
+    fun deleteTrips(tripIds: List<Long>) {
+        viewModelScope.launch {
+            tripRepository.deleteTrips(tripIds)
+        }
+    }
+
     fun mergeTrips(tripIds: List<Long>) {
         viewModelScope.launch {
             tripRepository.mergeTrips(tripIds)

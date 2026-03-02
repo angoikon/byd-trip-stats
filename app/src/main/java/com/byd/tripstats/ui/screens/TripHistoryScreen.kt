@@ -221,7 +221,7 @@ fun TripHistoryScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        selectedTrips.forEach { viewModel.deleteTrip(it) }
+                        viewModel.deleteTrips(selectedTrips.toList())
                         showDeleteSelectedDialog = false
                         selectionMode = false
                         selectedTrips = setOf()
@@ -634,6 +634,12 @@ fun InfoChip(
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
+// Hoisted to top-level so DateTimeFormatter and ZoneId are created once,
+// not on every call during LazyColumn scroll recomposition.
+private val TIMESTAMP_FORMATTER = java.time.format.DateTimeFormatter
+    .ofPattern("MMM dd, yyyy HH:mm")
+    .withZone(java.time.ZoneId.systemDefault())
+
 private fun formatDuration(milliseconds: Long): String {
     val seconds = milliseconds / 1000
     val hours = seconds / 3600
@@ -642,10 +648,5 @@ private fun formatDuration(milliseconds: Long): String {
     else String.format("%dm", minutes)
 }
 
-private fun formatTimestamp(timestamp: Long): String {
-    val instant = java.time.Instant.ofEpochMilli(timestamp)
-    val formatter = java.time.format.DateTimeFormatter
-        .ofPattern("MMM dd, yyyy HH:mm")
-        .withZone(java.time.ZoneId.systemDefault())
-    return formatter.format(instant)
-}
+private fun formatTimestamp(timestamp: Long): String =
+    TIMESTAMP_FORMATTER.format(java.time.Instant.ofEpochMilli(timestamp))

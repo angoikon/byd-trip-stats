@@ -606,6 +606,10 @@ class TripRepository private constructor(context: Context) {
 
     fun getAllTripStats(): Flow<List<TripStatsEntity>> = statsDao.getAllTripStats()
 
+    suspend fun deleteTrips(tripIds: List<Long>) {
+        tripIds.forEach { deleteTrip(it) }
+    }
+
     suspend fun deleteTrip(tripId: Long) {
         tripDao.deleteTripById(tripId)
         dataPointDao.deleteDataPointsForTrip(tripId)
