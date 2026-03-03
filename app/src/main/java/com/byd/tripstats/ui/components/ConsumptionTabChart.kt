@@ -29,8 +29,9 @@ import androidx.compose.ui.unit.sp
 import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 
-// BYD Seal average consumption reference line
-private const val SEAL_AVERAGE_KWH = 19.0
+// BYD Seal average consumption reference line in kWh / 100km — used in ConsumptionCanvas as a horizontal benchmark line.
+// Taken by ev-database.org real-world tests, not the official WLTP rating. See https://ev-database.org/car/2002/BYD-SEAL-825-kWh-AWD-Excellence for details.
+private const val SEAL_AVERAGE_KWH = 18.5
 
 // ── Thumbnail ─────────────────────────────────────────────────────────────────
 

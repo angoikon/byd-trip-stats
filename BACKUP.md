@@ -131,13 +131,13 @@ adb -s 192.168.x.x:5555 shell run-as com.byd.tripstats \
 2. Push the backup file from your PC to your car's download folder:
 ```bash
 adb -s 192.168.x.x:5555 push byd_stats_backup_2026-02-28_10-30.db \
-    /sdcard/Download/BydTripStats/
+    /sdcard/Download/BydTripStats/byd_stats_backup_2026-02-28_10-30.db
 ```
 
 3. Copy the file while using run-as (overrides permissions):
 ```bash
 adb -s 192.168.x.x:5555 shell run-as com.byd.tripstats \
-    cp /sdcard/Download/BydTripStats/byd_stats_backup_2026-02-28_10-30.db /data/data/com.byd.tripstats/files/db_backup/
+    cp /sdcard/Download/BydTripStats/byd_stats_backup_2026-02-28_10-30.db /data/data/com.byd.tripstats/files/db_backup/byd_stats_backup_2026-02-28_10-30.db
 ```
 
 4. Open the app → **Settings** → **Backup & Restore**

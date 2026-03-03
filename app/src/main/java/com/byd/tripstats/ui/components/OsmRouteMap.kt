@@ -13,6 +13,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
@@ -114,9 +115,18 @@ fun OsmRouteMap(
                 overlays.add(startMarker)
                 overlays.add(endMarker)
                 
-                // Auto-zoom to fit entire route
+                // Set center and zoom immediately so the map opens
+                // directly on the route instead of starting at world view.
+                val lats = validPoints.map { it.latitude }
+                val lons = validPoints.map { it.longitude }
+                val bounds = BoundingBox(
+                    lats.max(), lons.max(), lats.min(), lons.min()
+                )
+                controller.setCenter(bounds.centerWithDateLine)
+                // Pre-zoom to a reasonable level instantly; fine-tune after layout
+                controller.setZoom(14.0)
                 post {
-                    zoomToBoundingBox(routeLine.bounds, true, 50)
+                    zoomToBoundingBox(bounds, true, 80)
                 }
             }
         },
