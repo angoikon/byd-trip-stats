@@ -40,7 +40,6 @@ BYD Trip Stats is a free, open-source Android app that automatically tracks and 
 ### 🎯 Smart Trip Detection
 - **Automatic trip start/stop** based on gear position (D/R/P)
 - **Manual override** option for full control
-- **Intelligent merging** for interrupted trips
 - **Stale trip handling** after car sleep/restart
 
 ### 📊 Real-Time Dashboard

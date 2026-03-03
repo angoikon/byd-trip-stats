@@ -399,12 +399,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun mergeTrips(tripIds: List<Long>) {
-        viewModelScope.launch {
-            tripRepository.mergeTrips(tripIds)
-        }
-    }
-
     fun getTripDetails(tripId: Long): StateFlow<TripEntity?> {
         // Seed with the already-loaded list entry so the details screen never
         // renders a null frame — eliminates the one-frame flicker on navigation.

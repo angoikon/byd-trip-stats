@@ -35,7 +35,6 @@ fun TripHistoryScreen(
     val displayMetrics by viewModel.tripDisplayMetrics.collectAsState()
     var selectedTrips by remember { mutableStateOf(setOf<Long>()) }
     var selectionMode by remember { mutableStateOf(false) }
-    var showMergeDialog by remember { mutableStateOf(false) }
     var showDeleteSelectedDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -50,7 +49,7 @@ fun TripHistoryScreen(
                         if (!selectionMode) {
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                "(Touch trip for analytics, long-press to select for merging / multiple deletion)",
+                                "(Touch trip for analytics, long-press to select for multiple deletion)",
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -83,28 +82,11 @@ fun TripHistoryScreen(
                                 modifier = Modifier.size(24.dp)
                             )
                         }
-                        if (selectedTrips.size >= 2) {
-                            IconButton(onClick = { showMergeDialog = true }) {
-                                Icon(
-                                    Icons.Filled.MergeType,
-                                    contentDescription = "Merge trips",
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(4.dp))
-                        }
                         Text(
                             text = "${selectedTrips.size} selected",
                             modifier = Modifier.padding(end = 16.dp),
                             style = MaterialTheme.typography.titleMedium
                         )
-                    } else if (!selectionMode) {
-                        TextButton(onClick = {
-                            selectionMode = true
-                            selectedTrips = setOf()
-                        }) {
-                            Text("Merge trips")
-                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -184,33 +166,6 @@ fun TripHistoryScreen(
                 }
             }
         }
-    }
-
-    if (showMergeDialog) {
-        AlertDialog(
-            onDismissRequest = { showMergeDialog = false },
-            title = { Text("Merge ${selectedTrips.size} Trips?") },
-            text = {
-                Text("This will combine the selected trips into a single trip. All data points will be preserved. This action cannot be undone.")
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.mergeTrips(selectedTrips.toList())
-                        showMergeDialog = false
-                        selectionMode = false
-                        selectedTrips = setOf()
-                    }
-                ) {
-                    Text("Merge")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showMergeDialog = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
     }
 
     if (showDeleteSelectedDialog) {
