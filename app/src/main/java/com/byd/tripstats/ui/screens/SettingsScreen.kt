@@ -140,7 +140,7 @@ fun SettingsScreen(
                                 append("  ")
                                 withStyle(SpanStyle(
                                     fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                                    color = MaterialTheme.colorScheme.primary
+                                    color = RegenGreen
                                 )) {
                                     append("(Running on port 1883)")
                                 }
@@ -179,8 +179,7 @@ fun SettingsScreen(
                                 append("  ")
                                 withStyle(SpanStyle(
                                     fontSize = MaterialTheme.typography.bodyLarge.fontSize,
-                                    color = if (mqttConnected) MaterialTheme.colorScheme.primary
-                                            else MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = if (mqttConnected) RegenGreen else BydErrorRed
                                 )) {
                                     append(if (mqttConnected) "Connected" else "Disconnected")
                                 }

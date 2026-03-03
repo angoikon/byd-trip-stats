@@ -637,7 +637,7 @@ fun TripChartsTab(
                     Text(
                         text = "Samples over time",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     PowerDistributionChart(
@@ -673,7 +673,7 @@ fun TripChartsTab(
                     Text(
                         text = "Samples over time",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     SpeedDistributionChart(

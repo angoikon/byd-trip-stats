@@ -15,8 +15,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
-import com.byd.tripstats.ui.theme.AccelerationOrange
-import com.byd.tripstats.ui.theme.BydElectricAzure
+import com.byd.tripstats.ui.theme.*
 
 /**
  * Speed distribution bar chart.
