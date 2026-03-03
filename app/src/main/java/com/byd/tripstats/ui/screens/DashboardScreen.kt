@@ -450,11 +450,10 @@ fun EnergyFlowDiagram(
 
     val rotation by animateFloatAsState(
         targetValue = if (rangeFlipped) 180f else 0f,
-        animationSpec = spring(
-        // Low stiffness + medium damping creates a "heavy" fluid feel
-        dampingRatio = Spring.DampingRatioLowBouncy, 
-        stiffness = Spring.StiffnessLow
-    ),
+        animationSpec = tween(
+            durationMillis = 650, // Slightly longer duration adds visual "weight"
+            easing = FastOutSlowInEasing 
+        ),
         label = "range_flip"
     )
     val isRangeBack = rotation > 90f
@@ -476,7 +475,7 @@ fun EnergyFlowDiagram(
             .clipToBounds()
             .graphicsLayer {
                 rotationY = rotation
-                cameraDistance = 24f * density
+                cameraDistance = 48f * density
             },
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
@@ -489,7 +488,7 @@ fun EnergyFlowDiagram(
                     .fillMaxSize()
                     .graphicsLayer {
                         rotationY = 180f
-                        cameraDistance = 24f * density
+                        cameraDistance = 48f * density
                         compositingStrategy = CompositingStrategy.Offscreen
                     }
                     .clickable { rangeFlipped = false }
@@ -977,20 +976,76 @@ fun TripControls(
             
             Spacer(modifier = Modifier.height(8.dp))
             
+            // ── Unified layout: gear status (left, fills) + action button (right, fixed) ──
+            // Fixed height so toggling auto on/off doesn't shift the gear/status text vertically
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                if (!autoTripDetection) {
-                    // Manual mode - show start/stop button
+                // Left: gear circle + status text
+                val gearColor = when (telemetry.gear) {
+                    "R"  -> AccelerationOrange
+                    else -> if (isInTrip) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant
+                }
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    color = Color.Transparent,
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            modifier = Modifier.size(28.dp),
+                            shape = CircleShape,
+                            color = gearColor
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Text(
+                                    text = telemetry.gear,
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = when {
+                                isInTrip && telemetry.speed > 0.5              -> "Driving"
+                                isInTrip && telemetry.gear in listOf("D", "R") -> "Ready"
+                                isInTrip                                        -> "Trip in Progress"
+                                telemetry.gear == "D"                           -> "Ready to Drive"
+                                telemetry.gear == "R"                           -> "Reverse"
+                                telemetry.gear == "P"                           -> "Waiting for Trip..."
+                                telemetry.gear == "N"                           -> "Neutral"
+                                else                                            -> "Waiting for Trip..."
+                            },
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+
+                // Right: fixed-width action button — same size regardless of manual/auto
+                if (isInTrip || !autoTripDetection) {
                     Button(
                         onClick = if (isInTrip) onEndTrip else onStartTrip,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .width(120.dp)
+                            .fillMaxHeight(),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isInTrip) 
-                                BydErrorRed 
-                            else 
-                                BydElectricAzure
+                            containerColor = if (isInTrip) BydErrorRed else BydElectricAzure
                         )
                     ) {
                         Icon(
@@ -998,124 +1053,11 @@ fun TripControls(
                             contentDescription = null,
                             modifier = Modifier.size(16.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = if (isInTrip) "End Trip" else "Record Trip",
-                            fontSize = 18.sp
+                            text = if (isInTrip) "Stop" else "Record",
+                            fontSize = 15.sp
                         )
-                    }
-                } else {
-                    // Auto mode - show status
-                    if (isInTrip) {
-                        // Show stop button for ongoing auto trip
-                        Row(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(IntrinsicSize.Min),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Surface(
-                                modifier = Modifier.weight(1f),
-                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                shape = RoundedCornerShape(8.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(4.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    // Show actual gear letter in a circle
-                                    Surface(
-                                        modifier = Modifier.size(28.dp),
-                                        shape = CircleShape,
-                                        color = when {
-                                            telemetry.gear == "D" -> MaterialTheme.colorScheme.primary
-                                            telemetry.gear == "R" -> AccelerationOrange // Orange for reverse
-                                            else -> MaterialTheme.colorScheme.primary
-                                        }
-                                    ) {
-                                        Box(
-                                            contentAlignment = Alignment.Center,
-                                            modifier = Modifier.fillMaxSize()
-                                        ) {
-                                            Text(
-                                                text = telemetry.gear,
-                                                style = MaterialTheme.typography.titleSmall,
-                                                fontWeight = FontWeight.Bold,
-                                                color = Color.White
-                                            )
-                                        }
-                                    }
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Text(
-                                        text = when {
-                                            telemetry.speed > 0.5 -> "Driving"  // Actually moving
-                                            telemetry.gear in listOf("D", "R") -> "Ready"  // In gear but not moving
-                                            else -> "Trip in Progress"
-                                        },
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                }
-                            }
-                            
-                            // Stop button for auto trip
-                            Button(
-                                onClick = onEndTrip,
-                                modifier = Modifier.fillMaxHeight(),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.error
-                                )
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Stop,
-                                    contentDescription = "Stop trip",
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
-                    } else {
-                        // Not in trip - show waiting status
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            color = Color.Transparent,
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                // Show actual gear letter in a circle
-                                Surface(
-                                    modifier = Modifier.size(28.dp),
-                                    shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                ) {
-                                    Box(
-                                        contentAlignment = Alignment.Center,
-                                        modifier = Modifier.fillMaxSize()
-                                    ) {
-                                        Text(
-                                            text = telemetry.gear,
-                                            style = MaterialTheme.typography.titleSmall,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.White
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Text(
-                                    text = when (telemetry.gear) {
-                                        "D" -> "Ready to Drive"
-                                        "R" -> "Reverse"
-                                        "P" -> "Waiting for Trip..."
-                                        "N" -> "Neutral"
-                                        else -> "Waiting for Trip..."
-                                    },
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
-                        }
                     }
                 }
             }

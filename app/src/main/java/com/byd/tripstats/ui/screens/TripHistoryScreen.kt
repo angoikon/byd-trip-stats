@@ -120,7 +120,7 @@ fun TripHistoryScreen(
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(horizontalAlignment = Alignment.Start) {
                     Icon(
                         imageVector = Icons.Filled.DirectionsCar,
                         contentDescription = null,
@@ -302,7 +302,7 @@ fun TripItem(
                 Row(
                     modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Start
                 ) {
                     Text(
                         text = if (trip.endTime != null)
@@ -504,10 +504,10 @@ fun ScoreChip(
             .background(bgColor)
             .padding(horizontal = 8.dp, vertical = 6.dp)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(horizontalAlignment = Alignment.Start) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Start
             ) {
                 Icon(
                     imageVector = Icons.Filled.Star,
@@ -526,7 +526,7 @@ fun ScoreChip(
             if (score != null) {
                 Row(
                     verticalAlignment = Alignment.Bottom,
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Start
                 ) {
                     Text(
                         text = "$score",
@@ -636,12 +636,6 @@ fun InfoChip(
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-// Hoisted to top-level so DateTimeFormatter and ZoneId are created once,
-// not on every call during LazyColumn scroll recomposition.
-private val TIMESTAMP_FORMATTER = java.time.format.DateTimeFormatter
-    .ofPattern("MMM dd, yyyy HH:mm")
-    .withZone(java.time.ZoneId.systemDefault())
-
 private fun formatDuration(milliseconds: Long): String {
     val seconds = milliseconds / 1000
     val hours = seconds / 3600
@@ -650,5 +644,10 @@ private fun formatDuration(milliseconds: Long): String {
     else String.format("%dm", minutes)
 }
 
-private fun formatTimestamp(timestamp: Long): String =
-    TIMESTAMP_FORMATTER.format(java.time.Instant.ofEpochMilli(timestamp))
+private fun formatTimestamp(timestamp: Long): String {
+    val instant = java.time.Instant.ofEpochMilli(timestamp)
+    val formatter = java.time.format.DateTimeFormatter
+        .ofPattern("MMM dd, yyyy HH:mm")
+        .withZone(java.time.ZoneId.systemDefault())
+    return formatter.format(instant)
+}

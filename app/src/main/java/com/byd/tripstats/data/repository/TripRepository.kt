@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -53,8 +54,26 @@ class TripRepository private constructor(context: Context) {
     
     // Stale trip timeout: If last data point is older than this, trip is stale
     private val STALE_TRIP_TIMEOUT_MS = 10 * 60 * 1000L  // 10 minutes
+    // End active trip if telemetry goes silent — covers engine-off without a final isCarOn=false packet
+    private val SILENCE_TIMEOUT_MS = 2 * 60 * 1000L  // 2 minutes
 
     init {
+        // Watchdog: end the active trip if telemetry goes silent for SILENCE_TIMEOUT_MS.
+        // Fires when the engine is switched off and the MQTT publisher stops
+        // without sending a final isCarOn=false packet (race condition at shutdown).
+        scope.launch {
+            while (true) {
+                delay(30_000L) // check every 30 seconds
+                if (tripStarted && lastTelemetryTime > 0L) {
+                    val silence = System.currentTimeMillis() - lastTelemetryTime
+                    if (silence > SILENCE_TIMEOUT_MS) {
+                        Log.w(TAG, "No telemetry for ${silence / 1000}s — ending trip (engine off?)")
+                        endCurrentTrip()
+                    }
+                }
+            }
+        }
+
         scope.launch {
             val activeTrip = tripDao.getActiveTrip()
             if (activeTrip != null) {
@@ -117,6 +136,28 @@ class TripRepository private constructor(context: Context) {
         val trip = tripDao.getTripById(tripId) ?: return
         
         Log.i(TAG, "=== Handling stale trip $tripId ===")
+        
+        // Manual trips: only end if car is OFF (user forgot and killed engine).
+        // Never end them due to idle/stale timeout — the user controls that explicitly.
+        if (trip.isManual) {
+            if (!telemetry.isCarOn) {
+                Log.i(TAG, "Manual trip: car is OFF → ending trip (user forgot to stop)")
+                val dataPoints = dataPointDao.getDataPointsForTripSync(tripId)
+                val lastPoint = dataPoints.lastOrNull()
+                if (lastPoint != null) endStaleTrip(trip, lastPoint)
+                else {
+                    tripDao.deleteTripById(tripId)
+                    _currentTripId.value = null
+                    _isInTrip.value = false
+                    tripStarted = false
+                }
+            } else {
+                Log.i(TAG, "Manual trip: car is ON → resuming, skipping stale timeout check")
+                tripStarted = true
+                _isInTrip.value = true
+            }
+            return
+        }
         
         // Get last data point to check age
         val dataPoints = dataPointDao.getDataPointsForTripSync(tripId)
@@ -484,7 +525,7 @@ class TripRepository private constructor(context: Context) {
         val avgEfficiency = trip.efficiency ?: 0.0
 
         // Power distribution (histogram)
-        // Half-open ranges [low, high) so boundary values are counted exactly once.
+        // Half-open ranges [low, high] so boundary values are counted exactly once.
         val powerRanges = mapOf(
             "regen_strong"     to dataPoints.count { it.power < -30.0 }.toDouble(),
             "regen_medium"     to dataPoints.count { it.power >= -30.0 && it.power < -10.0 }.toDouble(),
@@ -495,7 +536,7 @@ class TripRepository private constructor(context: Context) {
         )
 
         // Speed distribution (histogram)
-        // Half-open ranges [low, high) so boundary values are counted exactly once.
+        // Half-open ranges [low, high] so boundary values are counted exactly once.
         val speedRanges = mapOf(
             "0-30"   to dataPoints.count { it.speed >= 0.0 && it.speed < 30.0 }.toDouble(),
             "30-70"  to dataPoints.count { it.speed >= 30.0 && it.speed < 70.0 }.toDouble(),
@@ -587,8 +628,8 @@ class TripRepository private constructor(context: Context) {
         // Delete original trips
         for (tripId in tripIds) {
             deleteTrip(tripId)
-        }
-        
+    }
+
         Log.i(TAG, "Merged ${tripIds.size} trips into trip $mergedTripId")
         return mergedTripId
     }
