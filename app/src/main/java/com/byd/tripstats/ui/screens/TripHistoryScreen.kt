@@ -390,8 +390,7 @@ fun TripItem(
             // ── Row 2: Energy | Max Regen | Regeneration Efficiency
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 TripMetricChip(
                     icon = Icons.Filled.BatteryChargingFull,
@@ -575,10 +574,10 @@ fun TripMetricChip(
             .background(bgColor)
             .padding(horizontal = 8.dp, vertical = 6.dp)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(horizontalAlignment = Alignment.Start) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Start
             ) {
                 Icon(
                     imageVector = icon,

@@ -624,7 +624,8 @@ fun TripChartsTab(
                         shape = MaterialTheme.shapes.medium
                     ),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -659,7 +660,8 @@ fun TripChartsTab(
                         shape = MaterialTheme.shapes.medium
                     ),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
