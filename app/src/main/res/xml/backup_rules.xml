@@ -2,7 +2,4 @@
 <full-backup-content>
     <!-- Include database files in backups -->
     <include domain="database" path="." />
-    
-    <!-- Exclude cache -->
-    <exclude domain="cache" path="." />
 </full-backup-content>
