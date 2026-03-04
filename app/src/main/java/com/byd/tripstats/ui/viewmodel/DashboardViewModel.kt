@@ -28,6 +28,8 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import android.content.SharedPreferences
+import kotlinx.coroutines.flow.update
 
 class DashboardViewModel(application: Application) : AndroidViewModel(application) {
     private val TAG = "DashboardViewModel"
@@ -497,4 +499,131 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     fun resetDatabase() {
         BydStatsDatabase.resetDatabase(getApplication())
     }
+
+    // ── Trip History Sort & Filter ────────────────────────────────────────────
+
+    enum class TripSortField  { DATE, DISTANCE, DURATION, CONSUMPTION, REGEN_EFF, MAX_SPEED }
+    enum class TripSortOrder  { ASC, DESC }
+
+    data class TripFilterState(
+        val distanceMin:    Float? = null,
+        val distanceMax:    Float? = null,
+        val durationMin:    Float? = null,   // minutes
+        val durationMax:    Float? = null,
+        val consumptionMin: Float? = null,   // kWh/100km
+        val consumptionMax: Float? = null,
+        val regenEffMin:    Float? = null,   // %
+        val regenEffMax:    Float? = null,
+        val maxSpeedMin:    Float? = null,   // km/h
+        val maxSpeedMax:    Float? = null
+    ) {
+        val activeFilterCount: Int get() = listOf(
+            distanceMin, distanceMax, durationMin, durationMax,
+            consumptionMin, consumptionMax, regenEffMin, regenEffMax,
+            maxSpeedMin, maxSpeedMax
+        ).count { it != null }
+    }
+
+    private val historyPrefs: SharedPreferences by lazy {
+        getApplication<Application>().getSharedPreferences("trip_history_prefs", 0)
+    }
+
+    private fun SharedPreferences.getFloatOrNull(key: String): Float? =
+        if (contains(key)) getFloat(key, 0f) else null
+
+    private fun SharedPreferences.Editor.putFloatOrRemove(key: String, v: Float?) {
+        if (v != null) putFloat(key, v) else remove(key)
+    }
+
+    private val _sortField = MutableStateFlow(
+        TripSortField.entries.getOrElse(historyPrefs.getInt("sort_field", 0)) { TripSortField.DATE }
+    )
+    val sortField: StateFlow<TripSortField> = _sortField.asStateFlow()
+
+    private val _sortOrder = MutableStateFlow(
+        TripSortOrder.entries.getOrElse(historyPrefs.getInt("sort_order", 1)) { TripSortOrder.DESC }
+    )
+    val sortOrder: StateFlow<TripSortOrder> = _sortOrder.asStateFlow()
+
+    private fun loadFilterState() = with(historyPrefs) {
+        TripFilterState(
+            distanceMin    = getFloatOrNull("f_dist_min"),
+            distanceMax    = getFloatOrNull("f_dist_max"),
+            durationMin    = getFloatOrNull("f_dur_min"),
+            durationMax    = getFloatOrNull("f_dur_max"),
+            consumptionMin = getFloatOrNull("f_cons_min"),
+            consumptionMax = getFloatOrNull("f_cons_max"),
+            regenEffMin    = getFloatOrNull("f_regen_min"),
+            regenEffMax    = getFloatOrNull("f_regen_max"),
+            maxSpeedMin    = getFloatOrNull("f_speed_min"),
+            maxSpeedMax    = getFloatOrNull("f_speed_max")
+        )
+    }
+    private val _filterState = MutableStateFlow(loadFilterState())
+    val filterState: StateFlow<TripFilterState> = _filterState.asStateFlow()
+
+    fun setSortField(field: TripSortField) {
+        _sortField.value = field
+        historyPrefs.edit().putInt("sort_field", field.ordinal).apply()
+    }
+
+    fun toggleSortOrder() {
+        val new = if (_sortOrder.value == TripSortOrder.DESC) TripSortOrder.ASC else TripSortOrder.DESC
+        _sortOrder.value = new
+        historyPrefs.edit().putInt("sort_order", new.ordinal).apply()
+    }
+
+    fun setFilter(f: TripFilterState) {
+        _filterState.value = f
+        historyPrefs.edit().apply {
+            putFloatOrRemove("f_dist_min",  f.distanceMin);    putFloatOrRemove("f_dist_max",  f.distanceMax)
+            putFloatOrRemove("f_dur_min",   f.durationMin);    putFloatOrRemove("f_dur_max",   f.durationMax)
+            putFloatOrRemove("f_cons_min",  f.consumptionMin); putFloatOrRemove("f_cons_max",  f.consumptionMax)
+            putFloatOrRemove("f_regen_min", f.regenEffMin);    putFloatOrRemove("f_regen_max", f.regenEffMax)
+            putFloatOrRemove("f_speed_min", f.maxSpeedMin);    putFloatOrRemove("f_speed_max", f.maxSpeedMax)
+            apply()
+        }
+    }
+
+    fun clearFilters() = setFilter(TripFilterState())
+
+    val sortedFilteredTrips: StateFlow<List<TripEntity>> =
+        combine(allTrips, tripDisplayMetrics, _sortField, _sortOrder, _filterState) {
+            trips, metrics, field, order, filter ->
+            val active    = trips.filter { it.isActive }
+            val completed = trips.filter { !it.isActive }
+
+            val filtered = completed.filter { trip ->
+                val m      = metrics[trip.id]
+                val dist   = trip.distance   ?: 0.0
+                val durMin = (trip.duration  ?: 0L) / 60_000.0
+                val cons   = trip.efficiency ?: Double.MAX_VALUE
+                val regen  = m?.regenEfficiencyPct ?: 0.0
+                val spd    = trip.maxSpeed
+
+                (filter.distanceMin    == null || dist   >= filter.distanceMin)    &&
+                (filter.distanceMax    == null || dist   <= filter.distanceMax)    &&
+                (filter.durationMin    == null || durMin >= filter.durationMin)    &&
+                (filter.durationMax    == null || durMin <= filter.durationMax)    &&
+                (filter.consumptionMin == null || cons   >= filter.consumptionMin) &&
+                (filter.consumptionMax == null || cons   <= filter.consumptionMax) &&
+                (filter.regenEffMin    == null || regen  >= filter.regenEffMin)    &&
+                (filter.regenEffMax    == null || regen  <= filter.regenEffMax)    &&
+                (filter.maxSpeedMin    == null || spd    >= filter.maxSpeedMin)    &&
+                (filter.maxSpeedMax    == null || spd    <= filter.maxSpeedMax)
+            }
+
+            val sorted = when (field) {
+                TripSortField.DATE        -> filtered.sortedBy { it.startTime }
+                TripSortField.DISTANCE    -> filtered.sortedBy { it.distance   ?: 0.0 }
+                TripSortField.DURATION    -> filtered.sortedBy { it.duration   ?: 0L  }
+                TripSortField.CONSUMPTION -> filtered.sortedBy { it.efficiency ?: Double.MAX_VALUE }
+                TripSortField.REGEN_EFF   -> filtered.sortedBy { metrics[it.id]?.regenEfficiencyPct ?: 0.0 }
+                TripSortField.MAX_SPEED   -> filtered.sortedBy { it.maxSpeed }
+            }.let { if (order == TripSortOrder.DESC) it.reversed() else it }
+
+            active + sorted
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
 }

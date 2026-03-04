@@ -1,10 +1,16 @@
 package com.byd.tripstats.ui.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -12,16 +18,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
+import com.byd.tripstats.ui.viewmodel.DashboardViewModel.TripFilterState
+import com.byd.tripstats.ui.viewmodel.DashboardViewModel.TripSortField
+import com.byd.tripstats.ui.viewmodel.DashboardViewModel.TripSortOrder
 import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,11 +39,19 @@ fun TripHistoryScreen(
     onTripClick: (Long) -> Unit,
     onNavigateBack: () -> Unit
 ) {
-    val trips by viewModel.allTrips.collectAsState()
+    val trips         by viewModel.sortedFilteredTrips.collectAsState()
     val displayMetrics by viewModel.tripDisplayMetrics.collectAsState()
-    var selectedTrips by remember { mutableStateOf(setOf<Long>()) }
-    var selectionMode by remember { mutableStateOf(false) }
+    val sortField     by viewModel.sortField.collectAsState()
+    val sortOrder     by viewModel.sortOrder.collectAsState()
+    val filterState   by viewModel.filterState.collectAsState()
+
+    var selectedTrips           by remember { mutableStateOf(setOf<Long>()) }
+    var selectionMode           by remember { mutableStateOf(false) }
     var showDeleteSelectedDialog by remember { mutableStateOf(false) }
+    var showSortSheet           by remember { mutableStateOf(false) }
+    var showFilterSheet         by remember { mutableStateOf(false) }
+
+    val activeFilters = filterState.activeFilterCount
 
     Scaffold(
         topBar = {
@@ -87,6 +103,37 @@ fun TripHistoryScreen(
                             modifier = Modifier.padding(end = 16.dp),
                             style = MaterialTheme.typography.titleMedium
                         )
+                    } else if (!selectionMode) {
+                        // Sort button — icon reflects current direction
+                        IconButton(onClick = { showSortSheet = true }) {
+                            Icon(
+                                imageVector = if (sortOrder == TripSortOrder.DESC)
+                                    Icons.Filled.ArrowDownward else Icons.Filled.ArrowUpward,
+                                contentDescription = "Sort",
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                        // Filter button — BadgedBox shows active filter count
+                        BadgedBox(
+                            modifier = Modifier.padding(end = 8.dp),
+                            badge = {
+                                if (activeFilters > 0) {
+                                    Badge { Text("$activeFilters") }
+                                }
+                            }
+                        ) {
+                            IconButton(onClick = { showFilterSheet = true }) {
+                                Icon(
+                                    imageVector = Icons.Filled.FilterList,
+                                    contentDescription = "Filter",
+                                    tint = if (activeFilters > 0)
+                                        MaterialTheme.colorScheme.primary
+                                    else
+                                        LocalContentColor.current,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -111,11 +158,12 @@ fun TripHistoryScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "No trips yet",
+                        text = if (activeFilters > 0) "No trips match your filters" else "No trips yet",
                         style = MaterialTheme.typography.titleLarge
                     )
                     Text(
-                        text = "Start driving to record your first trip!",
+                        text = if (activeFilters > 0) "Try adjusting or clearing the filters"
+                               else "Start driving to record your first trip!",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -144,11 +192,9 @@ fun TripHistoryScreen(
                             if (selectionMode) {
                                 // Don't allow selecting active trips
                                 if (!trip.isActive) {
-                                    selectedTrips = if (selectedTrips.contains(trip.id)) {
+                                    selectedTrips = if (selectedTrips.contains(trip.id))
                                         selectedTrips - trip.id
-                                    } else {
-                                        selectedTrips + trip.id
-                                    }
+                                    else selectedTrips + trip.id
                                 }
                             } else {
                                 onTripClick(trip.id)
@@ -168,6 +214,7 @@ fun TripHistoryScreen(
         }
     }
 
+    // ── Delete selected dialog ────────────────────────────────────────────────
     if (showDeleteSelectedDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteSelectedDialog = false },
@@ -186,13 +233,222 @@ fun TripHistoryScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteSelectedDialog = false }) {
-                    Text("Cancel")
-                }
+                TextButton(onClick = { showDeleteSelectedDialog = false }) { Text("Cancel") }
             }
         )
     }
+
+    // ── Sort bottom sheet ─────────────────────────────────────────────────────
+    if (showSortSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showSortSheet = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ) {
+            SortSheetContent(
+                currentField = sortField,
+                currentOrder = sortOrder,
+                onFieldSelected = { viewModel.setSortField(it) },
+                onOrderToggle   = { viewModel.toggleSortOrder() },
+                onDismiss       = { showSortSheet = false }
+            )
+        }
+    }
+
+    // ── Filter bottom sheet ───────────────────────────────────────────────────
+    if (showFilterSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showFilterSheet = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ) {
+            FilterSheetContent(
+                current   = filterState,
+                onApply   = { viewModel.setFilter(it); showFilterSheet = false },
+                onClear   = { viewModel.clearFilters(); showFilterSheet = false },
+                onDismiss = { showFilterSheet = false }
+            )
+        }
+    }
 }
+
+// ── Sort sheet ────────────────────────────────────────────────────────────────
+
+@Composable
+private fun SortSheetContent(
+    currentField: TripSortField,
+    currentOrder: TripSortOrder,
+    onFieldSelected: (TripSortField) -> Unit,
+    onOrderToggle: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val fields = listOf(
+        TripSortField.DATE        to "Date",
+        TripSortField.DISTANCE    to "Distance",
+        TripSortField.DURATION    to "Duration",
+        TripSortField.CONSUMPTION to "Avg Consumption",
+        TripSortField.REGEN_EFF   to "Regen Efficiency",
+        TripSortField.MAX_SPEED   to "Max Speed"
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(horizontal = 24.dp)
+            .padding(bottom = 32.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Sort by", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            // Direction toggle
+            FilledTonalButton(onClick = onOrderToggle) {
+                Icon(
+                    imageVector = if (currentOrder == TripSortOrder.DESC)
+                        Icons.Filled.ArrowDownward else Icons.Filled.ArrowUpward,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(Modifier.width(6.dp))
+                Text(if (currentOrder == TripSortOrder.DESC) "Descending" else "Ascending")
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        fields.forEach { (field, label) ->
+            val selected = field == currentField
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(
+                        if (selected) MaterialTheme.colorScheme.primaryContainer
+                        else Color.Transparent
+                    )
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
+                    selected = selected,
+                    onClick = { onFieldSelected(field); onDismiss() }
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+                )
+            }
+        }
+    }
+}
+
+// ── Filter sheet ──────────────────────────────────────────────────────────────
+
+@Composable
+private fun FilterSheetContent(
+    current: TripFilterState,
+    onApply: (TripFilterState) -> Unit,
+    onClear: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    // Local mutable draft — only applied when the user taps Apply
+    var distMin    by remember { mutableStateOf(current.distanceMin?.toString()    ?: "") }
+    var distMax    by remember { mutableStateOf(current.distanceMax?.toString()    ?: "") }
+    var durMin     by remember { mutableStateOf(current.durationMin?.toString()    ?: "") }
+    var durMax     by remember { mutableStateOf(current.durationMax?.toString()    ?: "") }
+    var consMin    by remember { mutableStateOf(current.consumptionMin?.toString() ?: "") }
+    var consMax    by remember { mutableStateOf(current.consumptionMax?.toString() ?: "") }
+    var regenMin   by remember { mutableStateOf(current.regenEffMin?.toString()    ?: "") }
+    var regenMax   by remember { mutableStateOf(current.regenEffMax?.toString()    ?: "") }
+    var speedMin   by remember { mutableStateOf(current.maxSpeedMin?.toString()    ?: "") }
+    var speedMax   by remember { mutableStateOf(current.maxSpeedMax?.toString()    ?: "") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .navigationBarsPadding()
+            .padding(horizontal = 24.dp)
+            .padding(bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text("Filter trips", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+
+        FilterRangeRow("Distance (km)",           distMin,  distMax)  { a, b -> distMin  = a; distMax  = b }
+        FilterRangeRow("Duration (min)",           durMin,   durMax)   { a, b -> durMin   = a; durMax   = b }
+        FilterRangeRow("Avg Consumption (kWh/100km)", consMin,  consMax)  { a, b -> consMin  = a; consMax  = b }
+        FilterRangeRow("Regen Efficiency (%)",     regenMin, regenMax) { a, b -> regenMin = a; regenMax = b }
+        FilterRangeRow("Max Speed (km/h)",         speedMin, speedMax) { a, b -> speedMin = a; speedMax = b }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            OutlinedButton(
+                onClick = onClear,
+                modifier = Modifier.weight(1f)
+            ) { Text("Clear all") }
+
+            Button(
+                onClick = {
+                    onApply(TripFilterState(
+                        distanceMin    = distMin.toFloatOrNull(),
+                        distanceMax    = distMax.toFloatOrNull(),
+                        durationMin    = durMin.toFloatOrNull(),
+                        durationMax    = durMax.toFloatOrNull(),
+                        consumptionMin = consMin.toFloatOrNull(),
+                        consumptionMax = consMax.toFloatOrNull(),
+                        regenEffMin    = regenMin.toFloatOrNull(),
+                        regenEffMax    = regenMax.toFloatOrNull(),
+                        maxSpeedMin    = speedMin.toFloatOrNull(),
+                        maxSpeedMax    = speedMax.toFloatOrNull()
+                    ))
+                },
+                modifier = Modifier.weight(1f)
+            ) { Text("Apply") }
+        }
+    }
+}
+
+@Composable
+private fun FilterRangeRow(
+    label: String,
+    minVal: String,
+    maxVal: String,
+    onValuesChange: (String, String) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(label, style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = minVal,
+                onValueChange = { onValuesChange(it, maxVal) },
+                modifier = Modifier.weight(1f),
+                label = { Text("Min") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+            )
+            Text("–", style = MaterialTheme.typography.bodyLarge)
+            OutlinedTextField(
+                value = maxVal,
+                onValueChange = { onValuesChange(minVal, it) },
+                modifier = Modifier.weight(1f),
+                label = { Text("Max") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+            )
+        }
+    }
+}
+
+// ── TripItem ──────────────────────────────────────────────────────────────────
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -266,7 +522,7 @@ fun TripItem(
                             formatTimestamp(trip.startTime),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        textAlign = TextAlign.Center
                     )
                     if (trip.endTime != null) {
                         Spacer(modifier = Modifier.width(12.dp))
@@ -420,9 +676,7 @@ fun TripItem(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
-                }
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
             }
         )
     }
@@ -453,57 +707,31 @@ fun ScoreChip(
     }
 
     val bgColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.05f)
-    val shape = MaterialTheme.shapes.small
     Box(
         modifier = modifier
-            .clip(shape)
+            .clip(MaterialTheme.shapes.small)
             .background(bgColor)
             .padding(horizontal = 8.dp, vertical = 6.dp)
     ) {
         Column(horizontalAlignment = Alignment.Start) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Star,
-                    contentDescription = null,
-                    modifier = Modifier.size(14.dp),
-                    tint = scoreColor
-                )
-                Spacer(modifier = Modifier.width(3.dp))
-                Text(
-                    text = "Score",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Start) {
+                Icon(Icons.Filled.Star, null, Modifier.size(14.dp), tint = scoreColor)
+                Spacer(Modifier.width(3.dp))
+                Text("Score", style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(Modifier.height(2.dp))
             if (score != null) {
-                Row(
-                    verticalAlignment = Alignment.Bottom,
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    Text(
-                        text = "$score",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.SemiBold,
-                        color = scoreColor
-                    )
-                    Spacer(modifier = Modifier.width(3.dp))
-                    Text(
-                        text = "($grade)",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = scoreColor
-                    )
+                Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.Start) {
+                    Text("$score", style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.SemiBold, color = scoreColor)
+                    Spacer(Modifier.width(3.dp))
+                    Text("($grade)", style = MaterialTheme.typography.labelSmall, color = scoreColor)
                 }
             } else {
-                Text(
-                    text = "—",
-                    style = MaterialTheme.typography.bodySmall,
+                Text("—", style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -522,44 +750,28 @@ fun TripMetricChip(
     modifier: Modifier = Modifier,
     iconTint: Color = MaterialTheme.colorScheme.primary
 ) {
-    val bgColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.05f)
-    val shape = MaterialTheme.shapes.small
     Box(
         modifier = modifier
-            .clip(shape)
-            .background(bgColor)
+            .clip(MaterialTheme.shapes.small)
+            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.05f))
             .padding(horizontal = 8.dp, vertical = 6.dp)
     ) {
         Column(horizontalAlignment = Alignment.Start) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(14.dp),
-                    tint = iconTint
-                )
-                Spacer(modifier = Modifier.width(3.dp))
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Start) {
+                Icon(icon, null, Modifier.size(14.dp), tint = iconTint)
+                Spacer(Modifier.width(3.dp))
+                Text(label, style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodySmall,
+            Spacer(Modifier.height(2.dp))
+            Text(value, style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+                color = MaterialTheme.colorScheme.onSurface)
         }
     }
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 private fun formatDuration(milliseconds: Long): String {
     val seconds = milliseconds / 1000
