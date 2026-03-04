@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import android.content.SharedPreferences
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -429,6 +430,7 @@ fun DashboardContent(
             }
         }
     }
+
 }
 
 @Composable
@@ -447,6 +449,21 @@ fun EnergyFlowDiagram(
     // Two independent expanded states
     var consumptionExpanded by remember { mutableStateOf(false) }
     var rangeFlipped   by remember { mutableStateOf(false) }
+
+    // Tyre pressure unit — persisted in SharedPreferences
+    val context = LocalContext.current
+    val tyrePrefs: SharedPreferences = remember {
+        context.getSharedPreferences("tyre_unit_prefs", 0)
+    }
+    var tyreUnit by remember {
+        mutableStateOf(
+            TyrePressureUnit.entries.getOrElse(
+                tyrePrefs.getInt("unit", TyrePressureUnit.BAR.ordinal)
+            ) { TyrePressureUnit.BAR }
+        )
+    }
+    var showTyreUnitDialog by remember { mutableStateOf(false) }
+
 
     val rotation by animateFloatAsState(
         targetValue = if (rangeFlipped) 180f else 0f,
@@ -555,17 +572,20 @@ fun EnergyFlowDiagram(
                             .align(Alignment.TopCenter)
                             .padding(top = 12.dp)
                     ) {
-                        // AWD Image
+                        // AWD Image — tap to change pressure unit
                         Image(
                             painter = painterResource(R.drawable.awd),
-                            contentDescription = "AWD drivetrain",
-                            modifier = Modifier.size(90.dp)
+                            contentDescription = "AWD drivetrain — tap to change pressure unit",
+                            modifier = Modifier
+                                .size(90.dp)
+                                .clickable { showTyreUnitDialog = true }
                         )
 
                         // Tyre Pressure Overlays
                         // Left Front (recommended: 2.6 bar)
                         TyrePressureIndicator(
                             pressure = telemetry.tyrePressureLF,
+                            unit = tyreUnit,
                             isFront = true,
                             modifier = Modifier
                                 .align(Alignment.TopStart)
@@ -575,6 +595,7 @@ fun EnergyFlowDiagram(
                         // Right Front (recommended: 2.6 bar)
                         TyrePressureIndicator(
                             pressure = telemetry.tyrePressureRF,
+                            unit = tyreUnit,
                             isFront = true,
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
@@ -584,6 +605,7 @@ fun EnergyFlowDiagram(
                         // Left Rear (recommended: 2.9 bar)
                         TyrePressureIndicator(
                             pressure = telemetry.tyrePressureLR,
+                            unit = tyreUnit,
                             isFront = false,
                             modifier = Modifier
                                 .align(Alignment.BottomStart)
@@ -593,6 +615,7 @@ fun EnergyFlowDiagram(
                         // Right Rear (recommended: 2.9 bar)
                         TyrePressureIndicator(
                             pressure = telemetry.tyrePressureRR,
+                            unit = tyreUnit,
                             isFront = false,
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
@@ -690,34 +713,106 @@ fun EnergyFlowDiagram(
             }
         }
     }
+
+    // ── Tyre pressure unit selection dialog ──────────────────────────────────
+    if (showTyreUnitDialog) {
+        AlertDialog(
+            onDismissRequest = { showTyreUnitDialog = false },
+            title = { Text("Tyre Pressure Unit") },
+            text = {
+                Column {
+                    TyrePressureUnit.entries.forEach { u ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    tyreUnit = u
+                                    tyrePrefs.edit().putInt("unit", u.ordinal).apply()
+                                    showTyreUnitDialog = false
+                                }
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = tyreUnit == u,
+                                onClick = {
+                                    tyreUnit = u
+                                    tyrePrefs.edit().putInt("unit", u.ordinal).apply()
+                                    showTyreUnitDialog = false
+                                }
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = when (u) {
+                                    TyrePressureUnit.BAR -> "Bar  (default, e.g. 2.6)"
+                                    TyrePressureUnit.PSI -> "PSI  (e.g. 37.7)"
+                                    TyrePressureUnit.KPA -> "kPa  (e.g. 260)"
+                                },
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showTyreUnitDialog = false }) { Text("Cancel") }
+            }
+        )
+    }
+
+}
+
+
+// ── Tyre pressure unit support ────────────────────────────────────────────────
+
+enum class TyrePressureUnit { BAR, PSI, KPA }
+
+private fun Double.toDisplayPressure(unit: TyrePressureUnit): Double = when (unit) {
+    TyrePressureUnit.BAR -> this / 14.5038
+    TyrePressureUnit.PSI -> this
+    TyrePressureUnit.KPA -> this * 6.89476
+}
+
+private fun Double.toBarFromPsi(): Double = this / 14.5038
+
+private fun TyrePressureUnit.label(): String = when (this) {
+    TyrePressureUnit.BAR -> "bar"
+    TyrePressureUnit.PSI -> "psi"
+    TyrePressureUnit.KPA -> "kPa"
+}
+
+private fun TyrePressureUnit.formatValue(psi: Double): String {
+    if (psi < 0.1) return "--"
+    return when (this) {
+        TyrePressureUnit.BAR -> String.format("%.1f", psi.toDisplayPressure(this))
+        TyrePressureUnit.PSI -> String.format("%.1f", psi.toDisplayPressure(this))
+        TyrePressureUnit.KPA -> String.format("%.0f", psi.toDisplayPressure(this))
+    }
 }
 
 @Composable
 fun TyrePressureIndicator(
-    pressure: Double,  // In PSI
-    isFront: Boolean,  // true for front tyres, false for rear
+    pressure: Double,           // Always PSI from telemetry
+    isFront: Boolean,           // true = front, false = rear
+    unit: TyrePressureUnit = TyrePressureUnit.BAR,
     modifier: Modifier = Modifier
 ) {
-    // Convert PSI to bar (1 bar = 14.5038 PSI)
-    val pressureBar = pressure / 14.5038
-    
-    // BYD Seal recommended pressure: Front 2.6 bar, Rear 2.9 bar
-    // Tolerance: ±0.2 bar
+    // Alarm thresholds are always evaluated in bar regardless of display unit
+    val pressureBar = pressure.toBarFromPsi()
     val recommendedPressure = if (isFront) 2.6 else 2.9 // TODO: make this dynamic via config
-    val minPressure = recommendedPressure - 0.2
-    val maxPressure = recommendedPressure + 0.2
-    
-    val isLow = pressureBar < minPressure
-    val isHigh = pressureBar > maxPressure
-    
+    val isNoData = pressure < 0.1
+    val isLow    = !isNoData && pressureBar < recommendedPressure - 0.2
+    val isHigh   = !isNoData && pressureBar > recommendedPressure + 0.2
+
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(4.dp),
         color = when {
-            pressureBar < 0.1 -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)  // Gray for no data
-            isLow -> AccelerationOrange.copy(alpha = 0.9f)  // Orange for low
-            isHigh -> BydErrorRed.copy(alpha = 0.9f) // Red for high
-            else -> RegenGreen.copy(alpha = 0.9f)   // Green for normal
+            isNoData -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)
+            isLow    -> AccelerationOrange.copy(alpha = 0.9f)
+            isHigh   -> BydErrorRed.copy(alpha = 0.9f)
+            else     -> RegenGreen.copy(alpha = 0.9f)
         }
     ) {
         Box(
@@ -725,7 +820,7 @@ fun TyrePressureIndicator(
             modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
         ) {
             Text(
-                text = if (pressureBar < 0.1) "--" else String.format("%.1f", pressureBar),
+                text = unit.formatValue(pressure),
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
