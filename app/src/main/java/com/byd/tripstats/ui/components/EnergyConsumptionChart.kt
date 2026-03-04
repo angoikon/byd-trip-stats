@@ -21,6 +21,9 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import com.byd.tripstats.ui.theme.ChargingYellow
 import kotlin.math.roundToInt
 
@@ -111,7 +114,7 @@ fun EnergyConsumptionChart(
         dataPoints.forEachIndexed { i, _ ->
             if (i % labelEvery == 0 || i == dataPoints.size - 1) {
                 val secs = if (dataPoints.size > 1) (i / (dataPoints.size - 1).toFloat()) * totalDuration else 0.0
-                nc.drawText("${(secs / 60).toInt()}m", xOf(i), h - 8f, xLabelPaint)
+                nc.drawText("%d:%02d".format((secs / 60).toInt(), (secs % 60).toInt()), xOf(i), h - 8f, xLabelPaint)
             }
         }
         if (values.size >= 2) {
@@ -134,11 +137,14 @@ fun EnergyConsumptionChart(
             if (tp.x in padL..(w - padR) && values.size > 1) {
                 val idx = ((tp.x - padL) / chartW * (values.size - 1)).roundToInt().coerceIn(0, values.size - 1)
                 val secs = (idx / (values.size - 1).toFloat()) * totalDuration
+                val realTime = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(dataPoints[idx].timestamp))
+                val durationStr = "+%d:%02d into trip".format((secs / 60).toInt(), (secs % 60).toInt())
                 drawCrosshair(
                     cx = xOf(idx), cy = yOf(values[idx]), w = w,
                     padL = padL, padR = padR, padT = padT, chartH = chartH,
                     line1 = "%.2f kWh".format(values[idx]),
-                    line2 = "${(secs / 60).toInt()}m ${(secs % 60).toInt()}s",
+                    line2 = realTime,
+                    line3 = durationStr,
                     accentColor = lineColor, textColor = textColor
                 )
             }

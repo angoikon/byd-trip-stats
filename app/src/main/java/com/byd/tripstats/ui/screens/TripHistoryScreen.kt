@@ -381,6 +381,7 @@ fun TripItem(
                 TripMetricChip(
                     icon = Icons.Filled.Speed,
                     label = "Avg Speed",
+                    iconTint = BydEcoTealDim,
                     value = if (avgSpeedKmh != null) "$avgSpeedKmh km/h" else "—",
                     modifier = Modifier.weight(1f)
                 )

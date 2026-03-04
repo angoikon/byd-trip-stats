@@ -22,8 +22,10 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
-import com.byd.tripstats.ui.theme.BydElectricAzure
-import com.byd.tripstats.ui.theme.RegenGreen
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import com.byd.tripstats.ui.theme.*
 import kotlin.math.roundToInt
 
 @Composable
@@ -39,7 +41,7 @@ fun PowerChart(
         return
     }
 
-    val accelColor = BydElectricAzure
+    val accelColor = AccelerationOrange
     val regenColor = RegenGreen
     val textColor  = MaterialTheme.colorScheme.onSurface
     val gridColor  = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)
@@ -106,7 +108,7 @@ fun PowerChart(
         dataPoints.forEachIndexed { i, _ ->
             if (i % labelEvery == 0 || i == dataPoints.size - 1) {
                 val secs = if (dataPoints.size > 1) (i / (dataPoints.size - 1).toFloat()) * totalDuration else 0.0
-                nc.drawText("${(secs / 60).toInt()}m", xOf(i), h - 8f, xLabelPaint)
+                nc.drawText("%d:%02d".format((secs / 60).toInt(), (secs % 60).toInt()), xOf(i), h - 8f, xLabelPaint)
             }
         }
         if (dataPoints.size >= 2) {
@@ -175,13 +177,16 @@ fun PowerChart(
                 val idx = ((tp.x - padL) / chartW * (dataPoints.size - 1)).roundToInt().coerceIn(0, dataPoints.size - 1)
                 val v = values[idx]
                 val secs = (idx / (dataPoints.size - 1).toFloat()) * totalDuration
+                val realTime = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(dataPoints[idx].timestamp))
+                val durationStr = "+%d:%02d into trip".format((secs / 60).toInt(), (secs % 60).toInt())
                 val modeLabel = when { v > 5f -> "Accel"; v < -5f -> "Regen"; else -> "Cruise" }
                 val dotColor = when { v < -5f -> regenColor; else -> accelColor }
                 drawCrosshair(
                     cx = xOf(idx), cy = yOf(v), w = w,
                     padL = padL, padR = padR, padT = padT, chartH = chartH,
                     line1 = "%.1f kW  ($modeLabel)".format(v),
-                    line2 = "${(secs / 60).toInt()}m ${(secs % 60).toInt()}s",
+                    line2 = realTime,
+                    line3 = durationStr,
                     accentColor = dotColor, textColor = textColor
                 )
             }

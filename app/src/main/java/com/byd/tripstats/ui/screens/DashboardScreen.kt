@@ -675,7 +675,7 @@ fun EnergyFlowDiagram(
                         color = BydEcoTealDim
                     )
                     PowerMetric(
-                        label = "Battery",
+                        label = "Battery (SoC)",
                         value = "${telemetry.soc.toInt()}",
                         unit = "%",
                         color = BatteryBlue

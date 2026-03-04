@@ -110,7 +110,8 @@ fun SpeedDistributionChart(
 
         buckets.forEachIndexed { i, bucket ->
             val t = i / (n - 1).toFloat()
-            val barColor = lerp(BydElectricAzure, AccelerationOrange, t)
+            val barColor = if (i == n - 1) BydErrorRed
+                           else lerp(BydElectricAzure, AccelerationOrange, t * (n - 2) / (n - 1))
 
             val barX = padL + gapW * (i + 1) + barW * i
             val barTop = yOf(values[i])

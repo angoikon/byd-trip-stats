@@ -34,6 +34,7 @@ fun DrawScope.drawCrosshair(
     chartH: Float,
     line1: String,
     line2: String,
+    line3: String? = null,   // optional third line (e.g. duration offset)
     accentColor: Color,
     textColor: Color
 ) {
@@ -70,8 +71,10 @@ fun DrawScope.drawCrosshair(
     val padding   = 14f
     val lineGap   = 6f
     val textH     = paint.descent() - paint.ascent()
-    val boxW      = maxOf(paint.measureText(line1), paint.measureText(line2)) + padding * 2
-    val boxH      = textH * 2 + lineGap + padding * 2
+    val boxW      = maxOf(paint.measureText(line1), paint.measureText(line2),
+                          if (line3 != null) paint.measureText(line3) else 0f) + padding * 2
+    val boxH      = if (line3 != null) textH * 3 + lineGap * 2 + padding * 2
+                    else textH * 2 + lineGap + padding * 2
 
     // Position tooltip: prefer top-right of crosshair, flip if it would clip
     val tooltipX = if (cx + 12f + boxW < w - padR) cx + 12f else cx - 12f - boxW
@@ -96,4 +99,9 @@ fun DrawScope.drawCrosshair(
     paint.isFakeBoldText = false
     paint.alpha = 200
     nc.drawText(line2, tooltipX + padding, tooltipY + padding - paint.ascent() + textH + lineGap, paint)
+    if (line3 != null) {
+        paint.alpha = 150
+        paint.textSize = 21f
+        nc.drawText(line3, tooltipX + padding, tooltipY + padding - paint.ascent() + (textH + lineGap) * 2, paint)
+    }
 }

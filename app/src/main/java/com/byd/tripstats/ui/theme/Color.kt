@@ -70,6 +70,9 @@ val RegenGreen           = Color(0xFF4CAF50)
 val AccelerationOrange   = Color(0xFFFF9800)
 val ChargingYellow       = Color(0xFFFFC107)
 
+// Motor chart — violet for front motor, pairs with BydElectricAzure (rear)
+val MotorViolet          = Color(0xFFA78BFA)   // soft lavender-violet
+
 // Error — vivid red replacing Material 3's default pinkish error
 val BydErrorRed          = Color(0xFFE53935)
 val BydErrorRedLight     = Color(0xFFFF6B6B)   // brighter for dark backgrounds

@@ -26,8 +26,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
-import com.byd.tripstats.ui.theme.BydElectricAzure
-import com.byd.tripstats.ui.theme.BydEcoTeal
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import com.byd.tripstats.ui.theme.*
 import kotlin.math.roundToInt
 
 @Composable
@@ -44,7 +46,7 @@ fun MotorRpmChart(
     }
 
     val rearColor  = BydElectricAzure
-    val frontColor = BydEcoTeal
+    val frontColor = MotorViolet
     val textColor  = MaterialTheme.colorScheme.onSurface
     val gridColor  = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)
     val axisColor  = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)
@@ -117,7 +119,7 @@ fun MotorRpmChart(
             dataPoints.forEachIndexed { i, _ ->
                 if (i % labelEvery == 0 || i == dataPoints.size - 1) {
                     val secs = if (dataPoints.size > 1) (i / (dataPoints.size - 1).toFloat()) * totalDuration else 0.0
-                    nc.drawText("${(secs / 60).toInt()}m", xOf(i), h - 8f, xLabelPaint)
+                    nc.drawText("%d:%02d".format((secs / 60).toInt(), (secs % 60).toInt()), xOf(i), h - 8f, xLabelPaint)
                 }
             }
             if (dataPoints.size >= 2) {
@@ -149,7 +151,7 @@ fun MotorRpmChart(
                     moveTo(xOf(0), yOf(frontValues[0]))
                     frontValues.drop(1).forEachIndexed { i, v -> lineTo(xOf(i + 1), yOf(v)) }
                 }
-                drawPath(frontLine, frontColor.copy(alpha = 0.9f),
+                drawPath(frontLine, MotorViolet.copy(alpha = 0.9f),
                     style = Stroke(width = 2.5f, cap = StrokeCap.Round, join = StrokeJoin.Round))
             }
             // Crosshair — shows both motors' RPM at the touched point
@@ -157,13 +159,16 @@ fun MotorRpmChart(
                 if (tp.x in padL..(w - padR) && dataPoints.size > 1) {
                     val idx = ((tp.x - padL) / chartW * (dataPoints.size - 1)).roundToInt().coerceIn(0, dataPoints.size - 1)
                     val secs = (idx / (dataPoints.size - 1).toFloat()) * totalDuration
+                val realTime = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(dataPoints[idx].timestamp))
+                val durationStr = "+%d:%02d into trip".format((secs / 60).toInt(), (secs % 60).toInt())
                     val rRpm = rearValues[idx]; val fRpm = frontValues[idx]
                     // Crosshair anchored to rear motor (primary)
                     drawCrosshair(
                         cx = xOf(idx), cy = yOf(rRpm), w = w,
                         padL = padL, padR = padR, padT = padT, chartH = chartH,
                         line1 = "R: ${formatRpm(rRpm)}  F: ${formatRpm(fRpm)}",
-                        line2 = "${(secs / 60).toInt()}m ${(secs % 60).toInt()}s",
+                        line2 = realTime,
+                    line3 = durationStr,
                         accentColor = rearColor, textColor = textColor
                     )
                 }
