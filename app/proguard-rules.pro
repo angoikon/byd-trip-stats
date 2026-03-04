@@ -11,14 +11,27 @@
 -dontwarn org.eclipse.jetty.alpn.**
 -dontwarn org.eclipse.jetty.npn.**
 -dontwarn reactor.blockhound.integration.BlockHoundIntegration
+-dontwarn com.codahale.metrics.health.HealthCheck
+-dontwarn com.codahale.metrics.health.HealthCheckRegistry
+-dontwarn org.hibernate.service.spi.*
 
-# HiveMQ + Netty — heavy reflection usage, must keep all fields and methods
+# Suppress warnings for Java SE management/JMX classes not available on Android
+# Referenced by HikariCP (com.zaxxer.hikari.pool)
+-dontwarn javax.management.**
+-dontwarn java.lang.management.**
+
+# HikariCP also sometimes references JNDI for data sources
+-dontwarn javax.naming.**
+
+# HiveMQ + Netty + Moquette — heavy reflection usage, must keep all fields and methods
 -keep class com.hivemq.** { *; }
 -keepclassmembers class com.hivemq.** { *; }
 -keep class io.netty.** { *; }
 -keepclassmembers class io.netty.** { *; }
 -keep class io.reactivex.** { *; }
 -keepclassmembers class io.reactivex.** { *; }
+-keep class io.moquette.** { *; }
+-keepclassmembers class io.moquette.** { *; }
 
 # Optional compression/encoding libs referenced by Netty (not used on Android)
 -dontwarn com.aayushatharva.brotli4j.**
@@ -39,3 +52,81 @@
 -dontwarn org.jboss.marshalling.**
 -dontwarn reactor.blockhound.**
 -dontwarn sun.security.x509.**
+-dontwarn com.codahale.metrics.health.HealthCheck$Result
+-dontwarn io.prometheus.client.Collector$MetricFamilySamples$Sample
+-dontwarn io.prometheus.client.Collector$MetricFamilySamples
+-dontwarn io.prometheus.client.Collector$Type
+-dontwarn io.prometheus.client.Collector
+-dontwarn io.prometheus.client.Counter$Builder
+-dontwarn io.prometheus.client.Counter$Child
+-dontwarn io.prometheus.client.Counter
+-dontwarn io.prometheus.client.SimpleCollector$Builder
+-dontwarn io.prometheus.client.SimpleCollector
+-dontwarn io.prometheus.client.Summary$Builder
+-dontwarn io.prometheus.client.Summary$Child
+-dontwarn io.prometheus.client.Summary
+-dontwarn java.sql.SQLType
+-dontwarn javassist.ClassMap
+-dontwarn javassist.ClassPath
+-dontwarn javassist.ClassPool
+-dontwarn javassist.CtClass
+-dontwarn javassist.CtMethod
+-dontwarn javassist.CtNewMethod
+-dontwarn javassist.LoaderClassPath
+-dontwarn javassist.NotFoundException
+-dontwarn javassist.bytecode.ClassFile
+-dontwarn org.hibernate.HibernateException
+-dontwarn org.hibernate.Version
+-dontwarn org.hibernate.engine.jdbc.connections.spi.ConnectionProvider
+-dontwarn org.hibernate.service.UnknownUnwrapTypeException
+-dontwarn org.hibernate.service.spi.Configurable
+-dontwarn org.hibernate.service.spi.Stoppable% 
+
+# JCTools queues (shaded inside HiveMQ/Netty) look up these fields by name
+# via Unsafe reflection at static initialisation time. Obfuscation renames
+# them and causes NoSuchFieldException. Keep the field names only — the
+# containing class name can still be obfuscated normally.
+-keepclassmembers class * {
+    long consumerIndex;
+    long producerIndex;
+    long pIndex;
+    long cIndex;
+}
+
+# JCTools (org.jctools:jctools-core) — used by Netty/HiveMQ via reflection
+# to look up consumerIndex/producerIndex fields by name via Unsafe
+-keep class org.jctools.** { *; }
+-keepclassmembers class org.jctools.** { *; }
+
+# App services declared in AndroidManifest — must keep exact class names
+# so Android can instantiate them by name at runtime
+-keep class com.byd.tripstats.service.** { *; }
+-keep class com.byd.tripstats.data.** { *; }
+-keep class com.byd.tripstats.ui.viewmodel.** { *; }
+
+# Keep all classes Android instantiates by name
+-keep public class * extends android.app.Service
+-keep public class * extends android.app.Application
+-keep public class * extends androidx.lifecycle.ViewModel
+
+# -----------------------------------------------------------------
+# MOQUETTE HIDDEN DEPENDENCIES (Required for Release Builds)
+# -----------------------------------------------------------------
+
+# 1. SLF4J Logging (Moquette fails to start if the logger is stripped)
+-keep class org.slf4j.** { *; }
+-keepclassmembers class org.slf4j.** { *; }
+-dontwarn org.slf4j.**
+
+# 2. HikariCP (Connection pooling used by Moquette's storage)
+# We suppressed the JMX warnings earlier, but we must also keep the classes!
+-keep class com.zaxxer.hikari.** { *; }
+-keepclassmembers class com.zaxxer.hikari.** { *; }
+
+# 3. H2 Database (Default storage engine for Moquette 0.17)
+-keep class org.h2.** { *; }
+-keepclassmembers class org.h2.** { *; }
+-dontwarn org.h2.**
+
+# 4. Preserve SLF4J ServiceLoader behavior
+-keepnames class org.slf4j.simple.SimpleServiceProvider
