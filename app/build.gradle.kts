@@ -1,3 +1,4 @@
+import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -8,6 +9,21 @@ plugins {
 android {
     namespace = "com.byd.tripstats"
     compileSdk = 34
+
+    // Read keystore details from local.properties (gitignored — never commit these)
+    val localProps = Properties().also { props ->
+        rootProject.file("local.properties").takeIf { it.exists() }
+            ?.inputStream()?.use { props.load(it) }
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile     = localProps.getProperty("storeFile")?.let { file(it) }
+            storePassword = localProps.getProperty("storePassword")
+            keyAlias      = localProps.getProperty("keyAlias")
+            keyPassword   = localProps.getProperty("keyPassword")
+        }
+    }
 
     defaultConfig {
         applicationId = "com.byd.tripstats"
