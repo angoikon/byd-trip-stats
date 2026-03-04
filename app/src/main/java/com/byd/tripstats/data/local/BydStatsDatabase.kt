@@ -24,7 +24,7 @@ import java.io.IOException
         TripDataPointEntity::class,
         TripStatsEntity::class
     ],
-    version = 4,
+    version = 1,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -39,100 +39,6 @@ abstract class BydStatsDatabase : RoomDatabase() {
 
         @Volatile
         private var INSTANCE: BydStatsDatabase? = null
-
-        // ── MIGRATION_2_3 ─────────────────────────────────────────────────────
-        // Adds columns introduced after the v2 baseline:
-        //   tyre pressures, battery health fields, rawJson escape hatch.
-        // All use safe defaults so existing trip rows are unaffected.
-        val MIGRATION_2_3 = object : Migration(2, 3) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE trip_data_points ADD COLUMN tyrePressureLF REAL NOT NULL DEFAULT 0.0")
-                database.execSQL("ALTER TABLE trip_data_points ADD COLUMN tyrePressureRF REAL NOT NULL DEFAULT 0.0")
-                database.execSQL("ALTER TABLE trip_data_points ADD COLUMN tyrePressureLR REAL NOT NULL DEFAULT 0.0")
-                database.execSQL("ALTER TABLE trip_data_points ADD COLUMN tyrePressureRR REAL NOT NULL DEFAULT 0.0")
-                database.execSQL("ALTER TABLE trip_data_points ADD COLUMN soh INTEGER NOT NULL DEFAULT 0")
-                database.execSQL("ALTER TABLE trip_data_points ADD COLUMN batteryTotalVoltage INTEGER NOT NULL DEFAULT 0")
-                database.execSQL("ALTER TABLE trip_data_points ADD COLUMN battery12vVoltage REAL NOT NULL DEFAULT 0.0")
-                database.execSQL("ALTER TABLE trip_data_points ADD COLUMN batteryCellVoltageMax REAL NOT NULL DEFAULT 0.0")
-                database.execSQL("ALTER TABLE trip_data_points ADD COLUMN batteryCellVoltageMin REAL NOT NULL DEFAULT 0.0")
-                database.execSQL("ALTER TABLE trip_data_points ADD COLUMN rawJson TEXT NOT NULL DEFAULT '{}'")
-            }
-        }
-
-
-        // ── MIGRATION_3_4 ─────────────────────────────────────────────────────
-        // Recreates trip_data_points with Room's exact schema (no explicit DEFAULT
-        // metadata on new columns). Required because MIGRATION_2_3 used ALTER TABLE
-        // with DEFAULT values, which SQLite stores as column metadata but Room
-        // expects 'undefined'. Table recreation is the canonical fix.
-        val MIGRATION_3_4 = object : Migration(3, 4) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                // 1. Create new table with exact schema Room will generate
-                database.execSQL("""
-                    CREATE TABLE IF NOT EXISTS trip_data_points_new (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                        tripId INTEGER NOT NULL,
-                        timestamp INTEGER NOT NULL,
-                        latitude REAL NOT NULL,
-                        longitude REAL NOT NULL,
-                        altitude REAL NOT NULL,
-                        speed REAL NOT NULL,
-                        power REAL NOT NULL,
-                        soc REAL NOT NULL,
-                        odometer REAL NOT NULL,
-                        batteryTemp REAL NOT NULL,
-                        totalDischarge REAL NOT NULL,
-                        gear TEXT NOT NULL,
-                        isRegenerating INTEGER NOT NULL,
-                        engineSpeedFront INTEGER NOT NULL,
-                        engineSpeedRear INTEGER NOT NULL,
-                        electricDrivingRangeKm INTEGER NOT NULL,
-                        tyrePressureLF REAL NOT NULL,
-                        tyrePressureRF REAL NOT NULL,
-                        tyrePressureLR REAL NOT NULL,
-                        tyrePressureRR REAL NOT NULL,
-                        soh INTEGER NOT NULL,
-                        batteryTotalVoltage INTEGER NOT NULL,
-                        battery12vVoltage REAL NOT NULL,
-                        batteryCellVoltageMax REAL NOT NULL,
-                        batteryCellVoltageMin REAL NOT NULL,
-                        rawJson TEXT NOT NULL
-                    )
-                """.trimIndent())
-
-                // 2. Copy all existing data; COALESCE supplies safe values for
-                //    rows that predate the new columns (i.e. pre-v3 rows)
-                database.execSQL("""
-                    INSERT INTO trip_data_points_new
-                    SELECT
-                        id, tripId, timestamp, latitude, longitude, altitude,
-                        speed, power, soc, odometer, batteryTemp, totalDischarge,
-                        gear, isRegenerating, engineSpeedFront, engineSpeedRear,
-                        0, -- electricDrivingRangeKm absent in pre-v3 backups; safe default
-                        COALESCE(tyrePressureLF, 0.0),
-                        COALESCE(tyrePressureRF, 0.0),
-                        COALESCE(tyrePressureLR, 0.0),
-                        COALESCE(tyrePressureRR, 0.0),
-                        COALESCE(soh, 0),
-                        COALESCE(batteryTotalVoltage, 0),
-                        COALESCE(battery12vVoltage, 0.0),
-                        COALESCE(batteryCellVoltageMax, 0.0),
-                        COALESCE(batteryCellVoltageMin, 0.0),
-                        COALESCE(rawJson, '{}')
-                    FROM trip_data_points
-                """.trimIndent())
-
-                // 3. Swap tables
-                database.execSQL("DROP TABLE trip_data_points")
-                database.execSQL("ALTER TABLE trip_data_points_new RENAME TO trip_data_points")
-            }
-        }
-
-        // ── Migration template — copy for every future schema change ─────────
-        // private val MIGRATION_X_Y = object : Migration(X, Y) {
-        //     override fun migrate(database: SupportSQLiteDatabase) {
-        //         database.execSQL("ALTER TABLE trip_data_points ADD COLUMN newField REAL NOT NULL DEFAULT 0")
-        //     }
         // }
 
         fun getDatabase(context: Context): BydStatsDatabase {
@@ -142,10 +48,6 @@ abstract class BydStatsDatabase : RoomDatabase() {
                     BydStatsDatabase::class.java,
                     DB_NAME
                 )
-                    .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
-                    // fallbackToDestructiveMigration handles anything beyond explicit
-                    // migrations during development. Remove before production release.
-                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance
@@ -167,6 +69,14 @@ abstract class BydStatsDatabase : RoomDatabase() {
          * Returns the backup directory in external Downloads/BydTripStats.
          * This location survives app uninstalls, unlike internal filesDir.
          */
+        // ── Migration template — copy for every future schema change ─────────
+        // val MIGRATION_X_Y = object : Migration(X, Y) {
+        //     override fun migrate(database: SupportSQLiteDatabase) {
+        //         database.execSQL("ALTER TABLE trip_data_points ADD COLUMN newField REAL NOT NULL DEFAULT 0")
+        //     }
+        // }
+        // Add to getDatabase: .addMigrations(MIGRATION_X_Y)
+
         fun getBackupDir(): File =
             File(
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
