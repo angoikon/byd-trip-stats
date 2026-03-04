@@ -30,7 +30,7 @@ BYD Trip Stats is a free, open-source Android app that automatically tracks and 
 - 📊 **Beautiful Analytics** - Comprehensive charts and statistics
 - 🗺️ **Route Visualization** - OpenStreetMap integration
 - 💾 **Data Export** - CSV, JSON, and text formats
-- 🗄️ **DB Backup & Restore** - Manual database (SQLite) backup, restore, and reset
+- 🗄️ **DB Backup & Restore** - Manual and scheduled backups via Downloads folder, Telegram, or ADB; one-tap restore
 - 🔒 **Privacy First** - All data stays on your device
 - 🆓 **Completely Free** - No ads, no subscriptions, no tracking
 
@@ -76,9 +76,9 @@ BYD Trip Stats is a free, open-source Android app that automatically tracks and 
 - **DB backup/restore** - Take backups of your current trips or restore those from a previous backup
 
 ### 🗄️ DB Backup & Restore
-- **Via Downloads folder** - Save the DB internally to your Downloads folder, easily restore it
-- **Via adb** - Pull/push via adb wirelesslly
-- **Via telegram** - Only download for the moment via bot, easy backup to your PC 
+- **Via Downloads folder** - Save the DB to `Downloads/BydTripStats/`, restore from the in-app list
+- **Via Telegram** - Send backups to a private Telegram chat; restore directly from the app. Supports manual and scheduled (daily/weekly/monthly) automatic backups. Backup registry persists across reinstalls
+- **Via ADB** - Pull/push wirelessly over ADB for technical users
 
 ### 🔄 Background Operation
 - **Auto-start on boot** - Silently starts when car boots

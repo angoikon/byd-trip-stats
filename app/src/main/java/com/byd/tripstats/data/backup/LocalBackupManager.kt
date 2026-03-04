@@ -316,6 +316,39 @@ class LocalBackupManager private constructor(private val context: Context) {
         }
     }
 
+
+    /**
+     * Downloads [backup] from Telegram then restores it as the live database.
+     * Progress is reported via TelegramManager.state; the final success/error
+     * (with restartRequired) is reported via LocalBackupManager.state so the
+     * screen can trigger the same auto-restart flow used by local restores.
+     */
+    suspend fun restoreFromTelegram(backup: TelegramManager.TelegramBackupFile) =
+        withContext(Dispatchers.IO) {
+            val telegramManager = TelegramManager.getInstance(context)
+            try {
+                val tempFile = telegramManager.downloadBackup(backup, context)
+                    ?: return@withContext  // TelegramManager.state already has the error
+
+                // Validate it's a real SQLite file before wiping the live DB
+                val header = ByteArray(16)
+                tempFile.inputStream().use { it.read(header) }
+                if (!isSQLiteFile(header)) {
+                    tempFile.delete()
+                    _state.value = BackupState.Error("Downloaded file is not a valid database.")
+                    return@withContext
+                }
+
+                _state.value = BackupState.InProgress("Restoring from Telegram backup…")
+                doRestore(android.net.Uri.fromFile(tempFile), context.contentResolver)
+                tempFile.delete()
+
+            } catch (e: Exception) {
+                Log.e(TAG, "restoreFromTelegram failed", e)
+                _state.value = BackupState.Error("Restore failed: ${e.message}")
+            }
+        }
+
     fun resetState() {
         _state.value = BackupState.Idle
     }
