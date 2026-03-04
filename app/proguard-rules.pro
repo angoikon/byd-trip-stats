@@ -11,3 +11,16 @@
 -dontwarn org.eclipse.jetty.alpn.**
 -dontwarn org.eclipse.jetty.npn.**
 -dontwarn reactor.blockhound.integration.BlockHoundIntegration
+
+# HiveMQ MQTT client — uses reflection to look up internal buffer methods
+-keep class com.hivemq.** { *; }
+-dontwarn com.hivemq.**
+
+# Netty — reflection-heavy internals used by HiveMQ
+-keep class io.netty.** { *; }
+-dontwarn io.netty.**
+
+# Keep all methods looked up by name via reflection (toLeakAwareBuffer etc.)
+-keepclassmembers class io.netty.buffer.** {
+    *;
+}
