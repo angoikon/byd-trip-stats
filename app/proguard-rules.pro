@@ -19,3 +19,23 @@
 -keepclassmembers class io.netty.** { *; }
 -keep class io.reactivex.** { *; }
 -keepclassmembers class io.reactivex.** { *; }
+
+# Optional compression/encoding libs referenced by Netty (not used on Android)
+-dontwarn com.aayushatharva.brotli4j.**
+-dontwarn com.barchart.udt.**
+-dontwarn com.fasterxml.aalto.**
+-dontwarn com.github.luben.zstd.**
+-dontwarn com.google.protobuf.**
+-dontwarn com.jcraft.jzlib.**
+-dontwarn com.ning.compress.**
+-dontwarn com.oracle.svm.**
+-dontwarn com.sun.nio.sctp.**
+-dontwarn gnu.io.**
+-dontwarn javax.naming.**
+-dontwarn javax.xml.stream.**
+-dontwarn lzma.sdk.**
+-dontwarn net.jpountz.**
+-dontwarn org.bouncycastle.**
+-dontwarn org.jboss.marshalling.**
+-dontwarn reactor.blockhound.**
+-dontwarn sun.security.x509.**
