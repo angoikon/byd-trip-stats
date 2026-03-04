@@ -30,10 +30,12 @@ data class RangeDataPoint(
     val electricDrivingRangeKm: Int
 )
 
-// Minimum trip distance before switching from the SOC-ratio fallback to
-// the observed efficiency calculation. Below this, a 0.1% SOC flicker
-// would swing the projected range by hundreds of km.
-private const val MIN_KM_FOR_OBSERVED = 3.0
+// Both conditions must be met before trusting the observed efficiency formula.
+// On a short trip with a small SoC drop, even 0.5% sensor noise causes
+// hundreds of km of error in (kmDriven / socDrop) × remainingSoc.
+// 8 km + 3% drop gives a noise-to-signal ratio below ~15%, which is acceptable.
+private const val MIN_KM_FOR_OBSERVED   = 8.0   // km driven since trip start
+private const val MIN_SOC_DROP_FOR_OBS  = 3.0   // absolute SoC % drop
 
 /**
  * Range Projection Chart
@@ -82,7 +84,7 @@ fun RangeProjectionChart(
     // Observed efficiency projection for a single point
     fun observedRange(distDriven: Double, soc: Double): Double {
         val socDrop = startSoc - soc
-        return if (distDriven >= MIN_KM_FOR_OBSERVED && socDrop > 0.5) {
+        return if (distDriven >= MIN_KM_FOR_OBSERVED && socDrop >= MIN_SOC_DROP_FOR_OBS) {
             (distDriven / socDrop) * soc            // observed km/SOC% × remaining SOC
         } else {
             (soc / startSoc) * startBmsRange        // stable fallback: scale by SOC ratio
@@ -130,7 +132,7 @@ fun RangeProjectionChart(
         ) {
             Column {
                 Text(
-                    text  = "%.0f km projected (BMS)".format(currentObserved),
+                    text  = "%.0f km projected range".format(currentObserved),
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = textColor
                 )
