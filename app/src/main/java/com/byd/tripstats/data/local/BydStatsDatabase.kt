@@ -14,6 +14,7 @@ import com.byd.tripstats.data.local.dao.TripStatsDao
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
 import com.byd.tripstats.data.local.entity.TripEntity
 import com.byd.tripstats.data.local.entity.TripStatsEntity
+import android.os.Environment
 import java.io.File
 import java.io.IOException
 
@@ -162,6 +163,16 @@ abstract class BydStatsDatabase : RoomDatabase() {
          *
          * Returns the backup File on success, null on failure.
          */
+        /**
+         * Returns the backup directory in external Downloads/BydTripStats.
+         * This location survives app uninstalls, unlike internal filesDir.
+         */
+        fun getBackupDir(): File =
+            File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                "BydTripStats"
+            )
+
         fun backupDatabase(context: Context): File? {
             // Close the instance so WAL is fully flushed before we copy the file.
             INSTANCE?.close()
@@ -173,7 +184,8 @@ abstract class BydStatsDatabase : RoomDatabase() {
                     Log.w(TAG, "No database file to back up")
                     return null
                 }
-                val backupDir = File(context.filesDir, "db_backups").also { it.mkdirs() }
+                // Save to Downloads/BydTripStats — survives uninstalls
+                val backupDir = getBackupDir().also { it.mkdirs() }
                 val backupFile = File(backupDir, "${DB_NAME}_backup_${System.currentTimeMillis()}.db")
                 dbFile.copyTo(backupFile, overwrite = true)
                 Log.i(TAG, "Backed up to: ${backupFile.absolutePath}")
@@ -216,13 +228,21 @@ abstract class BydStatsDatabase : RoomDatabase() {
          * Use this to populate a restore list in Settings if needed.
          */
         fun listBackups(context: Context): List<File> {
-            val dir = File(context.filesDir, "db_backups")
-            return if (dir.exists())
-                dir.listFiles()
-                    ?.filter { it.name.endsWith(".db") }
-                    ?.sortedByDescending { it.lastModified() }
-                    ?: emptyList()
-            else emptyList()
+            // Primary: Downloads/BydTripStats (persists across uninstalls)
+            val externalDir = getBackupDir()
+            // Legacy: internal filesDir/db_backups (pre-existing installs)
+            val internalDir = File(context.filesDir, "db_backups")
+
+            return listOf(externalDir, internalDir)
+                .filter { it.exists() }
+                .flatMap { dir ->
+                    dir.listFiles()
+                        ?.filter { it.name.endsWith(".db") }
+                        .orEmpty()
+                        .toList()
+                }
+                .distinctBy { it.name }
+                .sortedByDescending { it.lastModified() }
         }
     }
 }
