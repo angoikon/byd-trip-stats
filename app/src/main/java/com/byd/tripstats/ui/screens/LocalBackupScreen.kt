@@ -591,7 +591,8 @@ private fun SectionCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
-        colors   = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
+        colors   = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(

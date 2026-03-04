@@ -810,7 +810,7 @@ private fun FullscreenChartDialog(
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
                     )
                 )
                 

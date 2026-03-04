@@ -25,8 +25,8 @@ import java.util.*
 import kotlin.math.abs
 
 /**
- * Route Analysis tab - detailed trip statistics and timeline
- * Shows waypoints, segments, energy usage, and timeline
+ * Route Analysis tab — detailed trip statistics and timeline.
+ * Shows waypoints, segments, energy hotspots, and timeline.
  */
 @Composable
 fun RouteAnalysisTab(
@@ -53,39 +53,43 @@ fun RouteAnalysisTab(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Waypoints
         WaypointsCard(dataPoints)
-
-        // Route Segments
         RouteSegmentsCard(dataPoints)
-
-        // Energy Heatmap
         EnergyHeatmapCard(dataPoints)
-
-        // Timeline
         TripTimelineCard(dataPoints)
     }
 }
 
+// ── Shared card border modifier ───────────────────────────────────────────────
+
+private val cardBorder: Modifier
+    @Composable get() = Modifier.border(
+        width = 1.dp,
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+        shape = MaterialTheme.shapes.medium
+    )
+
+private val cardColors: CardColors
+    @Composable get() = CardDefaults.cardColors(
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+private val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+private fun fmt(ts: Long) = timeFormat.format(Date(ts))
+
+// ── Waypoints ─────────────────────────────────────────────────────────────────
+
 @Composable
 private fun WaypointsCard(dataPoints: List<TripDataPointEntity>) {
     val startPoint = dataPoints.first()
-    val endPoint = dataPoints.last()
-    val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-    
+    val endPoint   = dataPoints.last()
+
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
-                    shape = MaterialTheme.shapes.medium
-                )
-        ,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        modifier = Modifier.fillMaxWidth().then(cardBorder),
+        colors = cardColors
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -93,27 +97,21 @@ private fun WaypointsCard(dataPoints: List<TripDataPointEntity>) {
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
-            
             Spacer(modifier = Modifier.height(12.dp))
-            
-            // Start
             WaypointItem(
-                icon = Icons.Filled.FlagCircle,  // Flag icon for start
-                label = "Start",
-                time = timeFormat.format(Date(startPoint.timestamp)),
-                soc = "${startPoint.soc.toInt()}%",
-                color = RegenGreen
+                icon    = Icons.Filled.FlagCircle,
+                label   = "Start",
+                time    = fmt(startPoint.timestamp),
+                soc     = "${startPoint.soc.toInt()}%",
+                color   = RegenGreen
             )
-
             Spacer(modifier = Modifier.height(8.dp))
-
-            // End
             WaypointItem(
-                icon = Icons.Filled.LocationOn,  // Pin icon for end
-                label = "End",
-                time = timeFormat.format(Date(endPoint.timestamp)),
-                soc = "${endPoint.soc.toInt()}%",
-                color = BydErrorRed
+                icon    = Icons.Filled.LocationOn,
+                label   = "End",
+                time    = fmt(endPoint.timestamp),
+                soc     = "${endPoint.soc.toInt()}%",
+                color   = BydErrorRed
             )
         }
     }
@@ -131,50 +129,25 @@ private fun WaypointItem(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = color,
-            modifier = Modifier.size(32.dp)
-        )
-
+        Icon(imageVector = icon, contentDescription = label, tint = color, modifier = Modifier.size(32.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "Time: $time",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(text = "SOC: $soc", style = MaterialTheme.typography.bodySmall)
-            }
+            Text(text = label, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(text = time, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(text = "SOC: $soc", style = MaterialTheme.typography.bodySmall)
         }
     }
 }
 
+// ── Route Segments ────────────────────────────────────────────────────────────
+
 @Composable
 private fun RouteSegmentsCard(dataPoints: List<TripDataPointEntity>) {
-    // Split trip into segments (every 20% of points)
     val segmentSize = (dataPoints.size / 5).coerceAtLeast(1)
-    val segments = dataPoints.chunked(segmentSize).take(5)
-    
+    val segments    = dataPoints.chunked(segmentSize).take(5)
+
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
-                    shape = MaterialTheme.shapes.medium
-                )
-        ,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        modifier = Modifier.fillMaxWidth().then(cardBorder),
+        colors = cardColors
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -182,23 +155,25 @@ private fun RouteSegmentsCard(dataPoints: List<TripDataPointEntity>) {
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
-
             Spacer(modifier = Modifier.height(12.dp))
 
             segments.forEachIndexed { index, segment ->
-                val avgSpeed = segment.map { it.speed }.average()
-                val avgPower = segment.map { it.power }.average()
+                val avgSpeed  = segment.map { it.speed }.average()
+                val avgPower  = segment.map { it.power }.average()
                 val socChange = segment.first().soc - segment.last().soc
+                val startTime = fmt(segment.first().timestamp)
+                val endTime   = fmt(segment.last().timestamp)
 
                 SegmentItem(
                     segmentNumber = index + 1,
-                    avgSpeed = avgSpeed.toInt(),
-                    avgPower = avgPower.toInt(),
-                    socChange = socChange
+                    timeRange     = "$startTime – $endTime",
+                    avgSpeed      = avgSpeed.toInt(),
+                    avgPower      = avgPower.toInt(),
+                    socChange     = socChange
                 )
 
                 if (index < segments.size - 1) {
-                    Spacer(modifier = Modifier.height(8.dp)) 
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }
@@ -208,6 +183,7 @@ private fun RouteSegmentsCard(dataPoints: List<TripDataPointEntity>) {
 @Composable
 private fun SegmentItem(
     segmentNumber: Int,
+    timeRange: String,
     avgSpeed: Int,
     avgPower: Int,
     socChange: Double
@@ -216,60 +192,64 @@ private fun SegmentItem(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.03f),
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.05f),
                 shape = RoundedCornerShape(8.dp)
             )
             .padding(12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "Segment $segmentNumber",
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.Bold
-        )
-
-        Column(horizontalAlignment = Alignment.End) {
+        Column {
             Text(
-                text = "$avgSpeed km/h",
-                style = MaterialTheme.typography.bodySmall
+                text = "Segment $segmentNumber",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold
             )
+            Text(
+                text = timeRange,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Column(horizontalAlignment = Alignment.End) {
+            Text(text = "$avgSpeed km/h", style = MaterialTheme.typography.bodySmall)
             Text(
                 text = "${abs(avgPower)} kW",
                 style = MaterialTheme.typography.bodySmall,
                 color = if (avgPower < 0) RegenGreen else AccelerationOrange
             )
             Text(
-                text = "${String.format("%.1f", abs(socChange))}%",
+                text = "${String.format("%.1f", abs(socChange))}% SoC",
                 style = MaterialTheme.typography.bodySmall
             )
         }
     }
 }
 
+// ── Energy Hotspots ───────────────────────────────────────────────────────────
+
 @Composable
 private fun EnergyHeatmapCard(dataPoints: List<TripDataPointEntity>) {
-    // Find segments with highest energy consumption
-    val segmentSize = 10
-    val energySegments = dataPoints.chunked(segmentSize).mapIndexed { index, segment ->
-        // Assuming data points are ~1 second apart : TODO FIX - calculate actual time duration
-        val totalEnergy = segment.sumOf { abs(it.power) } / 3600.0  // kW * seconds / 3600 = kWh
-        index to totalEnergy
-    }.sortedByDescending { it.second }.take(5)
-    
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
-                    shape = MaterialTheme.shapes.medium
-            )    
-        ,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+    // Chunk into groups of 10 points and calculate energy using actual time deltas.
+    // E (kWh) = Σ power_kW × Δt_seconds / 3600
+    data class EnergySegment(val startTs: Long, val endTs: Long, val energyKwh: Double)
+
+    val segments = dataPoints.chunked(10).map { chunk ->
+        var energy = 0.0
+        for (i in 1 until chunk.size) {
+            val dtSeconds = (chunk[i].timestamp - chunk[i - 1].timestamp) / 1000.0
+            energy += abs(chunk[i].power) * dtSeconds / 3600.0
+        }
+        EnergySegment(
+            startTs   = chunk.first().timestamp,
+            endTs     = chunk.last().timestamp,
+            energyKwh = energy
         )
+    }.sortedByDescending { it.energyKwh }.take(5)
+
+    Card(
+        modifier = Modifier.fillMaxWidth().then(cardBorder),
+        colors = cardColors
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -282,25 +262,32 @@ private fun EnergyHeatmapCard(dataPoints: List<TripDataPointEntity>) {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            
             Spacer(modifier = Modifier.height(12.dp))
-            
-            energySegments.forEach { (segmentIndex, energy) ->
+
+            segments.forEachIndexed { index, seg ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Time: ${segmentIndex * segmentSize}s - ${(segmentIndex + 1) * segmentSize}s",
+                        text = "${fmt(seg.startTs)} – ${fmt(seg.endTs)}",
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = "${String.format("%.2f", energy)} kWh",
+                        text = "${String.format("%.3f", seg.energyKwh)} kWh",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
                         color = AccelerationOrange
+                    )
+                }
+                if (index < segments.size - 1) {
+                    HorizontalDivider(
+                        modifier  = Modifier.padding(vertical = 2.dp),
+                        thickness = 0.5.dp,
+                        color     = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
                     )
                 }
             }
@@ -308,57 +295,44 @@ private fun EnergyHeatmapCard(dataPoints: List<TripDataPointEntity>) {
     }
 }
 
+// ── Trip Timeline ─────────────────────────────────────────────────────────────
+
 @Composable
 private fun TripTimelineCard(dataPoints: List<TripDataPointEntity>) {
-    // Create timeline with major events
     val events = mutableListOf<TimelineEvent>()
-    val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-    
-    // Start
-    events.add(TimelineEvent(
-        time = timeFormat.format(Date(dataPoints.first().timestamp)),
-        title = "Trip Started",
-        icon = Icons.Filled.FlagCircle,
-        color = RegenGreen
-    ))
-    
-    // Find acceleration/braking events
-    for (i in 1 until dataPoints.size) {
-        val prev = dataPoints[i - 1]
+
+    events.add(TimelineEvent(fmt(dataPoints.first().timestamp), "Trip Started",  Icons.Filled.FlagCircle,  RegenGreen))
+
+    // Debounce acceleration/braking events: use a 5-point rolling average of power
+    // to suppress noise, and enforce a minimum 10-second gap between events.
+    val window = 5
+    var lastEventTs = dataPoints.first().timestamp
+
+    for (i in window until dataPoints.size) {
         val curr = dataPoints[i]
-        val powerChange = curr.power - prev.power
-        
-        if (abs(powerChange) > 20) { // Significant power change
+        val gapSeconds = (curr.timestamp - lastEventTs) / 1000.0
+        if (gapSeconds < 10.0) continue // too soon after last event
+
+        val avgBefore = dataPoints.subList(i - window, i).map { it.power }.average()
+        val avgAfter  = dataPoints.subList(i, (i + window).coerceAtMost(dataPoints.size)).map { it.power }.average()
+        val delta     = avgAfter - avgBefore
+
+        if (abs(delta) > 30) { // significant smoothed power change
             events.add(TimelineEvent(
-                time = timeFormat.format(Date(curr.timestamp)),
-                title = if (powerChange > 0) "Hard Acceleration" else "Hard Braking",
-                icon = if (powerChange > 0) Icons.Filled.TrendingUp else Icons.Filled.TrendingDown,
-                color = if (powerChange > 0) AccelerationOrange else RegenGreen
+                time  = fmt(curr.timestamp),
+                title = if (delta > 0) "Hard Acceleration" else "Hard Braking",
+                icon  = if (delta > 0) Icons.Filled.TrendingUp else Icons.Filled.TrendingDown,
+                color = if (delta > 0) AccelerationOrange else RegenGreen
             ))
+            lastEventTs = curr.timestamp
         }
     }
-    
-    // End
-    events.add(TimelineEvent(
-        time = timeFormat.format(Date(dataPoints.last().timestamp)),
-        title = "Trip Ended",
-        icon = Icons.Filled.LocationOn,
-        color = BydErrorRed
-    ))
-    
+
+    events.add(TimelineEvent(fmt(dataPoints.last().timestamp), "Trip Ended", Icons.Filled.LocationOn, BydErrorRed))
+
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
-                    shape = MaterialTheme.shapes.medium
-            )    
-        ,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        modifier = Modifier.fillMaxWidth().then(cardBorder),
+        colors = cardColors
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -366,12 +340,13 @@ private fun TripTimelineCard(dataPoints: List<TripDataPointEntity>) {
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
-            
             Spacer(modifier = Modifier.height(12.dp))
-            
-            events.take(10).forEach { event ->
+
+            events.take(15).forEachIndexed { index, event ->
                 TimelineEventItem(event)
-                Spacer(modifier = Modifier.height(8.dp))
+                if (index < (events.take(15).size - 1)) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
             }
         }
     }
@@ -384,31 +359,17 @@ private fun TimelineEventItem(event: TimelineEvent) {
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = event.icon,
-            contentDescription = event.title,
-            tint = event.color,
-            modifier = Modifier.size(24.dp)
-        )
-        
+        Icon(imageVector = event.icon, contentDescription = event.title, tint = event.color, modifier = Modifier.size(24.dp))
         Column {
-            Text(
-                text = event.title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = event.time,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Text(text = event.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            Text(text = event.time, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
 
 private data class TimelineEvent(
-    val time: String,
+    val time:  String,
     val title: String,
-    val icon: ImageVector,
+    val icon:  ImageVector,
     val color: Color
 )

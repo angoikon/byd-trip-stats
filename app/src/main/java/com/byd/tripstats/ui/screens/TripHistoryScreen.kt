@@ -257,7 +257,7 @@ fun TripItem(
                 Row(
                     modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start
+                    horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
                         text = if (trip.endTime != null)
@@ -451,7 +451,7 @@ fun ScoreChip(
         else          -> "D"
     }
 
-    val bgColor = MaterialTheme.colorScheme.surface
+    val bgColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.05f)
     val shape = MaterialTheme.shapes.small
     Box(
         modifier = modifier
@@ -521,7 +521,7 @@ fun TripMetricChip(
     modifier: Modifier = Modifier,
     iconTint: Color = MaterialTheme.colorScheme.primary
 ) {
-    val bgColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.03f)
+    val bgColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.05f)
     val shape = MaterialTheme.shapes.small
     Box(
         modifier = modifier
@@ -553,37 +553,6 @@ fun TripMetricChip(
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
-}
-
-// ── Legacy InfoChip kept for potential reuse elsewhere ─────────────────────
-
-@Composable
-fun InfoChip(
-    icon: ImageVector,
-    text: String
-) {
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        shape = MaterialTheme.shapes.small
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Text(
-                text = text,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium
             )
         }
     }
