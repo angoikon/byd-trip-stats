@@ -67,6 +67,9 @@ interface TripDataPointDao {
     
     @Query("SELECT * FROM trip_data_points WHERE tripId = :tripId AND timestamp >= :startTime AND timestamp <= :endTime ORDER BY timestamp ASC")
     fun getDataPointsInTimeRange(tripId: Long, startTime: Long, endTime: Long): Flow<List<TripDataPointEntity>>
+
+    @Query("SELECT * FROM trip_data_points WHERE tripId = :tripId ORDER BY timestamp DESC LIMIT 1")
+    suspend fun getLastDataPointForTrip(tripId: Long): TripDataPointEntity?
 }
 
 @Dao

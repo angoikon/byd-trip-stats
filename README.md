@@ -85,7 +85,8 @@ BYD Trip Stats is a free, open-source Android app that automatically tracks and 
 - **Foreground service** - Keeps running in background
 - **No battery drain** - Optimized for efficiency
 - **Manual disconnect** - Stop service when not needed
-- **Run MQTT Services independently** - Don't kill the services if the activity is swiped away or the task is removed 
+- **Run MQTT Services independently** - Don't kill the services if the activity is swiped away or the task is removed
+- **Highly optimized** - State flow management, SQLite limits, unified watchdog
 
 ### 📐 Adaptive layout
 - **Resizable & Portrait Support** - Open another app next to it , or even enjoy it in portrait mode
