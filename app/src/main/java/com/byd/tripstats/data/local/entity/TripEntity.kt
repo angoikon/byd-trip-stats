@@ -110,5 +110,11 @@ data class TripStatsEntity(
     val startLatitude: Double,
     val startLongitude: Double,
     val endLatitude: Double,
-    val endLongitude: Double
+    val endLongitude: Double,
+    val matrixDistribution: Map<String, Int>,
+    val energyConsumptionBySpeed: Map<String, Double>,
+    val regenEnergy: Double,
+    val mechanicalEnergy: Double,
+    val compressedRoute: List<LatLng>
+
 )

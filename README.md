@@ -59,6 +59,7 @@ BYD Trip Stats is a free, open-source Android app that automatically tracks and 
 - **Elevation Profile** - Altitude changes
 - **Power Distribution** - Histogram of power usage
 - **Speed Distribution** - Histogram of speed usage
+- **Heatmap Distributions** - Combination of power, speed and energy matrices
 - **Route Map** - OpenStreetMap with start/end markers
 - **Driving score calculation**  - Score based on your consumption, regen capacity and average speed
 

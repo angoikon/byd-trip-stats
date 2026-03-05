@@ -11,6 +11,7 @@ import com.byd.tripstats.data.model.VehicleTelemetry
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.math.abs
+import kotlin.math.sqrt
 
 class TripRepository private constructor(context: Context) {
 
@@ -302,21 +303,21 @@ class TripRepository private constructor(context: Context) {
     }
 
     private fun startTripWatchdog() {
-    scope.launch {
-        while (true) {
-            delay(60_000)
-            if (!tripStarted) continue
+        scope.launch {
+            while (true) {
+                delay(60_000)
+                if (!tripStarted) continue
 
-            val elapsed = System.currentTimeMillis() - lastTelemetryTime
+                val elapsed = System.currentTimeMillis() - lastTelemetryTime
 
-            if (elapsed > TELEMETRY_TIMEOUT_MS) {
-                Log.w(TAG, "Watchdog ending trip")
-                // Backdate the end time to the last time we actually received data
-                endCurrentTrip(overrideEndTime = lastTelemetryTime)
+                if (elapsed > TELEMETRY_TIMEOUT_MS) {
+                    Log.w(TAG, "Watchdog ending trip")
+                    // Backdate the end time to the last time we actually received data
+                    endCurrentTrip(overrideEndTime = lastTelemetryTime)
+                }
             }
         }
     }
-}
 
     private suspend fun recordDataPoint(
         tripId: Long,
@@ -380,6 +381,54 @@ class TripRepository private constructor(context: Context) {
         tripDao.updateTrip(updated)
     }
 
+    data class LatLng(val lat:Double,val lon:Double)
+
+    private fun compressRoute(points:List<LatLng>,epsilon:Double):List<LatLng>{
+
+        if(points.size<3) return points
+
+        var maxDist=0.0
+        var index=0
+
+        val start=points.first()
+        val end=points.last()
+
+        for(i in 1 until points.lastIndex){
+
+            val d = perpendicularDistance(points[i],start,end)
+
+            if(d>maxDist){
+                index=i
+                maxDist=d
+            }
+        }
+
+        return if(maxDist>epsilon){
+
+            val left = compressRoute(points.subList(0,index+1),epsilon)
+            val right = compressRoute(points.subList(index,points.size),epsilon)
+
+            left.dropLast(1)+right
+
+        } else listOf(start,end)
+    }
+
+    private fun perpendicularDistance(p:LatLng,a:LatLng,b:LatLng):Double{
+
+        val dx=b.lon-a.lon
+        val dy=b.lat-a.lat
+
+        val t=((p.lon-a.lon)*dx+(p.lat-a.lat)*dy)/(dx*dx+dy*dy)
+
+        val projX=a.lon+t*dx
+        val projY=a.lat+t*dy
+
+        val diffX=p.lon-projX
+        val diffY=p.lat-projY
+
+        return sqrt(diffX*diffX+diffY*diffY)
+    }
+
     private suspend fun calculateTripStats(tripId: Long) {
         val dataPoints = dataPointDao.getDataPointsForTripSync(tripId)
         if (dataPoints.isEmpty()) return
@@ -413,6 +462,89 @@ class TripRepository private constructor(context: Context) {
         } else 0.0
 
         val avgEfficiency = trip.efficiency ?: 0.0
+
+        val energyBySpeed = mutableMapOf<String, Double>()
+        val distanceBySpeed = mutableMapOf<String, Double>()
+
+        var regenEnergy=0.0
+        var mechanicalEnergy=0.0
+
+        for (i in 1 until dataPoints.size) {
+
+            val a = dataPoints[i - 1]
+            val b = dataPoints[i]
+
+            val distance = b.odometer - a.odometer
+            val energy = b.totalDischarge - a.totalDischarge
+            val dt=(b.timestamp-a.timestamp)/3600000.0
+
+            if(a.power>0) mechanicalEnergy+=a.power*dt
+            if(a.power<0) regenEnergy+=abs(a.power)*dt
+
+            val avgSpeed = (a.speed + b.speed) / 2
+
+            val speedBin = when {
+                avgSpeed < 20 -> "0-20"
+                avgSpeed < 40 -> "20-40"
+                avgSpeed < 60 -> "40-60"
+                avgSpeed < 80 -> "60-80"
+                avgSpeed < 100 -> "80-100"
+                else -> "100+"
+            }
+
+            energyBySpeed[speedBin] =
+                energyBySpeed.getOrDefault(speedBin, 0.0) + energy
+
+            distanceBySpeed[speedBin] =
+                distanceBySpeed.getOrDefault(speedBin, 0.0) + distance
+        }
+
+        val efficiencyBySpeed = mutableMapOf<String, Double>()
+
+        // energyBySpeed.forEach { (bin, energy) ->
+        //     val distance = distanceBySpeed[bin] ?: return@forEach
+        //     val consumption = (energy / distance) * 100
+
+        //     efficiencyBySpeed[bin] = consumption
+        // } // TODO: Also implement this
+
+        energyBySpeed.forEach{ (bin,e) ->
+            val d = distanceBySpeed[bin] ?: return@forEach
+            if(d>0) efficiencyBySpeed[bin]=(e/d)*100
+        }
+
+        val route = dataPoints
+            .filter { it.latitude!=null }
+            .map { LatLng(it.latitude!!,it.longitude!!) }
+
+        val compressedRoute = compressRoute(route,0.0001)
+
+        // Speed and power matrix distribution
+        val matrixDistribution = mutableMapOf<String, Int>()
+        dataPoints.forEach { dataPoint ->
+
+            val speedBin = when {
+                dataPoint.speed < 20 -> "0-20"
+                dataPoint.speed < 40 -> "20-40"
+                dataPoint.speed < 60 -> "40-60"
+                dataPoint.speed < 80 -> "60-80"
+                dataPoint.speed < 100 -> "80-100"
+                else -> "100+"
+            }
+
+            val powerBin = when {
+                dataPoint.power < -30 -> "regen-high"
+                dataPoint.power < -5 -> "regen"
+                dataPoint.power < 10 -> "idle"
+                dataPoint.power < 30 -> "low"
+                dataPoint.power < 60 -> "medium"
+                else -> "high"
+            }
+
+            val key = "$speedBin|$powerBin"
+
+            matrixDistribution[key] = matrixDistribution.getOrDefault(key, 0) + 1
+        }
 
         // Power distribution (histogram)
         // Half-open ranges [low, high] so boundary values are counted exactly once.
@@ -454,7 +586,12 @@ class TripRepository private constructor(context: Context) {
             startLatitude = firstPoint.latitude,
             startLongitude = firstPoint.longitude,
             endLatitude = lastPoint.latitude,
-            endLongitude = lastPoint.longitude
+            endLongitude = lastPoint.longitude,
+            matrixDistribution = matrixDistribution,
+            energyConsumptionBySpeed=efficiencyBySpeed,
+            regenEnergy=regenEnergy,
+            mechanicalEnergy=mechanicalEnergy,
+            compressedRoute=compressedRoute
         )
 
         statsDao.insertStats(stats)
