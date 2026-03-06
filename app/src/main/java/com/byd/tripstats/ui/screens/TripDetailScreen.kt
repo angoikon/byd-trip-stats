@@ -197,7 +197,7 @@ fun ExportDialog(
 
                 // ── Downloads ─────────────────────────────────────────────────
                 Text(
-                    "Save to Downloads folder:",
+                    "Save to Download folder:",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -266,10 +266,10 @@ fun copyTripSummaryToClipboard(
 }
 
 /**
- * Save trip data as CSV directly to the device's Downloads folder.
+ * Save trip data as CSV directly to the device's Download folder.
  *
  * Uses MediaStore.Downloads (API 29+) — no WRITE_EXTERNAL_STORAGE permission needed.
- * The file will appear in Downloads and be accessible via any file manager on the device.
+ * The file will appear in Download and be accessible via any file manager on the device.
  */
 fun buildTripCsv(
     trip: com.byd.tripstats.data.local.entity.TripEntity,
@@ -296,7 +296,7 @@ fun saveTripAsCSV(
 }
 
 /**
- * Save trip data as JSON directly to the device's Downloads folder.
+ * Save trip data as JSON directly to the device's Download folder.
  */
 fun buildTripJson(
     trip: com.byd.tripstats.data.local.entity.TripEntity,
@@ -365,7 +365,7 @@ private fun saveToDownloads(
 
     val resolver = context.contentResolver
     val uri = resolver.insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
-        ?: throw Exception("Could not create file in Downloads")
+        ?: throw Exception("Could not create file in Download")
 
     resolver.openOutputStream(uri)?.use { stream ->
         stream.write(content.toByteArray(Charsets.UTF_8))
@@ -378,7 +378,7 @@ private fun saveToDownloads(
 
     android.widget.Toast.makeText(
         context,
-        "Saved to Downloads: $fileName",
+        "Saved to Download: $fileName",
         android.widget.Toast.LENGTH_LONG
     ).show()
 }

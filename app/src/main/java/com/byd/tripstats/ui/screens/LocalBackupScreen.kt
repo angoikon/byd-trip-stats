@@ -161,9 +161,9 @@ fun LocalBackupScreen(
             // ── LOCAL group ───────────────────────────────────────────────────
             item {
                 GroupSection(title = "Local", icon = Icons.Filled.Storage) {
-                    SectionCard(title = "Backup to Downloads", icon = Icons.Filled.CloudUpload) {
+                    SectionCard(title = "Backup to Download", icon = Icons.Filled.CloudUpload) {
                 Text(
-                    "Saves the full trip database to:\nDownloads/BydTripStats/byd_stats_backup_DATE.db",
+                    "Saves the full trip database to:\nDownload/BydTripStats/byd_stats_backup_DATE.db",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -602,7 +602,7 @@ fun LocalBackupScreen(
                             text  = {
                                 Text(
                                     "This will permanently delete all trips and statistics.\n\n" +
-                                    "A backup will be saved to Downloads automatically before the reset. " +
+                                    "A backup will be saved to Download automatically before the reset. " +
                                     "The app will close and reopen.",
                                     style = MaterialTheme.typography.bodyMedium
                                 )
@@ -613,7 +613,7 @@ fun LocalBackupScreen(
                                         showResetConfirm = false
                                         scope.launch {
                                             // 1. Back up first via LocalBackupManager so it
-                                            //    appears in the Downloads list like any other backup
+                                            //    appears in the Download list like any other backup
                                             manager.backupDatabase()
                                             // 2. Wipe via ViewModel (closes Room, deletes file)
                                             viewModel.resetDatabase()

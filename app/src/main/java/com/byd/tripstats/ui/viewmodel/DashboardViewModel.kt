@@ -4,180 +4,198 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.byd.tripstats.service.MqttBrokerService
+import com.byd.tripstats.data.local.BydStatsDatabase
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
 import com.byd.tripstats.data.local.entity.TripEntity
 import com.byd.tripstats.data.local.entity.TripStatsEntity
 import com.byd.tripstats.data.model.VehicleTelemetry
 import com.byd.tripstats.data.repository.TripRepository
+import com.byd.tripstats.service.MqttBrokerService
 import com.byd.tripstats.service.MqttService
-import kotlinx.coroutines.delay
+import com.byd.tripstats.ui.components.RangeDataPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.byd.tripstats.ui.components.RangeDataPoint
-import com.byd.tripstats.data.local.BydStatsDatabase
+import android.content.SharedPreferences
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-import android.content.SharedPreferences
-import kotlinx.coroutines.flow.update
 
 class DashboardViewModel(application: Application) : AndroidViewModel(application) {
+
     private val TAG = "DashboardViewModel"
 
     private val tripRepository = TripRepository.getInstance(application)
 
-    // MQTT Connection state - properly tracked from service
+    // ── MQTT state ────────────────────────────────────────────────────────────
+
     private val _mqttConnected = MutableStateFlow(false)
     val mqttConnected: StateFlow<Boolean> = _mqttConnected.asStateFlow()
 
     private val _mqttConnectionError = MutableStateFlow<String?>(null)
     val mqttConnectionError: StateFlow<String?> = _mqttConnectionError.asStateFlow()
 
-    // Latest telemetry - observe from repository
-    val currentTelemetry: StateFlow<VehicleTelemetry?> = tripRepository.latestTelemetry
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = null
-        )
+    // ── Telemetry & trip state (from repository) ──────────────────────────────
 
-    // FIXED: Current trip state - observe from repository StateFlows
+    val currentTelemetry: StateFlow<VehicleTelemetry?> = tripRepository.latestTelemetry
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
     val isInTrip: StateFlow<Boolean> = tripRepository.isInTrip
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = false
-        )
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
     val currentTripId: StateFlow<Long?> = tripRepository.currentTripId
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = null
-        )
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    // Trip history
+    // ── Trip list & stats ─────────────────────────────────────────────────────
+
     val allTrips: StateFlow<List<TripEntity>> = tripRepository.getAllTrips()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    // All trip stats in one query — needed to compute regen efficiency per trip
+    // Eagerly kept alive — drives multiple derived StateFlows simultaneously.
     private val allTripStats: StateFlow<List<TripStatsEntity>> = tripRepository.getAllTripStats()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = emptyList()
-        )
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    /** One entry per day for the past 7 days that has at least one completed trip. */
-    data class DailyEfficiency(val dateLabel: String, val avgKwhPer100km: Double)
-
-    val weeklyEfficiency: StateFlow<List<DailyEfficiency>> = allTrips
-        .map { trips ->
-            val fmt = SimpleDateFormat("dd-MM", Locale.getDefault())
-            val cal = Calendar.getInstance()
-            // Snap to midnight of today
-            cal.set(Calendar.HOUR_OF_DAY, 0)
-            cal.set(Calendar.MINUTE, 0)
-            cal.set(Calendar.SECOND, 0)
-            cal.set(Calendar.MILLISECOND, 0)
-            val todayMidnight = cal.timeInMillis
-
-            (6 downTo 0).mapNotNull { daysAgo ->
-                val dayStart = todayMidnight - daysAgo * 86_400_000L
-                val dayEnd   = dayStart + 86_400_000L - 1L
-                val label    = fmt.format(java.util.Date(dayStart))
-                val efficiencies = trips
-                    .filter { it.startTime in dayStart..dayEnd && it.efficiency != null && (it.distance ?: 0.0) >= 0.5 }
-                    .mapNotNull { it.efficiency }
-                if (efficiencies.isEmpty()) null
-                else DailyEfficiency(label, efficiencies.average())
-            }
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = emptyList()
-        )
-
-    /** One entry per day for the past 30 days that has at least one completed trip. */
-    val monthlyEfficiency: StateFlow<List<DailyEfficiency>> = allTrips
-        .map { trips ->
-            val fmt = SimpleDateFormat("dd/MM", Locale.getDefault())
-            val cal = Calendar.getInstance()
-            cal.set(Calendar.HOUR_OF_DAY, 0)
-            cal.set(Calendar.MINUTE, 0)
-            cal.set(Calendar.SECOND, 0)
-            cal.set(Calendar.MILLISECOND, 0)
-            val todayMidnight = cal.timeInMillis
-
-            (29 downTo 0).mapNotNull { daysAgo ->
-                val dayStart = todayMidnight - daysAgo * 86_400_000L
-                val dayEnd   = dayStart + 86_400_000L - 1L
-                val label    = fmt.format(java.util.Date(dayStart))
-                val efficiencies = trips
-                    .filter { it.startTime in dayStart..dayEnd && it.efficiency != null && (it.distance ?: 0.0) >= 0.5 }
-                    .mapNotNull { it.efficiency }
-                if (efficiencies.isEmpty()) null
-                else DailyEfficiency(label, efficiencies.average())
-            }
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = emptyList()
-        )
-
-    /** One entry per calendar month for the past 12 months that has at least one completed trip. */
-    val yearlyEfficiency: StateFlow<List<DailyEfficiency>> = allTrips
-        .map { trips ->
-            val labelFmt = SimpleDateFormat("MMM", Locale.getDefault())
-            val cal = Calendar.getInstance()
-            cal.set(Calendar.DAY_OF_MONTH, 1)
-            cal.set(Calendar.HOUR_OF_DAY, 0)
-            cal.set(Calendar.MINUTE, 0)
-            cal.set(Calendar.SECOND, 0)
-            cal.set(Calendar.MILLISECOND, 0)
-
-            (11 downTo 0).mapNotNull { monthsAgo ->
-                val monthCal = cal.clone() as Calendar
-                monthCal.add(Calendar.MONTH, -monthsAgo)
-                val monthStart = monthCal.timeInMillis
-                monthCal.add(Calendar.MONTH, 1)
-                val monthEnd = monthCal.timeInMillis - 1L
-                val label = labelFmt.format(java.util.Date(monthStart))
-                val efficiencies = trips
-                    .filter { it.startTime in monthStart..monthEnd && it.efficiency != null && (it.distance ?: 0.0) >= 0.5 }
-                    .mapNotNull { it.efficiency }
-                if (efficiencies.isEmpty()) null
-                else DailyEfficiency(label, efficiencies.average())
-            }
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = emptyList()
-        )
+    // ── Selected trip — single source of truth for detail screens ────────────
 
     /**
-     * Pre-computed display metrics for every trip, keyed by trip ID.
-     * Derived from allTrips + allTripStats so the LazyColumn never does
-     * any arithmetic during scroll — just a map lookup.
+     * Set by the UI when navigating into a trip detail screen.
+     * All detail-screen StateFlows derive from this so there is exactly one DB
+     * subscription per ViewModel lifetime instead of one per recomposition.
      */
-    data class TripDisplayMetrics(val avgSpeedKmh: Int?, val tripScore: Int?, val regenEfficiencyPct: Double?)
+    private val _selectedTripId = MutableStateFlow<Long?>(null)
+
+    val selectedTrip: StateFlow<TripEntity?> =
+        _selectedTripId.flatMapLatest { id ->
+            if (id == null) flowOf(null) else tripRepository.getTripById(id)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    val selectedTripDataPoints: StateFlow<List<TripDataPointEntity>> =
+        _selectedTripId.flatMapLatest { id ->
+            if (id == null) flowOf(emptyList()) else tripRepository.getDataPointsForTrip(id)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    val selectedTripStats: StateFlow<TripStatsEntity?> =
+        _selectedTripId.flatMapLatest { id ->
+            if (id == null) flowOf(null) else tripRepository.getStatsForTrip(id)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** Call this when navigating to a trip detail screen. */
+    fun selectTrip(tripId: Long) {
+        _selectedTripId.value = tripId
+    }
+
+    /** Call this when navigating away from the detail screen. */
+    fun clearSelectedTrip() {
+        _selectedTripId.value = null
+    }
+
+    // ── Backward-compat helpers (used by screens that still call getTripXxx) ──
+    // These now just delegate to the shared selected-trip flows rather than
+    // creating new subscriptions, so they're safe to call from composables.
+
+    fun getTripDetails(tripId: Long): StateFlow<TripEntity?> {
+        selectTrip(tripId)
+        return selectedTrip
+    }
+
+    fun getTripDataPoints(tripId: Long): StateFlow<List<TripDataPointEntity>> {
+        selectTrip(tripId)
+        return selectedTripDataPoints
+    }
+
+    fun getTripStats(tripId: Long): StateFlow<TripStatsEntity?> {
+        selectTrip(tripId)
+        return selectedTripStats
+    }
+
+    // ── Efficiency charts ─────────────────────────────────────────────────────
+
+    /** One entry per time bucket that has at least one completed trip with ≥ 0.5 km. */
+    data class DailyEfficiency(val dateLabel: String, val avgKwhPer100km: Double)
+
+    /**
+     * Builds a list of [DailyEfficiency] for [bucketCount] daily buckets ending today,
+     * or for monthly buckets when [monthly] is true.
+     *
+     * Single implementation used by all three chart StateFlows — previously
+     * the same date-windowing logic was copy-pasted three times.
+     */
+    private fun List<TripEntity>.toEfficiencyBuckets(
+        bucketCount: Int,
+        fmt: String,
+        monthly: Boolean = false
+    ): List<DailyEfficiency> {
+        val formatter = SimpleDateFormat(fmt, Locale.getDefault())
+        val cal = Calendar.getInstance().apply {
+            if (monthly) set(Calendar.DAY_OF_MONTH, 1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        val anchor = cal.timeInMillis
+
+        return (bucketCount - 1 downTo 0).mapNotNull { bucketAgo ->
+            val bucketCal = cal.clone() as Calendar
+            if (monthly) {
+                bucketCal.add(Calendar.MONTH, -bucketAgo)
+            } else {
+                bucketCal.timeInMillis = anchor - bucketAgo * 86_400_000L
+            }
+            val bucketStart = bucketCal.timeInMillis
+            val bucketEnd = if (monthly) {
+                (bucketCal.clone() as Calendar).also { it.add(Calendar.MONTH, 1) }.timeInMillis - 1L
+            } else {
+                bucketStart + 86_400_000L - 1L
+            }
+            val label = formatter.format(java.util.Date(bucketStart))
+            val efficiencies = filter {
+                it.startTime in bucketStart..bucketEnd &&
+                it.efficiency != null &&
+                (it.distance ?: 0.0) >= 0.5
+            }.mapNotNull { it.efficiency }
+            if (efficiencies.isEmpty()) null
+            else DailyEfficiency(label, efficiencies.average())
+        }
+    }
+
+    /** Past 7 days, one point per day. */
+    val weeklyEfficiency: StateFlow<List<DailyEfficiency>> = allTrips
+        .map { it.toEfficiencyBuckets(7, "dd-MM") }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    /** Past 30 days, one point per day. */
+    val monthlyEfficiency: StateFlow<List<DailyEfficiency>> = allTrips
+        .map { it.toEfficiencyBuckets(30, "dd/MM") }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    /** Past 12 calendar months, one point per month. */
+    val yearlyEfficiency: StateFlow<List<DailyEfficiency>> = allTrips
+        .map { it.toEfficiencyBuckets(12, "MMM", monthly = true) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    // ── Per-trip display metrics ──────────────────────────────────────────────
+
+    /**
+     * Pre-computed display metrics keyed by trip ID. Derived once and cached —
+     * the LazyColumn in TripHistoryScreen does a map lookup, never arithmetic.
+     */
+    data class TripDisplayMetrics(
+        val avgSpeedKmh:       Int?,
+        val tripScore:         Int?,
+        val regenEfficiencyPct: Double?
+    )
 
     val tripDisplayMetrics: StateFlow<Map<Long, TripDisplayMetrics>> =
         combine(allTrips, allTripStats) { trips, stats ->
@@ -185,6 +203,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             trips.associate { trip ->
                 val dist = trip.distance
                 val dur  = trip.duration
+
                 val avgSpeed = if (dist != null && dur != null && dur > 0 && dist > 0)
                     (dist / (dur / 3_600_000.0)).toInt() else null
 
@@ -194,7 +213,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     val effScore = when {
                         eff <= 15.0 -> 40
                         eff >= 25.0 -> 0
-                        else -> ((25.0 - eff) / (25.0 - 15.0) * 40).toInt()
+                        else        -> ((25.0 - eff) / (25.0 - 15.0) * 40).toInt()
                     }
                     val maxRegen = kotlin.math.abs(trip.maxRegenPower)
                     val maxPower = trip.maxPower
@@ -219,27 +238,23 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 trip.id to TripDisplayMetrics(avgSpeed, score, regenPct)
             }
         }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly, // compute immediately and keep up-to-date for the entire app lifecycle since it's cheap to compute and used in multiple places, else SharingStarted.WhileSubscribed(5000)
-            initialValue = emptyMap()
-        )
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
 
-    // Auto trip detection
-    private val _autoTripDetection = MutableStateFlow(false)
+    // ── Auto trip detection ───────────────────────────────────────────────────
+
+    private val _autoTripDetection = MutableStateFlow(tripRepository.isAutoTripDetectionEnabled())
     val autoTripDetection: StateFlow<Boolean> = _autoTripDetection.asStateFlow()
 
-    // Live range projection data points for the current trip (in-memory, not persisted)
+    // ── Live range projection ─────────────────────────────────────────────────
+
     private val _tripDataPoints = MutableStateFlow<List<RangeDataPoint>>(emptyList())
     val tripDataPoints: StateFlow<List<RangeDataPoint>> = _tripDataPoints.asStateFlow()
     private var tripStartOdometer: Double? = null
 
-    init {
-        // Initialize auto trip detection state
-        _autoTripDetection.value = tripRepository.isAutoTripDetectionEnabled()
+    // ── Init ──────────────────────────────────────────────────────────────────
 
+    init {
         // Accumulate range projection data points reactively during active trips.
-        // Uses odometer delta for distance so no extra telemetry field is required.
         viewModelScope.launch {
             var wasInTrip = false
             combine(isInTrip, currentTelemetry) { inTrip, telemetry ->
@@ -264,13 +279,12 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         tripStartOdometer = null
                     }
                     inTrip -> {
-                        // Throttle to one point per 100 m of odometer change.
-                        // At ~1 Hz MQTT a 2-hour drive would otherwise accumulate
-                        // 7,200 points; 100 m spacing keeps it under ~300 per trip.
+                        // One point per 100 m of odometer change.
+                        // At ~1 Hz MQTT a 2-hour drive keeps this under ~300 points.
                         val distKm = (telemetry.odometer - (tripStartOdometer ?: telemetry.odometer))
                             .coerceAtLeast(0.0)
                         val lastDist = _tripDataPoints.value.lastOrNull()?.distanceKm ?: 0.0
-                        if (distKm - lastDist >= 0.1) { // You can tighten it to 0.05 (50 m) if you want finer granularity on short city trips.
+                        if (distKm - lastDist >= 0.1) {
                             _tripDataPoints.value = _tripDataPoints.value + RangeDataPoint(
                                 distanceKm             = distKm,
                                 soc                    = telemetry.soc,
@@ -284,7 +298,71 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    // For Settings screen to restart service with new config
+    // ── Trip controls ─────────────────────────────────────────────────────────
+
+    /**
+     * Both functions are now plain fun — the repository's public API is
+     * fire-and-forget (enqueues a TripEvent), so no coroutine is needed here.
+     */
+    fun startManualTrip() {
+        _tripDataPoints.value = emptyList()   // reset before repo broadcasts isInTrip = true
+        tripRepository.requestManualStart()
+    }
+
+    fun endManualTrip() {
+        tripRepository.requestManualStop()
+    }
+
+    fun toggleAutoTripDetection() {
+        val newValue = !_autoTripDetection.value
+        tripRepository.setAutoTripDetection(newValue)
+        _autoTripDetection.value = newValue
+    }
+
+    // ── Mock drive ────────────────────────────────────────────────────────────
+
+    fun startMockDrive() {
+        viewModelScope.launch {
+            val mockGenerator = com.byd.tripstats.mock.MockDataGenerator()
+            mockGenerator.generateMockDrive().collect { telemetry ->
+                // processTelemetry is now a plain fun — just call directly
+                tripRepository.processTelemetry(telemetry)
+            }
+        }
+    }
+
+    // ── MQTT service ──────────────────────────────────────────────────────────
+
+    /** Called from MainActivity when service binding is established. */
+    fun observeMqttServiceState(service: MqttService) {
+        viewModelScope.launch {
+            service.connectionState.collect { state ->
+                when (state) {
+                    is MqttService.ConnectionState.Connected    -> {
+                        _mqttConnected.value      = true
+                        _mqttConnectionError.value = null
+                    }
+                    is MqttService.ConnectionState.Error        -> {
+                        _mqttConnected.value      = false
+                        _mqttConnectionError.value = state.message
+                    }
+                    is MqttService.ConnectionState.Connecting,
+                    is MqttService.ConnectionState.Disconnected -> {
+                        _mqttConnected.value      = false
+                        _mqttConnectionError.value = null
+                    }
+                }
+            }
+        }
+    }
+
+    fun stopMqttService() {
+        MqttService.stop(getApplication())
+        _mqttConnected.value       = false
+        _mqttConnectionError.value = null
+    }
+
+    /** Restarts the MQTT client, optionally starting the embedded broker first. */
     fun restartMqttService(
         brokerUrl: String,
         brokerPort: Int,
@@ -295,212 +373,52 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 Log.d(TAG, "=== Restarting MQTT Service ===")
-                Log.d(TAG, "Broker: $brokerUrl:$brokerPort")
-                Log.d(TAG, "Topic: $topic")
-
-                // Step 1: Stop current MQTT client service
-                Log.d(TAG, "Stopping current MQTT client...")
                 MqttService.stop(getApplication())
-                delay(2000) // Wait for service to fully stop
+                delay(2_000)
 
-                // Step 2: Check if user wants embedded broker
-                val isLocalBroker = brokerUrl.trim().let {
+                val isLocal = brokerUrl.trim().let {
                     it == "127.0.0.1" || it == "localhost" || it == "::1"
                 }
 
-                if (isLocalBroker) {
-                    Log.d(TAG, "✓ Local broker detected ($brokerUrl)")
-                    Log.d(TAG, "  Ensuring embedded broker is running...")
-
-                    // Start embedded broker (safe to call even if already running)
+                if (isLocal) {
                     try {
                         MqttBrokerService.start(getApplication())
-                        Log.d(TAG, "✓ Embedded broker service started/verified")
-
-                        // CRITICAL: Wait for broker to be ready
-                        Log.d(TAG, "  Waiting 6s for broker initialization...")
-                        delay(6000)
-
+                        delay(6_000)   // wait for embedded broker init
                     } catch (e: Exception) {
-                        Log.e(TAG, "❌ Error starting embedded broker", e)
-                        // Continue anyway - broker might already be running
+                        Log.e(TAG, "Error starting embedded broker", e)
                     }
-                } else {
-                    Log.d(TAG, "✓ External broker detected ($brokerUrl)")
-                    Log.d(TAG, "  Using external broker, no embedded broker needed")
                 }
 
-                // Step 3: Start MQTT client with new settings
-                Log.d(TAG, "Starting MQTT client with new settings...")
                 MqttService.start(
-                    context = getApplication(),
+                    context   = getApplication(),
                     brokerUrl = brokerUrl,
                     brokerPort = brokerPort,
-                    username = username,
-                    password = password,
-                    topic = topic
+                    username  = username,
+                    password  = password,
+                    topic     = topic
                 )
 
-                Log.d(TAG, "✓ MQTT client service start command sent")
-                Log.d(TAG, "  Connection attempt in progress...")
-
-                // Wait for connection to establish
-                delay(2000)
-
+                delay(2_000)
                 Log.d(TAG, "=== MQTT Service Restart Complete ===")
-
             } catch (e: Exception) {
-                Log.e(TAG, "❌ Error restarting MQTT service", e)
-                Log.e(TAG, "   Error: ${e.message}")
-                e.printStackTrace()
-            }
-        }
-    }
-
-    fun stopMqttService() {
-        MqttService.stop(getApplication())
-        _mqttConnected.value = false
-        _mqttConnectionError.value = null
-    }
-
-    fun startManualTrip() {
-        viewModelScope.launch {
-            val telemetry = currentTelemetry.value
-            if (telemetry != null) {
-                _tripDataPoints.value = emptyList() // reset before repository triggers isInTrip → true
-                tripRepository.startTrip(telemetry, isManual = true)
-            }
-        }
-    }
-
-    fun endManualTrip() {
-        viewModelScope.launch {
-            tripRepository.endCurrentTrip()
-            // No need to update state - repository will broadcast via StateFlow
-        }
-    }
-
-    fun toggleAutoTripDetection() {
-        viewModelScope.launch {
-            val newValue = !_autoTripDetection.value
-            tripRepository.setAutoTripDetection(newValue)
-            _autoTripDetection.value = newValue
-        }
-    }
-
-    fun deleteTrip(tripId: Long) {
-        viewModelScope.launch {
-            tripRepository.deleteTrip(tripId)
-        }
-    }
-
-    /** Deletes multiple trips in a single DB transaction. */
-    fun deleteTrips(tripIds: List<Long>) {
-        viewModelScope.launch {
-            tripRepository.deleteTrips(tripIds)
-        }
-    }
-
-    fun getTripDetails(tripId: Long): StateFlow<TripEntity?> {
-        // Seed with the already-loaded list entry so the details screen never
-        // renders a null frame — eliminates the one-frame flicker on navigation.
-        val cached = allTrips.value.firstOrNull { it.id == tripId }
-        return tripRepository.getTripById(tripId)
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = cached
-            )
-    }
-
-    fun getTripDataPoints(tripId: Long): StateFlow<List<TripDataPointEntity>> {
-        return tripRepository.getDataPointsForTrip(tripId)
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = emptyList()
-            )
-    }
-
-    fun getTripStats(tripId: Long): StateFlow<TripStatsEntity?> {
-        return tripRepository.getStatsForTrip(tripId)
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = null
-            )
-    }
-
-    // Called from MainActivity when service binding is established
-    fun observeMqttServiceState(service: MqttService) {
-        viewModelScope.launch {
-            service.connectionState.collect { state ->
-                when (state) {
-                    is MqttService.ConnectionState.Connected -> {
-                        _mqttConnected.value = true
-                        _mqttConnectionError.value = null
-                    }
-                    is MqttService.ConnectionState.Error -> {
-                        _mqttConnected.value = false
-                        _mqttConnectionError.value = state.message
-                    }
-                    is MqttService.ConnectionState.Connecting -> {
-                        _mqttConnected.value = false
-                        _mqttConnectionError.value = null
-                    }
-                    is MqttService.ConnectionState.Disconnected -> {
-                        _mqttConnected.value = false
-                        _mqttConnectionError.value = null
-                    }
-                }
-            }
-        }
-    }
-
-    // Legacy method - kept for backward compatibility
-    fun setMqttConnectionState(connected: Boolean) {
-        _mqttConnected.value = connected
-    }
-
-    // Mock data for testing
-    fun startMockDrive() {
-        viewModelScope.launch {
-            val mockGenerator = com.byd.tripstats.mock.MockDataGenerator()
-            mockGenerator.generateMockDrive().collect { telemetry ->
-                tripRepository.processTelemetry(telemetry)
+                Log.e(TAG, "Error restarting MQTT service", e)
             }
         }
     }
 
     // ── Database management ───────────────────────────────────────────────────
 
-    /**
-     * Creates a timestamped backup of the SQLite file.
-     * Safe to call from a Settings "Back up trips" button.
-     * Returns the backup file path string, or null if it failed.
-     */
     suspend fun backupDatabase(): File? = withContext(Dispatchers.IO) {
         BydStatsDatabase.backupDatabase(getApplication())
     }
 
-    /**
-     * Lists all available backups sorted newest-first.
-     * Use to show a "Last backed up: X" summary in Settings.
-     */
-    fun listDatabaseBackups(): List<File> {
-        return BydStatsDatabase.listBackups(getApplication())
-    }
+    fun listDatabaseBackups(): List<File> = BydStatsDatabase.listBackups(getApplication())
 
-    /**
-     * Wipes all trip data. Should always be preceded by backupDatabase().
-     * Call from a Settings "Reset all data" button with a confirmation dialog.
-     * After this, all StateFlows will emit empty/null — UI reacts automatically.
-     */
     fun resetDatabase() {
         BydStatsDatabase.resetDatabase(getApplication())
     }
 
-    // ── Trip History Sort & Filter ────────────────────────────────────────────
+    // ── Trip history sort & filter ────────────────────────────────────────────
 
     enum class TripSortField  { DATE, DISTANCE, DURATION, CONSUMPTION, REGEN_EFF, MAX_SPEED }
     enum class TripSortOrder  { ASC, DESC }
@@ -559,6 +477,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             maxSpeedMax    = getFloatOrNull("f_speed_max")
         )
     }
+
     private val _filterState = MutableStateFlow(loadFilterState())
     val filterState: StateFlow<TripFilterState> = _filterState.asStateFlow()
 
@@ -590,13 +509,14 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     val sortedFilteredTrips: StateFlow<List<TripEntity>> =
         combine(allTrips, tripDisplayMetrics, _sortField, _sortOrder, _filterState) {
             trips, metrics, field, order, filter ->
+
             val active    = trips.filter { it.isActive }
             val completed = trips.filter { !it.isActive }
 
             val filtered = completed.filter { trip ->
                 val m      = metrics[trip.id]
-                val dist   = trip.distance   ?: 0.0
-                val durMin = (trip.duration  ?: 0L) / 60_000.0
+                val dist   = trip.distance  ?: 0.0
+                val durMin = (trip.duration ?: 0L) / 60_000.0
                 val cons   = trip.efficiency ?: Double.MAX_VALUE
                 val regen  = m?.regenEfficiencyPct ?: 0.0
                 val spd    = trip.maxSpeed
@@ -622,8 +542,18 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 TripSortField.MAX_SPEED   -> filtered.sortedBy { it.maxSpeed }
             }.let { if (order == TripSortOrder.DESC) it.reversed() else it }
 
+            // Active trip always floats to the top
             active + sorted
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
+    // ── Trip deletion ─────────────────────────────────────────────────────────
+
+    fun deleteTrip(tripId: Long) {
+        viewModelScope.launch { tripRepository.deleteTrip(tripId) }
+    }
+
+    fun deleteTrips(tripIds: List<Long>) {
+        viewModelScope.launch { tripRepository.deleteTrips(tripIds) }
+    }
 }

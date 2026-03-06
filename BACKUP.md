@@ -7,7 +7,7 @@ Your trip data lives in a single SQLite database file on the car's infotainment 
 ## Table of Contents
 
 - [Backup Methods](#backup-methods)
-  - [Downloads Folder](#1-downloads-folder)
+  - [Download Folder](#1-download-folder)
   - [Telegram](#2-telegram)
   - [Wireless ADB](#3-wireless-adb)
 - [Restore Methods](#restore-methods)
@@ -20,14 +20,14 @@ Your trip data lives in a single SQLite database file on the car's infotainment 
 
 ## Backup Methods
 
-### 1. Downloads Folder
+### 1. Download Folder
 
 The simplest option. No setup required.
 
 **Steps:**
 1. Open the app → **Settings** → **Backup & Restore**
-2. Under *Backup to Downloads*, tap **Backup Now**
-3. The file is saved to `Downloads/BydTripStats/byd_stats_backup_YYYY-MM-DD_HH-mm.db` on the car's internal storage
+2. Under *Backup to Download*, tap **Backup Now**
+3. The file is saved to `Download/BydTripStats/byd_stats_backup_YYYY-MM-DD_HH-mm.db` on the car's internal storage
 
 The file will appear in the car's file manager and can be copied to a USB drive or SD card from there.
 
@@ -63,9 +63,9 @@ Sends the backup file to a private Telegram chat. Accessible from any device wit
 
 Every time a backup is sent successfully, its metadata (`file_id`, filename, size, date) is saved in two places simultaneously:
 - **SharedPreferences** — fast access while the app is installed
-- **`Downloads/BydTripStats/telegram_registry.json`** — persists across uninstalls
+- **`Download/BydTripStats/telegram_registry.json`** — persists across uninstalls
 
-If you uninstall or reset app data and then reconnect your bot, tapping refresh in *Restore from Telegram* will rediscover all previous backups automatically by reading the registry file from Downloads. As long as `Downloads/BydTripStats/` has not been manually cleared, no backups are lost.
+If you uninstall or reset app data and then reconnect your bot, tapping refresh in *Restore from Telegram* will rediscover all previous backups automatically by reading the registry file from Download. As long as `Download/BydTripStats/` has not been manually cleared, no backups are lost.
 
 **Automatic backup:**
 
@@ -80,7 +80,7 @@ Key behaviours to be aware of:
 
 The *Last auto-backup* timestamp shown in Settings confirms when the most recent automatic run completed.
 
-> To disconnect, tap **Disconnect bot**. This cancels the automatic schedule and clears all saved credentials. Your previous backups in Telegram and the registry file in Downloads are unaffected.
+> To disconnect, tap **Disconnect bot**. This cancels the automatic schedule and clears all saved credentials. Your previous backups in Telegram and the registry file in Download are unaffected.
 
 ---
 
@@ -119,7 +119,7 @@ adb -s 192.168.x.x:5555 shell run-as com.byd.tripstats \
 
 ### 1. From the Backup List
 
-The app scans all known backup locations (Downloads folder and private ADB directory) and shows them in a single list inside the Restore section.
+The app scans all known backup locations (Download folder and private ADB directory) and shows them in a single list inside the Restore section.
 
 **Steps:**
 1. Open the app → **Settings** → **Backup & Restore**
@@ -128,7 +128,7 @@ The app scans all known backup locations (Downloads folder and private ADB direc
 4. Confirm the warning dialog
 5. The app restores the database and restarts automatically
 
-Each entry shows the filename, date, size, and source location (*Downloads* or *Internal (ADB)*). Tap the refresh icon to re-scan if you have just created a new backup or pushed a file via ADB.
+Each entry shows the filename, date, size, and source location (*Download* or *Internal (ADB)*). Tap the refresh icon to re-scan if you have just created a new backup or pushed a file via ADB.
 
 ---
 
@@ -144,7 +144,7 @@ Restore a backup directly from your Telegram chat without needing a PC or ADB.
 5. Confirm the warning dialog
 6. The app downloads the file, validates it, restores the database, and restarts automatically
 
-> If you have just reinstalled the app or cleared app data, your previous backups will reappear after tapping refresh — as long as `Downloads/BydTripStats/telegram_registry.json` is still present.
+> If you have just reinstalled the app or cleared app data, your previous backups will reappear after tapping refresh — as long as `Download/BydTripStats/telegram_registry.json` is still present.
 
 ---
 

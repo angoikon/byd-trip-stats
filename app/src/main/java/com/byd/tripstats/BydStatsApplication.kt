@@ -4,24 +4,27 @@ import android.app.Application
 import android.util.Log
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.service.MqttBrokerService
-import kotlinx.coroutines.DelicateCoroutinesApi
+import com.byd.tripstats.service.MqttService
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 
 /**
- * Custom Application class for BYD Trip Stats
- * 
- * HYBRID APPROACH:
- * - If user configured 127.0.0.1 → Start embedded broker
- * - If user configured external IP → Skip embedded broker
- * 
- * This gives users flexibility:
- * - Option 1: Standalone (embedded broker)
- * - Option 2: External broker (HiveMQ, custom, etc.)
+ * Application entry point for BYD Trip Stats.
+ *
+ * Owns the full MQTT startup sequence so it runs correctly on every process
+ * start — first launch, reboot via BootReceiver, or process restart by Android:
+ *
+ *   1. Read persisted MQTT settings.
+ *   2. If broker URL is local (127.0.0.1 / localhost / blank) → start the
+ *      embedded Moquette broker first and wait for it to be ready.
+ *   3. Start the MqttService client with the configured settings.
+ *
+ * MainActivity only binds to the already-running service; it never starts it.
  */
 class BydStatsApplication : Application() {
 
@@ -29,81 +32,73 @@ class BydStatsApplication : Application() {
         private const val TAG = "BydStatsApp"
     }
 
+    /**
+     * Application-scoped coroutine scope. SupervisorJob means a failure in one
+     * child does not cancel the others. Cancelled automatically when the process
+     * dies — no leak, no GlobalScope.
+     */
+    private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     override fun onCreate() {
         super.onCreate()
-        
-        Log.d(TAG, "=== BYD Trip Stats Application Starting ===")
-        Log.d(TAG, "Version: 1.0.0")
-        Log.d(TAG, "Package: $packageName")
-        
-        // Check if user wants embedded broker
-        checkAndStartEmbeddedBroker()
-        
-        Log.d(TAG, "=== Application initialization complete ===")
+        Log.d(TAG, "=== BYD Trip Stats starting (pid=${android.os.Process.myPid()}) ===")
+        startMqttStack()
     }
 
-    private fun checkAndStartEmbeddedBroker() {
-        // Launch coroutine to check settings
-        @OptIn(DelicateCoroutinesApi::class)
-        GlobalScope.launch(Dispatchers.IO) {
+    private fun startMqttStack() {
+        appScope.launch {
             try {
-                val preferencesManager = PreferencesManager(applicationContext)
-                
-                // Load settings with timeout
-                val settings = withTimeout(3000L) {
-                    preferencesManager.mqttSettings.first()
+                val prefs    = PreferencesManager(applicationContext)
+                val settings = withTimeout(3_000L) { prefs.mqttSettings.first() }
+
+                Log.d(TAG, "Settings: broker=${settings.brokerUrl}:${settings.brokerPort} topic=${settings.topic}")
+
+                val isLocal = settings.brokerUrl.trim().let {
+                    it.isBlank() || it == "127.0.0.1" || it == "localhost" || it == "::1"
                 }
-                
-                Log.d(TAG, "Loaded MQTT settings:")
-                Log.d(TAG, "  Broker: ${settings.brokerUrl}")
-                Log.d(TAG, "  Port: ${settings.brokerPort}")
-                
-                // Check if local broker
-                val isLocalBroker = settings.brokerUrl.trim().let {
-                    it == "127.0.0.1" || it == "localhost" || it == "::1" || it.isBlank()
-                }
-                
-                if (isLocalBroker) {
-                    Log.d(TAG, "✓ Local broker mode detected")
-                    Log.d(TAG, "  Starting embedded MQTT broker...")
-                    
+
+                if (isLocal) {
+                    Log.d(TAG, "Local broker mode — starting embedded Moquette broker")
                     MqttBrokerService.start(applicationContext)
-                    
-                    Log.d(TAG, "✅ Embedded MQTT broker started")
-                    Log.d(TAG, "   Listening on: 127.0.0.1:${settings.brokerPort}")
-                    
+                    // Give the broker time to bind its port before the client connects.
+                    // 6 s matches the delay previously used in DashboardViewModel.restartMqttService.
+                    kotlinx.coroutines.delay(6_000)
+                    Log.d(TAG, "Embedded broker ready")
                 } else {
-                    Log.d(TAG, "✓ External broker mode detected")
-                    Log.d(TAG, "  Broker: ${settings.brokerUrl}:${settings.brokerPort}")
-                    Log.d(TAG, "  Embedded broker NOT started (not needed)")
+                    Log.d(TAG, "External broker mode — skipping embedded broker")
                 }
-                
+
+                // Only start the client if the minimum required config is present
+                if (settings.brokerUrl.isNotBlank() && settings.topic.isNotBlank()) {
+                    Log.d(TAG, "Starting MQTT client")
+                    MqttService.start(
+                        context    = applicationContext,
+                        brokerUrl  = settings.brokerUrl,
+                        brokerPort = settings.brokerPort,
+                        username   = settings.username.ifBlank { null },
+                        password   = settings.password.ifBlank { null },
+                        topic      = settings.topic
+                    )
+                    Log.d(TAG, "MQTT client start command sent")
+                } else {
+                    Log.w(TAG, "MQTT not configured yet — skipping client start")
+                }
+
             } catch (e: TimeoutCancellationException) {
-                Log.w(TAG, "⚠ Timeout loading settings, using defaults")
-                Log.w(TAG, "  Starting embedded broker as fallback...")
-                
-                // Default to embedded broker if settings not loaded
-                MqttBrokerService.start(applicationContext)
-                
+                Log.w(TAG, "Timed out reading settings — falling back to embedded broker only")
+                tryStartEmbeddedBroker()
             } catch (e: Exception) {
-                Log.e(TAG, "❌ Error checking broker mode", e)
-                Log.w(TAG, "  Starting embedded broker as fallback...")
-                
-                // Default to embedded broker on error
-                try {
-                    MqttBrokerService.start(applicationContext)
-                } catch (e2: Exception) {
-                    Log.e(TAG, "❌ Failed to start embedded broker", e2)
-                }
+                Log.e(TAG, "Error during MQTT stack startup", e)
+                tryStartEmbeddedBroker()
             }
         }
     }
 
-    override fun onTerminate() {
-        super.onTerminate()
-        Log.d(TAG, "Application terminating...")
-        
-        // Note: onTerminate() is never called in production
-        // Services will be stopped by Android when app is killed
+    private fun tryStartEmbeddedBroker() {
+        try {
+            MqttBrokerService.start(applicationContext)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to start embedded broker as fallback", e)
+        }
     }
 }

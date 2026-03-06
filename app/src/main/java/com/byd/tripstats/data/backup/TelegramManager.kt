@@ -346,7 +346,7 @@ class TelegramManager private constructor(private val context: Context) {
         val jsonStr = buildRegistryJson(existing)
         // 1. SharedPreferences (fast access while app is installed)
         prefs.edit().putString(KEY_SENT_FILES, jsonStr).apply()
-        // 2. Downloads/BydTripStats/telegram_registry.json (survives uninstalls)
+        // 2. Download/BydTripStats/telegram_registry.json (survives uninstalls)
         writeExternalRegistry(jsonStr)
         _telegramBackups.value = existing
     }
@@ -370,7 +370,7 @@ class TelegramManager private constructor(private val context: Context) {
                 put(android.provider.MediaStore.Downloads.DISPLAY_NAME, REGISTRY_FILE_NAME)
                 put(android.provider.MediaStore.Downloads.MIME_TYPE, "application/json")
                 put(android.provider.MediaStore.Downloads.RELATIVE_PATH,
-                    "${android.os.Environment.DIRECTORY_DOWNLOADS}/BydTripStats")
+                    "Download/BydTripStats")
                 put(android.provider.MediaStore.Downloads.IS_PENDING, 1)
             }
             val resolver = context.contentResolver
@@ -384,7 +384,7 @@ class TelegramManager private constructor(private val context: Context) {
             )
 
             val uri = resolver.insert(collection, values) ?: run {
-                Log.w(TAG, "Could not create registry file in Downloads")
+                Log.w(TAG, "Could not create registry file in Download")
                 return
             }
             resolver.openOutputStream(uri)?.use { it.write(jsonStr.toByteArray(Charsets.UTF_8)) }
@@ -478,7 +478,7 @@ class TelegramManager private constructor(private val context: Context) {
      */
     /**
      * Loads the registry of sent backups, merging SharedPreferences with the
-     * external telegram_registry.json in Downloads/BydTripStats (which survives
+     * external telegram_registry.json in Download/BydTripStats (which survives
      * uninstalls). After reconnecting the bot, this will rediscover all previous
      * backups automatically.
      */

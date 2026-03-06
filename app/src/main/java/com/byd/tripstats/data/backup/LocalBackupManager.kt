@@ -2,7 +2,6 @@ package com.byd.tripstats.data.backup
 
 import android.content.Context
 import android.net.Uri
-import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
@@ -22,11 +21,11 @@ import java.util.Locale
  * Manages local database backup and restore operations.
  *
  * Backup  → saves .db to TWO locations simultaneously:
- *     1. Downloads/BydTripStats/   (MediaStore, visible in file manager)
+ *     1. Download/BydTripStats/    (MediaStore, visible in file manager)
  *     2. files/db_backup/          (private app dir, accessible via ADB run-as)
  * Restore → two strategies:
  *   1. File picker (OpenDocument intent) — lets user navigate to any .db file
- *   2. Folder scan — lists .db files from both Downloads and private db_backup/
+ *   2. Folder scan — lists .db files from both Download and private db_backup/
  *
  * DATABASE_NAME must match the string in Room.databaseBuilder() in BydStatsDatabase.kt
  */
@@ -68,7 +67,7 @@ class LocalBackupManager private constructor(private val context: Context) {
         val uri: Uri,            // content:// (MediaStore) or file:// (private dir)
         val sizeBytes: Long,
         val dateModified: Long,  // epoch ms
-        val source: String = "" // "Downloads" or "Internal (ADB)"
+        val source: String = "" // "Download" or "Internal (ADB)"
     )
 
     private val _state = MutableStateFlow<BackupState>(BackupState.Idle)
@@ -80,7 +79,7 @@ class LocalBackupManager private constructor(private val context: Context) {
     // ── Backup ────────────────────────────────────────────────────────────────
 
     /**
-     * Saves the Room database to Downloads/BydTripStats/byd_stats_backup_DATE.db
+     * Saves the Room database to Download/BydTripStats/byd_stats_backup_DATE.db
      * Uses MediaStore so no WRITE_EXTERNAL_STORAGE permission is needed (API 29+).
      */
     suspend fun backupDatabase() = withContext(Dispatchers.IO) {
@@ -100,19 +99,19 @@ class LocalBackupManager private constructor(private val context: Context) {
             val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm", Locale.getDefault()).format(Date())
             val fileName = "byd_stats_backup_$timestamp.db"
 
-            _state.value = BackupState.InProgress("Saving to Downloads…")
+            _state.value = BackupState.InProgress("Saving to Download…")
 
             val values = android.content.ContentValues().apply {
                 put(MediaStore.Downloads.DISPLAY_NAME, fileName)
                 put(MediaStore.Downloads.MIME_TYPE, BACKUP_MIME_TYPE)
                 put(MediaStore.Downloads.RELATIVE_PATH,
-                    "${Environment.DIRECTORY_DOWNLOADS}/$BACKUP_SUBFOLDER")
+                    "Download/$BACKUP_SUBFOLDER")
                 put(MediaStore.Downloads.IS_PENDING, 1)
             }
 
             val resolver = context.contentResolver
             val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
-                ?: throw Exception("Could not create file in Downloads")
+                ?: throw Exception("Could not create file in Download")
 
             resolver.openOutputStream(uri)?.use { out ->
                 FileInputStream(dbFile).use { input -> input.copyTo(out) }
@@ -128,7 +127,7 @@ class LocalBackupManager private constructor(private val context: Context) {
 
             val sizeMb = "%.1f".format(dbFile.length() / 1_048_576.0)
             _state.value = BackupState.Success(
-                "Saved: $fileName ($sizeMb MB)\nDownloads/$BACKUP_SUBFOLDER/ + internal storage"
+                "Saved: $fileName ($sizeMb MB)\nDownload/$BACKUP_SUBFOLDER/ + internal storage"
             )
             Log.i(TAG, "Backup saved: $fileName")
 
@@ -181,7 +180,7 @@ class LocalBackupManager private constructor(private val context: Context) {
     // ── Scan local backups ────────────────────────────────────────────────────
 
     /**
-     * Scans Downloads/BydTripStats/ for .db files using MediaStore.
+     * Scans Download/BydTripStats/ for .db files using MediaStore.
      * Populates [localBackups] sorted newest first.
      */
     suspend fun scanLocalBackups() = withContext(Dispatchers.IO) {
@@ -233,7 +232,7 @@ class LocalBackupManager private constructor(private val context: Context) {
                 .sortedByDescending { it.dateModified }
 
             _localBackups.value = merged
-            Log.i(TAG, "Found ${merged.size} backup(s) (${results.size} Downloads, ${privateResults.size} internal)")
+            Log.i(TAG, "Found ${merged.size} backup(s) (${results.size} Download, ${privateResults.size} internal)")
 
         } catch (e: Exception) {
             Log.e(TAG, "Scan failed", e)

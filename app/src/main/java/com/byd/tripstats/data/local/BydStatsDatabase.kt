@@ -72,7 +72,7 @@ abstract class BydStatsDatabase : RoomDatabase() {
          * Returns the backup File on success, null on failure.
          */
         /**
-         * Returns the backup directory in external Downloads/BydTripStats.
+         * Returns the backup directory in external Download/BydTripStats.
          * This location survives app uninstalls, unlike internal filesDir.
          */
         // ── Migration template — copy for every future schema change ─────────
@@ -100,7 +100,7 @@ abstract class BydStatsDatabase : RoomDatabase() {
                     Log.w(TAG, "No database file to back up")
                     return null
                 }
-                // Save to Downloads/BydTripStats — survives uninstalls
+                // Save to Download/BydTripStats — survives uninstalls
                 val backupDir = getBackupDir().also { it.mkdirs() }
                 val backupFile = File(backupDir, "${DB_NAME}_backup_${System.currentTimeMillis()}.db")
                 dbFile.copyTo(backupFile, overwrite = true)
@@ -144,7 +144,7 @@ abstract class BydStatsDatabase : RoomDatabase() {
          * Use this to populate a restore list in Settings if needed.
          */
         fun listBackups(context: Context): List<File> {
-            // Primary: Downloads/BydTripStats (persists across uninstalls)
+            // Primary: Download/BydTripStats (persists across uninstalls)
             val externalDir = getBackupDir()
             // Legacy: internal filesDir/db_backups (pre-existing installs)
             val internalDir = File(context.filesDir, "db_backups")

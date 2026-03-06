@@ -3,7 +3,7 @@
     package="com.byd.tripstats"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- External storage — backup/restore database to Downloads/BydTripStats -->
+    <!-- External storage — backup/restore database to Download/BydTripStats -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="29" />
