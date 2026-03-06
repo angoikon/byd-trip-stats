@@ -2,6 +2,8 @@ package com.byd.tripstats.data.backup
 
 import android.content.Context
 import android.net.Uri
+import android.os.Environment
+import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
@@ -38,7 +40,9 @@ class LocalBackupManager private constructor(private val context: Context) {
         const val DATABASE_NAME = "byd_stats_database"   // verify in BydStatsDatabase.kt
         // ─────────────────────────────────────────────────────────────────────
 
-        const val BACKUP_SUBFOLDER = "BydTripStats"
+        const val BACKUP_SUBFOLDER   = "BydTripStats"
+        // BYD DiLink names the folder "Download" (not "Downloads" as stock Android does)
+        const val BYD_DOWNLOAD_DIR   = "Download"
         const val BACKUP_MIME_TYPE = "application/octet-stream"
         const val BACKUP_EXTENSION = ".db"
         const val PRIVATE_BACKUP_DIR = "db_backup"
@@ -67,7 +71,7 @@ class LocalBackupManager private constructor(private val context: Context) {
         val uri: Uri,            // content:// (MediaStore) or file:// (private dir)
         val sizeBytes: Long,
         val dateModified: Long,  // epoch ms
-        val source: String = "" // "Download" or "Internal (ADB)"
+        val source: String = "" // "Downloads" or "Internal (ADB)"
     )
 
     private val _state = MutableStateFlow<BackupState>(BackupState.Idle)
@@ -105,7 +109,7 @@ class LocalBackupManager private constructor(private val context: Context) {
                 put(MediaStore.Downloads.DISPLAY_NAME, fileName)
                 put(MediaStore.Downloads.MIME_TYPE, BACKUP_MIME_TYPE)
                 put(MediaStore.Downloads.RELATIVE_PATH,
-                    "Download/$BACKUP_SUBFOLDER")
+                    "$BYD_DOWNLOAD_DIR/$BACKUP_SUBFOLDER")
                 put(MediaStore.Downloads.IS_PENDING, 1)
             }
 
@@ -226,14 +230,18 @@ class LocalBackupManager private constructor(private val context: Context) {
             // Also scan private app dir (accessible via ADB)
             val privateResults = scanPrivateBackups()
 
+            // Also scan the public Download/BydTripStats/ folder directly via the
+            // filesystem — this works after a reinstall when MediaStore ownership
+            // is lost and the cursor returns empty even though files still exist.
+            val filesystemResults = scanDownloadFolderDirectly()
+
             // Merge, deduplicate by name, sort newest first
-            val merged = (results + privateResults)
+            val merged = (results + privateResults + filesystemResults)
                 .distinctBy { it.name }
                 .sortedByDescending { it.dateModified }
 
             _localBackups.value = merged
-            Log.i(TAG, "Found ${merged.size} backup(s) (${results.size} Download, ${privateResults.size} internal)")
-
+            Log.i(TAG, "Found ${merged.size} backup(s) — MediaStore: ${results.size}, filesystem: ${filesystemResults.size}, internal: ${privateResults.size}")
             if (merged.isEmpty()) {
                 _state.value = BackupState.Error("No backups found. Run a backup first.")
             }
@@ -263,6 +271,42 @@ class LocalBackupManager private constructor(private val context: Context) {
                 } ?: emptyList()
         } catch (e: Exception) {
             Log.w(TAG, "Private backup scan failed: ${e.message}")
+            emptyList()
+        }
+    }
+
+
+    /**
+     * Directly reads the public Download/BydTripStats/ folder via the filesystem.
+     *
+     * This is the fallback path that succeeds after a reinstall — when MediaStore
+     * ownership is lost and the cursor returns empty — as long as
+     * READ_EXTERNAL_STORAGE permission is granted.
+     *
+     * On BYD DiLink the public folder is "Download" (not "Downloads").
+     */
+    private fun scanDownloadFolderDirectly(): List<BackupFile> {
+        return try {
+            val base = Environment.getExternalStorageDirectory()
+            // Try BYD path first, fall back to stock Android path
+            val dir = listOf(
+                java.io.File(base, "$BYD_DOWNLOAD_DIR/$BACKUP_SUBFOLDER"),
+                java.io.File(base, "Downloads/$BACKUP_SUBFOLDER")
+            ).firstOrNull { it.exists() && it.isDirectory } ?: return emptyList()
+
+            dir.listFiles { f -> f.extension == "db" }
+                ?.sortedByDescending { it.lastModified() }
+                ?.map { f ->
+                    BackupFile(
+                        name         = f.name,
+                        uri          = Uri.fromFile(f),
+                        sizeBytes    = f.length(),
+                        dateModified = f.lastModified(),
+                        source       = "Download (file)"
+                    )
+                } ?: emptyList()
+        } catch (e: Exception) {
+            Log.w(TAG, "Direct filesystem scan failed: ${e.message}")
             emptyList()
         }
     }

@@ -103,6 +103,12 @@ class MainActivity : ComponentActivity() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 add(Manifest.permission.POST_NOTIFICATIONS)
             }
+            // READ_EXTERNAL_STORAGE required on Android 10–12 to query MediaStore
+            // entries not owned by the current app install (e.g. after a reinstall).
+            // Superseded by READ_MEDIA_* on Android 13+ where it has no effect.
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+                add(Manifest.permission.READ_EXTERNAL_STORAGE)
+            }
         }
 
         val missing = required.filter {

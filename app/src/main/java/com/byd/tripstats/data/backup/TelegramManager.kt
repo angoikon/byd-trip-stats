@@ -398,6 +398,17 @@ class TelegramManager private constructor(private val context: Context) {
     }
 
     private fun readExternalRegistry(): List<TelegramBackupFile> {
+        // Try MediaStore first (fast path when ownership is intact)
+        val fromMediaStore = readExternalRegistryViaMediaStore()
+        if (fromMediaStore.isNotEmpty()) return fromMediaStore
+
+        // Fallback: read the JSON file directly from disk.
+        // This succeeds after a reinstall when MediaStore ownership is lost
+        // but READ_EXTERNAL_STORAGE is granted.
+        return readExternalRegistryFromFilesystem()
+    }
+
+    private fun readExternalRegistryViaMediaStore(): List<TelegramBackupFile> {
         return try {
             val resolver = context.contentResolver
             val collection = android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI
@@ -420,7 +431,25 @@ class TelegramManager private constructor(private val context: Context) {
                 ?: return emptyList()
             parseRegistryJson(jsonStr)
         } catch (e: Exception) {
-            Log.w(TAG, "External registry read failed: ${e.message}")
+            Log.w(TAG, "MediaStore registry read failed: ${e.message}")
+            emptyList()
+        }
+    }
+
+    private fun readExternalRegistryFromFilesystem(): List<TelegramBackupFile> {
+        return try {
+            val base = android.os.Environment.getExternalStorageDirectory()
+            val file = listOf(
+                java.io.File(base, "Download/BydTripStats/$REGISTRY_FILE_NAME"),
+                java.io.File(base, "Downloads/BydTripStats/$REGISTRY_FILE_NAME")
+            ).firstOrNull { it.exists() } ?: return emptyList()
+
+            val jsonStr = file.readText(Charsets.UTF_8)
+            val result = parseRegistryJson(jsonStr)
+            Log.i(TAG, "Registry loaded from filesystem: ${result.size} entries")
+            result
+        } catch (e: Exception) {
+            Log.w(TAG, "Filesystem registry read failed: ${e.message}")
             emptyList()
         }
     }
