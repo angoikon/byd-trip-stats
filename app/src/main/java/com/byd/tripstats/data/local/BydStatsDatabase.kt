@@ -11,9 +11,11 @@ import androidx.room.TypeConverters
 import com.byd.tripstats.data.local.dao.TripDao
 import com.byd.tripstats.data.local.dao.TripDataPointDao
 import com.byd.tripstats.data.local.dao.TripStatsDao
+import com.byd.tripstats.data.local.dao.TripSegmentDao
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
 import com.byd.tripstats.data.local.entity.TripEntity
 import com.byd.tripstats.data.local.entity.TripStatsEntity
+import com.byd.tripstats.data.local.entity.TripSegmentEntity
 import android.os.Environment
 import java.io.File
 import java.io.IOException
@@ -22,7 +24,8 @@ import java.io.IOException
     entities = [
         TripEntity::class,
         TripDataPointEntity::class,
-        TripStatsEntity::class
+        TripStatsEntity::class,
+        TripSegmentEntity::class
     ],
     version = 1,
     exportSchema = false
@@ -32,6 +35,7 @@ abstract class BydStatsDatabase : RoomDatabase() {
     abstract fun tripDao(): TripDao
     abstract fun tripDataPointDao(): TripDataPointDao
     abstract fun tripStatsDao(): TripStatsDao
+    abstract fun tripSegmentDao(): TripSegmentDao
 
     companion object {
         private const val TAG = "BydStatsDatabase"
@@ -48,6 +52,8 @@ abstract class BydStatsDatabase : RoomDatabase() {
                     BydStatsDatabase::class.java,
                     DB_NAME
                 )
+                    // .fallbackToDestructiveMigration()
+                    // .fallbackToDestructiveMigrationOnDowngrade()
                     .build()
                 INSTANCE = instance
                 instance

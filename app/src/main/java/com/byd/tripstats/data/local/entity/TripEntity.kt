@@ -4,6 +4,15 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.byd.tripstats.data.local.Converters
+import kotlinx.serialization.Serializable
+
+/**
+ * Shared coordinate type used by compressedRoute in TripStatsEntity and by
+ * TripRepository's Ramer-Douglas-Peucker compression. Defined here (entity
+ * package) so Converters.kt can reference it without a circular dependency.
+ */
+@Serializable
+data class LatLng(val lat: Double, val lon: Double)
 
 @Entity(tableName = "trips")
 data class TripEntity(
@@ -27,25 +36,24 @@ data class TripEntity(
     val maxBatteryCellTemp: Int = Int.MIN_VALUE,   // sentinel: unset until first reading
     val minBatteryCellTemp: Int = Int.MAX_VALUE    // sentinel: unset until first reading
 ) {
-    // Computed properties
     val duration: Long?
         get() = endTime?.let { it - startTime }
-    
+
     val distance: Double?
         get() = endOdometer?.let { it - startOdometer }
-    
+
     val energyConsumed: Double?
         get() = endTotalDischarge?.let { it - startTotalDischarge }
-    
+
     val socDelta: Double?
         get() = endSoc?.let { it - startSoc }
-    
+
     val efficiency: Double?
         get() {
-            val dist = distance ?: return null
+            val dist   = distance     ?: return null
             val energy = energyConsumed ?: return null
             if (dist == 0.0) return null
-            return (energy / dist) * 100.0 // kWh per 100km
+            return (energy / dist) * 100.0 // kWh per 100 km
         }
 }
 
@@ -68,23 +76,18 @@ data class TripDataPointEntity(
     val isRegenerating: Boolean,
     val engineSpeedFront: Int = 0,
     val engineSpeedRear: Int = 0,
-    // BMS-reported remaining range — stored so TripDetailScreen can replay the
-    // range projection chart from historical data, not just from live telemetry.
     val electricDrivingRangeKm: Int = 0,
-    // Tyre pressures (PSI) — stored per data point so pressure history is
-    // available for future analysis. 0.0 means not reported by this firmware.
     val tyrePressureLF: Double = 0.0,
     val tyrePressureRF: Double = 0.0,
     val tyrePressureLR: Double = 0.0,
     val tyrePressureRR: Double = 0.0,
-    // Battery health & voltage snapshot per data point
     val soh: Int = 0,
     val batteryTotalVoltage: Int = 0,
     val battery12vVoltage: Double = 0.0,
     val batteryCellVoltageMax: Double = 0.0,
     val batteryCellVoltageMin: Double = 0.0,
     // Escape hatch for future MQTT keys that don't yet have a first-class column.
-    // Store as JSON: {"tyrePressureFL": 2.5, "hvacPower": 1.2, ...}
+    // Store as JSON: {"hvacPower": 1.2, ...}
     // When a new key becomes stable/important, promote it to its own column
     // via a migration and remove it from this blob. This way new telemetry
     // fields are captured immediately without a schema change.
@@ -116,5 +119,21 @@ data class TripStatsEntity(
     val regenEnergy: Double,
     val mechanicalEnergy: Double,
     val compressedRoute: List<LatLng>
+)
 
+@Entity(tableName = "trip_segments")
+data class TripSegmentEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val tripId: Long,
+    val startTime: Long,
+    val endTime: Long,
+    val startLat: Double?,
+    val startLon: Double?,
+    val endLat: Double?,
+    val endLon: Double?,
+    val avgSpeed: Double,
+    val avgPower: Double,
+    val distance: Double,
+    val energyUsed: Double
 )
