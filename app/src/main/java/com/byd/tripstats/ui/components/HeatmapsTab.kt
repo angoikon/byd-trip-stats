@@ -1,6 +1,9 @@
 package com.byd.tripstats.ui.screens
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -18,9 +21,11 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
+import com.byd.tripstats.ui.components.drawCrosshair
 import kotlin.math.abs
 import kotlin.math.log10
 import kotlin.math.max
@@ -111,9 +116,9 @@ fun TripHeatmapsTab(dataPoints: List<TripDataPointEntity>) {
             TimeOfDayVsSpeedHeatmap(dataPoints, Modifier.fillMaxSize())
         }
 
-        // 9. Altitude elevation vs Consumption — topography cost
+        // 9. Altitude Gradient vs Consumption — topography cost
         HeatmapCard(
-            title    = "Elevation vs Consumption",
+            title    = "Gradient vs Consumption",
             subtitle = "How slope affects energy — regen visible in negative-gradient band"
         ) {
             GradientVsConsumptionHeatmap(dataPoints, Modifier.fillMaxSize())
@@ -158,6 +163,7 @@ private fun PowerVsSpeedHeatmap(
         yLabels    = axisLabels(yMin, yMax, yBins),
         xAxisLabel = "Speed (km/h)",
         yAxisLabel = "Power (kW)",
+        xMin = xMin, xMax = xMax, yMin = yMin, yMax = yMax,
         modifier   = modifier
     )
 }
@@ -191,6 +197,7 @@ private fun ConsumptionVsSpeedHeatmap(
         yLabels    = axisLabels(yMin, yMax, yBins),
         xAxisLabel = "Speed (km/h)",
         yAxisLabel = "kWh / 100 km",
+        xMin = xMin, xMax = xMax, yMin = yMin, yMax = yMax,
         modifier   = modifier
     )
 }
@@ -233,6 +240,7 @@ private fun RegenVsSpeedHeatmap(
         yLabels    = axisLabels(yMin, yMax, yBins),
         xAxisLabel = "Speed (km/h)",
         yAxisLabel = "Regen Power (kW)",
+        xMin = xMin, xMax = xMax, yMin = yMin, yMax = yMax,
         modifier   = modifier
     )
 }
@@ -277,6 +285,8 @@ private fun RpmVsSpeedHeatmap(
         yLabels    = axisLabels(yMin, yMax, yBins, transform = ::fmtRpm),
         xAxisLabel = "Speed (km/h)",
         yAxisLabel = "Motor RPM",
+        xMin = xMin, xMax = xMax, yMin = yMin, yMax = yMax,
+        yValueFmt  = ::fmtRpm,
         modifier   = modifier
     )
 }
@@ -319,6 +329,7 @@ private fun BatteryTempVsPowerHeatmap(
         yLabels    = axisLabels(yMin, yMax, yBins),
         xAxisLabel = "Battery Temp (°C)",
         yAxisLabel = "Power (kW)",
+        xMin = xMin, xMax = xMax, yMin = yMin, yMax = yMax,
         modifier   = modifier
     )
 }
@@ -341,12 +352,28 @@ private fun Heatmap2D(
     yLabels    : List<String>,
     xAxisLabel : String,
     yAxisLabel : String,
+    xMin       : Float,
+    xMax       : Float,
+    yMin       : Float,
+    yMax       : Float,
+    xValueFmt  : (Float) -> String = { "%.1f".format(it) },
+    yValueFmt  : (Float) -> String = { "%.1f".format(it) },
     modifier   : Modifier = Modifier
 ) {
-    val labelArgb   = MaterialTheme.colorScheme.onSurface.toArgb()
+    val labelArgb    = MaterialTheme.colorScheme.onSurface.toArgb()
     val outlineColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
+    val accentColor  = MaterialTheme.colorScheme.primary
+    val textColor    = MaterialTheme.colorScheme.onSurface
+    var touchPos by remember { mutableStateOf<Offset?>(null) }
 
-    Canvas(modifier = modifier) {
+    Canvas(modifier = modifier.pointerInput(Unit) {
+        awaitEachGesture {
+            val down = awaitFirstDown()
+            touchPos = down.position
+            drag(down.id) { change -> touchPos = change.position }
+            touchPos = null
+        }
+    }) {
         val xBins = cells.size
         if (xBins == 0) return@Canvas
         val yBins = cells[0].size
@@ -432,13 +459,37 @@ private fun Heatmap2D(
             }
 
             // Y axis label (rotated 90° counter-clockwise)
-            val cx = yAxisLabelStrip / 2f -12f
+            val cx = yAxisLabelStrip / 2f
             val cy = top + gridH / 2f
             axisPaint.textAlign = android.graphics.Paint.Align.CENTER
             nc.save()
             nc.rotate(-90f, cx, cy)
             nc.drawText(yAxisLabel, cx, cy + axisPaint.textSize / 3f, axisPaint)
             nc.restore()
+        }
+
+        // ── Crosshair — snaps to bin centre, shows bin range ─────────────────
+        touchPos?.let { tp ->
+            if (tp.x in left..right && tp.y in top..bottom) {
+                val xi     = ((tp.x - left) / cellW).toInt().coerceIn(0, xBins - 1)
+                val yi     = (yBins - 1 - ((tp.y - top) / cellH).toInt()).coerceIn(0, yBins - 1)
+                val snapX  = left   + (xi + 0.5f) * cellW
+                val snapY  = bottom - (yi + 0.5f) * cellH
+                val xStep  = (xMax - xMin) / xBins
+                val yStep  = (yMax - yMin) / yBins
+                val xLo    = xMin + xi * xStep
+                val xHi    = xLo + xStep
+                val yLo    = yMin + yi * yStep
+                val yHi    = yLo + yStep
+                val count  = cells[xi][yi]
+                drawCrosshair(
+                    cx = snapX, cy = snapY, w = size.width,
+                    padL = left, padR = rightPad, padT = top, chartH = gridH,
+                    line1 = "$xAxisLabel  ${xValueFmt(xLo)} – ${xValueFmt(xHi)}",
+                    line2 = "$yAxisLabel  ${yValueFmt(yLo)} – ${yValueFmt(yHi)}  (${count}×)",
+                    accentColor = accentColor, textColor = textColor
+                )
+            }
         }
     }
 }
@@ -486,6 +537,8 @@ private fun AccelerationVsSpeedHeatmap(
         yLabels    = axisLabels(yMin, yMax, yBins, "%.1f"),
         xAxisLabel = "Speed (km/h)",
         yAxisLabel = "Accel (km/h/s)",
+        xMin = xMin, xMax = xMax, yMin = yMin, yMax = yMax,
+        yValueFmt  = { "%.1f".format(it) },
         modifier   = modifier
     )
 }
@@ -534,6 +587,7 @@ private fun SocVsConsumptionHeatmap(
         yLabels    = axisLabels(yMin, yMax, yBins),
         xAxisLabel = "SOC (%)",
         yAxisLabel = "kWh / 100 km",
+        xMin = xMin, xMax = xMax, yMin = yMin, yMax = yMax,
         modifier   = modifier
     )
 }
@@ -580,6 +634,7 @@ private fun TimeOfDayVsSpeedHeatmap(
         yLabels    = axisLabels(yMin, yMax, yBins),
         xAxisLabel = "Hour of day",
         yAxisLabel = "Speed (km/h)",
+        xMin = xMin, xMax = xMax, yMin = yMin, yMax = yMax,
         modifier   = modifier
     )
 }
@@ -630,8 +685,9 @@ private fun GradientVsConsumptionHeatmap(
         cells      = cells,
         xLabels    = axisLabels(xMin, xMax, xBins, "%.0f"),
         yLabels    = axisLabels(yMin, yMax, yBins),
-        xAxisLabel = "Elevation slope (%)",
+        xAxisLabel = "Gradient (%)",
         yAxisLabel = "kWh / 100 km",
+        xMin = xMin, xMax = xMax, yMin = yMin, yMax = yMax,
         modifier   = modifier
     )
 }
@@ -677,6 +733,9 @@ private fun FrontVsRearRpmHeatmap(
         yLabels    = axisLabels(yMin, yMax, yBins, transform = ::fmtRpm),
         xAxisLabel = "Front RPM",
         yAxisLabel = "Rear RPM",
+        xMin = xMin, xMax = xMax, yMin = yMin, yMax = yMax,
+        xValueFmt  = ::fmtRpm,
+        yValueFmt  = ::fmtRpm,
         modifier   = modifier
     )
 }
