@@ -21,9 +21,6 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import com.byd.tripstats.ui.theme.BydElectricBlue
 import kotlin.math.roundToInt
 
@@ -89,13 +86,23 @@ fun SocChart(
         nc.save(); nc.rotate(-90f, 18f, padT + chartH / 2f)
         nc.drawText("SoC %", 18f, padT + chartH / 2f, yAxisPaint); nc.restore()
         drawLine(axisColor, Offset(padL, padT + chartH), Offset(w - padR, padT + chartH), 1.5f)
+        // Draw x-axis time labels with a pixel-gap guard so they never overlap.
+        // labelEvery limits how many candidates we consider (cheap), then the
+        // minLabelGap check rejects any candidate whose left edge would land too
+        // close to the previous drawn label — including the unconditional last one.
         val labelEvery = when {
             dataPoints.size > 200 -> 40; dataPoints.size > 100 -> 20; dataPoints.size > 50 -> 10; else -> 5
         }
+        val minLabelGap = 72f   // px — enough for a "999m" label at textSize 20
+        var lastLabelX = -minLabelGap   // sentinel: allow the very first label
         dataPoints.forEachIndexed { i, _ ->
             if (i % labelEvery == 0 || i == dataPoints.size - 1) {
-                val secs = if (dataPoints.size > 1) (i / (dataPoints.size - 1).toFloat()) * totalDuration else 0.0
-                nc.drawText("%d:%02d".format((secs / 60).toInt(), (secs % 60).toInt()), xOf(i), h - 8f, xLabelPaint)
+                val x = xOf(i)
+                if (x - lastLabelX >= minLabelGap) {
+                    val secs = if (dataPoints.size > 1) (i / (dataPoints.size - 1).toFloat()) * totalDuration else 0.0
+                    nc.drawText("${(secs / 60).toInt()}m", x, h - 8f, xLabelPaint)
+                    lastLabelX = x
+                }
             }
         }
         if (dataPoints.size >= 2) {
@@ -118,14 +125,15 @@ fun SocChart(
             if (tp.x in padL..(w - padR) && dataPoints.size > 1) {
                 val idx = ((tp.x - padL) / chartW * (dataPoints.size - 1)).roundToInt().coerceIn(0, dataPoints.size - 1)
                 val secs = (idx / (dataPoints.size - 1).toFloat()) * totalDuration
-                val realTime = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(dataPoints[idx].timestamp))
-                val durationStr = "+%d:%02d into trip".format((secs / 60).toInt(), (secs % 60).toInt())
+                val clockTime = java.time.Instant.ofEpochMilli(dataPoints[idx].timestamp)
+                    .atZone(java.time.ZoneId.systemDefault())
+                    .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"))
                 drawCrosshair(
                     cx = xOf(idx), cy = yOf(values[idx]), w = w,
                     padL = padL, padR = padR, padT = padT, chartH = chartH,
                     line1 = "%.1f%%".format(values[idx]),
-                    line2 = realTime,
-                    line3 = durationStr,
+                    line2 = "${(secs / 60).toInt()}m ${(secs % 60).toInt()}s",
+                    line3 = clockTime,
                     accentColor = lineColor, textColor = textColor
                 )
             }

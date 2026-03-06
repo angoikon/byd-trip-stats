@@ -99,10 +99,16 @@ fun AltitudeChart(
         val labelEvery = when {
             dataPoints.size > 200 -> 40; dataPoints.size > 100 -> 20; dataPoints.size > 50 -> 10; else -> 5
         }
+        val minLabelGap = 72f
+        var lastLabelX = -minLabelGap
         dataPoints.forEachIndexed { i, _ ->
             if (i % labelEvery == 0 || i == dataPoints.size - 1) {
-                val secs = if (dataPoints.size > 1) (i / (dataPoints.size - 1).toFloat()) * totalDuration else 0.0
-                nc.drawText("%d:%02d".format((secs / 60).toInt(), (secs % 60).toInt()), xOf(i), h - 8f, xLabelPaint)
+                val x = xOf(i)
+                if (x - lastLabelX >= minLabelGap) {
+                    val secs = if (dataPoints.size > 1) (i / (dataPoints.size - 1).toFloat()) * totalDuration else 0.0
+                    nc.drawText("%d:%02d".format((secs / 60).toInt(), (secs % 60).toInt()), x, h - 8f, xLabelPaint)
+                    lastLabelX = x
+                }
             }
         }
         if (dataPoints.size >= 2) {

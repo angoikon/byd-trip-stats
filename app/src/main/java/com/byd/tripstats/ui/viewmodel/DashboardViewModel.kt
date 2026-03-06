@@ -172,7 +172,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     /** Past 7 days, one point per day. */
     val weeklyEfficiency: StateFlow<List<DailyEfficiency>> = allTrips
-        .map { it.toEfficiencyBuckets(7, "dd-MM") }
+        .map { it.toEfficiencyBuckets(7, "dd/MM") }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     /** Past 30 days, one point per day. */

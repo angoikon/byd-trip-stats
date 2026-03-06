@@ -33,14 +33,14 @@ import org.osmdroid.views.overlay.Polyline
 // ── Speed thresholds ──────────────────────────────────────────────────────────
 //   < 40 km/h  →  Red    (heavy traffic / queuing)
 //  40–80 km/h  →  Orange (light traffic / suburban)
-//   ≥ 80 km/h  →  Green  (free flow / no traffic)
+//   ≥ 80 km/h  →  Blue  (free flow / no traffic)
 
 private const val SLOW_MAX = 40.0   // km/h
 private const val AVG_MAX  = 80.0   // km/h
 
 private val COLOR_SLOW    = 0xFFE53935.toInt()
 private val COLOR_AVERAGE = 0xFFFF9800.toInt()
-private val COLOR_FAST    = 0xFF43A047.toInt()
+private val COLOR_FAST    = 0xFF2196F3.toInt()
 
 private fun speedCategory(speed: Double): Int = when {
     speed < SLOW_MAX -> 0
@@ -265,7 +265,7 @@ private fun SpeedLegend(modifier: Modifier = Modifier) {
                 fontWeight = FontWeight.Bold,
                 fontSize   = 11.sp
             )
-            LegendDot(Color(0xFF43A047), "Free flow  (≥ 80 km/h)")
+            LegendDot(Color(0xFF2196F3), "Free flow  (≥ 80 km/h)")
             LegendDot(Color(0xFFFF9800), "Light traffic  (40–80 km/h)")
             LegendDot(Color(0xFFE53935), "Heavy traffic  (< 40 km/h)")
         }

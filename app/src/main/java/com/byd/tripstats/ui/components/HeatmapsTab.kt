@@ -111,9 +111,9 @@ fun TripHeatmapsTab(dataPoints: List<TripDataPointEntity>) {
             TimeOfDayVsSpeedHeatmap(dataPoints, Modifier.fillMaxSize())
         }
 
-        // 9. Altitude Gradient vs Consumption — topography cost
+        // 9. Altitude elevation vs Consumption — topography cost
         HeatmapCard(
-            title    = "Gradient vs Consumption",
+            title    = "Elevation vs Consumption",
             subtitle = "How slope affects energy — regen visible in negative-gradient band"
         ) {
             GradientVsConsumptionHeatmap(dataPoints, Modifier.fillMaxSize())
@@ -274,7 +274,7 @@ private fun RpmVsSpeedHeatmap(
     Heatmap2D(
         cells      = cells,
         xLabels    = axisLabels(xMin, xMax, xBins),
-        yLabels    = axisLabels(yMin, yMax, yBins, fmt = "%.0f"),
+        yLabels    = axisLabels(yMin, yMax, yBins, transform = ::fmtRpm),
         xAxisLabel = "Speed (km/h)",
         yAxisLabel = "Motor RPM",
         modifier   = modifier
@@ -432,7 +432,7 @@ private fun Heatmap2D(
             }
 
             // Y axis label (rotated 90° counter-clockwise)
-            val cx = yAxisLabelStrip / 2f
+            val cx = yAxisLabelStrip / 2f -12f
             val cy = top + gridH / 2f
             axisPaint.textAlign = android.graphics.Paint.Align.CENTER
             nc.save()
@@ -630,7 +630,7 @@ private fun GradientVsConsumptionHeatmap(
         cells      = cells,
         xLabels    = axisLabels(xMin, xMax, xBins, "%.0f"),
         yLabels    = axisLabels(yMin, yMax, yBins),
-        xAxisLabel = "Gradient (%)",
+        xAxisLabel = "Elevation slope (%)",
         yAxisLabel = "kWh / 100 km",
         modifier   = modifier
     )
@@ -673,8 +673,8 @@ private fun FrontVsRearRpmHeatmap(
 
     Heatmap2D(
         cells      = cells,
-        xLabels    = axisLabels(xMin, xMax, xBins),
-        yLabels    = axisLabels(yMin, yMax, yBins),
+        xLabels    = axisLabels(xMin, xMax, xBins, transform = ::fmtRpm),
+        yLabels    = axisLabels(yMin, yMax, yBins, transform = ::fmtRpm),
         xAxisLabel = "Front RPM",
         yAxisLabel = "Rear RPM",
         modifier   = modifier
@@ -799,17 +799,24 @@ private fun buildGrid(
  * When bins > 8, every other label is blanked to avoid crowding on the car display.
  */
 private fun axisLabels(
-    min : Float,
-    max : Float,
-    bins: Int,
-    fmt : String = "%.0f"
+    min      : Float,
+    max      : Float,
+    bins     : Int,
+    fmt      : String = "%.0f",
+    transform: ((Float) -> String)? = null
 ): List<String> {
     val step = (max - min) / bins
     return List(bins) { i ->
-        if (bins <= 8 || i % 2 == 0) String.format(fmt, min + i * step)
-        else ""
+        if (bins <= 8 || i % 2 == 0) {
+            val v = min + i * step
+            transform?.invoke(v) ?: String.format(fmt, v)
+        } else ""
     }
 }
+
+/** Formats an RPM value as e.g. "4.6K" for values >= 1000, plain integer otherwise. */
+private fun fmtRpm(rpm: Float): String =
+    if (rpm >= 1000f) "${"%.1f".format(rpm / 1000f)}K" else "%.0f".format(rpm)
 
 /**
  * Viridis-inspired perceptual colour scale.

@@ -637,8 +637,8 @@ private fun buildFaqList(): List<FaqEntry> = listOf(
 
     FaqEntry(
         "Do I need the Electro app?",
-        "Yes — Electro is the bridge between your BYD and this app. It reads CAN-bus data " +
-        "and publishes it over MQTT. BYD Trip Stats subscribes to that stream. Without " +
+        "Yes — Electro is the bridge between your BYD and this app. It acquires telemetry " +
+        "data and publishes it over MQTT. BYD Trip Stats subscribes to that stream. Without " +
         "Electro running and publishing, no telemetry arrives and no trips are recorded.\n\n" +
         "Electro requires an active subscription (~€30/year)."
     ),

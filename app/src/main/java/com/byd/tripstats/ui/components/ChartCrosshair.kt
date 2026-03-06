@@ -20,7 +20,8 @@ import androidx.compose.ui.graphics.toArgb
  * @param padL/R/T    Chart padding (to constrain crosshair lines to chart area)
  * @param chartH      Chart drawing height (padT..padT+chartH)
  * @param line1       First tooltip line — typically the Y value (e.g. "87.5 km/h")
- * @param line2       Second tooltip line — typically the X value (e.g. "5m 30s")
+ * @param line2       Second tooltip line — typically elapsed trip time (e.g. "5m 30s")
+ * @param line3       Third tooltip line — real clock time (e.g. "13:45:30"), or null to omit
  * @param accentColor The chart's primary color — used for the lines and dot
  * @param textColor   Label text color (onSurface)
  */
@@ -34,7 +35,7 @@ fun DrawScope.drawCrosshair(
     chartH: Float,
     line1: String,
     line2: String,
-    line3: String? = null,   // optional third line (e.g. duration offset)
+    line3: String? = null,
     accentColor: Color,
     textColor: Color
 ) {
@@ -71,10 +72,13 @@ fun DrawScope.drawCrosshair(
     val padding   = 14f
     val lineGap   = 6f
     val textH     = paint.descent() - paint.ascent()
-    val boxW      = maxOf(paint.measureText(line1), paint.measureText(line2),
-                          if (line3 != null) paint.measureText(line3) else 0f) + padding * 2
-    val boxH      = if (line3 != null) textH * 3 + lineGap * 2 + padding * 2
-                    else textH * 2 + lineGap + padding * 2
+    val lineCount = if (line3 != null) 3 else 2
+    val boxW      = maxOf(
+        paint.measureText(line1),
+        paint.measureText(line2),
+        if (line3 != null) paint.measureText(line3) else 0f
+    ) + padding * 2
+    val boxH      = textH * lineCount + lineGap * (lineCount - 1) + padding * 2
 
     // Position tooltip: prefer top-right of crosshair, flip if it would clip
     val tooltipX = if (cx + 12f + boxW < w - padR) cx + 12f else cx - 12f - boxW
@@ -92,7 +96,7 @@ fun DrawScope.drawCrosshair(
         10f, 10f, bgPaint
     )
 
-    // Text — line1 (value) bold, line2 (time) lighter
+    // Text — line1 (value) bold, line2 (elapsed) lighter, line3 (clock time) lighter
     paint.color = Color.White.toArgb()
     paint.isFakeBoldText = true
     nc.drawText(line1, tooltipX + padding, tooltipY + padding - paint.ascent(), paint)
