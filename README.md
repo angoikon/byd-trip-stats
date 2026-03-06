@@ -6,9 +6,9 @@
 
 **Professional trip tracking and analytics for BYD electric vehicles**
 
-[![GitHub release](https://img.shields.io/github/v/release/angoikon/byd-trip-stats?style=flat-square)](https://github.com/angoikon/byd-trip-stats/releases)
-[![GitHub downloads](https://img.shields.io/github/downloads/angoikon/byd-trip-stats/total?style=flat-square)](https://github.com/angoikon/byd-trip-stats/releases)
-[![License](https://img.shields.io/github/license/angoikon/byd-trip-stats?style=flat-square)](LICENSE)
+[![GitHub release](https://img.shields.io/github/v/release/angoikon/byd-trip-stats-releases?style=flat-square)](https://github.com/angoikon/byd-trip-stats-releases/releases)
+[![GitHub downloads](https://img.shields.io/github/downloads/angoikon/byd-trip-stats-releases/total?style=flat-square)](https://github.com/angoikon/byd-trip-stats-releases/releases)
+[![License](https://img.shields.io/badge/license-Proprietary-red?style=flat-square)](LICENSE.md)
 [![Android](https://img.shields.io/badge/Android-10%2B-green?style=flat-square&logo=android)](https://developer.android.com)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-purple?style=flat-square&logo=kotlin)](https://kotlinlang.org)
 
@@ -20,7 +20,7 @@
 
 ## 📖 About
 
-BYD Trip Stats is a free, open-source Android app that automatically tracks and analyzes your driving trips using real-time MQTT telemetry from the [Electro app](https://electro.app.br).
+BYD Trip Stats is an Android app that automatically tracks and analyzes your driving trips using real-time MQTT telemetry from the [Electro app](https://electro.app.br).
 
 **Perfect for BYD Seal, Dolphin, Atto3 etc owners** who want detailed insights into their driving efficiency, energy consumption, and trip patterns.
 
@@ -32,7 +32,6 @@ BYD Trip Stats is a free, open-source Android app that automatically tracks and 
 - 💾 **Data Export** - CSV, JSON, and text formats
 - 🗄️ **DB Backup & Restore** - Manual and scheduled backups via Download folder, Telegram, or ADB; one-tap restore
 - 🔒 **Privacy First** - All data stays on your device
-- 🆓 **Completely Free** - No ads, no subscriptions, no tracking
 
 ---
 
@@ -96,10 +95,10 @@ BYD Trip Stats is a free, open-source Android app that automatically tracks and 
 
 ## 📥 Download
 
-### Latest Release: [v1.0.0](https://github.com/angoikon/byd-trip-stats/releases/latest)
+### Latest Release: [v1.0.0](https://github.com/angoikon/byd-trip-stats-releases/releases/latest)
 
 **Direct APK Download:**
-- [app-release.apk](https://github.com/angoikon/byd-trip-stats/releases/download/v1.0.0/app-release.apk) (69 MB)
+- [app-release.apk](https://github.com/angoikon/byd-trip-stats-releases/releases/download/v1.0.0/byd-trip-stats-1.0.0-release.apk) (69 MB)
 
 **What's New in v1.0.0:**
 - 🎉 Initial production release
@@ -141,7 +140,7 @@ BYD Trip Stats is a free, open-source Android app that automatically tracks and 
 
 ### Step 2: Download APK
 
-Download the latest `byd-trip-stats-release.apk` from the [Releases](https://github.com/angoikon/byd-trip-stats/releases) page.
+Download the latest `byd-trip-stats-release.apk` from the [Releases](https://github.com/angoikon/byd-trip-stats-releases/releases) page.
 
 **Transfer to car via:**
 - ADB (wirelessly)
@@ -279,45 +278,27 @@ All information stays on your device:
 
 ### How to Verify?
 
-**The code is open source!** Review it yourself:
-- All network calls: `MqttClientManager.kt`
-- Internal MQTT calls: `MqttBrokerService.kt`
-- Data storage: `TripRepository.kt`, `BydStatsDatabase.kt`
-- No third-party SDKs except MQTT, Room, and UI libraries
+MQTT credentials and all data remain on-device. There are no outbound connections beyond your own MQTT broker. The app requests only the permissions listed above — you can verify this in Android Settings → Apps → BYD Trip Stats → Permissions.
 
 ---
 
-## 🤝 Contributing
+## 💬 Feedback & Bug Reports
 
-Contributions are welcome! Whether it's bug fixes, new features, or documentation improvements.
-
-### How to Contribute
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
-
-### Areas We Need Help
-
-- 🐛 **Testing** on Dolphin, Atto3 as well as other BYD models
-- 🌍 **Translations** to other languages
-- 📊 **New chart types** or visualizations
-- 🗺️ **Enhanced route analysis** features
-- 📱 **UI/UX improvements**
-- 📝 **Documentation** improvements
+BYD Trip Stats is proprietary software. The source code is not publicly available for contribution, but feedback, bug reports, and feature suggestions are very welcome.
 
 ### Reporting Bugs
 
-Found a bug? Open an [Issue](https://github.com/angoikon/byd-trip-stats/issues) with:
-- BYD model
-- Steps to reproduce
-- Logcat output (if possible)
+Found a bug? Open an [Issue](https://github.com/angoikon/byd-trip-stats-releases/issues) with:
+- Your BYD model
+- Steps to reproduce the problem
 
 ### Feature Requests
 
-Have an idea? Open an issue with the "enhancement" label!
+Have an idea? Open an issue with the "enhancement" label — well-reasoned requests are regularly considered for future releases.
+
+### Testing Help
+
+If you are running BYD Trip Stats on a **Dolphin, Atto 3, or another BYD model**, reports about what works and what doesn't are especially valuable.
 
 ---
 
@@ -358,7 +339,7 @@ Have an idea? Open an issue with the "enhancement" label!
 - **Trip not auto-starting:** Verify auto-detection is ON, gear is D/R
 - **Service not auto-starting:** Check Autostart permission (disable toggle at disable Autostart)
 
-See [Issues](https://github.com/angoikon/byd-trip-stats/issues) for full list.
+See [Issues](https://github.com/angoikon/byd-trip-stats-releases/issues) for full list.
 
 ---
 
@@ -377,7 +358,7 @@ See [Issues](https://github.com/angoikon/byd-trip-stats/issues) for full list.
 **A:** No. BYD no longer allows 3rd party installations. Check relevant paragraph on how to re-enable it.
 
 ### Q: Is my data secure?
-**A:** Yes. All data stays on your device (or at YOUR external MQTT broker, if you decided to use one instead of the internal one). The code is open source - verify yourself!
+**A:** Yes. All data stays on your device (or at your own external MQTT broker if you configured one). No analytics, no crash reporting, no advertising. The only outbound network traffic is to your own MQTT broker.
 
 ### Q: Can I export to Excel?
 **A:** Export as CSV, then open in Excel, Google Sheets, etc.
@@ -396,23 +377,13 @@ See [Issues](https://github.com/angoikon/byd-trip-stats/issues) for full list.
 
 ## 📜 License
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+BYD Trip Stats is **proprietary software**. All rights reserved.
 
-```
-MIT License - Copyright (c) 2025 Angelos Oikonomou
+See [LICENSE.md](LICENSE.md) for the full terms.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+**In short:** you may install and use the app for personal use. You may not redistribute, resell, reverse-engineer, or modify it without explicit written permission from the author.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-```
-
-**TL;DR:** You can do whatever you want with this code. Just keep the copyright notice.
+The app is built on open-source libraries (Jetpack Compose, Room, HiveMQ, osmdroid, Moquette, and others). These are used in accordance with their respective Apache 2.0 and MIT licenses, full attribution for which is included in [LICENSE.md](LICENSE.md).
 
 ---
 
@@ -437,8 +408,8 @@ copies or substantial portions of the Software.
 ## 💬 Community & Support
 
 ### Get Help
-- 🐛 [GitHub Issues](https://github.com/angoikon/byd-trip-stats/issues)
-- 💬 [Discussions](https://github.com/angoikon/byd-trip-stats/discussions)
+- 🐛 [GitHub Issues](https://github.com/angoikon/byd-trip-stats-releases/issues)
+- 💬 [Discussions](https://github.com/angoikon/byd-trip-stats-releases/discussions)
 
 ### Share Your Experience
 - ⭐ **Star this repo** if you find it useful!
@@ -453,12 +424,11 @@ copies or substantial portions of the Software.
 
 ## ☕ Support Development
 
-BYD Trip Stats is **free and always will be**. But if you'd like to support development:
+If you'd like to support development:
 
 - ⭐ **Star this repository** (it's free and motivates me!)
 - 🐛 **Report bugs** to improve the app
 - 💡 **Suggest features** you'd love to see
-- 🤝 **Contribute code** via pull requests
 - 📣 **Spread the word** in BYD communities
 
 **Optional donation:**
@@ -474,7 +444,7 @@ Every contribution helps make this app better for everyone!
 **Angelos Oikonomou** (angoikon)
 
 - GitHub: [@angoikon](https://github.com/angoikon)
-- Issues: [Report a bug](https://github.com/angoikon/byd-trip-stats/issues)
+- Issues: [Report a bug](https://github.com/angoikon/byd-trip-stats-releases/issues)
 
 **Not affiliated with BYD, Electro, or EV Duty.** This is an independent community project.
 

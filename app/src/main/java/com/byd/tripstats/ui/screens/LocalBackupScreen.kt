@@ -525,7 +525,7 @@ fun LocalBackupScreen(
                     if (telegramConfig == null) {
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            "Connect a Telegram bot first (see Telegram Backup above).",
+                            "Connect a Telegram private bot first (see Telegram Backup above).",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -579,7 +579,7 @@ fun LocalBackupScreen(
             item {
                 var showResetConfirm by remember { mutableStateOf(false) }
                 val resetBusy = backupState is LocalBackupManager.BackupState.InProgress
-                SectionCard(title = "Danger Zone", icon = Icons.Filled.DeleteForever) {
+                SectionCard(title = "DANGER ZONE", icon = Icons.Filled.DeleteForever) {
                     Text(
                         text = "Permanently delete all trips, data points and statistics. " +
                                "A local backup is created automatically before the reset.",

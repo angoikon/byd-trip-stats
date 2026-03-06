@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
 import kotlin.math.abs
 import kotlin.math.log10
@@ -413,7 +414,7 @@ private fun HeatmapCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(320.dp)
+            .height(340.dp)
             .border(
                 width = 1.dp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
@@ -435,8 +436,61 @@ private fun HeatmapCard(
                 modifier = Modifier.weight(1f).fillMaxWidth(),
                 content  = content
             )
+            Spacer(Modifier.height(6.dp))
+            HeatmapLegend()
         }
     }
+}
+
+/**
+ * Horizontal colour-ramp strip spanning the Viridis palette used for heatmap cells,
+ * with "Few samples" on the left and "Many samples" on the right.
+ */
+@Composable
+private fun HeatmapLegend() {
+    val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+    Row(
+        modifier          = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Text(
+            "Few",
+            style    = MaterialTheme.typography.labelSmall,
+            fontSize = 10.sp,
+            color    = labelColor
+        )
+        // Gradient ramp canvas
+        Canvas(
+            modifier = Modifier
+                .weight(1f)
+                .height(10.dp)
+        ) {
+            val steps = 64
+            val w = size.width / steps
+            for (i in 0 until steps) {
+                val t = i / (steps - 1f)
+                drawRect(
+                    color   = heatmapColor(t),
+                    topLeft = androidx.compose.ui.geometry.Offset(i * w, 0f),
+                    size    = androidx.compose.ui.geometry.Size(w + 1f, size.height)
+                )
+            }
+        }
+        Text(
+            "Many",
+            style    = MaterialTheme.typography.labelSmall,
+            fontSize = 10.sp,
+            color    = labelColor
+        )
+    }
+    Text(
+        "Colour intensity = sample density (log scale)",
+        style    = MaterialTheme.typography.labelSmall,
+        fontSize = 10.sp,
+        color    = labelColor,
+        modifier = Modifier.fillMaxWidth()
+    )
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

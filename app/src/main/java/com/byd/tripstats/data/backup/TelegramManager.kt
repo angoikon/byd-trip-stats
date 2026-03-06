@@ -21,7 +21,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * Handles Telegram Bot API backup.
+ * Handles Telegram private Bot API backup.
  *
  * SETUP (one-time, per user):
  *   1. Message @BotFather on Telegram → /newbot → copy the token

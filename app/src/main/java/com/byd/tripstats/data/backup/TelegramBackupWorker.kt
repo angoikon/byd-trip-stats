@@ -15,7 +15,7 @@ import java.util.Locale
  * Periodic WorkManager task that sends a database backup to Telegram.
  *
  * Scheduled weekly by TelegramManager.scheduleWeeklyBackup() after the
- * user connects their bot. Cancelled by TelegramManager.cancelWeeklyBackup()
+ * user connects their private bot. Cancelled by TelegramManager.cancelWeeklyBackup()
  * when they disconnect.
  *
  * No dependency on MqttService or any foreground component — runs entirely
