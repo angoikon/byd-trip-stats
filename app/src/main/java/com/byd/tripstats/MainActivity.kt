@@ -6,12 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
-import android.os.PowerManager
-import android.provider.Settings
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -71,7 +68,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         requestRequiredPermissions()
-        requestBatteryOptimizationExemption()
 
         setContent {
             BydTripStatsTheme {
@@ -139,28 +135,4 @@ class MainActivity : ComponentActivity() {
         bindService(intent, connection, Context.BIND_AUTO_CREATE)
     }
 
-    // ── Battery optimisation ──────────────────────────────────────────────────
-
-    /**
-     * Requests exemption from battery optimisation so the MQTT service survives
-     * in the background on DiLink and other aggressive-doze devices.
-     * Only shown once — Android does not re-prompt if already exempt.
-     */
-    private fun requestBatteryOptimizationExemption() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
-            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                Log.i(TAG, "Requesting battery optimisation exemption")
-                try {
-                    startActivity(
-                        Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                            data = Uri.parse("package:$packageName")
-                        }
-                    )
-                } catch (e: Exception) {
-                    Log.e(TAG, "Could not open battery optimisation settings", e)
-                }
-            }
-        }
-    }
 }
