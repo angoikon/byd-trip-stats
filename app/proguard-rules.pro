@@ -110,6 +110,12 @@
 -keep public class * extends androidx.lifecycle.ViewModel
 
 # -----------------------------------------------------------------
+# ANDROIDX COMPONENT FACTORY (Fix for ClassNotFoundException)
+# -----------------------------------------------------------------
+-keep class androidx.core.app.CoreComponentFactory { *; }
+-keep public class * extends androidx.core.app.CoreComponentFactory
+
+# -----------------------------------------------------------------
 # MOQUETTE HIDDEN DEPENDENCIES (Required for Release Builds)
 # -----------------------------------------------------------------
 
@@ -130,3 +136,4 @@
 
 # 4. Preserve SLF4J ServiceLoader behavior
 -keepnames class org.slf4j.simple.SimpleServiceProvider
+-keepnames class org.slf4j.simple.SimpleLogger

@@ -30,12 +30,10 @@ import com.byd.tripstats.ui.components.CondensedSpeedChart
 import com.byd.tripstats.ui.components.EnergyConsumptionChart
 import com.byd.tripstats.ui.components.MotorRpmChart
 import com.byd.tripstats.ui.components.OsmRouteMap
-import com.byd.tripstats.ui.components.PowerDistributionChart
 import com.byd.tripstats.ui.components.PowerChart
 import com.byd.tripstats.ui.components.RouteAnalysisTab
 import com.byd.tripstats.ui.components.SocChart
 import com.byd.tripstats.ui.components.SpeedChart
-import com.byd.tripstats.ui.components.SpeedDistributionChart
 import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import kotlin.math.abs
@@ -57,7 +55,7 @@ fun TripDetailScreen(
     val regenEfficiencyPct = tripMetrics[tripId]?.regenEfficiencyPct
 
     var selectedTab by remember { mutableStateOf(0) }
-    val tabs = listOf("Overview", "Charts", "Route", "Analysis")
+    val tabs = listOf("Overview", "Charts", "Heatmaps", "Route", "Analysis")
 
     // Capture data snapshot ONCE when dialog is requested
     // Use nullable Pair - null means dialog is closed
@@ -141,8 +139,9 @@ fun TripDetailScreen(
                     when (selectedTab) {
                         0 -> TripOverviewTab(trip = trip!!, stats = stats, regenEfficiencyPct = regenEfficiencyPct)
                         1 -> TripChartsTab(dataPoints = dataPoints, stats = stats)
-                        2 -> TripRouteTab(dataPoints = dataPoints)
-                        3 -> RouteAnalysisTab(dataPoints = dataPoints)
+                        2 -> TripHeatmapsTab(dataPoints = dataPoints)
+                        3 -> TripRouteTab(dataPoints = dataPoints)
+                        4 -> RouteAnalysisTab(dataPoints = dataPoints)
                     }
                 }
             }
@@ -612,77 +611,6 @@ fun TripChartsTab(
             )
         }
 
-        // 7. Power Distribution
-        if (stats != null) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp)
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
-                        shape = MaterialTheme.shapes.medium
-                    ),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Power Distribution",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Samples over time",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    PowerDistributionChart(
-                        powerDistribution = stats.powerDistribution,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-            }
-        }
-
-        // 8. Speed Distribution
-        if (stats != null) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp)
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
-                        shape = MaterialTheme.shapes.medium
-                    ),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Speed Distribution",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Samples over time",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    SpeedDistributionChart(
-                        speedDistribution = stats.speedDistribution,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-            }
-        }
     }
     
     // Fullscreen chart dialog
