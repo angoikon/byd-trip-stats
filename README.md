@@ -98,7 +98,7 @@ BYD Trip Stats is an Android app that automatically tracks and analyzes your dri
 ### Latest Release: [v1.0.0](https://github.com/angoikon/byd-trip-stats-releases/releases/latest)
 
 **Direct APK Download:**
-- [app-release.apk](https://github.com/angoikon/byd-trip-stats-releases/releases/download/v1.0.0/byd-trip-stats-1.0.0-release.apk) (69 MB)
+- [app-release.apk](https://github.com/angoikon/byd-trip-stats-releases/releases/download/v1.0.0/byd-trip-stats-1.0.0-release.apk) (15 MB)
 
 **What's New in v1.0.0:**
 - 🎉 Initial production release

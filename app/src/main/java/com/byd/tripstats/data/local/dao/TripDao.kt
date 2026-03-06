@@ -44,6 +44,11 @@ interface TripDao {
 
     @Query("SELECT AVG((endTotalDischarge - startTotalDischarge) / (endOdometer - startOdometer) * 100) FROM trips WHERE endOdometer IS NOT NULL AND endTotalDischarge IS NOT NULL AND (endOdometer - startOdometer) >= 0.5")
     suspend fun getAverageEfficiency(): Double?
+
+    /** Returns all completed trips that started before [beforeTimestamp].
+     *  Used by DatabaseMaintenanceWorker to find candidates for point thinning. */
+    @Query("SELECT * FROM trips WHERE isActive = 0 AND startTime < :beforeTimestamp")
+    suspend fun getCompletedTripsBefore(beforeTimestamp: Long): List<TripEntity>
 }
 
 @Dao
@@ -71,6 +76,11 @@ interface TripDataPointDao {
 
     @Query("SELECT * FROM trip_data_points WHERE tripId = :tripId ORDER BY timestamp DESC LIMIT 1")
     suspend fun getLastDataPointForTrip(tripId: Long): TripDataPointEntity?
+
+    /** Bulk-deletes points by primary key. Room batches the IN (...) clause.
+     *  Used by thinOldDataPoints — first and last points of each trip are never passed here. */
+    @Query("DELETE FROM trip_data_points WHERE id IN (:ids)")
+    suspend fun deleteDataPointsByIds(ids: List<Long>)
 }
 
 @Dao

@@ -560,7 +560,7 @@ private fun AboutTab() {
                 SettingsDetailRow("Author",      "Angelos Oikonomou (angoikon)")
                 SettingsDetailRow("Platform",    "Android 10 · API 29")
                 SettingsDetailRow("License",     "Proprietary")
-                SettingsDetailRow("Source",      "github.com/angoikon/byd-trip-stats-releases")
+                SettingsDetailRow("Link",      "github.com/angoikon/byd-trip-stats-releases")
             }
         }
 

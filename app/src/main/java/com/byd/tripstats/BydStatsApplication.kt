@@ -5,6 +5,7 @@ import android.util.Log
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.service.MqttBrokerService
 import com.byd.tripstats.service.MqttService
+import com.byd.tripstats.worker.DatabaseMaintenanceWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -42,6 +43,7 @@ class BydStatsApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "=== BYD Trip Stats starting (pid=${android.os.Process.myPid()}) ===")
+        DatabaseMaintenanceWorker.schedule(this)
         startMqttStack()
     }
 

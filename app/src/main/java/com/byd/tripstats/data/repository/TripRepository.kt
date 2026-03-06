@@ -773,6 +773,59 @@ class TripRepository private constructor(context: Context) {
 
     fun isAutoTripDetectionEnabled(): Boolean = autoTripDetection
 
+    /**
+     * Reduces storage for old trips by removing redundant data points.
+     *
+     * For every completed trip that started more than [olderThanMonths] months ago,
+     * only one data point per [keepEverySeconds] seconds is retained. The first and
+     * last points of each trip are always kept so the route endpoints are preserved.
+     *
+     * This is a lossy but safe operation: trip-level stats (distance, energy,
+     * efficiency) come from TripEntity and TripStatsEntity and are NOT affected.
+     * Only the raw point density used by charts and heatmaps is reduced.
+     *
+     * Called by DatabaseMaintenanceWorker on a monthly schedule.
+     */
+    suspend fun thinOldDataPoints(olderThanMonths: Int = 3, keepEverySeconds: Int = 30) {
+        val cutoffMs = System.currentTimeMillis() -
+            olderThanMonths.toLong() * 30L * 24L * 3_600_000L
+
+        val oldTrips = tripDao.getCompletedTripsBefore(cutoffMs)
+        if (oldTrips.isEmpty()) {
+            Log.i(TAG, "thinOldDataPoints: no trips older than $olderThanMonths months")
+            return
+        }
+
+        val keepIntervalMs = keepEverySeconds * 1000L
+        var totalDeleted = 0
+
+        oldTrips.forEach { trip ->
+            val points = dataPointDao.getDataPointsForTripSync(trip.id)
+            if (points.size < 3) return@forEach     // nothing meaningful to thin
+
+            val toDelete = mutableListOf<Long>()
+            var lastKeptTimestamp = points.first().timestamp
+
+            // Always keep index 0 (trip start) and last index (trip end).
+            // For everything in between, keep only if far enough from last kept.
+            for (i in 1 until points.lastIndex) {
+                val pt = points[i]
+                if (pt.timestamp - lastKeptTimestamp >= keepIntervalMs) {
+                    lastKeptTimestamp = pt.timestamp
+                } else {
+                    toDelete.add(pt.id)
+                }
+            }
+
+            if (toDelete.isNotEmpty()) {
+                dataPointDao.deleteDataPointsByIds(toDelete)
+                totalDeleted += toDelete.size
+            }
+        }
+
+        Log.i(TAG, "thinOldDataPoints: removed $totalDeleted points across ${oldTrips.size} trips")
+    }
+
     // ── Singleton ─────────────────────────────────────────────────────────────
 
     companion object {

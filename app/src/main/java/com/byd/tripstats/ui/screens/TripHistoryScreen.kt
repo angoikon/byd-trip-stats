@@ -149,7 +149,7 @@ fun TripHistoryScreen(
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                Column(horizontalAlignment = Alignment.Start) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         imageVector = Icons.Filled.DirectionsCar,
                         contentDescription = null,
@@ -159,13 +159,15 @@ fun TripHistoryScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = if (activeFilters > 0) "No trips match your filters" else "No trips yet",
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.titleLarge,
+                        textAlign = TextAlign.Center
                     )
                     Text(
                         text = if (activeFilters > 0) "Try adjusting or clearing the filters"
                                else "Start driving to record your first trip!",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
                     )
                 }
             }

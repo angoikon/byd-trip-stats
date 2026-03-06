@@ -86,6 +86,46 @@ fun TripHeatmapsTab(dataPoints: List<TripDataPointEntity>) {
         ) {
             BatteryTempVsPowerHeatmap(dataPoints, Modifier.fillMaxSize())
         }
+
+        // 6. Acceleration vs Speed — driving style map
+        HeatmapCard(
+            title    = "Acceleration vs Speed",
+            subtitle = "Where the driver accelerates hard or coasts — lower is more efficient"
+        ) {
+            AccelerationVsSpeedHeatmap(dataPoints, Modifier.fillMaxSize())
+        }
+
+        // 7. SOC vs Instantaneous Consumption — battery state effect on efficiency
+        HeatmapCard(
+            title    = "SOC vs Consumption",
+            subtitle = "Whether efficiency changes at low or high charge states"
+        ) {
+            SocVsConsumptionHeatmap(dataPoints, Modifier.fillMaxSize())
+        }
+
+        // 8. Time of Day vs Speed — traffic pattern map
+        HeatmapCard(
+            title    = "Time of Day vs Speed",
+            subtitle = "When and how fast you drive — reveals rush-hour congestion patterns"
+        ) {
+            TimeOfDayVsSpeedHeatmap(dataPoints, Modifier.fillMaxSize())
+        }
+
+        // 9. Altitude Gradient vs Consumption — topography cost
+        HeatmapCard(
+            title    = "Gradient vs Consumption",
+            subtitle = "How slope affects energy — regen visible in negative-gradient band"
+        ) {
+            GradientVsConsumptionHeatmap(dataPoints, Modifier.fillMaxSize())
+        }
+
+        // 10. Front RPM vs Rear RPM — AWD torque split
+        HeatmapCard(
+            title    = "Front vs Rear Motor RPM",
+            subtitle = "AWD torque split — diagonal = equal share, off-diagonal = one motor dominant"
+        ) {
+            FrontVsRearRpmHeatmap(dataPoints, Modifier.fillMaxSize())
+        }
     }
 }
 
@@ -401,6 +441,244 @@ private fun Heatmap2D(
             nc.restore()
         }
     }
+}
+
+// ── Heatmap 6: Acceleration vs Speed ─────────────────────────────────────────
+
+@Composable
+private fun AccelerationVsSpeedHeatmap(
+    dataPoints: List<TripDataPointEntity>,
+    modifier: Modifier = Modifier
+) {
+    val xBins = 16; val yBins = 16
+    val xMin  = 0f;  val xMax = 160f   // km/h
+    val yMin  = -8f; val yMax =   8f   // km/h per second
+
+    // Derive acceleration from consecutive point pairs; skip telemetry gaps > 30 s
+    val accelPoints = remember(dataPoints) {
+        dataPoints.zipWithNext { a, b ->
+            val dtSec = (b.timestamp - a.timestamp) / 1000.0
+            if (dtSec < 0.5 || dtSec > 30.0) return@zipWithNext null
+            val accel    = ((b.speed - a.speed) / dtSec).toFloat()
+            val midSpeed = ((a.speed + b.speed) / 2.0).toFloat()
+            midSpeed to accel
+        }.filterNotNull()
+    }
+
+    if (accelPoints.size < 10) {
+        Box(modifier, contentAlignment = Alignment.Center) {
+            Text(
+                "Not enough speed transitions for this heatmap.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        return
+    }
+
+    val cells = remember(accelPoints) {
+        buildGrid(accelPoints, xMin, xMax, xBins, yMin, yMax, yBins)
+    }
+
+    Heatmap2D(
+        cells      = cells,
+        xLabels    = axisLabels(xMin, xMax, xBins),
+        yLabels    = axisLabels(yMin, yMax, yBins, "%.1f"),
+        xAxisLabel = "Speed (km/h)",
+        yAxisLabel = "Accel (km/h/s)",
+        modifier   = modifier
+    )
+}
+
+// ── Heatmap 7: SOC vs Instantaneous Consumption ───────────────────────────────
+
+@Composable
+private fun SocVsConsumptionHeatmap(
+    dataPoints: List<TripDataPointEntity>,
+    modifier: Modifier = Modifier
+) {
+    val xBins = 20; val yBins = 16
+    val xMin  = 0f;  val xMax = 100f   // SOC %
+    val yMin  = 0f;  val yMax =  80f   // kWh/100km (traction only)
+
+    // Only count forward-drive samples (speed > 10, positive power) to avoid
+    // regen and idle noise skewing the distribution
+    val consPoints = remember(dataPoints) {
+        dataPoints.mapNotNull { p ->
+            val spd = p.speed.toFloat().takeIf { it > 10f } ?: return@mapNotNull null
+            val pwr = p.power?.toFloat()?.takeIf { it > 0f } ?: return@mapNotNull null
+            val cons = pwr / spd * 100f
+            if (cons > yMax) return@mapNotNull null
+            p.soc.toFloat() to cons
+        }
+    }
+
+    if (consPoints.size < 10) {
+        Box(modifier, contentAlignment = Alignment.Center) {
+            Text(
+                "Not enough driving samples for this heatmap.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        return
+    }
+
+    val cells = remember(consPoints) {
+        buildGrid(consPoints, xMin, xMax, xBins, yMin, yMax, yBins)
+    }
+
+    Heatmap2D(
+        cells      = cells,
+        xLabels    = axisLabels(xMin, xMax, xBins),
+        yLabels    = axisLabels(yMin, yMax, yBins),
+        xAxisLabel = "SOC (%)",
+        yAxisLabel = "kWh / 100 km",
+        modifier   = modifier
+    )
+}
+
+// ── Heatmap 8: Time of Day vs Speed ──────────────────────────────────────────
+
+@Composable
+private fun TimeOfDayVsSpeedHeatmap(
+    dataPoints: List<TripDataPointEntity>,
+    modifier: Modifier = Modifier
+) {
+    val xBins = 24; val yBins = 16
+    val xMin  = 0f;  val xMax =  24f   // hour 0–23
+    val yMin  = 0f;  val yMax = 160f   // km/h
+
+    val timePoints = remember(dataPoints) {
+        val cal = java.util.Calendar.getInstance()
+        dataPoints.mapNotNull { dp ->
+            if (dp.speed <= 0.0) return@mapNotNull null
+            cal.timeInMillis = dp.timestamp
+            val hour = cal.get(java.util.Calendar.HOUR_OF_DAY).toFloat()
+            hour to dp.speed.toFloat()
+        }
+    }
+
+    if (timePoints.size < 10) {
+        Box(modifier, contentAlignment = Alignment.Center) {
+            Text(
+                "Not enough data for time-of-day heatmap.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        return
+    }
+
+    val cells = remember(timePoints) {
+        buildGrid(timePoints, xMin, xMax, xBins, yMin, yMax, yBins)
+    }
+
+    Heatmap2D(
+        cells      = cells,
+        xLabels    = axisLabels(xMin, xMax, xBins),
+        yLabels    = axisLabels(yMin, yMax, yBins),
+        xAxisLabel = "Hour of day",
+        yAxisLabel = "Speed (km/h)",
+        modifier   = modifier
+    )
+}
+
+// ── Heatmap 9: Altitude Gradient vs Consumption ───────────────────────────────
+
+@Composable
+private fun GradientVsConsumptionHeatmap(
+    dataPoints: List<TripDataPointEntity>,
+    modifier: Modifier = Modifier
+) {
+    val xBins = 20; val yBins = 20
+    val xMin  = -10f; val xMax = 10f   // road gradient %
+    val yMin  = -30f; val yMax = 80f   // kWh/100km (negative = net regen)
+
+    val gradPoints = remember(dataPoints) {
+        dataPoints.zipWithNext { a, b ->
+            val dtSec = (b.timestamp - a.timestamp) / 1000.0
+            if (dtSec < 0.5 || dtSec > 30.0) return@zipWithNext null
+            if (a.speed < 5.0) return@zipWithNext null
+            val dOdo = (b.odometer - a.odometer).toFloat()       // km
+            if (dOdo < 0.001f) return@zipWithNext null
+            val dAlt     = (b.altitude - a.altitude).toFloat()   // metres
+            val gradient = (dAlt / (dOdo * 1000f)) * 100f        // rise/run %
+            val cons     = (a.power / a.speed * 100.0).toFloat() // kWh/100km
+            if (gradient < xMin || gradient > xMax) return@zipWithNext null
+            if (cons     < yMin || cons     > yMax) return@zipWithNext null
+            gradient to cons
+        }.filterNotNull()
+    }
+
+    if (gradPoints.size < 10) {
+        Box(modifier, contentAlignment = Alignment.Center) {
+            Text(
+                "Not enough altitude/odometer data for this heatmap.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        return
+    }
+
+    val cells = remember(gradPoints) {
+        buildGrid(gradPoints, xMin, xMax, xBins, yMin, yMax, yBins)
+    }
+
+    Heatmap2D(
+        cells      = cells,
+        xLabels    = axisLabels(xMin, xMax, xBins, "%.0f"),
+        yLabels    = axisLabels(yMin, yMax, yBins),
+        xAxisLabel = "Gradient (%)",
+        yAxisLabel = "kWh / 100 km",
+        modifier   = modifier
+    )
+}
+
+// ── Heatmap 10: Front RPM vs Rear RPM (AWD torque split) ─────────────────────
+
+@Composable
+private fun FrontVsRearRpmHeatmap(
+    dataPoints: List<TripDataPointEntity>,
+    modifier: Modifier = Modifier
+) {
+    val xBins = 14; val yBins = 14
+    val xMin  = 0f; val xMax = 14000f   // front motor RPM
+    val yMin  = 0f; val yMax = 14000f   // rear  motor RPM
+
+    val rpmPoints = remember(dataPoints) {
+        dataPoints.mapNotNull { dp ->
+            val front = dp.engineSpeedFront.toFloat()
+            val rear  = dp.engineSpeedRear.toFloat()
+            if (front <= 0f && rear <= 0f) return@mapNotNull null
+            front to rear
+        }
+    }
+
+    if (rpmPoints.size < 10) {
+        Box(modifier, contentAlignment = Alignment.Center) {
+            Text(
+                "No dual-motor RPM data recorded on this trip.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        return
+    }
+
+    val cells = remember(rpmPoints) {
+        buildGrid(rpmPoints, xMin, xMax, xBins, yMin, yMax, yBins)
+    }
+
+    Heatmap2D(
+        cells      = cells,
+        xLabels    = axisLabels(xMin, xMax, xBins),
+        yLabels    = axisLabels(yMin, yMax, yBins),
+        xAxisLabel = "Front RPM",
+        yAxisLabel = "Rear RPM",
+        modifier   = modifier
+    )
 }
 
 // ── Card wrapper ──────────────────────────────────────────────────────────────

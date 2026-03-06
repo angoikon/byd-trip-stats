@@ -1004,6 +1004,43 @@ fun TripControls(
     onToggleAutoDetection: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showStopConfirmDialog by remember { mutableStateOf(false) }
+
+    // ── Stop recording confirmation ────────────────────────────────────────────
+    if (showStopConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showStopConfirmDialog = false },
+            icon = {
+                Icon(
+                    Icons.Filled.Stop,
+                    contentDescription = null,
+                    tint = BydErrorRed,
+                    modifier = Modifier.size(32.dp)
+                )
+            },
+            title = { Text("Stop recording?", fontWeight = FontWeight.Bold) },
+            text = {
+                Text(
+                    "The current trip will be saved and closed. " +
+                    "This cannot be undone.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showStopConfirmDialog = false
+                        onEndTrip()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = BydErrorRed)
+                ) { Text("Stop trip") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showStopConfirmDialog = false }) { Text("Keep recording") }
+            }
+        )
+    }
+
     Card(
         modifier = modifier
             .border(
@@ -1135,7 +1172,11 @@ fun TripControls(
                 // Right: fixed-width action button — same size regardless of manual/auto
                 if (isInTrip || !autoTripDetection) {
                     Button(
-                        onClick = if (isInTrip) onEndTrip else onStartTrip,
+                        onClick = if (isInTrip) {
+                            { showStopConfirmDialog = true }
+                        } else {
+                            onStartTrip
+                        },
                         modifier = Modifier
                             .width(120.dp)
                             .fillMaxHeight(),
