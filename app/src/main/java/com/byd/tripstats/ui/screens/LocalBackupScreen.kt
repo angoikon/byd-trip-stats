@@ -71,9 +71,19 @@ fun LocalBackupScreen(
             delay(4000)
             manager.resetState()
         }
+        if (backupState is LocalBackupManager.BackupState.Error &&
+            (backupState as LocalBackupManager.BackupState.Error).message == "No backups found. Run a backup first.") {
+            delay(4000)
+            manager.resetState()
+        }
     }
     LaunchedEffect(telegramState) {
         if (telegramState is TelegramManager.TelegramState.Success) {
+            delay(4000)
+            telegramManager.resetState()
+        }
+        if (telegramState is TelegramManager.TelegramState.Error &&
+            (telegramState as TelegramManager.TelegramState.Error).message == "No backups found. Send a backup first.") {
             delay(4000)
             telegramManager.resetState()
         }

@@ -234,6 +234,10 @@ class LocalBackupManager private constructor(private val context: Context) {
             _localBackups.value = merged
             Log.i(TAG, "Found ${merged.size} backup(s) (${results.size} Download, ${privateResults.size} internal)")
 
+            if (merged.isEmpty()) {
+                _state.value = BackupState.Error("No backups found. Run a backup first.")
+            }
+
         } catch (e: Exception) {
             Log.e(TAG, "Scan failed", e)
             _localBackups.value = emptyList()
