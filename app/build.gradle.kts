@@ -18,10 +18,15 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile     = localProps.getProperty("storeFile")?.let { file(it) }
-            storePassword = localProps.getProperty("storePassword")
-            keyAlias      = localProps.getProperty("keyAlias")
-            keyPassword   = localProps.getProperty("keyPassword")
+            storeFile = (System.getenv("KEYSTORE_PATH") 
+                ?: localProps.getProperty("storeFile"))
+                ?.let { file(it) }
+            storePassword = System.getenv("KEYSTORE_PASSWORD") 
+                ?: localProps.getProperty("storePassword")
+            keyAlias = System.getenv("KEY_ALIAS") 
+                ?: localProps.getProperty("keyAlias")
+            keyPassword = System.getenv("KEY_PASSWORD") 
+                ?: localProps.getProperty("keyPassword")
         }
     }
 
@@ -155,5 +160,4 @@ dependencies {
 
     // Window size classes for responsive design
     implementation("androidx.compose.material3:material3-window-size-class:1.3.1")
-    // implementation("androidx.activity:activity-compose:1.9.3")
 }

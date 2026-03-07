@@ -80,7 +80,7 @@
 -dontwarn org.hibernate.engine.jdbc.connections.spi.ConnectionProvider
 -dontwarn org.hibernate.service.UnknownUnwrapTypeException
 -dontwarn org.hibernate.service.spi.Configurable
--dontwarn org.hibernate.service.spi.Stoppable% 
+-dontwarn org.hibernate.service.spi.Stoppable
 
 # JCTools queues (shaded inside HiveMQ/Netty) look up these fields by name
 # via Unsafe reflection at static initialisation time. Obfuscation renames
@@ -108,6 +108,18 @@
 -keep public class * extends android.app.Service
 -keep public class * extends android.app.Application
 -keep public class * extends androidx.lifecycle.ViewModel
+
+# Room entities — R8 must not rename fields (column names are matched by name)
+-keep class com.byd.tripstats.data.local.entity.** { *; }
+-keepclassmembers class * extends androidx.room.RoomDatabase { *; }
+
+# Kotlin Serialization — @Serializable classes need their structure preserved
+-keepclassmembers @kotlinx.serialization.Serializable class ** { *; }
+-keep class kotlinx.serialization.** { *; }
+
+# WorkManager workers — instantiated by class name via reflection
+-keep class * extends androidx.work.Worker { *; }
+-keep class * extends androidx.work.CoroutineWorker { *; }
 
 # -----------------------------------------------------------------
 # ANDROIDX COMPONENT FACTORY (Fix for ClassNotFoundException)

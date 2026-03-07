@@ -696,7 +696,7 @@ fun ScoreChip(
     val scoreColor = when {
         score == null -> MaterialTheme.colorScheme.onSurfaceVariant
         score >= 80   -> RegenGreen
-        score >= 60   -> Color(0xFFFFDD00)
+        score >= 60   -> BatteryBlue
         score >= 40   -> AccelerationOrange
         else          -> BydErrorRed
     }

@@ -9,6 +9,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +34,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.tripstats.data.preferences.PreferencesManager
+import com.byd.tripstats.R
 import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -88,7 +91,7 @@ fun SettingsScreen(
     val mqttConnected     by viewModel.mqttConnected.collectAsState()
     val snackbarHostState  = remember { SnackbarHostState() }
     var selectedTab       by remember { mutableStateOf(0) }
-    val tabs = listOf("MQTT", "Data", "About & FAQ")
+    val tabs = listOf("Network", "Data", "About & FAQ")
 
     Scaffold(
         topBar = {
@@ -216,57 +219,67 @@ private fun MqttTab(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        // Embedded broker status
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors   = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+        SectionHeader(icon = Icons.Filled.Hub, title = "MQTT Connection")
+
+        // Unified broker + connection status card
+        Row(
+            modifier              = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Row(
-                modifier          = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            // Broker card
+            Card(
+                modifier = Modifier.weight(1f),
+                colors   = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
             ) {
-                Icon(Icons.Filled.Router, null,
-                    tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(26.dp))
-                Column {
+                Column(
+                    modifier            = Modifier.padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        painter            = painterResource(R.drawable.ic_network_node),
+                        contentDescription = null,
+                        tint               = MaterialTheme.colorScheme.primary,
+                        modifier           = Modifier.size(24.dp)
+                    )
                     Text("Embedded MQTT Broker",
                         style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Text("Running internally on port 1883",
-                        style = MaterialTheme.typography.bodySmall, color = RegenGreen)
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Running",
+                        style      = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Medium,
+                        color      = MaterialTheme.colorScheme.primary)
                 }
             }
-        }
 
-        // Connection status
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors   = CardDefaults.cardColors(
-                containerColor = if (mqttConnected) MaterialTheme.colorScheme.primaryContainer
-                                 else MaterialTheme.colorScheme.surfaceVariant
-            )
-        ) {
-            Row(
-                modifier              = Modifier.fillMaxWidth().padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment     = Alignment.CenterVertically
+            // Connection card
+            Card(
+                modifier = Modifier.weight(1f),
+                colors   = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
             ) {
-                Text(buildAnnotatedString {
-                    withStyle(SpanStyle(
-                        fontSize   = MaterialTheme.typography.titleMedium.fontSize,
-                        fontWeight = FontWeight.Bold,
-                        color      = MaterialTheme.colorScheme.primary
-                    )) { append("Connection:  ") }
-                    withStyle(SpanStyle(
-                        fontSize = MaterialTheme.typography.bodyLarge.fontSize,
-                        color    = if (mqttConnected) RegenGreen else BydErrorRed
-                    )) { append(if (mqttConnected) "Connected ✓" else "Disconnected") }
-                })
-                Icon(
-                    if (mqttConnected) Icons.Filled.CheckCircle else Icons.Filled.CloudOff,
-                    contentDescription = null,
-                    tint     = if (mqttConnected) RegenGreen else BydErrorRed,
-                    modifier = Modifier.size(24.dp)
-                )
+                Column(
+                    modifier            = Modifier.padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        if (mqttConnected) Icons.Filled.Sync else Icons.Filled.SyncDisabled,
+                        contentDescription = null,
+                        tint     = if (mqttConnected) RegenGreen else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Text("Connection status",
+                        style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text("MQTT · 127.0.0.1",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        if (mqttConnected) "Connected ✓" else "Disconnected",
+                        style      = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Medium,
+                        color      = if (mqttConnected) RegenGreen else BydErrorRed
+                    )
+                }
             }
         }
 
@@ -317,7 +330,7 @@ private fun MqttTab(
                 Icon(Icons.Filled.Info, null,
                     tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
                 Text(
-                    "In Electro set the publish interval to 1 s (or 500 ms) while the car is ON " +
+                    "In Electro set the publish interval to 1 s while the car is ON " +
                     "and any longer interval while OFF (5 min is fine).\n\n" +
                     "For the internal broker use 127.0.0.1 · port 1883 · no SSL · no credentials. " +
                     "Find the topic in Electro → Integrations → MQTT " +
@@ -427,36 +440,6 @@ private fun DataManagementTab(
             Spacer(Modifier.width(8.dp))
             Text("Open Backup & Restore", fontSize = 16.sp)
         }
-
-        // HorizontalDivider()
-
-        // // Danger Zone
-        // SectionHeader(icon = Icons.Filled.DeleteForever, title = "Danger Zone", color = BydErrorRed)
-
-        // Card(
-        //     modifier = Modifier
-        //         .fillMaxWidth()
-        //         .border(1.dp, BydErrorRed.copy(alpha = 0.4f), MaterialTheme.shapes.medium),
-        //     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-        // ) {
-        //     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        //         Text(
-        //             "Permanently deletes all trips, data points, and statistics. " +
-        //             "A local backup is created automatically before the reset.",
-        //             style = MaterialTheme.typography.bodyMedium,
-        //             color = BydErrorRed
-        //         )
-        //         Button(
-        //             onClick  = { showResetConfirm = true },
-        //             modifier = Modifier.fillMaxWidth(),
-        //             colors   = ButtonDefaults.buttonColors(containerColor = BydErrorRed)
-        //         ) {
-        //             Icon(Icons.Filled.DeleteForever, null, modifier = Modifier.size(20.dp))
-        //             Spacer(Modifier.width(8.dp))
-        //             Text("Reset all trip data")
-        //         }
-        //     }
-        // }
     }
 
     if (showResetConfirm) {
@@ -559,8 +542,8 @@ private fun AboutTab() {
                 SettingsDetailRow("Version",     "1.0.0")
                 SettingsDetailRow("Author",      "Angelos Oikonomou (angoikon)")
                 SettingsDetailRow("Platform",    "Android 10 · API 29")
-                SettingsDetailRow("License",     "Proprietary")
-                SettingsDetailRow("Link",      "github.com/angoikon/byd-trip-stats-releases")
+                SettingsDetailRow("License",     "MIT License (with Commons Clause)")
+                SettingsDetailRow("Link",      "github.com/angoikon/byd-trip-stats")
             }
         }
 
@@ -645,8 +628,9 @@ private fun buildFaqList(): List<FaqEntry> = listOf(
 
     FaqEntry(
         "What should my Electro publish interval be?",
-        "Set the interval to 1 second (or 500 ms) while the car is ON — this gives smooth " +
-        "charts and accurate statistics. While the car is OFF any longer interval is fine; " +
+        "Set the interval to 1 second while the car is ON — this gives smooth " +
+        "charts and accurate statistics - you don't need faster intervals. " +
+        "While the car is OFF, any longer interval is fine; " +
         "5 minutes is a sensible default and reduces unnecessary load."
     ),
 
@@ -771,7 +755,7 @@ private fun buildFaqList(): List<FaqEntry> = listOf(
 
     FaqEntry(
         "Where can I get help or report a bug?",
-        "Open an issue on GitHub:\ngithub.com/angoikon/byd-trip-stats-releases/issues\n\n" +
+        "Open an issue on GitHub:\ngithub.com/angoikon/byd-trip-stats/issues\n\n" +
         "Include your BYD model, the steps to reproduce the problem, and logcat output " +
         "if available. Feature requests are also welcome — use the 'enhancement' label."
     )

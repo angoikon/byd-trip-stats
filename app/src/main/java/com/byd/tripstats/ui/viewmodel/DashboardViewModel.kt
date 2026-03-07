@@ -211,7 +211,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     val eff = trip.efficiency ?: return@run null
                     if (dist == null || dur == null || dist < 0.5 || dur <= 0) return@run null
                     val effScore = when {
-                        eff <= 15.0 -> 40
+                        eff <= 17.0 -> 40
                         eff >= 25.0 -> 0
                         else        -> ((25.0 - eff) / (25.0 - 15.0) * 40).toInt()
                     }

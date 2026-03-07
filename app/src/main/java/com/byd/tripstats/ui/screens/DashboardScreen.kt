@@ -589,7 +589,7 @@ fun EnergyFlowDiagram(
                             isFront = true,
                             modifier = Modifier
                                 .align(Alignment.TopStart)
-                                .offset(x = (-13).dp, y = (-10).dp)
+                                .offset(x = (-18).dp, y = (-12).dp)
                         )
 
                         // Right Front (recommended: 2.6 bar)
@@ -599,7 +599,7 @@ fun EnergyFlowDiagram(
                             isFront = true,
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
-                                .offset(x = 15.dp, y = (-10).dp)
+                                .offset(x = 20.dp, y = (-12).dp)
                         )
 
                         // Left Rear (recommended: 2.9 bar)
@@ -609,7 +609,7 @@ fun EnergyFlowDiagram(
                             isFront = false,
                             modifier = Modifier
                                 .align(Alignment.BottomStart)
-                                .offset(x = (-13).dp, y = (10).dp)
+                                .offset(x = (-18).dp, y = (14).dp)
                         )
 
                         // Right Rear (recommended: 2.9 bar)
@@ -619,7 +619,7 @@ fun EnergyFlowDiagram(
                             isFront = false,
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
-                                .offset(x = 15.dp, y = (10).dp)
+                                .offset(x = 20.dp, y = (14).dp)
                         )
                     }
 
@@ -1078,6 +1078,48 @@ fun TripControls(
                     fontWeight = FontWeight.Bold
                 )
                 
+                var showManualWarning by remember { mutableStateOf(false) }
+
+                if (showManualWarning) {
+                    AlertDialog(
+                        onDismissRequest = { showManualWarning = false },
+                        icon = {
+                            Icon(Icons.Filled.WarningAmber, null,
+                                tint = MaterialTheme.colorScheme.error)
+                        },
+                        title = {
+                            Text("Switch to Manual Tracking?",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold)
+                        },
+                        text = {
+                            Text(
+                                "With manual tracking enabled, trip data will not be recorded " +
+                                "automatically when you start driving. You will need to start " +
+                                "and stop each trip yourself.\n\n" +
+                                "Trips that are not recorded will be absent from your daily, " +
+                                "weekly, and monthly consumption statistics.",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                showManualWarning = false
+                                onToggleAutoDetection()
+                            }) {
+                                Text("Switch to Manual",
+                                    color = MaterialTheme.colorScheme.error,
+                                    fontWeight = FontWeight.SemiBold)
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showManualWarning = false }) {
+                                Text("Keep Auto")
+                            }
+                        }
+                    )
+                }
+
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "Auto",
@@ -1086,7 +1128,10 @@ fun TripControls(
                     Spacer(modifier = Modifier.width(12.dp))
                     Switch(
                         checked = autoTripDetection,
-                        onCheckedChange = { onToggleAutoDetection() },
+                        onCheckedChange = { enabled ->
+                            if (!enabled) showManualWarning = true
+                            else onToggleAutoDetection()
+                        },
                         thumbContent = if (!autoTripDetection) {
                             {
                                 // Donut effect: white outer thumb + coloured inner circle
