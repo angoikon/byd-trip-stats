@@ -270,7 +270,11 @@ private fun MqttTab(
                     )
                     Text("Connection status",
                         style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Text("MQTT · 127.0.0.1",
+                    Text(
+                        if (brokerUrl.trim().let { it == "127.0.0.1" || it == "localhost" || it == "::1" })
+                            "MQTT · Internal broker"
+                        else
+                            "MQTT · External broker",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(
@@ -330,7 +334,7 @@ private fun MqttTab(
                 Icon(Icons.Filled.Info, null,
                     tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
                 Text(
-                    "In Electro set the publish interval to 1 s while the car is ON " +
+                    "In Electro app, set the publish interval to 1 second while the car is ON " +
                     "and any longer interval while OFF (5 min is fine).\n\n" +
                     "For the internal broker use 127.0.0.1 · port 1883 · no SSL · no credentials. " +
                     "Find the topic in Electro → Integrations → MQTT " +
@@ -445,6 +449,7 @@ private fun DataManagementTab(
     if (showResetConfirm) {
         AlertDialog(
             onDismissRequest = { showResetConfirm = false },
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
             icon  = { Icon(Icons.Filled.Warning, null,
                 tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(32.dp)) },
             title = { Text("Reset all trip data?", fontWeight = FontWeight.Bold) },
@@ -777,6 +782,7 @@ private fun DebugDialog(
     }
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surfaceVariant,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Filled.BugReport, null, tint = MaterialTheme.colorScheme.error)

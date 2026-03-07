@@ -220,6 +220,7 @@ fun TripHistoryScreen(
     if (showDeleteSelectedDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteSelectedDialog = false },
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
             title = { Text("Delete ${selectedTrips.size} Trip${if (selectedTrips.size > 1) "s" else ""}?") },
             text = { Text("This will permanently delete the selected trips and all their data. This action cannot be undone.") },
             confirmButton = {
@@ -244,7 +245,8 @@ fun TripHistoryScreen(
     if (showSortSheet) {
         ModalBottomSheet(
             onDismissRequest = { showSortSheet = false },
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         ) {
             SortSheetContent(
                 currentField = sortField,
@@ -260,7 +262,8 @@ fun TripHistoryScreen(
     if (showFilterSheet) {
         ModalBottomSheet(
             onDismissRequest = { showFilterSheet = false },
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         ) {
             FilterSheetContent(
                 current   = filterState,
@@ -297,6 +300,7 @@ private fun SortSheetContent(
             .navigationBarsPadding()
             .padding(horizontal = 24.dp)
             .padding(bottom = 32.dp)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -374,7 +378,8 @@ private fun FilterSheetContent(
             .verticalScroll(rememberScrollState())
             .navigationBarsPadding()
             .padding(horizontal = 24.dp)
-            .padding(bottom = 32.dp),
+            .padding(bottom = 32.dp)
+            .background(MaterialTheme.colorScheme.surfaceVariant),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text("Filter trips", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
@@ -665,6 +670,7 @@ fun TripItem(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
             title = { Text("Delete Trip?") },
             text = { Text("This action cannot be undone.") },
             confirmButton = {

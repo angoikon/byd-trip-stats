@@ -718,6 +718,7 @@ fun EnergyFlowDiagram(
     if (showTyreUnitDialog) {
         AlertDialog(
             onDismissRequest = { showTyreUnitDialog = false },
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
             title = { Text("Tyre Pressure Unit") },
             text = {
                 Column {
@@ -1010,6 +1011,7 @@ fun TripControls(
     if (showStopConfirmDialog) {
         AlertDialog(
             onDismissRequest = { showStopConfirmDialog = false },
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
             icon = {
                 Icon(
                     Icons.Filled.Stop,
@@ -1083,6 +1085,7 @@ fun TripControls(
                 if (showManualWarning) {
                     AlertDialog(
                         onDismissRequest = { showManualWarning = false },
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
                         icon = {
                             Icon(Icons.Filled.WarningAmber, null,
                                 tint = MaterialTheme.colorScheme.error)

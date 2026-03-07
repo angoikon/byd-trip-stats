@@ -206,7 +206,37 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
                 val avgSpeed = if (dist != null && dur != null && dur > 0 && dist > 0)
                     (dist / (dur / 3_600_000.0)).toInt() else null
-
+                // ─────────────────────────────────────────────────────────────
+                // TRIP SCORE  (0–100)
+                // Composed of three independent components, each contributing
+                // a portion of the total score:
+                //
+                //   1. EFFICIENCY SCORE  (0–40 pts)
+                //      Based on energy consumption (Wh/km).
+                //      ≤ 17 Wh/km  → full 40 pts  (very efficient)
+                //      ≥ 25 Wh/km  → 0 pts         (very inefficient)
+                //      Between 17–25: linear interpolation using the wider
+                //      range of 15–25 as the scale denominator:
+                //        (25 - eff) / (25 - 15) * 40
+                //
+                //   2. REGEN SCORE  (0–30 pts)
+                //      Measures how much of the total power demand was
+                //      recovered via regenerative braking:
+                //        |maxRegenPower| / (maxPower + |maxRegenPower|) * 30
+                //      Higher regen share → higher score.
+                //
+                //   3. SMOOTHNESS SCORE  (0–30 pts)
+                //      Ratio of average speed to max speed:
+                //        (avgSpeed / maxSpeed) * 30
+                //      A ratio close to 1 means steady, consistent driving
+                //      with few hard accelerations or sudden stops.
+                //      A low ratio means lots of speed variation (stop/go).
+                //
+                // Minimum requirements to compute a score:
+                //   - efficiency must be available
+                //   - distance ≥ 0.5 km  (filters out micro/accidental trips)
+                //   - duration > 0
+                // ─────────────────────────────────────────────────────────────
                 val score = run {
                     val eff = trip.efficiency ?: return@run null
                     if (dist == null || dur == null || dist < 0.5 || dur <= 0) return@run null
@@ -246,51 +276,251 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     val autoTripDetection: StateFlow<Boolean> = _autoTripDetection.asStateFlow()
 
     // ── Live range projection ─────────────────────────────────────────────────
+    //
+    // Four-level tiered model with dynamic fallback.
+    // The active model is exposed via activeRangeModel StateFlow so the UI can
+    // show the user which level is currently driving the projection.
+    //
+    // LEVEL 1 — LIVE_TRIP (most accurate)
+    //   Rolling window (last ROLLING_WINDOW_KM) + EMA smoothing.
+    //   Activated once distKm >= STABILISATION_KM and the rolling window has
+    //   produced a valid Wh/km estimate. This is the primary operating mode.
+    //   Equivalent to "last 30 km" Trip Range model.
+    //
+    // LEVEL 2 — HISTORICAL_BINS (speed-bin model)
+    //   Live speed bins are accumulated on every telemetry tick (not just 100 m
+    //   samples) so they build up quickly within the same trip.
+    //   If the current speed bin has ≥ BIN_MIN_DIST_KM of observed distance,
+    //   its Wh/km is used as the projection rate. This captures driving-style
+    //   variation (city vs highway) from actual data without relying on past trips.
+    //   Activated only when Level 1 is not yet available (pre-stabilisation).
+    //
+    // LEVEL 3 — LIFETIME_AVERAGE  ← TODO Phase 2
+    //   Aggregate past-trip consumption: sum(energyConsumed) / sum(distance)
+    //   across all completed TripEntity records.
+    //   Use when: no Level 2 bin data and lifetime distance > LIFETIME_MIN_KM.
+    //   Data is available via allTrips StateFlow (TripEntity.energyConsumed / .distance).
+    //
+    // LEVEL 4 — BASELINE (static fallback)
+    //   BYD Seal AWD Excellence WLTP-based static rate: BASELINE_WH_PER_KM = 185 Wh/km.
+    //   Always available. Only used when all other levels fail.
+    //
+    // ── TODO Phase 2 ──────────────────────────────────────────────────────────
+    // [ ] Level 3 — Lifetime average
+    //     val lifetimeWhPerKm = allTrips.value
+    //         .filter { it.distance != null && it.energyConsumed != null }
+    //         .takeIf { trips -> trips.sumOf { it.distance!! } > LIFETIME_MIN_KM }
+    //         ?.let { trips ->
+    //             trips.sumOf { it.energyConsumed!! * 1000.0 } /
+    //             trips.sumOf { it.distance!! }
+    //         }
+    //     Condition: lifetimeWhPerKm != null && distKm < STABILISATION_KM
+    //
+    // [ ] Merge past-trip speed bins with live bins (Bayesian prior)
+    //     Each bin: mergedWhPerKm = (historicalSamples × historicalRate +
+    //                                liveSamples × liveRate) /
+    //               (historicalSamples + liveSamples)
+    //     historicalRate comes from allTripStats.value
+    //         .flatMap { it.energyConsumptionBySpeed.entries }
+    //         grouped and averaged per bin key.
+    //     As live data accumulates it dominates the prior automatically.
+    // ─────────────────────────────────────────────────────────────────────────
 
-    private val _tripDataPoints = MutableStateFlow<List<RangeDataPoint>>(emptyList())
+    enum class RangeModel { LIVE_TRIP, HISTORICAL_BINS, LIFETIME_AVERAGE, BASELINE }
+
+    companion object {
+        const val BATTERY_CAPACITY_KWH  = 82.56  // TODO: Import from config
+        const val STABILISATION_KM      = 2.0    // km before Level 1 is trusted
+        const val SAMPLE_INTERVAL_KM    = 0.1    // record a chart point every 100 m
+        const val ROLLING_WINDOW_KM     = 10.0   // Level 1: rolling window length
+        const val EMA_ALPHA             = 0.15   // Level 1: EMA smoothing factor
+        const val MAX_DELTA_SECONDS     = 10.0   // discard Δt > this (reconnect / wake)
+        const val BIN_MIN_DIST_KM       = 0.5    // Level 2: min km in a bin before trusting it
+        const val BASELINE_WH_PER_KM    = 185.0  // Level 4: BYD Seal AWD Excellence static fallback // TODO: Import from config
+        // TODO Phase 2:
+        // const val LIFETIME_MIN_KM    = 50.0   // Level 3: min lifetime km before using average
+    }
+
+    // Rolling buffer entry: cumulative values at a given distance milestone
+    private data class EnergySample(val distanceKm: Double, val cumulativeEnergyWh: Double)
+
+    // Live speed-bin accumulator — updated on every telemetry tick for fine granularity
+    private data class BinAccumulator(var energyWh: Double = 0.0, var distanceKm: Double = 0.0)
+
+    private val _tripDataPoints  = MutableStateFlow<List<RangeDataPoint>>(emptyList())
     val tripDataPoints: StateFlow<List<RangeDataPoint>> = _tripDataPoints.asStateFlow()
-    private var tripStartOdometer: Double? = null
+
+    private val _activeRangeModel = MutableStateFlow(RangeModel.BASELINE)
+    val activeRangeModel: StateFlow<RangeModel> = _activeRangeModel.asStateFlow()
+
+    private var tripStartOdometer:   Double?  = null
+    private var lastTelemetryTimeMs: Long?    = null
+    private var accumulatedEnergyWh: Double   = 0.0
+    private var smoothedWhPerKm:     Double?  = null  // Level 1 EMA state
+    private val energySamples      = mutableListOf<EnergySample>()
+    private val liveSpeedBins      = mutableMapOf<String, BinAccumulator>()
+
+    /** Mirror of TripRepository.speedBin — kept in sync manually. */
+    private fun speedBin(speed: Double) = when {
+        speed <  20 -> "0-20"
+        speed <  40 -> "20-40"
+        speed <  60 -> "40-60"
+        speed <  80 -> "60-80"
+        speed < 100 -> "80-100"
+        else        -> "100+"
+    }
 
     // ── Init ──────────────────────────────────────────────────────────────────
 
     init {
-        // Accumulate range projection data points reactively during active trips.
         viewModelScope.launch {
-            var wasInTrip = false
+            var wasInTrip       = false
+            var lastBinTimeMs:  Long?   = null
+            var lastBinOdo:     Double? = null
+
             combine(isInTrip, currentTelemetry) { inTrip, telemetry ->
                 inTrip to telemetry
             }.collect { (inTrip, telemetry) ->
                 if (telemetry == null) return@collect
 
+                // Parse telemetry timestamp — more accurate than system clock
+                val telemetryMs = runCatching {
+                    java.time.Instant.parse(telemetry.currentDatetime).toEpochMilli()
+                }.getOrNull() ?: System.currentTimeMillis()
+
                 when {
                     inTrip && !wasInTrip -> {
-                        // Trip just started — anchor odometer and seed the first point
-                        tripStartOdometer = telemetry.odometer
+                        // ── Trip start ────────────────────────────────────────
+                        tripStartOdometer    = telemetry.odometer
+                        lastTelemetryTimeMs  = telemetryMs
+                        lastBinTimeMs        = telemetryMs
+                        lastBinOdo           = telemetry.odometer
+                        accumulatedEnergyWh  = 0.0
+                        smoothedWhPerKm      = null
+                        energySamples.clear()
+                        liveSpeedBins.clear()
+                        _activeRangeModel.value = RangeModel.BASELINE
                         _tripDataPoints.value = listOf(
                             RangeDataPoint(
                                 distanceKm             = 0.0,
                                 soc                    = telemetry.soc,
-                                electricDrivingRangeKm = telemetry.electricDrivingRangeKm
+                                electricDrivingRangeKm = telemetry.electricDrivingRangeKm,
+                                projectedRangeKm       = null,
+                                isStabilised           = false
                             )
                         )
                     }
+
                     !inTrip && wasInTrip -> {
-                        // Trip just ended — keep points visible until next trip starts
-                        tripStartOdometer = null
+                        // ── Trip end — keep points for post-trip review ────────
+                        tripStartOdometer    = null
+                        lastTelemetryTimeMs  = null
+                        lastBinTimeMs        = null
+                        lastBinOdo           = null
+                        accumulatedEnergyWh  = 0.0
+                        smoothedWhPerKm      = null
+                        energySamples.clear()
+                        liveSpeedBins.clear()
                     }
+
                     inTrip -> {
-                        // One point per 100 m of odometer change.
-                        // At ~1 Hz MQTT a 2-hour drive keeps this under ~300 points.
-                        val distKm = (telemetry.odometer - (tripStartOdometer ?: telemetry.odometer))
-                            .coerceAtLeast(0.0)
-                        val lastDist = _tripDataPoints.value.lastOrNull()?.distanceKm ?: 0.0
-                        if (distKm - lastDist >= 0.1) {
-                            _tripDataPoints.value = _tripDataPoints.value + RangeDataPoint(
-                                distanceKm             = distKm,
-                                soc                    = telemetry.soc,
-                                electricDrivingRangeKm = telemetry.electricDrivingRangeKm
-                            )
+                        // ── 1. Integrate energy using telemetry Δt ────────────
+                        val prevMs = lastTelemetryTimeMs
+                        var deltaEnergyWh = 0.0
+                        if (prevMs != null) {
+                            val deltaSeconds = (telemetryMs - prevMs) / 1000.0
+                            if (deltaSeconds in 0.0..MAX_DELTA_SECONDS) {
+                                deltaEnergyWh        = telemetry.enginePower * 1000.0 * (deltaSeconds / 3600.0)
+                                accumulatedEnergyWh += deltaEnergyWh
+                            }
                         }
+                        lastTelemetryTimeMs = telemetryMs
+
+                        // ── 2. Update live speed bins (every tick, not per 100 m) ──
+                        // Fine-grained accumulation means bins are useful within the
+                        // first few km even before Level 1 stabilises.
+                        val prevOdo = lastBinOdo
+                        if (prevOdo != null && deltaEnergyWh > 0.0) {
+                            val binDistKm = (telemetry.odometer - prevOdo).coerceAtLeast(0.0)
+                            val bin       = speedBin(telemetry.speed)
+                            val acc       = liveSpeedBins.getOrPut(bin) { BinAccumulator() }
+                            acc.energyWh   += deltaEnergyWh
+                            acc.distanceKm += binDistKm
+                        }
+                        lastBinOdo    = telemetry.odometer
+                        lastBinTimeMs = telemetryMs
+
+                        // ── 3. Sample every 100 m for chart point ─────────────
+                        val anchor = tripStartOdometer ?: run {
+                            android.util.Log.w("RangeProjection", "tripStartOdometer null mid-trip — skipping")
+                            return@collect
+                        }
+                        val distKm   = (telemetry.odometer - anchor).coerceAtLeast(0.0)
+                        val lastDist = _tripDataPoints.value.lastOrNull()?.distanceKm ?: 0.0
+                        if (distKm - lastDist < SAMPLE_INTERVAL_KM) return@collect
+
+                        // ── 4. Rolling window buffer ──────────────────────────
+                        energySamples.add(EnergySample(distKm, accumulatedEnergyWh))
+                        val windowFloor = distKm - ROLLING_WINDOW_KM
+                        while (energySamples.size > 1 && energySamples[0].distanceKm < windowFloor) {
+                            energySamples.removeAt(0)
+                        }
+
+                        // ── 5. Level 1 — rolling window + EMA ─────────────────
+                        val rawWhPerKm: Double? = if (energySamples.size >= 2) {
+                            val wEnergyWh = energySamples.last().cumulativeEnergyWh -
+                                            energySamples.first().cumulativeEnergyWh
+                            val wDistKm   = energySamples.last().distanceKm -
+                                            energySamples.first().distanceKm
+                            if (wDistKm > 0 && wEnergyWh > 0) wEnergyWh / wDistKm else null
+                        } else null
+
+                        if (rawWhPerKm != null) {
+                            smoothedWhPerKm = smoothedWhPerKm
+                                ?.let { EMA_ALPHA * rawWhPerKm + (1.0 - EMA_ALPHA) * it }
+                                ?: rawWhPerKm
+                        }
+
+                        // ── 6. Level 2 — current speed bin ────────────────────
+                        val currentBinAcc = liveSpeedBins[speedBin(telemetry.speed)]
+                        val binWhPerKm: Double? = currentBinAcc
+                            ?.takeIf { it.distanceKm >= BIN_MIN_DIST_KM && it.energyWh > 0 }
+                            ?.let { it.energyWh / it.distanceKm }
+
+                        // ── 7. Fallback chain ─────────────────────────────────
+                        val isStabilised = distKm >= STABILISATION_KM
+                        val remainingEnergyWh = BATTERY_CAPACITY_KWH * 1000.0 * (telemetry.soc / 100.0)
+
+                        val (projectedRange, model) = when {
+                            // Level 1: rolling window ready and past stabilisation window
+                            isStabilised && smoothedWhPerKm != null && smoothedWhPerKm!! > 0.0 ->
+                                (remainingEnergyWh / smoothedWhPerKm!!).coerceAtLeast(0.0) to
+                                RangeModel.LIVE_TRIP
+
+                            // Level 2: current speed bin has enough live data
+                            binWhPerKm != null ->
+                                (remainingEnergyWh / binWhPerKm).coerceAtLeast(0.0) to
+                                RangeModel.HISTORICAL_BINS
+
+                            // TODO Phase 2 — Level 3: lifetime average
+                            // Insert here: check allTrips for lifetime Wh/km
+                            // and return X to RangeModel.LIFETIME_AVERAGE
+
+                            // Level 4: static baseline — always available
+                            else ->
+                                (remainingEnergyWh / BASELINE_WH_PER_KM).coerceAtLeast(0.0) to
+                                RangeModel.BASELINE
+                        }
+
+                        _activeRangeModel.value = model
+
+                        _tripDataPoints.value = _tripDataPoints.value + RangeDataPoint(
+                            distanceKm             = distKm,
+                            soc                    = telemetry.soc,
+                            electricDrivingRangeKm = telemetry.electricDrivingRangeKm,
+                            projectedRangeKm       = projectedRange,
+                            isStabilised           = isStabilised || model != RangeModel.BASELINE
+                        )
                     }
                 }
                 wasInTrip = inTrip

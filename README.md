@@ -37,7 +37,7 @@ The BYD community, myself included, would love to see the software division take
 ## 📖 General info
 
 - 🎯 **Automatic Trip Detection** - No manual start/stop needed
-- 📊 **Beautiful Analytics** - Comprehensive charts and statistics
+- 📊 **Beautiful Analytics** - Comprehensive charts, heatmaps and statistics
 - 🗺️ **Route Visualization** - OpenStreetMap integration
 - 💾 **Data Export** - CSV, JSON, and text formats
 - 🗄️ **DB Backup & Restore** - Manual and scheduled backups via Download folder, Telegram, or ADB; one-tap restore
@@ -51,17 +51,18 @@ The BYD community, myself included, would love to see the software division take
 ### 🎯 Smart Trip Detection
 - **Automatic trip start/stop** based on gear position (D/R/P)
 - **Manual override** option for full control
-- **Stale trip handling** after car sleep/restart
+- **Stale trip handling** after car sleep/restart/shutdown
 
 ### 📊 Real-Time Dashboard
+- **Range projection chart** - Live estimated remaining range based on how you drive - comparison with BMS. Four levels of projection
 - **Live telemetry display** - Power, speed, SOC, range
 - **Animated energy flow** - Battery → Motor
 - **AWD motor visualization** - Front and rear motor RPM
 - **Tyre pressure monitoring** - Color-coded alerts
 - **Battery health** - Temperature, voltage, SOH
+- **Consumption charts** - Daily / Weekly / Monthly average energy consumption charts 
 
 ### 📈 Detailed Charts
-- **Range projection chart** - Estimated remaining range based on distance travelled during the trip
 - **Energy Consumption** - kWh over time
 - **Speed Profile** - km/h throughout trip
 - **State of Charge** - Battery percentage tracking
@@ -69,7 +70,7 @@ The BYD community, myself included, would love to see the software division take
 - **Elevation Profile** - Altitude changes
 - **Power Distribution** - Histogram of power usage
 - **Speed Distribution** - Histogram of speed usage
-- **Heatmap Distributions** - Combination of power, speed and energy matrices
+- **Heatmap Distributions** - Combination of power, speed, motor, energy matrices
 - **Route Map** - OpenStreetMap with start/end markers
 - **Driving score calculation**  - Score based on your consumption, regen capacity and average speed
 

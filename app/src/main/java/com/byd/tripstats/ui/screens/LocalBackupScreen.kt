@@ -603,6 +603,7 @@ fun LocalBackupScreen(
                     if (showResetConfirm) {
                         AlertDialog(
                             onDismissRequest = { showResetConfirm = false },
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
                             icon = {
                                 Icon(Icons.Filled.Warning, null,
                                     tint = MaterialTheme.colorScheme.error,
@@ -885,6 +886,7 @@ private fun RestoreConfirmDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surfaceVariant,
         icon  = {
             Icon(Icons.Filled.Warning, null,
                 tint     = MaterialTheme.colorScheme.error,
