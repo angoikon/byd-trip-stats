@@ -18,13 +18,23 @@
 
 ---
 
-## 📖 About
+## 💬 First Words..
 
 BYD Trip Stats is a free, open-source Android app that automatically tracks and analyzes your driving trips using real-time MQTT telemetry from the [Electro app](https://electro.app.br).
 
 **Perfect for BYD Seal, Dolphin, Atto3 etc owners** who want detailed insights into their driving efficiency, energy consumption, and trip patterns.
 
 ### Why BYD Trip Stats?
+
+Unfortunately, BYD's built-in software falls short when it comes to trip statistics and data visualisation. Out of the box, drivers are limited to a single chart showing energy consumption over the last 50 km — nothing more. No trip history, no long-term trends (other than cumulative average energy consumption), no breakdown by speed or driving style.
+
+BYD builds excellent cars with genuinely impressive battery technology, but the software experience hasn't kept pace. As a BYD Seal owner who wanted deeper insight into my own driving data, I built BYD Trip Stats to fill that gap — giving BYD drivers the analytics dashboard their car deserves.
+
+And who knows — perhaps BYD will take notice. The integration path is already there: no sideloading, no third-party dependencies, no hacks. A native implementation would be entirely feasible.
+
+The BYD community, myself included, would love to see the software division take the same bold strides that the engineering team clearly has. The hardware is already world-class. The software just needs to catch up.
+
+## 📖 General info
 
 - 🎯 **Automatic Trip Detection** - No manual start/stop needed
 - 📊 **Beautiful Analytics** - Comprehensive charts and statistics
@@ -309,7 +319,7 @@ Contributions are welcome! Whether it's bug fixes, new features, or documentatio
 4. **Push** to the branch (`git push origin feature/amazing-feature`)
 5. **Open** a Pull Request
 
-### Areas We Need Help
+### Areas I Need Help
 
 - 🐛 **Testing** on Dolphin, Atto3 as well as other BYD models
 - 🌍 **Translations** to other languages
@@ -339,10 +349,10 @@ If you are running BYD Trip Stats on a **Dolphin, Atto 3, or another BYD model**
 
 ### Planned Features (v1.1.0+)
 
+- [ ] Predefined vehicle configuration
 - [ ] Charging session tracking
 - [ ] Trip comparison view
 - [ ] Custom dashboard widgets
-- [ ] Weekly/monthly statistics
 - [ ] Multiple vehicle profiles
 - [ ] Web dashboard (companion)
 
@@ -481,7 +491,7 @@ Every contribution helps make this app better for everyone!
 - Issues: [Report a bug](https://github.com/angoikon/byd-trip-stats/issues)
 - Email: [bydtripstats@gmail.com](mailto:bydtripstats@gmail.com)
 
-**Not affiliated with BYD, Electro, or EV Duty.** This is an independent community project.
+**Not affiliated with BYD, or Electro.** This is an independent community project.
 
 ---
 
@@ -489,10 +499,11 @@ Every contribution helps make this app better for everyone!
 
 This software is provided "as is" without warranty of any kind. Use at your own risk.
 
-- Not affiliated with BYD Auto, Electro, or EV Duty
+- Not affiliated with BYD Auto or Electro
 - Not responsible for any vehicle damage or data loss
 - Always prioritize safe driving over app usage
 - MQTT credentials are stored locally - keep your device secure
+- If you think telegram private bot might leak your db to telegram servers, you should avoid using it
 
 ---
 
