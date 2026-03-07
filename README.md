@@ -1,22 +1,21 @@
-# 🚗⚡ BYD Trip Stats
 
-<div align="center">
+<div align="center"><img width="640" height="320" alt="byd-trip-stats-banner" src="https://github.com/user-attachments/assets/9a3bf680-a56d-4084-8701-51032403114c" />
 
-![BYD Trip Stats Banner](https://via.placeholder.com/800x200/2196F3/FFFFFF?text=BYD+Trip+Stats)
+</br>
 
 **Professional trip tracking and analytics for BYD electric vehicles**
 
 [![GitHub release](https://img.shields.io/github/v/release/angoikon/byd-trip-stats?style=flat-square)](https://github.com/angoikon/byd-trip-stats/releases)
 [![GitHub downloads](https://img.shields.io/github/downloads/angoikon/byd-trip-stats/total?style=flat-square)](https://github.com/angoikon/byd-trip-stats/releases)
-[![License](https://img.shields.io/badge/license-Proprietary-red?style=flat-square)](LICENSE.md)
+[![License](https://img.shields.io/badge/license-MIT%20%2B%20Commons%20Clause-blue?style=flat-square)](LICENSE.md)
 [![Android](https://img.shields.io/badge/Android-10%2B-green?style=flat-square&logo=android)](https://developer.android.com)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-purple?style=flat-square&logo=kotlin)](https://kotlinlang.org)
 
 [📥 Download](#-download) • [✨ Features](#-features) • [📸 Screenshots](#-screenshots) • [🚀 Installation](#-installation) • [🤝 Contributing](#-contributing)
 
-</div>
+</div
+</br>
 
----
 
 ## 💬 First Words..
 
@@ -59,7 +58,7 @@ The BYD community, myself included, would love to see the software division take
 - **Animated energy flow** - Battery → Motor
 - **AWD motor visualization** - Front and rear motor RPM
 - **Tyre pressure monitoring** - Color-coded alerts
-- **Battery health** - Temperature, voltage, SOH
+- **Battery health** - Temperature, voltage, SoH
 - **Consumption charts** - Daily / Weekly / Monthly average energy consumption charts 
 
 ### 📈 Detailed Charts
@@ -124,7 +123,7 @@ The BYD community, myself included, would love to see the software division take
 ## ⚙️ Requirements
 
 ### Hardware
-- ✅ **BYD Vehicle** - Seal, Dolphin, or Atto3 (other models may work)
+- ✅ **BYD Vehicle** - Seal (Dolphin, Atto3 and other models may work)
 - ✅ **Side-loading enabled** - Ability to install APKs from unknown sources
 
 ### Software
@@ -225,20 +224,72 @@ That's it! Now:
 <div align="center">
 
 ### Dashboard - Real-Time Telemetry
-![Dashboard](https://via.placeholder.com/800x450/1E1E1E/FFFFFF?text=Dashboard+Screenshot)
+<img width="1444" height="733" alt="Screenshot 2026-03-06 at 19 42 51" src="https://github.com/user-attachments/assets/0768fcb0-1b89-4c60-9c62-d519205e236d" />
+
+### Dashboard - Real-time Telemetry (in dark mode)
+<img width="1440" height="734" alt="Screenshot 2026-03-07 at 15 30 27" src="https://github.com/user-attachments/assets/11ff872a-085d-40f6-9b99-6832d5023081" />
 
 ### Trip History
-![History](https://via.placeholder.com/800x450/1E1E1E/FFFFFF?text=Trip+History+Screenshot)
+<img width="1920" height="972" alt="Screenshot 2026-03-06 at 19 43 09" src="https://github.com/user-attachments/assets/26869c9e-2849-43b1-9f90-654cb6875f9b" />
+
+### Trip details
+<img width="1920" height="974" alt="Screenshot 2026-03-06 at 19 43 45" src="https://github.com/user-attachments/assets/7bea274d-a121-4df5-b5ad-815cfe94b068" />
+
+### Trip details (more)
+<img width="1920" height="972" alt="Screenshot 2026-03-06 at 19 43 59" src="https://github.com/user-attachments/assets/42efdc75-d8d3-44e8-af64-804cd81813b6" />
+
+### Charts
+<img width="1918" height="973" alt="Screenshot 2026-03-06 at 19 44 09" src="https://github.com/user-attachments/assets/166fa963-db4c-46c2-b267-b415274738de" />
+
+### Charts (more)
+<img width="1917" height="875" alt="Screenshot 2026-03-06 at 19 44 48" src="https://github.com/user-attachments/assets/8daa2e81-4939-4de1-a6c9-be3b8ba2f9eb" />
+
+### Charts (even more)
+<img width="1917" height="969" alt="Screenshot 2026-03-06 at 19 45 04" src="https://github.com/user-attachments/assets/ab819854-76f4-4852-967c-bceb2f707667" />
 
 ### Detailed Charts
-![Charts](https://via.placeholder.com/800x450/1E1E1E/FFFFFF?text=Charts+Screenshot)
+<img width="1917" height="970" alt="Screenshot 2026-03-06 at 23 09 53" src="https://github.com/user-attachments/assets/0cd0ce4e-e42b-4d74-95a7-6b832373dd78" />
+
+### Heatmaps
+<img width="1920" height="969" alt="Screenshot 2026-03-06 at 23 10 11" src="https://github.com/user-attachments/assets/c4d5caf4-aae6-4ec9-9c1d-e0cd68d04d01" />
+
+### Heatmaps (more)
+<img width="1917" height="976" alt="Screenshot 2026-03-06 at 23 10 23" src="https://github.com/user-attachments/assets/f11d48fe-3cac-4338-a67f-1eeb7258f8fa" />
+
+### Heatmaps (even more and in dark mode)
+<img width="1916" height="977" alt="Screenshot 2026-03-06 at 23 13 35" src="https://github.com/user-attachments/assets/49266fe8-f272-42d6-9ae8-3503aaf34a0c" />
 
 ### Route Map
-![Route](https://via.placeholder.com/800x450/1E1E1E/FFFFFF?text=Route+Map+Screenshot)
+<img width="1912" height="975" alt="Screenshot 2026-03-06 at 23 14 52" src="https://github.com/user-attachments/assets/d2638308-f2b2-4c5a-9657-288c8908e11b" />
+
+### Trip Analysis
+<img width="1920" height="974" alt="Screenshot 2026-03-06 at 23 15 08" src="https://github.com/user-attachments/assets/762188c5-6d2b-46b5-86fa-790f95ddaefb" />
+
+### Trip Analysis (more)
+<img width="1922" height="973" alt="Screenshot 2026-03-06 at 23 15 18" src="https://github.com/user-attachments/assets/057e4c86-bb9e-4969-8ac2-6354cc2a4a70" />
+
+### Export trips
+<img width="1918" height="970" alt="Screenshot 2026-03-06 at 23 15 56" src="https://github.com/user-attachments/assets/57d50c13-4ecf-445d-a4fe-bdf2687eaaba" />
+
+### Network settings
+<img width="1444" height="660" alt="Screenshot 2026-03-06 at 23 17 10" src="https://github.com/user-attachments/assets/dd72aa34-ca99-426a-b0a1-eef261160b7b" />
+
+### Data settings
+<img width="1444" height="730" alt="Screenshot 2026-03-06 at 23 17 19" src="https://github.com/user-attachments/assets/c98018a5-b23a-4075-8aa8-74fe40118b82" />
+
+### Database backup & restore
+<img width="1917" height="972" alt="Screenshot 2026-03-06 at 23 17 31" src="https://github.com/user-attachments/assets/3ee08839-b32f-464d-afdb-7fa4b409938c" />
+
+### Database backup & restore (more)
+<img width="1919" height="971" alt="Screenshot 2026-03-06 at 23 17 45" src="https://github.com/user-attachments/assets/61041657-5187-43f5-a2ae-53cdf230e71c" />
+
+### About & FAQ
+<img width="1443" height="735" alt="Screenshot 2026-03-07 at 15 10 27" src="https://github.com/user-attachments/assets/6ecffa56-807a-4cb8-aea1-d98c8ae13469" />
+
+### About & FAQ (more)
+<img width="1443" height="659" alt="Screenshot 2026-03-07 at 15 11 10" src="https://github.com/user-attachments/assets/caad157b-d800-4d20-8146-a1be6b4cd253" />
 
 </div>
-
-*(Replace these placeholders with actual screenshots from your car tablet)*
 
 ---
 
@@ -249,7 +300,7 @@ That's it! Now:
 - **UI:** Jetpack Compose (Material 3)
 - **Language:** Kotlin 100%
 - **Min SDK:** 29 (Android 10)
-- **Target SDK:** 29 (Android 19)
+- **Target SDK:** 34 (Android 14)
 
 ### Key Libraries
 - **Database:** Room (local persistence)
@@ -298,7 +349,7 @@ All information stays on your device:
 **Nothing else.** No analytics, no crash reports, no tracking.
 
 ### How to Verify?
-- MQTT credentials and all data remain on-device. There are no outbound connections beyond your own MQTT broker. The app requests only the permissions listed above — you can verify this in Android Settings → Apps → BYD Trip Stats → Permissions.
+- MQTT credentials and all data remain on-device. There are no outbound connections beyond your own MQTT broker. The app requests only the permissions listed above — you can verify this in AppManager → BYD Trip Stats → Permissions.
 
 **The code is open source!** Review it yourself:
 - All network calls: `MqttClientManager.kt`
@@ -333,6 +384,7 @@ Contributions are welcome! Whether it's bug fixes, new features, or documentatio
 
 Found a bug? Open an [Issue](https://github.com/angoikon/byd-trip-stats/issues) with:
 - Your BYD model
+- Version app
 - Steps to reproduce the problem
 - Logcat output (if possible)
 
@@ -389,11 +441,11 @@ See [Issues](https://github.com/angoikon/byd-trip-stats/issues) for full list.
 
 ## ❓ FAQ
 
-### Q: Does this work with other EVs?
+### Q: Does this work with other BYD EVs?
 **A:** Potentially! Any car using Electro app should work. Tested on BYD Seal only.
 
 ### Q: Do I need Electro subscription?
-**A:** Yes, currently. Even if you decide to use the internal MQTT Broker, you still need to retrieve MQTT data from Electro.
+**A:** Yes, currently. Even if you decide to use the external MQTT Broker, you still need to retrieve MQTT data from Electro.
 
 ### Q: Will this drain my car's 12V battery?
 **A:** It uses your 12V which is always being charged via your high-voltage EV battery. Very minimal battery impact.
@@ -402,13 +454,13 @@ See [Issues](https://github.com/angoikon/byd-trip-stats/issues) for full list.
 **A:** No. BYD no longer allows 3rd party installations. Check relevant paragraph on how to re-enable it.
 
 ### Q: Is my data secure?
-**A:** Yes. All data stays on your device (or at your own external MQTT broker if you configured one). No analytics, no crash reporting, no advertising. The only outbound network traffic is to your own MQTT broker.
+**A:** Yes. All data stays on your device (or at your own external MQTT broker if you configured one). No analytics, no crash reporting, no advertising. The only outbound network traffic is to your own MQTT broker, if you chose so.
 
 ### Q: Can I export to Excel?
 **A:** Export as CSV, then open in Excel, Google Sheets, etc.
 
 ### Q: Does this replace Electro?
-**A:** No! BYD Trip Stats is a **companion app**. You still need Electro for MQTT telemetry (plus sentry mode - great work from electro's developer **Rory**)
+**A:** No! BYD Trip Stats is a **companion app**. You still need Electro for MQTT telemetry (plus sentry mode - great work from electro's developer **Rory** !!)
 
 ### Q: Why is MQTT connection failing?
 **A:** Check:
@@ -445,7 +497,7 @@ The app is built on open-source libraries (Jetpack Compose, Room, HiveMQ, osmdro
 
 - [Electro App](https://electro.app.br) by **Rory** - For making MQTT telemetry accessible
 - **BYD Community** - For the enthusiasm and support
-- **Official BYD** - For the inexcusable and unjustified lack of trip statistics
+- **Official BYD** - For the unjustified lack of trip statistics and visualization
 
 ---
 
@@ -500,7 +552,6 @@ Every contribution helps make this app better for everyone!
 
 This software is provided "as is" without warranty of any kind. Use at your own risk.
 
-- Not affiliated with BYD Auto or Electro
 - Not responsible for any vehicle damage or data loss
 - Always prioritize safe driving over app usage
 - MQTT credentials are stored locally - keep your device secure
