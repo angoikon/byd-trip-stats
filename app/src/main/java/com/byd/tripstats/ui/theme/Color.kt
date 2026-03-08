@@ -71,6 +71,23 @@ val ChargingYellow       = Color(0xFFFFC107)
 // Motor chart — violet for front motor, pairs with BydElectricAzure (rear)
 val MotorViolet          = Color(0xFFA78BFA)   // soft lavender-violet
 
+// ── Power metrics — Range & Distance ────────────────────────────────────────
+// Slot A  → Amber Gold: warm, "how far can I go" feel; distinct from AccelerationOrange
+val IndigoDark       = Color(0xFFFFB300)   // vivid amber for dark theme
+val IndigoLight      = Color(0xFFE65100)   // deep burnt-amber for light theme
+
+// Slot B → Indigo Periwinkle: calm, "how far have I gone" feel; distinct from all blues
+val AmberDark       = Color(0xFF7986CB)   // soft periwinkle for dark theme
+val AmberLight      = Color(0xFF3949AB)   // deep indigo for light theme
+
+// Slot C → Rose Coral: warm pink-red; distinct from error red and acceleration orange
+val RoseCoralDark        = Color(0xFFF48FB1)   // soft rose for dark theme
+val RoseCoralLight       = Color(0xFFC2185B)   // deep magenta-rose for light theme
+
+// Range → Lime Chartreuse: yellow-green; distinct from RegenGreen and EcoTeal
+val LimeChartreuseDark   = Color(0xFFD4E157)   // bright lime for dark theme
+val LimeChartreuseLight  = Color(0xFF9E9D24)   // olive-lime for light theme
+
 // Error — vivid red replacing Material 3's default pinkish error
 val BydErrorRed          = Color(0xFFE53935)
 val BydErrorRedLight     = Color(0xFFFF6B6B)   // brighter for dark backgrounds

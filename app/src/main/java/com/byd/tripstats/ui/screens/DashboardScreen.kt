@@ -720,7 +720,7 @@ fun EnergyFlowDiagram(
                         label = "Range (BMS)",
                         value = "${telemetry.electricDrivingRangeKm}",
                         unit = "km",
-                        color = MaterialTheme.colorScheme.onErrorContainer
+                        color = MaterialTheme.extendedColors.range
                     )
                     PowerMetric(
                         label = "Distance",

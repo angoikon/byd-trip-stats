@@ -6,7 +6,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
@@ -110,6 +112,27 @@ private val LightColorScheme = lightColorScheme(
     scrim                  = Color(0xFF000000),
 )
 
+// ── Extended colors — semantic tokens not covered by Material3 ────────────────
+data class ExtendedColors(
+    val slotA:    Color,   // Amber Gold        — reserved for future metric
+    val slotB:    Color,   // Indigo Periwinkle — reserved for future metric
+    val slotC:    Color,   // Rose Coral        — reserved for future metric
+    val range:    Color,   // Lime Chartreuse   — Range (BMS)
+)
+
+private val LocalExtendedColors = staticCompositionLocalOf {
+    ExtendedColors(
+        range    = Color.Unspecified,
+        slotA    = Color.Unspecified,
+        slotB    = Color.Unspecified,
+        slotC    = Color.Unspecified,
+    )
+}
+
+// Access via MaterialTheme.extendedColors.range / .distance
+val MaterialTheme.extendedColors: ExtendedColors
+    @Composable get() = LocalExtendedColors.current
+
 @Composable
 fun BydTripStatsTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -131,9 +154,27 @@ fun BydTripStatsTheme(
         }
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography  = Typography,
-        content     = content
-    )
+    val extendedColors = if (darkTheme) {
+        ExtendedColors(
+            slotA    = AmberDark,
+            slotB    = IndigoDark,
+            slotC    = RoseCoralDark,
+            range    = LimeChartreuseDark,
+        )
+    } else {
+        ExtendedColors(
+            slotA    = AmberLight,
+            slotB    = IndigoLight,
+            slotC    = RoseCoralLight,
+            range    = LimeChartreuseLight,
+        )
+    }
+
+    CompositionLocalProvider(LocalExtendedColors provides extendedColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography  = Typography,
+            content     = content
+        )
+    }
 }
