@@ -50,7 +50,7 @@ BYD Trip Stats is an **independent community project**. It is not affiliated wit
 
 ## Governing Law
 
-This license shall be governed by and construed in accordance with the laws of **Greece**, without regard to its conflict of law provisions. Any disputes arising under this license shall be subject to the exclusive jurisdiction of the courts located in Athens, Greece.
+This license shall be governed by and construed in accordance with the **European Laws**, without regard to its conflict of law provisions. Any disputes arising under this license shall be subject to the exclusive jurisdiction of the courts located in Athens, Greece or anywhere else in the EU.
 
 ---
 

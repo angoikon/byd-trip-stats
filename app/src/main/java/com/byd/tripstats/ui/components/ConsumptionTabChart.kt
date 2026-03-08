@@ -31,7 +31,7 @@ import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 
 // BYD Seal average consumption reference line in kWh / 100km — used in ConsumptionCanvas as a horizontal benchmark line.
 // Taken by ev-database.org real-world tests, not the official WLTP rating. See https://ev-database.org/car/2002/BYD-SEAL-825-kWh-AWD-Excellence for details.
-private const val SEAL_AVERAGE_KWH = 18.5
+private const val SEAL_AVERAGE_KWH = 18.5 // TODO: Import from config
 
 // ── Thumbnail ─────────────────────────────────────────────────────────────────
 
@@ -357,7 +357,7 @@ private fun ConsumptionCanvas(
         labelPaint.textSize  = 19f
         labelPaint.textAlign = android.graphics.Paint.Align.LEFT
         nc.drawText(
-            "BYD Seal avg (${SEAL_AVERAGE_KWH.toInt()} kWh)",
+            "BYD Seal avg (${SEAL_AVERAGE_KWH.toFloat()} kWh)",
             padL + 6f,
             sealY - 6f,
             labelPaint

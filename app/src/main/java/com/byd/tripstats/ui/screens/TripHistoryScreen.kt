@@ -582,12 +582,12 @@ fun TripItem(
                 TripMetricChip(
                     icon = Icons.Filled.Route,
                     label = "Distance",
+                    iconTint = MaterialTheme.colorScheme.secondary,
                     value = "${String.format("%.1f", trip.distance ?: 0.0)} km",
                     modifier = Modifier.weight(1f)
                 )
                 TripMetricChip(
                     icon = Icons.Filled.Timer,
-                    iconTint = MaterialTheme.colorScheme.secondary,
                     label = "Duration",
                     value = if (trip.endTime == null) "Ongoing…"
                             else formatDuration(trip.duration ?: 0),

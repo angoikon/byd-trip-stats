@@ -28,6 +28,7 @@ import android.content.SharedPreferences
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.tripstats.data.model.VehicleTelemetry
@@ -266,10 +267,16 @@ fun DashboardContent(
     onToggleAutoDetection: () -> Unit,
     widthSizeClass: WindowWidthSizeClass = WindowWidthSizeClass.Expanded
 ) {
+    // ── Session distance — resets to 0 on every app start (= every engine start) ──────────────
+    // The app only runs while the car is on (Electro stops publishing when off),
+    // so `remember` captures the odometer at first composition = engine-on moment.
+    val sessionStartOdometer = remember { telemetry.odometer }
+    val sessionDistanceKm    = (telemetry.odometer - sessionStartOdometer).coerceAtLeast(0.0)
+
     val styledModifier = modifier.background(MaterialTheme.colorScheme.background)
 
-    // Expanded  (>840 dp) → full landscape: side-by-side 75/25 — original layout
-    // Medium    (600–840dp) → split-screen landscape or large tablet portrait: side-by-side 65/35
+    // Expanded  (>840 dp) → full landscape: side-by-side 85/15 — original layout
+    // Medium    (600–840dp) → split-screen landscape or large tablet portrait: side-by-side 70/30
     // Compact   (<600 dp) → split-screen portrait or phone portrait: stacked vertically
     when (widthSizeClass) {
         WindowWidthSizeClass.Compact -> {
@@ -295,6 +302,7 @@ fun DashboardContent(
                     weeklyEfficiency = weeklyEfficiency,
                     monthlyEfficiency = monthlyEfficiency,
                     yearlyEfficiency = yearlyEfficiency,
+                    sessionDistanceKm = sessionDistanceKm,
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 320.dp)
@@ -331,7 +339,7 @@ fun DashboardContent(
         // Left column - Energy Flow Diagram
                 Column(
                     modifier = Modifier
-                        .weight(0.65f)
+                        .weight(0.70f)
                         .fillMaxHeight(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -341,6 +349,7 @@ fun DashboardContent(
                         weeklyEfficiency = weeklyEfficiency,
                         monthlyEfficiency = monthlyEfficiency,
                         yearlyEfficiency = yearlyEfficiency,
+                        sessionDistanceKm = sessionDistanceKm,
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
@@ -363,20 +372,21 @@ fun DashboardContent(
 
                 Column(
                     modifier = Modifier
-                        .weight(0.35f)
+                        .weight(0.30f)
                         .fillMaxHeight(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     VehicleStats(
-                        telemetry = telemetry,
-                        modifier = Modifier.fillMaxWidth()
+                        telemetry  = telemetry,
+                        modifier   = Modifier.fillMaxWidth(),
+                        fillHeight = true
                     )
                 }
             }
         }
 
         else -> {
-            // ── Expanded: full landscape — original 75/25 layout ─────────────
+            // ── Expanded: full landscape — original 85/15 layout ─────────────
             Row(
                 modifier = styledModifier
                     .fillMaxSize()
@@ -385,7 +395,7 @@ fun DashboardContent(
             ) {
                 Column(
                     modifier = Modifier
-                        .weight(0.75f)
+                        .weight(0.85f)
                         .fillMaxHeight(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -395,6 +405,7 @@ fun DashboardContent(
                         weeklyEfficiency = weeklyEfficiency,
                         monthlyEfficiency = monthlyEfficiency,
                         yearlyEfficiency = yearlyEfficiency,
+                        sessionDistanceKm = sessionDistanceKm,
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
@@ -418,13 +429,14 @@ fun DashboardContent(
         // Right column - Stats
                 Column(
                     modifier = Modifier
-                        .weight(0.25f)
+                        .weight(0.15f)
                         .fillMaxHeight(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     VehicleStats(
-                        telemetry = telemetry,
-                        modifier = Modifier.fillMaxWidth()
+                        telemetry  = telemetry,
+                        modifier   = Modifier.fillMaxWidth(),
+                        fillHeight = true
                     )
                 }
             }
@@ -440,6 +452,7 @@ fun EnergyFlowDiagram(
     weeklyEfficiency: List<DashboardViewModel.DailyEfficiency>,
     monthlyEfficiency: List<DashboardViewModel.DailyEfficiency>,
     yearlyEfficiency: List<DashboardViewModel.DailyEfficiency>,
+    sessionDistanceKm: Double = 0.0,
     modifier: Modifier = Modifier
 ) {
     val power = telemetry.enginePower
@@ -709,6 +722,12 @@ fun EnergyFlowDiagram(
                         unit = "km",
                         color = MaterialTheme.colorScheme.tertiary
                     )
+                    PowerMetric(
+                        label = "Distance",
+                        value = "%.1f".format(sessionDistanceKm),
+                        unit = "km",
+                        color = MaterialTheme.colorScheme.secondary
+                    )
                 }
             }
         }
@@ -844,14 +863,10 @@ fun EnergyFlowCanvas(
 
         val topY = size.height * 0.3f + 30f  // Move up - 30% from top + 30px for better alignment with battery/motor icons
         
-        val batteryX = size.width * 0.15f
         val batteryY = topY
         
         val motorX = size.width * 0.5f
         val motorY = topY
-
-        // Battery (left)
-        val batterySize = 120f
 
         // Motor (center)
         val motorSize = 150f
@@ -1252,59 +1267,73 @@ fun TripControls(
 @Composable
 fun VehicleStats(
     telemetry: VehicleTelemetry,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    /** true in side-by-side layouts: cards share available height via weight(1f), no scroll */
+    fillHeight: Boolean = false
 ) {
-    Column(
-        modifier = modifier.verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        StatCard(
-            title = "Battery health",
-            value = "${telemetry.soh}%",
-            icon = Icons.Filled.BatteryChargingFull,
-            color = BatteryBlue
-        )
-        
-        StatCard(
-            title = "Battery temperature",
-            value = "${telemetry.batteryTempAvg.toInt()}°C",
-            subtitle = "Cells: ${telemetry.batteryCellTempMin}°C - ${telemetry.batteryCellTempMax}°C",
-            icon = Icons.Filled.Thermostat,
-            color = BydErrorRed
-        )
-        
-        StatCard(
-            title = "HV / 12V",
-            value = "${telemetry.batteryTotalVoltage} V / ${String.format("%.2f", telemetry.battery12vVoltage)} V",
-            subtitle = "Cell: ${String.format("%.3f", telemetry.batteryCellVoltageMin)} - ${String.format("%.3f", telemetry.batteryCellVoltageMax)} V",
-            icon = Icons.Filled.Bolt,
-            color = BydEcoTealDim
-        )
+    val colModifier = if (fillHeight) modifier.fillMaxHeight() else modifier.verticalScroll(rememberScrollState())
+    val spacing     = if (fillHeight) 4.dp else 8.dp
 
+    Column(
+        modifier = colModifier,
+        verticalArrangement = Arrangement.spacedBy(spacing)
+    ) {
+        // weight(1f) is a ColumnScope extension — must be declared inside the Column lambda
+        val cardMod = if (fillHeight) Modifier.fillMaxWidth().weight(1f) else Modifier.fillMaxWidth()
         StatCard(
-            title = "Front / Rear Motors",
-            value = "${telemetry.engineSpeedFront} / ${telemetry.engineSpeedRear} RPM",
+            title   = "Battery health",
+            value   = "${telemetry.soh}%",
+            icon    = Icons.Filled.BatteryChargingFull,
+            color   = BatteryBlue,
+            compact = fillHeight,
+            modifier = cardMod
+        )
+        StatCard(
+            title    = "Battery temperature",
+            value    = "${telemetry.batteryTempAvg.toInt()}°C",
+            subtitle = "Cells: ${telemetry.batteryCellTempMin}°C - ${telemetry.batteryCellTempMax}°C",
+            icon     = Icons.Filled.Thermostat,
+            color    = BydErrorRed,
+            compact  = fillHeight,
+            modifier = cardMod
+        )
+        StatCard(
+            title    = "HV / 12V",
+            value    = "${telemetry.batteryTotalVoltage} V / ${String.format("%.2f", telemetry.battery12vVoltage)} V",
+            subtitle = "Cell: ${String.format("%.3f", telemetry.batteryCellVoltageMin)} - ${String.format("%.3f", telemetry.batteryCellVoltageMax)} V",
+            icon     = Icons.Filled.Bolt,
+            color    = BydEcoTealDim,
+            compact  = fillHeight,
+            modifier = cardMod
+        )
+        StatCard(
+            title    = "Front / Rear Motors",
+            value    = "${telemetry.engineSpeedFront} / ${telemetry.engineSpeedRear} RPM",
             subtitle = if (telemetry.engineSpeedRear > 0) {
                 "${((telemetry.enginePower * 160 / 390).toInt())} / ${((telemetry.enginePower * 230 / 390).toInt())} kW"
             } else {
                 "0 / 0 kW"
             },
-            iconRes = R.drawable.ic_motor_axle,
-            color = BydElectricBlue
+            iconRes  = R.drawable.ic_motor_axle,
+            color    = BydElectricBlue,
+            compact  = fillHeight,
+            modifier = cardMod
         )
-
         StatCard(
-            title = "Odometer",
-            value = "${String.format("%.1f", telemetry.odometer)} km",
-            icon = Icons.Filled.Speed,
-            color = MaterialTheme.colorScheme.primary
+            title    = "Odometer",
+            value    = "${String.format("%.1f", telemetry.odometer)} km",
+            icon     = Icons.Filled.Speed,
+            color    = MaterialTheme.colorScheme.primary,
+            compact  = fillHeight,
+            modifier = cardMod
         )
-        
         StatCard(
-            title = "Total Discharge",
-            value = "${String.format("%.1f", telemetry.totalDischarge)} kWh",
-            icon = Icons.Filled.ElectricalServices,
-            color = AccelerationOrange
+            title    = "Total Discharge",
+            value    = "${String.format("%.1f", telemetry.totalDischarge)} kWh",
+            icon     = Icons.Filled.ElectricalServices,
+            color    = AccelerationOrange,
+            compact  = fillHeight,
+            modifier = cardMod
         )
     }
 }
@@ -1318,7 +1347,13 @@ fun StatCard(
     iconRes: Int? = null,
     color: Color,
     subtitle: String? = null,
+    /** true when cards share height via weight(1f) — reduces padding/text to avoid overflow */
+    compact: Boolean = false,
 ) {
+    val pad      = if (compact) 8.dp  else 12.dp
+    val iconSize = if (compact) 22.dp else 32.dp
+    val spacerW  = if (compact) 8.dp  else 12.dp
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -1335,7 +1370,7 @@ fun StatCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(pad),
             verticalAlignment = Alignment.CenterVertically
         ) {
             when {
@@ -1343,31 +1378,36 @@ fun StatCard(
                     imageVector = icon,
                     contentDescription = null,
                     tint = color,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(iconSize)
                 )
                 iconRes != null -> Icon(
                     painter = painterResource(id = iconRes),
                     contentDescription = null,
                     tint = color,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(iconSize)
                 )
             }
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(spacerW))
             Column {
                 Text(
-                    text = title,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text     = title,
+                    style    = if (compact) MaterialTheme.typography.labelMedium
+                               else MaterialTheme.typography.bodyMedium,
+                    color    = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = value,
-                    style = MaterialTheme.typography.titleLarge,
+                    text       = value,
+                    style      = if (compact) MaterialTheme.typography.titleSmall
+                                 else MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 subtitle?.let {
                     Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall,
+                        text  = it,
+                        style = if (compact) MaterialTheme.typography.labelSmall
+                                else MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }

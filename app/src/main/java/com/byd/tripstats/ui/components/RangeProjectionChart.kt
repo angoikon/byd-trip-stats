@@ -17,7 +17,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
+import androidx.compose.ui.draw.clipToBounds
 import kotlin.math.roundToInt
+
+/** BYD Seal AWD Excellenct WLTP. Projections above this are physically implausible during normal driving
+ *  and are shown as a dash-dot line capped at the chart ceiling instead of a solid projection. */
+private const val WLTP_MAX_KM = 520.0 // TODO: Import from config
 
 /**
  * A single telemetry snapshot recorded during a trip.
@@ -94,9 +99,12 @@ fun RangeProjectionChart(
     }
 
     // Whether we have enough data to show the real projection yet
-    val isStabilised    = points.lastOrNull()?.isStabilised ?: false
-    val currentBms      = points.lastOrNull()?.electricDrivingRangeKm?.toDouble() ?: startBmsRange
-    val currentProjected = projectedPoints.lastOrNull()?.second ?: currentBms
+    val isStabilised       = points.lastOrNull()?.isStabilised ?: false
+    val currentBms         = points.lastOrNull()?.electricDrivingRangeKm?.toDouble() ?: startBmsRange
+    val rawProjected       = projectedPoints.lastOrNull()?.second ?: currentBms
+    // Cap display at WLTP — projections above this indicate calibration is still settling
+    val isSaturated        = rawProjected > WLTP_MAX_KM
+    val currentProjected   = rawProjected.coerceAtMost(WLTP_MAX_KM)
 
     // Positive delta = our projection is higher than BMS (you're beating expectations)
     val deltaKm     = currentProjected - currentBms
@@ -147,6 +155,17 @@ fun RangeProjectionChart(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                } else if (isSaturated) {
+                    Text(
+                        text  = "≥ ${WLTP_MAX_KM.toInt()} km projected (WLTP limit)",
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = textColor.copy(alpha = 0.7f)
+                    )
+                    Text(
+                        text  = "Low-speed calibration — capped at WLTP",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 } else {
                     Text(
                         text  = "%.0f km projected range".format(currentProjected),
@@ -178,6 +197,7 @@ fun RangeProjectionChart(
                 .fillMaxWidth()
                 .weight(1f)
                 .padding(horizontal = 12.dp)
+                .clipToBounds()   // prevent projected line from escaping the card
         ) {
             val w = size.width
             val h = size.height
@@ -267,11 +287,8 @@ fun RangeProjectionChart(
                 // ── Projected line — only drawn once stabilised ───────────────
                 if (projectedPoints.size >= 2) {
 
-                    // Fill between projected and BMS curves.
                     // BMS is linearly interpolated at each projected X so the fill
-                    // is correct even when the two series have slightly different
-                    // sample positions (which happens after the stabilisation window
-                    // starts mid-trip and projected points begin later than BMS points).
+                    // is correct even when the two series have slightly different sample positions.
                     fun interpolateBmsAt(targetDist: Double): Double {
                         if (bmsPoints.isEmpty()) return 0.0
                         if (targetDist <= bmsPoints.first().first) return bmsPoints.first().second
@@ -285,11 +302,14 @@ fun RangeProjectionChart(
                         return r0 + t * (r1 - r0)
                     }
 
+                    // Clamp projected to WLTP_MAX for fill so it stays within chart bounds
+                    val cappedForFill = projectedPoints.map { (d, r) ->
+                        d to r.coerceAtMost(WLTP_MAX_KM)
+                    }
                     val fillPath = Path().apply {
-                        moveTo(xOf(projectedPoints.first().first), yOf(projectedPoints.first().second))
-                        projectedPoints.drop(1).forEach { (d, r) -> lineTo(xOf(d), yOf(r)) }
-                        // Walk BMS backwards using interpolated Y at each projected X
-                        projectedPoints.reversed().forEach { (d, _) ->
+                        moveTo(xOf(cappedForFill.first().first), yOf(cappedForFill.first().second))
+                        cappedForFill.drop(1).forEach { (d, r) -> lineTo(xOf(d), yOf(r)) }
+                        cappedForFill.reversed().forEach { (d, _) ->
                             lineTo(xOf(d), yOf(interpolateBmsAt(d)))
                         }
                         close()
@@ -298,20 +318,56 @@ fun RangeProjectionChart(
                                     else         AccelerationOrange.copy(alpha = 0.12f)
                     drawPath(fillPath, fillColor)
 
-                    // Projected line (main, colored)
-                    val projPath = Path().apply {
-                        moveTo(xOf(projectedPoints.first().first), yOf(projectedPoints.first().second))
-                        projectedPoints.drop(1).forEach { (d, r) -> lineTo(xOf(d), yOf(r)) }
-                    }
-                    drawPath(
-                        path  = projPath,
-                        color = accentColor,
-                        style = Stroke(width = 3f, cap = StrokeCap.Round, join = StrokeJoin.Round)
-                    )
+                    // ── Split projected into normal (≤ WLTP) and saturated (> WLTP) ──
+                    // Saturated segments are drawn as dash-dot at the chart ceiling to
+                    // signal the projection is unconstrained (e.g. very low speed at trip start).
+                    val normalPath     = Path()
+                    val saturatedPath  = Path()
+                    var normalStarted  = false
+                    var satStarted     = false
 
-                    // Current position dot on projected line
-                    val last = projectedPoints.last()
-                    val dotX = xOf(last.first); val dotY = yOf(last.second)
+                    projectedPoints.forEach { (d, r) ->
+                        val x = xOf(d)
+                        if (r <= WLTP_MAX_KM) {
+                            val y = yOf(r)
+                            if (!normalStarted) { normalPath.moveTo(x, y); normalStarted = true }
+                            else normalPath.lineTo(x, y)
+                            satStarted = false   // break saturated segment
+                        } else {
+                            // Pin Y to WLTP ceiling so the dash-dot appears at the top of the chart
+                            val y = yOf(WLTP_MAX_KM)
+                            if (!satStarted) { saturatedPath.moveTo(x, y); satStarted = true }
+                            else saturatedPath.lineTo(x, y)
+                            normalStarted = false
+                        }
+                    }
+
+                    // Draw solid line for normal range
+                    if (normalStarted) {
+                        drawPath(
+                            normalPath,
+                            color = accentColor,
+                            style = Stroke(width = 3f, cap = StrokeCap.Round, join = StrokeJoin.Round)
+                        )
+                    }
+
+                    // Draw dash-dot for saturated (beyond WLTP) — dimmed to indicate uncertainty
+                    if (satStarted) {
+                        drawPath(
+                            saturatedPath,
+                            color = accentColor.copy(alpha = 0.45f),
+                            style = Stroke(
+                                width      = 2f,
+                                cap        = StrokeCap.Round,
+                                pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 4f, 2f, 4f))
+                            )
+                        )
+                    }
+
+                    // Current position dot — use capped Y so it stays inside the chart
+                    val last  = projectedPoints.last()
+                    val dotX  = xOf(last.first)
+                    val dotY  = yOf(last.second.coerceAtMost(WLTP_MAX_KM))
                     drawCircle(accentColor.copy(alpha = 0.25f), 18f, Offset(dotX, dotY))
                     drawCircle(accentColor,                      8f,  Offset(dotX, dotY))
                     drawCircle(Color.White,                      3f,  Offset(dotX, dotY))

@@ -406,7 +406,7 @@ fun TripOverviewTab(
                 value = String.format("%.1f", trip.distance ?: 0.0),
                 unit = "km",
                 icon = Icons.Filled.Route,
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier
                     .weight(1f)
                     .border(
@@ -421,7 +421,7 @@ fun TripOverviewTab(
                 value = formatDuration(trip.duration ?: 0),
                 unit = "",
                 icon = Icons.Filled.Timer,
-                color = MaterialTheme.colorScheme.secondary,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .weight(1f)
                     .border(
