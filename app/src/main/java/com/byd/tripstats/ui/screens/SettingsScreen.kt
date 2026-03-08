@@ -549,7 +549,7 @@ private fun AboutTab() {
                 SettingsDetailRow("Author",      "Angelos Oikonomou (angoikon)")
                 SettingsDetailRow("Platform",    "Android 10 · API 29")
                 SettingsDetailRow("License",     "MIT License (with Commons Clause)")
-                SettingsDetailRow("Link",      "github.com/angoikon/byd-trip-stats")
+                SettingsDetailRow("Link",      "github.com/angoikon/byd-trip-stats-release", url = "https://github.com/angoikon/byd-trip-stats-release")
             }
         }
 
@@ -636,8 +636,8 @@ private fun FaqItem(question: String, answer: String, url: String? = null) {
                             Spacer(Modifier.width(6.dp))
                             Text(
                                 url.removePrefix("https://").removePrefix("http://"),
-                                style  = MaterialTheme.typography.bodySmall,
-                                color  = MaterialTheme.colorScheme.primary,
+                                style      = MaterialTheme.typography.bodySmall,
+                                color      = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Medium
                             )
                         }
@@ -789,7 +789,7 @@ private fun buildFaqList(): List<FaqEntry> = listOf(
 
     FaqEntry(
         "Where can I get help or report a bug?",
-        "Check the README.md file on Github or open an issue there (link below)" +
+        "Check the README.md file or open an issue on GitHub — tap the link below.\n\n" +
         "Include your BYD model, the steps to reproduce the problem, and logcat output " +
         "if available. Feature requests are also welcome — use the 'enhancement' label.",
         url = "https://github.com/angoikon/byd-trip-stats-release/issues"
@@ -914,15 +914,39 @@ private fun SectionHeader(
 }
 
 @Composable
-private fun SettingsDetailRow(label: String, value: String) {
+private fun SettingsDetailRow(label: String, value: String, url: String? = null) {
+    val context = LocalContext.current
     Row(
-        modifier              = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .then(
+                if (url != null) Modifier.clickable {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                } else Modifier
+            ),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment     = Alignment.CenterVertically
     ) {
         Text(label, style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value, style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium,
-            color      = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                value,
+                style      = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color      = if (url != null) MaterialTheme.colorScheme.primary
+                             else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (url != null) {
+                Spacer(Modifier.width(4.dp))
+                Icon(
+                    imageVector        = Icons.Filled.OpenInNew,
+                    contentDescription = "Open link",
+                    tint               = MaterialTheme.colorScheme.primary,
+                    modifier           = Modifier.size(14.dp)
+                )
+            }
+        }
     }
 }
