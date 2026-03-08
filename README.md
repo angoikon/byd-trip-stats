@@ -1,5 +1,7 @@
 
-<div align="center"><img width="640" height="320" alt="byd-trip-stats-banner" src="https://github.com/user-attachments/assets/9a3bf680-a56d-4084-8701-51032403114c" />
+<div align="center"><img width="1921" height="973" alt="Screenshot 2026-03-08 at 18 04 08" src="https://github.com/user-attachments/assets/298bf3a8-67c8-4fd4-aecf-d06e33dfb904" />
+
+
 
 </br>
 
@@ -19,9 +21,9 @@
 
 ## 💬 First Words..
 
-BYD Trip Stats is a free, open-source Android app that automatically tracks and analyzes your driving trips using real-time MQTT telemetry from the [Electro app](https://electro.app.br).
+BYD Trip Stats is an Android app that is installed at your BYD Card and enables you to automatically track and analyze your driving trips using real-time MQTT telemetry from the [Electro app](https://electro.app.br).
 
-**Perfect for BYD Seal, Dolphin, Atto3 etc owners** who want detailed insights into their driving efficiency, energy consumption, and trip patterns.
+**Perfect for BYD Seal owners (propably for Dolphin, Atto3 and other models too)** who want detailed insights into their driving efficiency, energy consumption, and trip patterns.
 
 ### Why BYD Trip Stats?
 
@@ -109,7 +111,7 @@ The BYD community, myself included, would love to see the software division take
 ### Latest Release: [v1.0.0](https://github.com/angoikon/byd-trip-stats/releases/latest)
 
 **Direct APK Download:**
-- [app-release.apk](https://github.com/angoikon/byd-trip-stats/releases/download/v1.0.0/byd-trip-stats-1.0.0-release.apk) (15 MB)
+- [byd-trip-stats-1.0.0-release.apk](https://github.com/angoikon/byd-trip-stats/releases/download/v1.0.0/byd-trip-stats-1.0.0-release.apk) (12 MB)
 
 **What's New in v1.0.0:**
 - 🎉 Initial production release
@@ -151,7 +153,7 @@ The BYD community, myself included, would love to see the software division take
 
 ### Step 2: Download APK
 
-Download the latest `byd-trip-stats-release.apk` from the [Releases](https://github.com/angoikon/byd-trip-stats/releases) page.
+Download the latest `byd-trip-stats-1.0.0-release.apk` from the [Releases](https://github.com/angoikon/byd-trip-stats/releases) page.
 
 **Transfer to car via:**
 - ADB (wirelessly)
@@ -223,71 +225,124 @@ That's it! Now:
 
 <div align="center">
 
-### Dashboard - Real-Time Telemetry
-<img width="1444" height="733" alt="Screenshot 2026-03-06 at 19 42 51" src="https://github.com/user-attachments/assets/0768fcb0-1b89-4c60-9c62-d519205e236d" />
+### Dashboard - Telemetry
+<img width="1919" height="972" alt="Screenshot 2026-03-06 at 19 42 51" src="https://github.com/user-attachments/assets/d7f35696-2f6a-47cd-9ef2-492f5a29a0ff" />
 
-### Dashboard - Real-time Telemetry (in dark mode)
-<img width="1440" height="734" alt="Screenshot 2026-03-07 at 15 30 27" src="https://github.com/user-attachments/assets/11ff872a-085d-40f6-9b99-6832d5023081" />
+
+### Dashboard - Telemetry (in dark mode)
+<img width="1921" height="973" alt="Screenshot 2026-03-08 at 18 04 08" src="https://github.com/user-attachments/assets/298bf3a8-67c8-4fd4-aecf-d06e33dfb904" />
+
+
+### Dashboard - Real projection range
+![IMG_1934](https://github.com/user-attachments/assets/15ac1aea-f8de-48ba-bded-cb41fe57deb6)
+
+
+### Dashboard - Consumptions
+![IMG_1927](https://github.com/user-attachments/assets/a88e9926-babe-4c71-9aea-a6067d319d2f)
+
+
+### Dashboard - multi screen horizontal
+![IMG_1937](https://github.com/user-attachments/assets/5fc71e08-56eb-492e-8a59-1ba2da531205)
+
+
+### Dashboard - multi screen vertical
+![IMG_1938](https://github.com/user-attachments/assets/e8c3852c-5aba-41ce-94be-4f847d77601b)
+
 
 ### Trip History
-<img width="1920" height="972" alt="Screenshot 2026-03-06 at 19 43 09" src="https://github.com/user-attachments/assets/26869c9e-2849-43b1-9f90-654cb6875f9b" />
+<img width="1920" height="972" alt="Screenshot 2026-03-06 at 19 43 09" src="https://github.com/user-attachments/assets/67c741dc-5647-4970-9f12-6a0a710ad53e" />
+
 
 ### Trip details
-<img width="1920" height="974" alt="Screenshot 2026-03-06 at 19 43 45" src="https://github.com/user-attachments/assets/7bea274d-a121-4df5-b5ad-815cfe94b068" />
+<img width="1920" height="973" alt="Screenshot 2026-03-06 at 19 43 45" src="https://github.com/user-attachments/assets/a433d72d-3d08-4f37-aece-1fefdf966bf6" />
+
 
 ### Trip details (more)
-<img width="1920" height="972" alt="Screenshot 2026-03-06 at 19 43 59" src="https://github.com/user-attachments/assets/42efdc75-d8d3-44e8-af64-804cd81813b6" />
+<img width="1920" height="973" alt="Screenshot 2026-03-06 at 19 43 59" src="https://github.com/user-attachments/assets/675c2a31-6786-4048-b2ae-c10278315875" />
+
+
+### Trip filtering
+<img width="1918" height="972" alt="Screenshot 2026-03-08 at 18 15 50" src="https://github.com/user-attachments/assets/014bbb12-3304-4980-96cd-0b15b11c809d" />
+
+
+### Trip sorting
+<img width="1919" height="1006" alt="Screenshot 2026-03-08 at 18 16 04" src="https://github.com/user-attachments/assets/03682d30-5c28-408f-b3c4-00572aa6ea0b" />
+
 
 ### Charts
-<img width="1918" height="973" alt="Screenshot 2026-03-06 at 19 44 09" src="https://github.com/user-attachments/assets/166fa963-db4c-46c2-b267-b415274738de" />
+<img width="1921" height="974" alt="Screenshot 2026-03-06 at 19 44 09" src="https://github.com/user-attachments/assets/6275b37d-ec3a-41bc-9c00-fdfb2abee750" />
+
 
 ### Charts (more)
-<img width="1917" height="875" alt="Screenshot 2026-03-06 at 19 44 48" src="https://github.com/user-attachments/assets/8daa2e81-4939-4de1-a6c9-be3b8ba2f9eb" />
+<img width="1920" height="972" alt="Screenshot 2026-03-06 at 19 44 48" src="https://github.com/user-attachments/assets/303f6b4f-3f86-4d25-a1d5-0ed0555d7506" />
+
 
 ### Charts (even more)
-<img width="1917" height="969" alt="Screenshot 2026-03-06 at 19 45 04" src="https://github.com/user-attachments/assets/ab819854-76f4-4852-967c-bceb2f707667" />
+<img width="1921" height="973" alt="Screenshot 2026-03-06 at 19 45 04" src="https://github.com/user-attachments/assets/88b956f4-990c-40fc-b2d1-ce2ec99d91a7" />
+
+
+### Charts (vertical)
+![IMG_1939](https://github.com/user-attachments/assets/6ccde8d5-9aad-408a-ba79-cd5689f0ab07)
+
 
 ### Detailed Charts
-<img width="1917" height="970" alt="Screenshot 2026-03-06 at 23 09 53" src="https://github.com/user-attachments/assets/0cd0ce4e-e42b-4d74-95a7-6b832373dd78" />
+<img width="1922" height="974" alt="Screenshot 2026-03-06 at 23 09 53" src="https://github.com/user-attachments/assets/ae2ec9ce-74ff-4313-be42-59461b6902e2" />
+
+
+### Detailed Charts (vertical)
+![IMG_1940](https://github.com/user-attachments/assets/dfffecc2-f420-4c76-8c1d-68ce480b621e)
+
 
 ### Heatmaps
-<img width="1920" height="969" alt="Screenshot 2026-03-06 at 23 10 11" src="https://github.com/user-attachments/assets/c4d5caf4-aae6-4ec9-9c1d-e0cd68d04d01" />
+<img width="1919" height="970" alt="Screenshot 2026-03-06 at 23 10 11" src="https://github.com/user-attachments/assets/8795fc31-290d-4f65-8d24-665afc9fa1c5" />
 
-### Heatmaps (more)
-<img width="1917" height="976" alt="Screenshot 2026-03-06 at 23 10 23" src="https://github.com/user-attachments/assets/f11d48fe-3cac-4338-a67f-1eeb7258f8fa" />
+
+### Heatmaps (vertical)
+![IMG_1941](https://github.com/user-attachments/assets/cc029270-2bb9-45e1-9c72-8cd9e849030c)
+
 
 ### Heatmaps (even more and in dark mode)
-<img width="1916" height="977" alt="Screenshot 2026-03-06 at 23 13 35" src="https://github.com/user-attachments/assets/49266fe8-f272-42d6-9ae8-3503aaf34a0c" />
+<img width="1920" height="975" alt="Screenshot 2026-03-06 at 23 13 35" src="https://github.com/user-attachments/assets/1265511d-a322-473f-ac3c-b5c4a77e1f12" />
+
 
 ### Route Map
-<img width="1912" height="975" alt="Screenshot 2026-03-06 at 23 14 52" src="https://github.com/user-attachments/assets/d2638308-f2b2-4c5a-9657-288c8908e11b" />
+<img width="1917" height="974" alt="Screenshot 2026-03-06 at 23 14 52" src="https://github.com/user-attachments/assets/557a575a-6f74-4785-bd1a-4aba42d2d4c7" />
+
 
 ### Trip Analysis
-<img width="1920" height="974" alt="Screenshot 2026-03-06 at 23 15 08" src="https://github.com/user-attachments/assets/762188c5-6d2b-46b5-86fa-790f95ddaefb" />
+<img width="1917" height="973" alt="Screenshot 2026-03-06 at 23 15 08" src="https://github.com/user-attachments/assets/05d52c4a-e51c-4337-b6cc-a01e78b95e7a" />
+
 
 ### Trip Analysis (more)
-<img width="1922" height="973" alt="Screenshot 2026-03-06 at 23 15 18" src="https://github.com/user-attachments/assets/057e4c86-bb9e-4969-8ac2-6354cc2a4a70" />
+<img width="1919" height="975" alt="Screenshot 2026-03-06 at 23 15 18" src="https://github.com/user-attachments/assets/3014f1e8-73ab-4007-8f81-fdde0c7812df" />
+
 
 ### Export trips
-<img width="1918" height="970" alt="Screenshot 2026-03-06 at 23 15 56" src="https://github.com/user-attachments/assets/57d50c13-4ecf-445d-a4fe-bdf2687eaaba" />
+<img width="1918" height="971" alt="Screenshot 2026-03-06 at 23 15 56" src="https://github.com/user-attachments/assets/e3e870fc-517f-4b7d-ad67-1618dcdfd6fa" />
+
 
 ### Network settings
-<img width="1444" height="660" alt="Screenshot 2026-03-06 at 23 17 10" src="https://github.com/user-attachments/assets/dd72aa34-ca99-426a-b0a1-eef261160b7b" />
+<img width="1444" height="660" alt="Screenshot 2026-03-06 at 23 17 10" src="https://github.com/user-attachments/assets/865163e4-ffa4-4ed6-a3a5-77156be501de" />
+
 
 ### Data settings
-<img width="1444" height="730" alt="Screenshot 2026-03-06 at 23 17 19" src="https://github.com/user-attachments/assets/c98018a5-b23a-4075-8aa8-74fe40118b82" />
+<img width="1444" height="730" alt="Screenshot 2026-03-06 at 23 17 19" src="https://github.com/user-attachments/assets/cefb4e9f-1b61-429d-8d58-86dfb53aca03" />
+
 
 ### Database backup & restore
-<img width="1917" height="972" alt="Screenshot 2026-03-06 at 23 17 31" src="https://github.com/user-attachments/assets/3ee08839-b32f-464d-afdb-7fa4b409938c" />
+<img width="1917" height="972" alt="Screenshot 2026-03-06 at 23 17 31" src="https://github.com/user-attachments/assets/a8339b96-b00a-499b-bdae-6b630855d311" />
+
 
 ### Database backup & restore (more)
-<img width="1919" height="971" alt="Screenshot 2026-03-06 at 23 17 45" src="https://github.com/user-attachments/assets/61041657-5187-43f5-a2ae-53cdf230e71c" />
+<img width="1919" height="971" alt="Screenshot 2026-03-06 at 23 17 45" src="https://github.com/user-attachments/assets/f7388f94-9755-49c2-bef0-b9f02c49c559" />
+
 
 ### About & FAQ
-<img width="1443" height="735" alt="Screenshot 2026-03-07 at 15 10 27" src="https://github.com/user-attachments/assets/6ecffa56-807a-4cb8-aea1-d98c8ae13469" />
+<img width="1923" height="971" alt="Screenshot 2026-03-07 at 15 10 27" src="https://github.com/user-attachments/assets/57183b01-8073-430b-aef5-3f427dbc79da" />
+
 
 ### About & FAQ (more)
-<img width="1443" height="659" alt="Screenshot 2026-03-07 at 15 11 10" src="https://github.com/user-attachments/assets/caad157b-d800-4d20-8146-a1be6b4cd253" />
+<img width="1443" height="659" alt="Screenshot 2026-03-07 at 15 11 10" src="https://github.com/user-attachments/assets/0ac22ab6-42cd-4d55-a73a-179ee5e3c73b" />
 
 </div>
 
@@ -351,25 +406,14 @@ All information stays on your device:
 ### How to Verify?
 - MQTT credentials and all data remain on-device. There are no outbound connections beyond your own MQTT broker. The app requests only the permissions listed above — you can verify this in AppManager → BYD Trip Stats → Permissions.
 
-**The code is open source!** Review it yourself:
-- All network calls: `MqttClientManager.kt`
-- Internal MQTT calls: `MqttBrokerService.kt`
-- Data storage: `TripRepository.kt`, `BydStatsDatabase.kt`
 - No third-party SDKs except MQTT, Room, and UI libraries
+- (For the time being, the code is not publicly available on GitHub)
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Whether it's bug fixes, new features, or documentation improvements.
-
-### How to Contribute
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
+Contributions are welcome! Whether it's bug reporting or new feature requests.
 
 ### Areas I Need Help
 
@@ -378,7 +422,6 @@ Contributions are welcome! Whether it's bug fixes, new features, or documentatio
 - 📊 **New chart types** or visualizations
 - 🗺️ **Enhanced route analysis** features
 - 📱 **UI/UX improvements**
-- 📝 **Documentation** improvements
 
 ### Reporting Bugs
 
@@ -394,7 +437,7 @@ Have an idea? Open an issue with the "enhancement" label — well-reasoned reque
 
 ### Testing Help
 
-If you are running BYD Trip Stats on a **Dolphin, Atto 3, or another BYD model**, reports about what works and what doesn't are especially valuable.
+If you are running BYD Trip Stats on a **Dolphin, Atto3, or any other BYD model**, reports about what works and what doesn't are especially valuable.
 
 ---
 
