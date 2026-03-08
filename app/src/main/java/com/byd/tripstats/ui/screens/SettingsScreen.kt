@@ -5,6 +5,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
@@ -569,14 +570,15 @@ private fun AboutTab() {
         HorizontalDivider()
         SectionHeader(icon = Icons.Filled.Help, title = "FAQ")
 
-        buildFaqList().forEach { (q, a) -> FaqItem(question = q, answer = a) }
+        buildFaqList().forEach { (q, a, u) -> FaqItem(question = q, answer = a, url = u) }
 
         Spacer(Modifier.height(8.dp))
     }
 }
 
 @Composable
-private fun FaqItem(question: String, answer: String) {
+private fun FaqItem(question: String, answer: String, url: String? = null) {
+    val context  = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier
@@ -613,13 +615,40 @@ private fun FaqItem(question: String, answer: String) {
                     HorizontalDivider()
                     Spacer(Modifier.height(10.dp))
                     Text(answer, style = MaterialTheme.typography.bodyMedium)
+                    if (url != null) {
+                        Spacer(Modifier.height(10.dp))
+                        Row(
+                            modifier = Modifier
+                                .clickable {
+                                    context.startActivity(
+                                        Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                    )
+                                }
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector        = Icons.Filled.OpenInNew,
+                                contentDescription = "Open link",
+                                tint               = MaterialTheme.colorScheme.primary,
+                                modifier           = Modifier.size(14.dp)
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                url.removePrefix("https://").removePrefix("http://"),
+                                style  = MaterialTheme.typography.bodySmall,
+                                color  = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-private data class FaqEntry(val question: String, val answer: String)
+private data class FaqEntry(val question: String, val answer: String, val url: String? = null)
 
 private fun buildFaqList(): List<FaqEntry> = listOf(
 
@@ -760,9 +789,10 @@ private fun buildFaqList(): List<FaqEntry> = listOf(
 
     FaqEntry(
         "Where can I get help or report a bug?",
-        "Open an issue on GitHub:\ngithub.com/angoikon/byd-trip-stats/issues\n\n" +
+        "Check the README.md file on Github or open an issue there (link below)" +
         "Include your BYD model, the steps to reproduce the problem, and logcat output " +
-        "if available. Feature requests are also welcome — use the 'enhancement' label."
+        "if available. Feature requests are also welcome — use the 'enhancement' label.",
+        url = "https://github.com/angoikon/byd-trip-stats-release/issues"
     )
 )
 
