@@ -1,114 +1,68 @@
-# BYD Trip Stats — License
+# Business Source License 1.1
 
-**Copyright © 2025 Angelos Oikonomou. All rights reserved.**
-
----
-
-## MIT License (with Commons Clause)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+**License text copyright © 2024 MariaDB plc, All Rights Reserved.**
+"Business Source License" is a trademark of MariaDB plc.
 
 ---
 
-## Commons Clause Restriction
+## Parameters
 
-**"Commons Clause" License Condition v1.0**
-
-The Software is provided to you by the Licensor under the MIT License above, conditioned upon the following: Without limiting other conditions in the License, the grant of rights under the License will not include, and the License does not grant to you, the right to **Sell** the Software or any product or service whose value derives, entirely or substantially, from the functionality of the Software.
-
-For purposes of the foregoing, **"Sell"** means practicing any or all of the rights granted to you under the License to provide to third parties, for a fee or other consideration (including without limitation fees for hosting or consulting/support services related to the Software), a product or service whose value derives, entirely or substantially, from the functionality of the Software.
-
-**Commercial licensing** (including integration into commercial products or services) is available by written agreement with the Author. Contact details are at the bottom of this file.
-
----
-
-## What This Means in Practice
-
-| Use | Permitted? |
+| Parameter | Value |
 |---|---|
-| Install and use the app personally | ✅ Yes |
-| Study, fork, and modify the source code | ✅ Yes |
-| Contribute improvements back | ✅ Yes |
-| Redistribute for free (non-commercial) | ✅ Yes |
-| Use in your own non-commercial project | ✅ Yes |
-| Sell the app or a fork of it | ❌ No |
-| Bundle into a paid product/service | ❌ No |
-| Offer paid support/hosting based on it | ❌ No |
-| Commercial use by any company (incl. OEMs) | ❌ Not without written agreement |
+| **Licensor** | Angelos Oikonomou |
+| **Licensed Work** | BYD Trip Stats |
+| **Additional Use Grant** | You may use the Licensed Work for personal, non-commercial purposes only — specifically, installing and running the application on your own vehicle for personal data collection and analysis. Any commercial use, including but not limited to integration into vehicle firmware, commercial products, SaaS offerings, or redistribution as part of a paid service, requires a separate written licence agreement with the Licensor. |
+| **Change Date** | March 8, 2030 |
+| **Change License** | MIT License |
 
 ---
 
-## Disclaimer of Affiliation
+## Terms
 
-BYD Trip Stats is an **independent community project**. It is not affiliated with, endorsed by, or in any way officially connected to BYD Auto, BYD Company Limited, or Electro. All product names, trademarks, and registered trademarks are the property of their respective owners.
+The Business Source License (this document, or the "License") is not an Open Source license. However, the Licensed Work will eventually be made available under an Open Source License, as stated in this License.
 
----
+### Grant of Rights
 
-## Governing Law
+The Licensor hereby grants you the right to copy, modify, create derivative works, redistribute, and make non-production use of the Licensed Work. The Licensor may make an Additional Use Grant, above, permitting limited production use.
 
-This license shall be governed by and construed in accordance with the **European Laws**, without regard to its conflict of law provisions. Any disputes arising under this license shall be subject to the exclusive jurisdiction of the courts located in Athens, Greece or anywhere else in the EU.
+Effective on the Change Date, or the fourth anniversary of the first publicly available distribution of a specific version of the Licensed Work under this License, whichever comes first, the Licensor hereby grants you rights under the terms of the Change License, and the rights granted in the paragraph above terminate.
 
----
+### Compliance
 
-## 13. Third-Party Attributions
+If your use of the Licensed Work does not comply with the requirements currently in effect as described in this License, you must purchase a commercial licence from the Licensor, its affiliated entities, or authorised resellers, or you must refrain from using the Licensed Work.
 
-The Software incorporates the following open-source components. Each is used in compliance with its respective license. Apache 2.0 requires reproduction of the copyright notice and license text; MIT requires reproduction of the copyright notice. Both requirements are satisfied by the attributions below.
+All copies of the original and modified Licensed Work, and derivative works of the Licensed Work, are subject to this License. This License applies separately for each version of the Licensed Work and the Change Date may vary for each version of the Licensed Work released by Licensor.
 
----
+You must conspicuously display this License on each original or modified copy of the Licensed Work. If you receive the Licensed Work in original or modified form from a third party, the terms and conditions set forth in this License apply to your use of that work.
 
-### Apache License 2.0 Components
+Any use of the Licensed Work in violation of this License will automatically terminate your rights under this License for the current and all other versions of the Licensed Work.
 
-The following components are licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0):
+This License does not grant you any right in any trademark or logo of the Licensor or its affiliates (provided that you may use a trademark or logo of the Licensor as expressly required by this License).
 
-| Component | Version | Copyright |
-|---|---|---|
-| Jetpack Compose (BOM, UI, Material 3, Navigation) | Various | Copyright © The Android Open Source Project |
-| AndroidX Core KTX | Various | Copyright © The Android Open Source Project |
-| AndroidX AppCompat | Various | Copyright © The Android Open Source Project |
-| AndroidX Lifecycle | Various | Copyright © The Android Open Source Project |
-| AndroidX Activity Compose | Various | Copyright © The Android Open Source Project |
-| AndroidX Room | Various | Copyright © The Android Open Source Project |
-| AndroidX DataStore | Various | Copyright © The Android Open Source Project |
-| AndroidX Work Runtime | 2.9.0 | Copyright © The Android Open Source Project |
-| Kotlin Coroutines | Various | Copyright © JetBrains s.r.o. and contributors |
-| Kotlin Serialization | Various | Copyright © JetBrains s.r.o. and contributors |
-| HiveMQ MQTT Client | Various | Copyright © HiveMQ GmbH |
-| osmdroid | 6.1.18 | Copyright © osmdroid contributors |
-| Moquette MQTT Broker | 0.17 | Copyright © the Moquette contributors |
-| Netty | 4.1.100.Final | Copyright © The Netty Project contributors |
-| Material3 Window Size Class | 1.3.1 | Copyright © The Android Open Source Project |
+### Disclaimer of Warranties
 
-> You may obtain a copy of the Apache License at https://www.apache.org/licenses/LICENSE-2.0
->
-> Unless required by applicable law or agreed to in writing, software distributed under the Apache License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND.
+TO THE EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSED WORK IS PROVIDED ON AN "AS IS" BASIS. THE LICENSOR HEREBY DISCLAIMS ALL WARRANTIES AND CONDITIONS, EXPRESS OR IMPLIED, INCLUDING (WITHOUT LIMITATION) WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND TITLE.
+
+### Covenants of Licensor
+
+In consideration of the right to use this License's text and the "Business Source License" name and trademark, the Licensor covenants to MariaDB, and to all other recipients of the licensed work to be provided by the Licensor:
+
+1. To specify as the Change License the MIT License, which is compatible with GPL Version 2.0 or any later version.
+
+2. To specify the Additional Use Grant above, permitting personal non-commercial use of the Licensed Work.
+
+3. Not to modify this License in any other way.
 
 ---
 
-### MIT License Components
+## Commercial Licensing
 
-The following components are licensed under the MIT License:
+For commercial use enquiries — including integration into vehicle firmware, embedded deployment in commercial products, or any use case not covered by the Additional Use Grant above — please contact:
 
-| Component | Version | Copyright |
-|---|---|---|
-| SLF4J API | 2.0.9 | Copyright © 2004–2023 QOS.ch |
-| SLF4J Simple | 2.0.9 | Copyright © 2004–2023 QOS.ch |
-
-> Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files, to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+📧 bydtripstats@gmail.com
 
 ---
 
-## Contact
+## Notice
 
-For commercial licensing enquiries, permissions beyond the scope of this Agreement, or to report issues:
-
-**Angelos Oikonomou**
-GitHub: [github.com/angoikon](https://github.com/angoikon)
-Issues: [github.com/angoikon/byd-trip-stats/issues](https://github.com/angoikon/byd-trip-stats/issues)
-
----
-
-*Last updated: 2026*
+*License text copyright © 2024 MariaDB plc, All Rights Reserved. "Business Source License" is a trademark of MariaDB plc. MariaDB hereby grants you permission to use this License's text to license your works, and to refer to it using the trademark "Business Source License", as long as you comply with the Covenants of Licensor described above.*

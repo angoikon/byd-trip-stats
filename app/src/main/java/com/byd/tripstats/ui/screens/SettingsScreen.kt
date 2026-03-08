@@ -548,8 +548,8 @@ private fun AboutTab() {
                 SettingsDetailRow("Version",     "1.0.0")
                 SettingsDetailRow("Author",      "Angelos Oikonomou (angoikon)")
                 SettingsDetailRow("Platform",    "Android 10 · API 29")
-                SettingsDetailRow("License",     "MIT License (with Commons Clause)")
-                SettingsDetailRow("Link",      "github.com/angoikon/byd-trip-stats-release", url = "https://github.com/angoikon/byd-trip-stats-release")
+                SettingsDetailRow("License",     "BUSL 1.1")
+                SettingsDetailRow("Link",      "github.com/angoikon/byd-trip-stats", url = "https://github.com/angoikon/byd-trip-stats")
             }
         }
 
@@ -792,7 +792,7 @@ private fun buildFaqList(): List<FaqEntry> = listOf(
         "Check the README.md file or open an issue on GitHub — tap the link below.\n\n" +
         "Include your BYD model, the steps to reproduce the problem, and logcat output " +
         "if available. Feature requests are also welcome — use the 'enhancement' label.",
-        url = "https://github.com/angoikon/byd-trip-stats-release/issues"
+        url = "https://github.com/angoikon/byd-trip-stats/issues"
     )
 )
 
