@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -82,7 +83,7 @@ fun TripHistoryScreen(
                         }
                     }) {
                         Icon(
-                            imageVector = if (selectionMode) Icons.Filled.Close else Icons.Filled.ArrowBack,
+                            imageVector = if (selectionMode) Icons.Filled.Close else Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = if (selectionMode) "Cancel" else "Back",
                             modifier = Modifier.size(28.dp)
                         )
@@ -268,8 +269,7 @@ fun TripHistoryScreen(
             FilterSheetContent(
                 current   = filterState,
                 onApply   = { viewModel.setFilter(it); showFilterSheet = false },
-                onClear   = { viewModel.clearFilters(); showFilterSheet = false },
-                onDismiss = { showFilterSheet = false }
+                onClear   = { viewModel.clearFilters(); showFilterSheet = false }
             )
         }
     }
@@ -357,8 +357,7 @@ private fun SortSheetContent(
 private fun FilterSheetContent(
     current: TripFilterState,
     onApply: (TripFilterState) -> Unit,
-    onClear: () -> Unit,
-    onDismiss: () -> Unit
+    onClear: () -> Unit
 ) {
     // Local mutable draft — only applied when the user taps Apply
     var distMin    by remember { mutableStateOf(current.distanceMin?.toString()    ?: "") }
@@ -524,7 +523,7 @@ fun TripItem(
                 ) {
                     Text(
                         text = if (trip.endTime != null)
-                            "${formatTimestamp(trip.startTime)}  ->  ${formatTimestamp(trip.endTime!!)}   | "
+                            "${formatTimestamp(trip.startTime)}  ->  ${formatTimestamp(trip.endTime)}   | "
                         else
                             formatTimestamp(trip.startTime),
                         style = MaterialTheme.typography.titleMedium,
@@ -649,7 +648,7 @@ fun TripItem(
                     modifier = Modifier.weight(1f)
                 )
                 TripMetricChip(
-                    icon = Icons.Filled.TrendingUp,
+                    icon = Icons.AutoMirrored.Filled.TrendingUp,
                     label = "Max Speed",
                     iconTint = BydErrorRed,
                     value = "${trip.maxSpeed.toInt()} km/h",
@@ -659,7 +658,7 @@ fun TripItem(
                     icon = Icons.Filled.Battery4Bar,
                     label = "SOC",
                     value = if (trip.endSoc != null)
-                        "${trip.startSoc.toInt()}%-> ${trip.endSoc!!.toInt()}%"
+                        "${trip.startSoc.toInt()}%-> ${trip.endSoc.toInt()}%"
                     else "—",
                     modifier = Modifier.weight(1f)
                 )

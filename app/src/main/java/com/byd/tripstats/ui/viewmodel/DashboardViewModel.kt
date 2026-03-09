@@ -75,16 +75,19 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
      */
     private val _selectedTripId = MutableStateFlow<Long?>(null)
 
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     val selectedTrip: StateFlow<TripEntity?> =
         _selectedTripId.flatMapLatest { id ->
             if (id == null) flowOf(null) else tripRepository.getTripById(id)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     val selectedTripDataPoints: StateFlow<List<TripDataPointEntity>> =
         _selectedTripId.flatMapLatest { id ->
             if (id == null) flowOf(emptyList()) else tripRepository.getDataPointsForTrip(id)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     val selectedTripStats: StateFlow<TripStatsEntity?> =
         _selectedTripId.flatMapLatest { id ->
             if (id == null) flowOf(null) else tripRepository.getStatsForTrip(id)
@@ -375,7 +378,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     init {
         viewModelScope.launch {
             var wasInTrip       = false
-            var lastBinTimeMs:  Long?   = null
             var lastBinOdo:     Double? = null
 
             combine(isInTrip, currentTelemetry) { inTrip, telemetry ->
@@ -393,7 +395,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         // ── Trip start ────────────────────────────────────────
                         tripStartOdometer    = telemetry.odometer
                         lastTelemetryTimeMs  = telemetryMs
-                        lastBinTimeMs        = telemetryMs
                         lastBinOdo           = telemetry.odometer
                         accumulatedEnergyWh  = 0.0
                         smoothedWhPerKm      = null
@@ -415,7 +416,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         // ── Trip end — keep points for post-trip review ────────
                         tripStartOdometer    = null
                         lastTelemetryTimeMs  = null
-                        lastBinTimeMs        = null
                         lastBinOdo           = null
                         accumulatedEnergyWh  = 0.0
                         smoothedWhPerKm      = null
@@ -448,7 +448,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                             acc.distanceKm += binDistKm
                         }
                         lastBinOdo    = telemetry.odometer
-                        lastBinTimeMs = telemetryMs
 
                         // ── 3. Sample every 100 m for chart point ─────────────
                         val anchor = tripStartOdometer ?: run {

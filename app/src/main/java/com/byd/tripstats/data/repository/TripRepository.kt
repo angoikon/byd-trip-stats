@@ -438,8 +438,8 @@ class TripRepository private constructor(context: Context) {
 
     private fun openSegment(tripId: Long, t: VehicleTelemetry): SegmentBuilder {
         val now = System.currentTimeMillis()
-        val lat = t.locationLatitude?.takeIf  { it != 0.0 }
-        val lon = t.locationLongitude?.takeIf { it != 0.0 }
+        val lat = t.locationLatitude.takeIf  { it != 0.0 }
+        val lon = t.locationLongitude.takeIf { it != 0.0 }
         return SegmentBuilder(
             tripId              = tripId,
             startTime           = now,
@@ -459,8 +459,8 @@ class TripRepository private constructor(context: Context) {
         seg.powerSum += t.enginePower
         seg.samples++
         seg.endTime = System.currentTimeMillis()
-        val lat = t.locationLatitude?.takeIf  { it != 0.0 }
-        val lon = t.locationLongitude?.takeIf { it != 0.0 }
+        val lat = t.locationLatitude.takeIf  { it != 0.0 }
+        val lon = t.locationLongitude.takeIf { it != 0.0 }
         if (lat != null) { seg.endLat = lat; seg.endLon = lon }
     }
 
@@ -503,8 +503,8 @@ class TripRepository private constructor(context: Context) {
             TripDataPointEntity(
                 tripId                 = tripId,
                 timestamp              = System.currentTimeMillis(),
-                latitude               = t.locationLatitude  ?: 0.0,
-                longitude              = t.locationLongitude ?: 0.0,
+                latitude               = t.locationLatitude,
+                longitude              = t.locationLongitude,
                 altitude               = t.locationAltitude,
                 speed                  = t.speed,
                 power                  = t.enginePower,

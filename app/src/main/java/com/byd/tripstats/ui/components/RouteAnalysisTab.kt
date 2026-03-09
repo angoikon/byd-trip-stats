@@ -7,6 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -17,9 +18,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
-import com.byd.tripstats.ui.theme.AccelerationOrange
-import com.byd.tripstats.ui.theme.BydErrorRed
-import com.byd.tripstats.ui.theme.RegenGreen
+import com.byd.tripstats.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
@@ -321,7 +320,7 @@ private fun TripTimelineCard(dataPoints: List<TripDataPointEntity>) {
             events.add(TimelineEvent(
                 time  = fmt(curr.timestamp),
                 title = if (delta > 0) "Hard Acceleration" else "Hard Braking",
-                icon  = if (delta > 0) Icons.Filled.TrendingUp else Icons.Filled.TrendingDown,
+                icon  = if (delta > 0) Icons.AutoMirrored.Filled.TrendingUp else Icons.AutoMirrored.Filled.TrendingDown,
                 color = if (delta > 0) AccelerationOrange else RegenGreen
             ))
             lastEventTs = curr.timestamp

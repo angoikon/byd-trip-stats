@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -124,7 +125,7 @@ fun LocalBackupScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Filled.ArrowBack, "Back", modifier = Modifier.size(28.dp))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", modifier = Modifier.size(28.dp))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -251,8 +252,8 @@ fun LocalBackupScreen(
 
             // ── TELEGRAM group ────────────────────────────────────────────────
             item {
-                GroupSection(title = "Telegram", icon = Icons.Filled.Send) {
-                    SectionCard(title = "Telegram Backup", icon = Icons.Filled.Send) {
+                GroupSection(title = "Telegram", icon = Icons.AutoMirrored.Filled.Send) {
+                    SectionCard(title = "Telegram Backup", icon = Icons.AutoMirrored.Filled.Send) {
                 // Telegram status banner
                 when (val s = telegramState) {
                     is TelegramManager.TelegramState.InProgress -> StatusBanner(
@@ -422,7 +423,7 @@ fun LocalBackupScreen(
                                 color       = MaterialTheme.colorScheme.onPrimary
                             )
                         } else {
-                            Icon(Icons.Filled.Send, null, modifier = Modifier.size(20.dp))
+                            Icon(Icons.AutoMirrored.Filled.Send, null, modifier = Modifier.size(20.dp))
                         }
                         Spacer(Modifier.width(8.dp))
                         Text(if (telegramBusy) "Sending…" else "Send Backup Now")

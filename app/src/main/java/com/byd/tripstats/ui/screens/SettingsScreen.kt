@@ -17,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -100,7 +101,7 @@ fun SettingsScreen(
                 title = { Text("Settings", fontSize = 24.sp, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Filled.ArrowBack, "Back", modifier = Modifier.size(28.dp))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", modifier = Modifier.size(28.dp))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -432,7 +433,7 @@ private fun DataManagementTab(
             )
             BackupSummaryCard(
                 modifier   = Modifier.weight(1f),
-                icon       = Icons.Filled.Send,
+                icon       = Icons.AutoMirrored.Filled.Send,
                 title      = "Telegram",
                 body       = "Private bot chat",
                 statusLine = "Manual & scheduled",
@@ -568,7 +569,7 @@ private fun AboutTab() {
         }
 
         HorizontalDivider()
-        SectionHeader(icon = Icons.Filled.Help, title = "FAQ")
+        SectionHeader(icon = Icons.AutoMirrored.Filled.Help, title = "FAQ")
 
         buildFaqList().forEach { (q, a, u) -> FaqItem(question = q, answer = a, url = u) }
 
@@ -628,7 +629,7 @@ private fun FaqItem(question: String, answer: String, url: String? = null) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                imageVector        = Icons.Filled.OpenInNew,
+                                imageVector        = Icons.AutoMirrored.Filled.OpenInNew,
                                 contentDescription = "Open link",
                                 tint               = MaterialTheme.colorScheme.primary,
                                 modifier           = Modifier.size(14.dp)
@@ -941,7 +942,7 @@ private fun SettingsDetailRow(label: String, value: String, url: String? = null)
             if (url != null) {
                 Spacer(Modifier.width(4.dp))
                 Icon(
-                    imageVector        = Icons.Filled.OpenInNew,
+                    imageVector        = Icons.AutoMirrored.Filled.OpenInNew,
                     contentDescription = "Open link",
                     tint               = MaterialTheme.colorScheme.primary,
                     modifier           = Modifier.size(14.dp)

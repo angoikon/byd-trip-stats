@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -69,7 +70,7 @@ fun TripDetailScreen(
                 title = { Text("Trip Details", fontSize = 24.sp, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Filled.ArrowBack, "Back", modifier = Modifier.size(28.dp))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", modifier = Modifier.size(28.dp))
                     }
                 },
                 actions = {
@@ -138,7 +139,7 @@ fun TripDetailScreen(
                 ) {
                     when (selectedTab) {
                         0 -> TripOverviewTab(trip = trip!!, stats = stats, regenEfficiencyPct = regenEfficiencyPct)
-                        1 -> TripChartsTab(dataPoints = dataPoints, stats = stats)
+                        1 -> TripChartsTab(dataPoints = dataPoints)
                         2 -> TripHeatmapsTab(dataPoints = dataPoints)
                         3 -> TripRouteTab(dataPoints = dataPoints)
                         4 -> RouteAnalysisTab(dataPoints = dataPoints)
@@ -171,7 +172,6 @@ fun ExportDialog(
     val context          = androidx.compose.ui.platform.LocalContext.current
     val stableTrip       = remember { trip }
     val stableDataPoints = remember { dataPoints.toList() }
-    val scope            = rememberCoroutineScope()
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -272,7 +272,6 @@ fun copyTripSummaryToClipboard(
  * The file will appear in Download and be accessible via any file manager on the device.
  */
 fun buildTripCsv(
-    trip: com.byd.tripstats.data.local.entity.TripEntity,
     dataPoints: List<com.byd.tripstats.data.local.entity.TripDataPointEntity>
 ): String = buildString {
     appendLine("timestamp,latitude,longitude,altitude,speed,power,soc,odometer,batteryTemp,gear,engineSpeedFront,engineSpeedRear")
@@ -288,7 +287,7 @@ fun saveTripAsCSV(
 ) {
     try {
         val fileName = "trip_${trip.id}_${System.currentTimeMillis()}.csv"
-        saveToDownloads(context, fileName, "text/csv", buildTripCsv(trip, dataPoints))
+        saveToDownloads(context, fileName, "text/csv", buildTripCsv(dataPoints))
     } catch (e: Exception) {
         Log.e("TripDetailScreen", "Save CSV failed", e)
         android.widget.Toast.makeText(context, "Save failed: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
@@ -527,8 +526,7 @@ fun TripOverviewTab(
 
 @Composable
 fun TripChartsTab(
-    dataPoints: List<com.byd.tripstats.data.local.entity.TripDataPointEntity>,
-    stats: com.byd.tripstats.data.local.entity.TripStatsEntity?
+    dataPoints: List<com.byd.tripstats.data.local.entity.TripDataPointEntity>
 ) {
     // Track which chart is expanded
     var expandedChart by remember { mutableStateOf<ChartType?>(null) }

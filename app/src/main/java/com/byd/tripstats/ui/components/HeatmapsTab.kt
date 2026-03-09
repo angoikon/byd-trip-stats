@@ -149,7 +149,7 @@ private fun PowerVsSpeedHeatmap(
         buildGrid(
             points = dataPoints.mapNotNull { p ->
                 val spd = p.speed.toFloat().takeIf { it >= 0f } ?: return@mapNotNull null
-                val pwr = p.power?.toFloat()                    ?: return@mapNotNull null
+                val pwr = p.power.toFloat()
                 spd to pwr
             },
             xMin = xMin, xMax = xMax, xBins = xBins,
@@ -182,7 +182,7 @@ private fun ConsumptionVsSpeedHeatmap(
         buildGrid(
             points = dataPoints.mapNotNull { p ->
                 val spd = p.speed.toFloat().takeIf { it >= 5f } ?: return@mapNotNull null
-                val pwr = p.power?.toFloat()                    ?: return@mapNotNull null
+                val pwr = p.power.toFloat()
                 val consumption = pwr / spd * 100f
                 spd to consumption
             },
@@ -214,7 +214,7 @@ private fun RegenVsSpeedHeatmap(
     val regenPoints = remember(dataPoints) {
         dataPoints.mapNotNull { p ->
             val spd = p.speed.toFloat().takeIf { it >= 0f } ?: return@mapNotNull null
-            val pwr = p.power?.toFloat()?.takeIf { it < 0f } ?: return@mapNotNull null
+            val pwr = p.power.toFloat().takeIf { it < 0f } ?: return@mapNotNull null
             spd to abs(pwr)
         }
     }
@@ -257,8 +257,8 @@ private fun RpmVsSpeedHeatmap(
     val rpmPoints = remember(dataPoints) {
         dataPoints.mapNotNull { p ->
             val spd      = p.speed.toFloat().takeIf { it >= 0f } ?: return@mapNotNull null
-            val frontRpm = p.engineSpeedFront?.toFloat() ?: 0f
-            val rearRpm  = p.engineSpeedRear?.toFloat()  ?: 0f
+            val frontRpm = p.engineSpeedFront.toFloat()
+            val rearRpm  = p.engineSpeedRear.toFloat()
             val rpm      = max(frontRpm, rearRpm).takeIf { it > 0f } ?: return@mapNotNull null
             spd to rpm
         }
@@ -302,8 +302,8 @@ private fun BatteryTempVsPowerHeatmap(
 
     val tempPoints = remember(dataPoints) {
         dataPoints.mapNotNull { p ->
-            val temp = p.batteryTemp?.toFloat()?.takeIf { it > 0f } ?: return@mapNotNull null
-            val pwr  = p.power?.toFloat()                           ?: return@mapNotNull null
+            val temp = p.batteryTemp.toFloat().takeIf { it > 0f } ?: return@mapNotNull null
+            val pwr  = p.power.toFloat()
             temp to pwr
         }
     }
@@ -559,7 +559,7 @@ private fun SocVsConsumptionHeatmap(
     val consPoints = remember(dataPoints) {
         dataPoints.mapNotNull { p ->
             val spd = p.speed.toFloat().takeIf { it > 10f } ?: return@mapNotNull null
-            val pwr = p.power?.toFloat()?.takeIf { it > 0f } ?: return@mapNotNull null
+            val pwr = p.power.toFloat().takeIf { it > 0f } ?: return@mapNotNull null
             val cons = pwr / spd * 100f
             if (cons > yMax) return@mapNotNull null
             p.soc.toFloat() to cons
