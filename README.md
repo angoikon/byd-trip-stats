@@ -1,6 +1,7 @@
 <div align="center">
 
-<img width="1921" height="973" alt="BYD Trip Stats Dashboard" src="https://github.com/user-attachments/assets/298bf3a8-67c8-4fd4-aecf-d06e33dfb904" />
+<img width="1921" height="973" alt="Screenshot 2026-03-08 at 18 04 08" src="https://github.com/user-attachments/assets/e16f41b0-febb-4e19-85f3-d74b0dfc5a27" />
+
 
 # BYD Trip Stats
 ### Trip Analytics & Telemetry Dashboard for BYD DiLink Vehicles
@@ -9,6 +10,8 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-purple?style=flat-square&logo=kotlin)](https://kotlinlang.org)
 [![Architecture](https://img.shields.io/badge/Architecture-MVVM-orange?style=flat-square)](https://developer.android.com)
 [![License](https://img.shields.io/badge/license-BUSL--1.1-blue?style=flat-square)](LICENSE.md)
+[![GitHub release](https://img.shields.io/github/v/release/angoikon/byd-trip-stats?style=flat-square)](https://github.com/angoikon/byd-trip-stats/releases)
+[![GitHub downloads](https://img.shields.io/github/downloads/angoikon/byd-trip-stats/total?style=flat-square)](https://github.com/angoikon/byd-trip-stats/releases)
 
 [🚀 Getting Started](#-getting-started) • [✨ Features](#-feature-overview) • [🖼️ Screenshots](#%EF%B8%8F-visual-showcase) • [🛠️ Technical Stack](#%EF%B8%8F-technical-stack) • [🗺️ Integration Roadmap](#%EF%B8%8F-integration-roadmap) • [🔒 Privacy](#-data-privacy--security) • [📞 Contact](#-contact--proposal)
 
@@ -91,12 +94,12 @@ Adaptive layouts for both landscape and portrait orientations on the rotating in
 <div align="center">
 <table>
   <tr>
-    <td align="center"><b>Dashboard — Light Theme</b><br><img width="450" src="https://github.com/user-attachments/assets/d7f35696-2f6a-47cd-9ef2-492f5a29a0ff" /></td>
+    <td align="center"><b>Dashboard — Light Theme</b><br><img width="450" alt="Screenshot 2026-03-06 at 19 42 51" src="https://github.com/user-attachments/assets/398b67eb-280f-4978-a542-67e6f7f96143" /></td>
     <td align="center"><b>Dashboard — Dark Theme</b><br><img width="450" src="https://github.com/user-attachments/assets/298bf3a8-67c8-4fd4-aecf-d06e33dfb904" /></td>
   </tr>
   <tr>
-    <td align="center"><b>Split-Screen — Horizontal</b><br><img width="450" src="https://github.com/user-attachments/assets/5fc71e08-56eb-492e-8a59-1ba2da531205" /></td>
-    <td align="center"><b>Split-Screen — Vertical</b><br><img width="450" src="https://github.com/user-attachments/assets/e8c3852c-5aba-41ce-94be-4f847d77601b" /></td>
+    <td align="center"><b>Split-Screen — Horizontal</b><br><img width="450" src="https://github.com/user-attachments/assets/e4275bb8-715d-478f-90cf-0c40870d4ee5" /></td>
+    <td align="center"><b>Split-Screen — Vertical</b><br><img width="450" src="https://github.com/user-attachments/assets/f5b07c36-b524-44f4-908a-d566401331cd" /></td>
   </tr>
 </table>
 </div>
@@ -110,8 +113,8 @@ A proprietary power-integration algorithm computes realistic remaining range in 
 <div align="center">
 <table>
   <tr>
-    <td align="center"><b>Live Range Projection</b><br><img width="450" src="https://github.com/user-attachments/assets/15ac1aea-f8de-48ba-bded-cb41fe57deb6" /></td>
-    <td align="center"><b>Consumption Trends</b><br><img width="450" src="https://github.com/user-attachments/assets/a88e9926-babe-4c71-9aea-a6067d319d2f" /></td>
+    <td align="center"><b>Live Range Projection</b><br><img width="450" src="https://github.com/user-attachments/assets/55189f86-d9be-4977-a9f3-98203d8fbe5b" /></td>
+    <td align="center"><b>Consumption Trends</b><br><img width="450" src="https://github.com/user-attachments/assets/49098879-dd97-4402-acd7-80816ed564d4" /></td>
   </tr>
 </table>
 </div>
@@ -125,12 +128,12 @@ Trips are captured automatically via gear-position events — no driver input re
 <div align="center">
 <table>
   <tr>
-    <td align="center"><b>Trip History</b><br><img width="450" src="https://github.com/user-attachments/assets/67c741dc-5647-4970-9f12-6a0a710ad53e" /></td>
-    <td align="center"><b>Trip Filtering</b><br><img width="450" src="https://github.com/user-attachments/assets/014bbb12-3304-4980-96cd-0b15b11c809d" /></td>
+    <td align="center"><b>Trip History</b><br><img width="450" src="https://github.com/user-attachments/assets/ea181e7d-021c-4ec2-9a45-ac48c8dd559a" /></td>
+    <td align="center"><b>Trip Filtering</b><br><img width="450" src="https://github.com/user-attachments/assets/79c748bc-83d9-441f-b50a-306744d1021a" /></td>
   </tr>
   <tr>
-    <td align="center"><b>Trip Sorting</b><br><img width="450" src="https://github.com/user-attachments/assets/03682d30-5c28-408f-b3c4-00572aa6ea0b" /></td>
-    <td align="center"><b>Export (CSV / JSON)</b><br><img width="450" src="https://github.com/user-attachments/assets/e3e870fc-517f-4b7d-ad67-1618dcdfd6fa" /></td>
+    <td align="center"><b>Trip Sorting</b><br><img width="450" src="https://github.com/user-attachments/assets/677212bd-8e66-4541-9e4b-7f51b3ca41e6" /></td>
+    <td align="center"><b>Export (CSV / JSON)</b><br><img width="450" src="https://github.com/user-attachments/assets/a89fc15e-11fd-47ec-8ff2-5b3a96d74365" /></td>
   </tr>
 </table>
 </div>
@@ -144,15 +147,15 @@ Per-trip breakdown of every recorded metric: route path on OpenStreetMap, speed 
 <div align="center">
 <table>
   <tr>
-    <td align="center"><b>Trip Detail</b><br><img width="450" src="https://github.com/user-attachments/assets/a433d72d-3d08-4f37-aece-1fefdf966bf6" /></td>
-    <td align="center"><b>Telemetry Overlays</b><br><img width="450" src="https://github.com/user-attachments/assets/675c2a31-6786-4048-b2ae-c10278315875" /></td>
+    <td align="center"><b>Trip Detail</b><br><img width="450" src="https://github.com/user-attachments/assets/8c13fc21-f8f6-4e1c-ac9a-63650fe90cdb" /></td>
+    <td align="center"><b>Telemetry Overlays</b><br><img width="450" src="https://github.com/user-attachments/assets/be55662a-3770-484e-96d9-bace4fce330f" /></td>
   </tr>
   <tr>
-    <td align="center"><b>Route Map</b><br><img width="450" src="https://github.com/user-attachments/assets/557a575a-6f74-4785-bd1a-4aba42d2d4c7" /></td>
-    <td align="center"><b>Route Analysis</b><br><img width="450" src="https://github.com/user-attachments/assets/05d52c4a-e51c-4337-b6cc-a01e78b95e7a" /></td>
+    <td align="center"><b>Route Map</b><br><img width="450" src="https://github.com/user-attachments/assets/3e191091-b794-4746-b76e-6d3f4a5c0480" /></td>
+    <td align="center"><b>Route Analysis</b><br><img width="450" src="https://github.com/user-attachments/assets/88f6f160-f02d-4337-a493-1c35e814e2f9" /></td>
   </tr>
   <tr>
-    <td align="center"><b>Route Analysis (continued)</b><br><img width="450" src="https://github.com/user-attachments/assets/3014f1e8-73ab-4007-8f81-fdde0c7812df" /></td>
+    <td align="center"><b>Route Analysis (continued)</b><br><img width="450" src="https://github.com/user-attachments/assets/5f87cc39-96cc-423a-beea-52ac8719cdcf" />/td>
     <td align="center"></td>
   </tr>
 </table>
@@ -167,16 +170,16 @@ Every technical metric the vehicle exposes is charted — front and rear motor R
 <div align="center">
 <table>
   <tr>
-    <td align="center"><b>Speed & Motor Distribution</b><br><img width="450" src="https://github.com/user-attachments/assets/6275b37d-ec3a-41bc-9c00-fdfb2abee750" /></td>
-    <td align="center"><b>Power Profile & Energy Consumption</b><br><img width="450" src="https://github.com/user-attachments/assets/303f6b4f-3f86-4d25-a1d5-0ed0555d7506" /></td>
+    <td align="center"><b>Speed & Motor Distribution</b><br><img width="450" src="https://github.com/user-attachments/assets/61775024-4fe7-48b5-a968-8239b00f5511" />td>
+    <td align="center"><b>Power Profile & Energy Consumption</b><br><img width="450" src="https://github.com/user-attachments/assets/4b5cbeab-e041-4751-a756-75bbcc0d8057" /></td>
   </tr>
   <tr>
-    <td align="center"><b>Battery & Voltage Detail</b><br><img width="450" src="https://github.com/user-attachments/assets/88b956f4-990c-40fc-b2d1-ce2ec99d91a7" /></td>
-    <td align="center"><b>Detailed Chart View</b><br><img width="450" src="https://github.com/user-attachments/assets/ae2ec9ce-74ff-4313-be42-59461b6902e2" /></td>
+    <td align="center"><b>SoC & Elevation Detail</b><br><img width="450" src="https://github.com/user-attachments/assets/8d7d57ba-d5c9-47fb-b946-8e863442cabe" /></td>
+    <td align="center"><b>Detailed Chart View</b><br><img width="450" src="https://github.com/user-attachments/assets/3f8dd270-3fab-402e-b158-6051e42fe5be" /></td>
   </tr>
   <tr>
-    <td align="center"><b>Charts — Vertical Orientation</b><br><img width="450" src="https://github.com/user-attachments/assets/6ccde8d5-9aad-408a-ba79-cd5689f0ab07" /></td>
-    <td align="center"><b>Detailed Charts — Vertical</b><br><img width="450" src="https://github.com/user-attachments/assets/dfffecc2-f420-4c76-8c1d-68ce480b621e" /></td>
+    <td align="center"><b>Charts — Vertical Orientation</b><br><img width="450" src="https://github.com/user-attachments/assets/99b9fa06-3ad5-4729-beef-2b27b2a6767e" /></td>
+    <td align="center"><b>Detailed Charts — Vertical</b><br><img width="450" src="https://github.com/user-attachments/assets/461c442d-aff6-471d-80b6-5c6e62e49dbd" /></td>
   </tr>
 </table>
 </div>
@@ -190,11 +193,11 @@ Every technical metric the vehicle exposes is charted — front and rear motor R
 <div align="center">
 <table>
   <tr>
-    <td align="center"><b>Heatmaps — Landscape</b><br><img width="450" src="https://github.com/user-attachments/assets/8795fc31-290d-4f65-8d24-665afc9fa1c5" /></td>
-    <td align="center"><b>Heatmaps — Vertical</b><br><img width="450" src="https://github.com/user-attachments/assets/cc029270-2bb9-45e1-9c72-8cd9e849030c" /></td>
+    <td align="center"><b>Heatmaps — Landscape</b><br><img width="450" src="https://github.com/user-attachments/assets/477f046a-e07b-4eb5-a02c-8bc35ce615ef" /></td>
+    <td align="center"><b>Heatmaps — Vertical</b><br><img width="450" src="https://github.com/user-attachments/assets/ca390ffa-3c91-4e23-810e-0d88a872baca" /></td>
   </tr>
   <tr>
-    <td align="center"><b>Heatmaps — Dark Mode (extended)</b><br><img width="450" src="https://github.com/user-attachments/assets/1265511d-a322-473f-ac3c-b5c4a77e1f12" /></td>
+    <td align="center"><b>Heatmaps — Dark Mode</b><br><img width="450" src="https://github.com/user-attachments/assets/486fb0d5-1971-4924-bb5d-b6a20515ac5c" /></td>
     <td align="center"></td>
   </tr>
 </table>
@@ -209,15 +212,15 @@ Full MQTT broker configuration (internal or external), local database backup and
 <div align="center">
 <table>
   <tr>
-    <td align="center"><b>Network Settings</b><br><img width="450" src="https://github.com/user-attachments/assets/865163e4-ffa4-4ed6-a3a5-77156be501de" /></td>
-    <td align="center"><b>Data Settings</b><br><img width="450" src="https://github.com/user-attachments/assets/cefb4e9f-1b61-429d-8d58-86dfb53aca03" /></td>
+    <td align="center"><b>Network Settings</b><br><img width="450" src="https://github.com/user-attachments/assets/18b0de45-3cce-439c-8dbb-38c621ec0257" /></td>
+    <td align="center"><b>Data Settings</b><br><img width="450" src="https://github.com/user-attachments/assets/30b9691e-0eb6-4a4a-8a17-8ae4831b5c61" /></td>
   </tr>
   <tr>
-    <td align="center"><b>Backup — Telegram Integration</b><br><img width="450" src="https://github.com/user-attachments/assets/f7388f94-9755-49c2-bef0-b9f02c49c559" /></td>
+    <td align="center"><b>Backup — Telegram Integration</b><br><img width="450" src="https://github.com/user-attachments/assets/f038a553-7375-4629-bc86-778b0f59e74f" /></td>
   </tr>
   <tr>
-    <td align="center"><b>About & FAQ</b><br><img width="450" src="https://github.com/user-attachments/assets/57183b01-8073-430b-aef5-3f427dbc79da" /></td>
-    <td align="center"><b>FAQ (continued)</b><br><img width="450" src="https://github.com/user-attachments/assets/0ac22ab6-42cd-4d55-a73a-179ee5e3c73b" /></td>
+    <td align="center"><b>About & FAQ</b><br><img width="450" src="https://github.com/user-attachments/assets/90d67634-526e-435d-8894-caa2ba7d6bbd" /></td>
+    <td align="center"><b>FAQ (continued)</b><br><img width="450" src="https://github.com/user-attachments/assets/d6cb8144-b29b-4510-9e77-aa383eb5b132" /></td>
   </tr>
 </table>
 </div>
@@ -403,7 +406,7 @@ See [Issues](https://github.com/angoikon/byd-trip-stats/issues) for full list.
 ### Q: Why is MQTT connection failing?
 **A:** Check:
 1. Electro is running and connected
-2. MQTT credentials are corrects
+2. MQTT credentials are correct
 3. Internet connection is active
 4. Broker URL has no `http://` or `https://` prefix
 
@@ -463,7 +466,7 @@ This software is provided "as is" without warranty of any kind. Use at your own 
 - Not responsible for any vehicle damage or data loss
 - Always prioritize safe driving over app usage
 - MQTT credentials are stored locally - keep your device secure
-- If you think telegram private bot might leak your db to telegram servers, you should avoid using it
+- If you think telegram encrypted private bot might leak your db to telegram servers, you should avoid using it
 
 
 ---
@@ -474,6 +477,7 @@ This software is provided "as is" without warranty of any kind. Use at your own 
 *Software Engineer · BYD Seal Owner*
 
 📧 [bydtripstats@gmail.com](mailto:bydtripstats@gmail.com)
+
 🔗 [github.com/angoikon](https://github.com/angoikon)
 
 ---
