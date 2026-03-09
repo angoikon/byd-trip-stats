@@ -95,7 +95,7 @@ Adaptive layouts for both landscape and portrait orientations on the rotating in
 <table>
   <tr>
     <td align="center"><b>Dashboard — Light Theme</b><br><img width="450" alt="Screenshot 2026-03-06 at 19 42 51" src="https://github.com/user-attachments/assets/398b67eb-280f-4978-a542-67e6f7f96143" /></td>
-    <td align="center"><b>Dashboard — Dark Theme</b><br><img width="450" src="https://github.com/user-attachments/assets/298bf3a8-67c8-4fd4-aecf-d06e33dfb904" /></td>
+    <td align="center"><b>Dashboard — Dark Theme</b><br><img width="450" src="https://github.com/user-attachments/assets/e16f41b0-febb-4e19-85f3-d74b0dfc5a27" /></td>
   </tr>
   <tr>
     <td align="center"><b>Split-Screen — Horizontal</b><br><img width="450" src="https://github.com/user-attachments/assets/e4275bb8-715d-478f-90cf-0c40870d4ee5" /></td>
