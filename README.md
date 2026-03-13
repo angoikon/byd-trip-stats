@@ -10,6 +10,7 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-purple?style=flat-square&logo=kotlin)](https://kotlinlang.org)
 [![Architecture](https://img.shields.io/badge/Architecture-MVVM-orange?style=flat-square)](https://developer.android.com)
 [![License](https://img.shields.io/badge/license-BUSL--1.1-blue?style=flat-square)](LICENSE.md)
+[![Changelog](https://img.shields.io/badge/changelog-v1.1.0-informational?style=flat-square)](CHANGELOG.md)
 [![GitHub release](https://img.shields.io/github/v/release/angoikon/byd-trip-stats?style=flat-square)](https://github.com/angoikon/byd-trip-stats/releases)
 [![GitHub downloads](https://img.shields.io/github/downloads/angoikon/byd-trip-stats/total?style=flat-square)](https://github.com/angoikon/byd-trip-stats/releases)
 
@@ -36,14 +37,12 @@
 1. Download the latest signed APK from the [**Releases**](https://github.com/angoikon/byd-trip-stats/releases) tab
 2. On your DiLink unit, run the app - enable installation from unknown sources and follow the on-screen prompt to install
 3. Launch BYD Trip Stats, grant permissions for saving data to your car's internal storage
-4. Enter your Electro MQTT broker credentials
+4. On first launch, the initialization screen will guide you through selecting your BYD model and entering your Electro MQTT topic (find it in Electro → Integrations → MQTT)
 
 ### Known Limitations
 
 - **Electro is required.** BYD Trip Stats currently receives telemetry via an MQTT bridge provided by the Electro app. A future native implementation would remove this dependency entirely — see the [Integration Roadmap](#%EF%B8%8F-integration-roadmap) below.
 - The app runs exclusively while the DiLink unit is active. Background tracking outside the vehicle is not supported by design.
-- AWD motor data is available on dual-motor variants (e.g. Seal AWD). Next app versions will detect configuration automatically and adjust the UI accordingly.
-- Same goes for any other hardcoded data like WLTP, average consumption (via ev-database.org) etc
 
 ---
 
@@ -55,7 +54,7 @@
 - Manual override with confirmation safeguards
 
 **Real-Time Telemetry**
-- Live AWD front/rear motor RPM and estimated power split
+- Live motor RPM per driven axle and estimated power split (Seal AWD only: front 160 kW / rear 230 kW proportional to total output)
 - Battery SoH, cell voltage range, thermal min/max delta
 - HV and 12V bus voltage, tyre pressures per wheel (bar / PSI / kPa)
 - Gear state, speed, engine power, regen detection
@@ -75,7 +74,7 @@
 **Analytics & History**
 - Full per-trip storage: route, telemetry timeseries, computed statistics
 - Daily / weekly / monthly / annual energy consumption views
-- 15 heatmap dimensions with crosshair bin-range interaction
+- Up to 10 heatmap dimensions with crosshair bin-range interaction (9 universal + 1 AWD-exclusive torque-split map)
 - OpenStreetMap route overlay with energy event markers, fully offline
 
 **Reliability & Data**
@@ -155,7 +154,7 @@ Per-trip breakdown of every recorded metric: route path on OpenStreetMap, speed 
     <td align="center"><b>Route Analysis</b><br><img width="450" src="https://github.com/user-attachments/assets/88f6f160-f02d-4337-a493-1c35e814e2f9" /></td>
   </tr>
   <tr>
-    <td align="center"><b>Route Analysis (continued)</b><br><img width="450" src="https://github.com/user-attachments/assets/5f87cc39-96cc-423a-beea-52ac8719cdcf" />/td>
+    <td align="center"><b>Route Analysis (continued)</b><br><img width="450" src="https://github.com/user-attachments/assets/5f87cc39-96cc-423a-beea-52ac8719cdcf" /></td>
     <td align="center"></td>
   </tr>
 </table>
@@ -170,7 +169,7 @@ Every technical metric the vehicle exposes is charted — front and rear motor R
 <div align="center">
 <table>
   <tr>
-    <td align="center"><b>Speed & Motor Distribution</b><br><img width="450" src="https://github.com/user-attachments/assets/61775024-4fe7-48b5-a968-8239b00f5511" />td>
+    <td align="center"><b>Speed & Motor Distribution</b><br><img width="450" src="https://github.com/user-attachments/assets/61775024-4fe7-48b5-a968-8239b00f5511" /></td>
     <td align="center"><b>Power Profile & Energy Consumption</b><br><img width="450" src="https://github.com/user-attachments/assets/4b5cbeab-e041-4751-a756-75bbcc0d8057" /></td>
   </tr>
   <tr>
@@ -188,7 +187,7 @@ Every technical metric the vehicle exposes is charted — front and rear motor R
 
 ### VI. Heatmap Analysis
 
-15 heatmap dimensions correlating any two telemetry axes — speed vs. power, SoC vs. regen, altitude vs. consumption, and more. Crosshair interaction shows exact bin ranges on tap.
+10 heatmap dimensions correlating any two telemetry axes — speed vs. power, SoC vs. regen, altitude vs. consumption, and more. Crosshair interaction shows exact bin ranges on tap. AWD cars gain an additional front vs. rear RPM torque-split heatmap.
 
 <div align="center">
 <table>
@@ -344,9 +343,9 @@ If you are running BYD Trip Stats on a **Dolphin, Atto3, or any other BYD model*
 
 ## 🗺️ Roadmap
 
-### Planned Features (v1.1.0+)
+### Planned Features (v1.2.0+)
 
-- [ ] Predefined vehicle configuration
+- [x] Predefined vehicle configuration ✅ *(v1.1.0)*
 - [ ] Charging session tracking
 - [ ] Trip comparison view
 - [ ] Custom dashboard widgets

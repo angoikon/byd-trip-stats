@@ -579,7 +579,7 @@ private fun AboutTab() {
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 SettingsDetailRow("App",         "BYD Trip Stats")
-                SettingsDetailRow("Version",     "1.0.0")
+                SettingsDetailRow("Version",     "1.1.0")
                 SettingsDetailRow("Changelog", "What's new", url = "https://github.com/angoikon/byd-trip-stats/blob/main/CHANGELOG.md")
                 SettingsDetailRow("Author",      "Angelos Oikonomou (angoikon)")
                 SettingsDetailRow("Platform",    "Android 10 · API 29")
