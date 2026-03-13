@@ -7,12 +7,52 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.byd.tripstats.data.config.CarCatalog
+import com.byd.tripstats.data.config.CarConfig
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "mqtt_settings")
 
+private val SELECTED_CAR_ID = stringPreferencesKey("selected_car_id")
+
 class PreferencesManager(private val context: Context) {
+
+    val selectedCarId: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[SELECTED_CAR_ID]
+    }
+
+    val selectedCarConfig: Flow<CarConfig?> = selectedCarId.map { id ->
+        CarCatalog.fromId(id)
+    }
+
+    suspend fun saveSelectedCar(carId: String) {
+        context.dataStore.edit { preferences ->
+            preferences[SELECTED_CAR_ID] = carId
+        }
+    }
+
+    suspend fun saveInitialSetup(carId: String, topic: String) {
+        context.dataStore.edit { preferences ->
+            preferences[SELECTED_CAR_ID] = carId
+            preferences[TOPIC] = topic
+        }
+    }
+
+    suspend fun saveTopic(topic: String) {
+        context.dataStore.edit { preferences ->
+            preferences[TOPIC] = topic
+        }
+    }
+
+    suspend fun getSelectedCarId(): String? {
+        return context.dataStore.data.map { it[SELECTED_CAR_ID] }.first()
+    }
+
+    suspend fun getSelectedCarConfig(): CarConfig? {
+        return CarCatalog.fromId(getSelectedCarId())
+    }
     
     companion object {
         private val BROKER_URL = stringPreferencesKey("broker_url")
@@ -27,7 +67,7 @@ class PreferencesManager(private val context: Context) {
         val brokerPort: Int = 1883,
         val username: String = "",
         val password: String = "",
-        val topic: String = "electro/telemetry/byd-seal/data"
+        val topic: String = ""
     )
     
     val mqttSettings: Flow<MqttSettings> = context.dataStore.data.map { preferences ->
@@ -36,7 +76,7 @@ class PreferencesManager(private val context: Context) {
             brokerPort = preferences[BROKER_PORT] ?: 1883,
             username = preferences[USERNAME] ?: "",
             password = preferences[PASSWORD] ?: "",
-            topic = preferences[TOPIC] ?: "electro/telemetry/byd-seal/data"
+            topic = preferences[TOPIC] ?: ""
         )
     }
     
@@ -57,16 +97,14 @@ class PreferencesManager(private val context: Context) {
     }
     
     suspend fun getMqttSettings(): MqttSettings {
-        var settings = MqttSettings()
-        context.dataStore.data.collect { preferences ->
-            settings = MqttSettings(
-                brokerUrl = preferences[BROKER_URL] ?: "127.0.0.1",
+        return context.dataStore.data.map { preferences ->
+            MqttSettings(
+                brokerUrl  = preferences[BROKER_URL]  ?: "127.0.0.1",
                 brokerPort = preferences[BROKER_PORT] ?: 1883,
-                username = preferences[USERNAME] ?: "",
-                password = preferences[PASSWORD] ?: "",
-                topic = preferences[TOPIC] ?: "electro/telemetry/byd-seal/data"
+                username   = preferences[USERNAME]    ?: "",
+                password   = preferences[PASSWORD]    ?: "",
+                topic      = preferences[TOPIC]       ?: ""
             )
-        }
-        return settings
+        }.first()
     }
 }

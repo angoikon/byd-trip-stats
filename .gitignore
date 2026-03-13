@@ -1,6 +1,7 @@
 .gradle
 .idea
 build
+debug
 .DS_Store
 local.properties
 release

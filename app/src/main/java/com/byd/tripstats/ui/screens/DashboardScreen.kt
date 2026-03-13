@@ -31,7 +31,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.byd.tripstats.data.config.CarCatalog
+import com.byd.tripstats.data.config.Drivetrain
 import com.byd.tripstats.data.model.VehicleTelemetry
+import com.byd.tripstats.data.preferences.PreferencesManager
+import com.byd.tripstats.R
 import com.byd.tripstats.ui.components.LiquidFillBattery
 import com.byd.tripstats.ui.components.StatsGlassCard
 import com.byd.tripstats.ui.components.GlassmorphicCard
@@ -41,8 +45,6 @@ import com.byd.tripstats.ui.components.WeeklyEnergyThumbnail
 import com.byd.tripstats.ui.components.ConsumptionChartExpanded
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import com.byd.tripstats.ui.theme.*
-import kotlin.math.abs
-import com.byd.tripstats.R
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -50,6 +52,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.StrokeCap
+import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 private const val SHOW_MOCK_BUTTON = false  // Set to true for testing, false for production
 
@@ -74,10 +78,61 @@ fun DashboardScreen(
     val windowSizeClass = calculateWindowSizeClass(activity)
     val widthSizeClass = windowSizeClass.widthSizeClass
 
+    val context = LocalContext.current
+    val prefs = remember { PreferencesManager(context.applicationContext) }
+    val selectedCar by prefs.selectedCarConfig.collectAsState(initial = null)
+    val scope = rememberCoroutineScope()
+    var showCarSelectionDialog by remember { mutableStateOf(false) }
+
+    val receivingTelemetry = telemetry != null
+
+    val groupedCars = remember {
+        linkedMapOf(
+            "BYD Seal" to listOf(
+                CarCatalog.BYD_SEAL_DYNAMIC_RWD,
+                CarCatalog.BYD_SEAL_PREMIUM_RWD,
+                CarCatalog.BYD_SEAL_EXCELLENCE
+            ),
+            "BYD Dolphin" to listOf(
+                CarCatalog.BYD_DOLPHIN_STANDARD,
+                CarCatalog.BYD_DOLPHIN_EXTENDED
+            ),
+            "BYD ATTO 3" to listOf(
+                CarCatalog.BYD_ATTO_3
+            )
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("BYD trip stats", fontSize = 24.sp, fontWeight = FontWeight.Bold) },
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "BYD trip stats",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        selectedCar?.let { car ->
+                            Spacer(modifier = Modifier.width(16.dp))
+
+                            TextButton(
+                                onClick = { showCarSelectionDialog = true },
+                                contentPadding = PaddingValues(0.dp)
+                            ) {
+                                Text(
+                                    text = "(${car.displayName})",
+                                    color = BatteryBlue,
+                                    fontSize = 20.sp,
+                                    maxLines = 1
+                                )
+                            }
+                        }
+                    }
+                },
                 actions = {
                     // Mock Data Button - only shown if SHOW_MOCK_BUTTON is true
                     if (SHOW_MOCK_BUTTON) {
@@ -109,13 +164,13 @@ fun DashboardScreen(
                     Icon(
                         imageVector = when {
                             mqttConnectionError != null -> Icons.Filled.SyncProblem
-                            mqttConnected -> Icons.Filled.Sync
+                            receivingTelemetry -> Icons.Filled.Sync
                             else -> Icons.Filled.SyncDisabled
                         },
                         contentDescription = "MQTT Status",
                         tint = when {
                             mqttConnectionError != null -> MaterialTheme.colorScheme.error
-                            mqttConnected -> RegenGreen
+                            receivingTelemetry -> RegenGreen
                             else -> MaterialTheme.colorScheme.onSurfaceVariant
                         },
                         modifier = Modifier.size(28.dp)
@@ -248,6 +303,84 @@ fun DashboardScreen(
                 modifier = Modifier.padding(paddingValues)
             )
         }
+    }
+
+    if (showCarSelectionDialog) {
+        AlertDialog(
+            onDismissRequest = { showCarSelectionDialog = false },
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            title = {
+                Text("Select car")
+            },
+            text = {
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    groupedCars.forEach { (groupTitle, cars) ->
+
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = groupTitle,
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+
+                            cars.forEach { car ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            scope.launch {
+                                                prefs.saveSelectedCar(car.id)
+                                            }
+                                            showCarSelectionDialog = false
+                                        }
+                                        .padding(vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    RadioButton(
+                                        selected = selectedCar?.id == car.id,
+                                        onClick = {
+                                            scope.launch {
+                                                prefs.saveSelectedCar(car.id)
+                                            }
+                                            showCarSelectionDialog = false
+                                        }
+                                    )
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    Column {
+                                        Text(
+                                            text = car.displayName,
+                                            style = MaterialTheme.typography.bodyLarge
+                                        )
+
+                                        Text(
+                                            text = "WLTP: ${car.wltpKm} km",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(
+                    onClick = { showCarSelectionDialog = false }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 
@@ -818,9 +951,18 @@ fun TyrePressureIndicator(
     unit: TyrePressureUnit = TyrePressureUnit.BAR,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val prefs = remember { PreferencesManager(context.applicationContext) }
+    val selectedCar by prefs.selectedCarConfig.collectAsState(initial = null)
+
+    val car = selectedCar ?: return
+
+    val frontTyrePressureBar = car.frontTyrePressureBar
+    val rearTyrePressureBar = car.rearTyrePressureBar
+    
     // Alarm thresholds are always evaluated in bar regardless of display unit
     val pressureBar = pressure.toBarFromPsi()
-    val recommendedPressure = if (isFront) 2.6 else 2.9 // TODO: make this dynamic via config
+    val recommendedPressure = if (isFront) frontTyrePressureBar else rearTyrePressureBar
     val isNoData = pressure < 0.1
     val isLow    = !isNoData && pressureBar < recommendedPressure - 0.2
     val isHigh   = !isNoData && pressureBar > recommendedPressure + 0.2
@@ -1271,6 +1413,10 @@ fun VehicleStats(
     /** true in side-by-side layouts: cards share available height via weight(1f), no scroll */
     fillHeight: Boolean = false
 ) {
+    val context     = LocalContext.current
+    val prefs       = remember { PreferencesManager(context.applicationContext) }
+    val selectedCar by prefs.selectedCarConfig.collectAsState(initial = null)
+
     val colModifier = if (fillHeight) modifier.fillMaxHeight() else modifier.verticalScroll(rememberScrollState())
     val spacing     = if (fillHeight) 4.dp else 8.dp
 
@@ -1306,19 +1452,46 @@ fun VehicleStats(
             compact  = fillHeight,
             modifier = cardMod
         )
-        StatCard(
-            title    = "Front / Rear Motors",
-            value    = "${telemetry.engineSpeedFront} / ${telemetry.engineSpeedRear} RPM",
-            subtitle = if (telemetry.engineSpeedRear > 0) {
-                "${((telemetry.enginePower * 160 / 390).toInt())} / ${((telemetry.enginePower * 230 / 390).toInt())} kW"
-            } else {
-                "0 / 0 kW"
-            },
-            iconRes  = R.drawable.ic_motor_axle,
-            color    = BydElectricBlue,
-            compact  = fillHeight,
-            modifier = cardMod
-        )
+
+        // ── Motor card — adapts to the selected car's drivetrain ──────────────
+        // AWD (Seal Excellence): both motors shown with their confirmed per-motor
+        // peak ratings (front 160 kW, rear 230 kW, combined 390 kW — all PSM).
+        // The proportional split is a reasonable live estimate since the MQTT stream
+        // only exposes total enginePower; true per-motor output is not published.
+        // FWD / RWD: only the driven axle's RPM is shown; no power subtitle since
+        // there is no split to estimate.
+        when (selectedCar?.drivetrain) {
+            Drivetrain.FWD -> StatCard(
+                title    = "Front Motor",
+                value    = "${telemetry.engineSpeedFront} RPM",
+                iconRes  = R.drawable.ic_motor_axle,
+                color    = BydElectricBlue,
+                compact  = fillHeight,
+                modifier = cardMod
+            )
+            Drivetrain.RWD -> StatCard(
+                title    = "Rear Motor",
+                value    = "${telemetry.engineSpeedRear} RPM",
+                iconRes  = R.drawable.ic_motor_axle,
+                color    = BydElectricBlue,
+                compact  = fillHeight,
+                modifier = cardMod
+            )
+            else -> StatCard(   // AWD (Seal Excellence) or null fallback
+                title    = "Front / Rear Motors",
+                value    = "${telemetry.engineSpeedFront} / ${telemetry.engineSpeedRear} RPM",
+                subtitle = if (telemetry.engineSpeedFront > 0 || telemetry.engineSpeedRear > 0) {
+                    "${((telemetry.enginePower * 160 / 390).toInt())} / ${((telemetry.enginePower * 230 / 390).toInt())} kW"
+                } else {
+                    "0 / 0 kW"
+                },
+                iconRes  = R.drawable.ic_motor_axle,
+                color    = BydElectricBlue,
+                compact  = fillHeight,
+                modifier = cardMod
+            )
+        }
+
         StatCard(
             title    = "Odometer",
             value    = "${String.format("%.1f", telemetry.odometer)} km",

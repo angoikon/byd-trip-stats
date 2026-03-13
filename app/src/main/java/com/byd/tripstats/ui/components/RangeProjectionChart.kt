@@ -6,6 +6,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,16 +15,14 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import androidx.compose.ui.draw.clipToBounds
 import kotlin.math.roundToInt
-
-/** BYD Seal AWD Excellenct WLTP. Projections above this are physically implausible during normal driving
- *  and are shown as a dash-dot line capped at the chart ceiling instead of a solid projection. */
-private const val WLTP_MAX_KM = 520.0 // TODO: Import from config
 
 /**
  * A single telemetry snapshot recorded during a trip.
@@ -70,358 +70,367 @@ fun RangeProjectionChart(
     liveElectricRangeKm: Int = 0,
     modifier: Modifier = Modifier
 ) {
-    // ── Derived values ────────────────────────────────────────────────────────
+    // ── Config values ────────────────────────────────────────────────────────
+    val context = LocalContext.current
+    val prefs = remember { PreferencesManager(context.applicationContext) }
+    val selectedCar by prefs.selectedCarConfig.collectAsState(initial = null)
 
-    val points = remember(dataPoints) {
-        dataPoints
-            .sortedBy { it.distanceKm }
-            .distinctBy { (it.distanceKm * 10).roundToInt() }
-    }
+    selectedCar?.let { car ->
+        val wltpKm = car.wltpKm
 
-    // BMS range at trip start — used as Y-axis scale anchor
-    val startBmsRange = points.firstOrNull()?.electricDrivingRangeKm?.toDouble()
-        ?: liveElectricRangeKm.toDouble().takeIf { it > 0 }
-        ?: (liveSoc / 100.0 * 400.0)   // last-resort rough fallback
+        // ── Derived values ────────────────────────────────────────────────────────
 
-    val maxDistanceKm = points.lastOrNull()?.distanceKm?.coerceAtLeast(1.0) ?: 1.0
-
-    // The projection is pre-computed in the ViewModel via power integration.
-    // Only points where isStabilised=true carry a valid projectedRangeKm.
-    val projectedPoints: List<Pair<Double, Double>> = remember(points) {
-        points.mapNotNull { p ->
-            p.projectedRangeKm?.let { p.distanceKm to it }
-        }
-    }
-
-    // BMS series — secondary reference line
-    val bmsPoints: List<Pair<Double, Double>> = remember(points) {
-        points.map { it.distanceKm to it.electricDrivingRangeKm.toDouble() }
-    }
-
-    // Whether we have enough data to show the real projection yet
-    val isStabilised       = points.lastOrNull()?.isStabilised ?: false
-    val currentBms         = points.lastOrNull()?.electricDrivingRangeKm?.toDouble() ?: startBmsRange
-    val rawProjected       = projectedPoints.lastOrNull()?.second ?: currentBms
-    // Cap display at WLTP — projections above this indicate calibration is still settling
-    val isSaturated        = rawProjected > WLTP_MAX_KM
-    val currentProjected   = rawProjected.coerceAtMost(WLTP_MAX_KM)
-
-    // Positive delta = our projection is higher than BMS (you're beating expectations)
-    val deltaKm     = currentProjected - currentBms
-    val beating     = deltaKm >= 0
-    val accentColor = if (beating) RegenGreen else AccelerationOrange
-
-    // Anchor Y-max to trip-start BMS range + 15% headroom.
-    // Using live values caused the axis to rescale as the projection converged,
-    // producing distracting visual jumps. A fixed ceiling keeps the chart stable.
-    val yMax = startBmsRange * 1.15
-    val yMin = 0.0
-
-    // ── Theme colors ──────────────────────────────────────────────────────────
-    val bmsLineColor  = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
-    val gridLineColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.18f)
-    val axisColor     = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-    val textColor     = MaterialTheme.colorScheme.onSurface
-
-    // ── Header ────────────────────────────────────────────────────────────────
-    Column(modifier = modifier.fillMaxSize()) {
-        val modelLabel = when (activeRangeModel) {
-            DashboardViewModel.RangeModel.LIVE_TRIP        -> "● Live trip"
-            DashboardViewModel.RangeModel.HISTORICAL_BINS  -> "● Speed bins"
-            DashboardViewModel.RangeModel.LIFETIME_AVERAGE -> "● Lifetime avg"
-            DashboardViewModel.RangeModel.BASELINE         -> "● Baseline"
-        }
-        val modelColor = when (activeRangeModel) {
-            DashboardViewModel.RangeModel.LIVE_TRIP       -> RegenGreen
-            DashboardViewModel.RangeModel.HISTORICAL_BINS -> AccelerationOrange
-            else                                          -> MaterialTheme.colorScheme.onSurfaceVariant
+        val points = remember(dataPoints) {
+            dataPoints
+                .sortedBy { it.distanceKm }
+                .distinctBy { (it.distanceKm * 10).roundToInt() }
         }
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.Bottom
-        ) {
-            Column {
-                if (!isStabilised && activeRangeModel == DashboardViewModel.RangeModel.BASELINE) {
+        // BMS range at trip start — used as Y-axis scale anchor
+        val startBmsRange = points.firstOrNull()?.electricDrivingRangeKm?.toDouble()
+            ?: liveElectricRangeKm.toDouble().takeIf { it > 0 }
+            ?: (liveSoc / 100.0 * 400.0)   // last-resort rough fallback
+
+        val maxDistanceKm = points.lastOrNull()?.distanceKm?.coerceAtLeast(1.0) ?: 1.0
+
+        // The projection is pre-computed in the ViewModel via power integration.
+        // Only points where isStabilised=true carry a valid projectedRangeKm.
+        val projectedPoints: List<Pair<Double, Double>> = remember(points) {
+            points.mapNotNull { p ->
+                p.projectedRangeKm?.let { p.distanceKm to it }
+            }
+        }
+
+        // BMS series — secondary reference line
+        val bmsPoints: List<Pair<Double, Double>> = remember(points) {
+            points.map { it.distanceKm to it.electricDrivingRangeKm.toDouble() }
+        }
+
+        // Whether we have enough data to show the real projection yet
+        val isStabilised       = points.lastOrNull()?.isStabilised ?: false
+        val currentBms         = points.lastOrNull()?.electricDrivingRangeKm?.toDouble() ?: startBmsRange
+        val rawProjected       = projectedPoints.lastOrNull()?.second ?: currentBms
+        // Cap display at WLTP — projections above this indicate calibration is still settling
+        val isSaturated        = rawProjected > wltpKm
+        val currentProjected   = rawProjected.coerceAtMost(wltpKm.toDouble())
+
+        // Positive delta = our projection is higher than BMS (you're beating expectations)
+        val deltaKm     = currentProjected - currentBms
+        val beating     = deltaKm >= 0
+        val accentColor = if (beating) RegenGreen else AccelerationOrange
+
+        // Anchor Y-max to trip-start BMS range + 15% headroom.
+        // Using live values caused the axis to rescale as the projection converged,
+        // producing distracting visual jumps. A fixed ceiling keeps the chart stable.
+        val yMax = startBmsRange * 1.15
+        val yMin = 0.0
+
+        // ── Theme colors ──────────────────────────────────────────────────────────
+        val bmsLineColor  = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+        val gridLineColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.18f)
+        val axisColor     = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+        val textColor     = MaterialTheme.colorScheme.onSurface
+
+        // ── Header ────────────────────────────────────────────────────────────────
+        Column(modifier = modifier.fillMaxSize()) {
+            val modelLabel = when (activeRangeModel) {
+                DashboardViewModel.RangeModel.LIVE_TRIP        -> "● Live trip"
+                DashboardViewModel.RangeModel.HISTORICAL_BINS  -> "● Speed bins"
+                DashboardViewModel.RangeModel.LIFETIME_AVERAGE -> "● Lifetime avg"
+                DashboardViewModel.RangeModel.BASELINE         -> "● Baseline"
+            }
+            val modelColor = when (activeRangeModel) {
+                DashboardViewModel.RangeModel.LIVE_TRIP       -> RegenGreen
+                DashboardViewModel.RangeModel.HISTORICAL_BINS -> AccelerationOrange
+                else                                          -> MaterialTheme.colorScheme.onSurfaceVariant
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.Bottom
+            ) {
+                Column {
+                    if (!isStabilised && activeRangeModel == DashboardViewModel.RangeModel.BASELINE) {
+                        Text(
+                            text  = "Calibrating…",
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                            color = textColor.copy(alpha = 0.5f)
+                        )
+                        Text(
+                            text  = "BMS: ${"%.0f".format(currentBms)} km (collecting data)",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else if (isSaturated) {
+                        Text(
+                            text  = "≥ ${wltpKm.toInt()} km projected (WLTP limit)",
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                            color = textColor.copy(alpha = 0.7f)
+                        )
+                        Text(
+                            text  = "Low-speed calibration — capped at WLTP",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        Text(
+                            text  = "%.0f km projected range".format(currentProjected),
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                            color = textColor
+                        )
+                        val sign = if (beating) "+" else ""
+                        Text(
+                            text  = "$sign${"%.0f".format(deltaKm)} km vs BMS estimate",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = accentColor
+                        )
+                    }
+                }
+                Spacer(Modifier.weight(1f))
+                // Model badge stacked, right-aligned
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text  = "Calibrating…",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                        color = textColor.copy(alpha = 0.5f)
-                    )
-                    Text(
-                        text  = "BMS: ${"%.0f".format(currentBms)} km (collecting data)",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                } else if (isSaturated) {
-                    Text(
-                        text  = "≥ ${WLTP_MAX_KM.toInt()} km projected (WLTP limit)",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                        color = textColor.copy(alpha = 0.7f)
-                    )
-                    Text(
-                        text  = "Low-speed calibration — capped at WLTP",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                } else {
-                    Text(
-                        text  = "%.0f km projected range".format(currentProjected),
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                        color = textColor
-                    )
-                    val sign = if (beating) "+" else ""
-                    Text(
-                        text  = "$sign${"%.0f".format(deltaKm)} km vs BMS estimate",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = accentColor
+                        text  = modelLabel,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = modelColor
                     )
                 }
             }
-            Spacer(Modifier.weight(1f))
-            // Model badge stacked, right-aligned
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text  = modelLabel,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = modelColor
-                )
-            }
-        }
 
-        // ── Canvas ────────────────────────────────────────────────────────────
-        Canvas(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .padding(horizontal = 12.dp)
-                .clipToBounds()   // prevent projected line from escaping the card
-        ) {
-            val w = size.width
-            val h = size.height
+            // ── Canvas ────────────────────────────────────────────────────────────
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(horizontal = 12.dp)
+                    .clipToBounds()   // prevent projected line from escaping the card
+            ) {
+                val w = size.width
+                val h = size.height
 
-            val padL = 80f
-            val padR = 12f
-            val padT = 12f
-            val padB = 36f
+                val padL = 80f
+                val padR = 12f
+                val padT = 12f
+                val padB = 36f
 
-            val chartW = w - padL - padR
-            val chartH = h - padT - padB
+                val chartW = w - padL - padR
+                val chartH = h - padT - padB
 
-            val nc = drawContext.canvas.nativeCanvas
+                val nc = drawContext.canvas.nativeCanvas
 
-            fun xOf(distKm: Double) = padL + (distKm / maxDistanceKm * chartW).toFloat()
-            fun yOf(rangeKm: Double): Float {
-                val fraction = (rangeKm - yMin) / (yMax - yMin)
-                return (padT + chartH * (1f - fraction)).toFloat()
-            }
-
-            // Paint objects — created once, reused across all draw calls
-            val labelPaint = android.graphics.Paint().apply {
-                color = textColor.copy(alpha = 0.7f).toArgb()
-                textSize = 20f; textAlign = android.graphics.Paint.Align.RIGHT; isAntiAlias = true
-            }
-            val xLabelPaint = android.graphics.Paint().apply {
-                color = textColor.copy(alpha = 0.6f).toArgb()
-                textSize = 19f; textAlign = android.graphics.Paint.Align.CENTER; isAntiAlias = true
-            }
-            val yAxisPaint = android.graphics.Paint().apply {
-                color = textColor.copy(alpha = 0.55f).toArgb()
-                textSize = 19f; textAlign = android.graphics.Paint.Align.CENTER; isAntiAlias = true
-            }
-
-            // Rotated Y-axis label
-            nc.save()
-            nc.rotate(-90f, 18f, padT + chartH / 2f)
-            nc.drawText("km", 18f, padT + chartH / 2f, yAxisPaint)
-            nc.restore()
-
-            // Y grid lines + labels
-            val yStepKm = when {
-                startBmsRange > 300 -> 100.0
-                startBmsRange > 150 -> 50.0
-                startBmsRange > 75  -> 25.0
-                else                -> 10.0
-            }
-            var yTick = (yMin / yStepKm).toInt() * yStepKm
-            while (yTick <= yMax) {
-                val y = yOf(yTick)
-                drawLine(gridLineColor, Offset(padL, y), Offset(w - padR, y), 1f)
-                nc.drawText("${yTick.roundToInt()}", padL - 6f, y + 5f, labelPaint)
-                yTick += yStepKm
-            }
-
-            // X axis
-            drawLine(axisColor, Offset(padL, padT + chartH), Offset(w - padR, padT + chartH), 1.5f)
-
-            // X ticks — 5 evenly spaced labels
-            val xStep = maxDistanceKm / 4.0
-            for (i in 0..4) {
-                val dist = i * xStep
-                val x = xOf(dist)
-                drawLine(axisColor, Offset(x, padT + chartH), Offset(x, padT + chartH + 5f), 1.5f)
-                nc.drawText("%.1f".format(dist), x, h - 4f, xLabelPaint)
-            }
-
-            if (bmsPoints.isNotEmpty()) {
-
-                // ── BMS reference line (gray dashed, always visible) ──────────
-                if (bmsPoints.size >= 2) {
-                    val bmsPath = Path().apply {
-                        moveTo(xOf(bmsPoints.first().first), yOf(bmsPoints.first().second))
-                        bmsPoints.drop(1).forEach { (d, r) -> lineTo(xOf(d), yOf(r)) }
-                    }
-                    drawPath(
-                        path  = bmsPath,
-                        color = bmsLineColor,
-                        style = Stroke(
-                            width      = 2f,
-                            cap        = StrokeCap.Round,
-                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 8f))
-                        )
-                    )
+                fun xOf(distKm: Double) = padL + (distKm / maxDistanceKm * chartW).toFloat()
+                fun yOf(rangeKm: Double): Float {
+                    val fraction = (rangeKm - yMin) / (yMax - yMin)
+                    return (padT + chartH * (1f - fraction)).toFloat()
                 }
 
-                // ── Projected line — only drawn once stabilised ───────────────
-                if (projectedPoints.size >= 2) {
+                // Paint objects — created once, reused across all draw calls
+                val labelPaint = android.graphics.Paint().apply {
+                    color = textColor.copy(alpha = 0.7f).toArgb()
+                    textSize = 20f; textAlign = android.graphics.Paint.Align.RIGHT; isAntiAlias = true
+                }
+                val xLabelPaint = android.graphics.Paint().apply {
+                    color = textColor.copy(alpha = 0.6f).toArgb()
+                    textSize = 19f; textAlign = android.graphics.Paint.Align.CENTER; isAntiAlias = true
+                }
+                val yAxisPaint = android.graphics.Paint().apply {
+                    color = textColor.copy(alpha = 0.55f).toArgb()
+                    textSize = 19f; textAlign = android.graphics.Paint.Align.CENTER; isAntiAlias = true
+                }
 
-                    // BMS is linearly interpolated at each projected X so the fill
-                    // is correct even when the two series have slightly different sample positions.
-                    fun interpolateBmsAt(targetDist: Double): Double {
-                        if (bmsPoints.isEmpty()) return 0.0
-                        if (targetDist <= bmsPoints.first().first) return bmsPoints.first().second
-                        if (targetDist >= bmsPoints.last().first)  return bmsPoints.last().second
-                        val hi = bmsPoints.indexOfFirst { it.first >= targetDist }
-                        if (hi <= 0) return bmsPoints.first().second
-                        val lo = hi - 1
-                        val (d0, r0) = bmsPoints[lo]
-                        val (d1, r1) = bmsPoints[hi]
-                        val t = if (d1 > d0) (targetDist - d0) / (d1 - d0) else 0.0
-                        return r0 + t * (r1 - r0)
-                    }
+                // Rotated Y-axis label
+                nc.save()
+                nc.rotate(-90f, 18f, padT + chartH / 2f)
+                nc.drawText("km", 18f, padT + chartH / 2f, yAxisPaint)
+                nc.restore()
 
-                    // Clamp projected to WLTP_MAX for fill so it stays within chart bounds
-                    val cappedForFill = projectedPoints.map { (d, r) ->
-                        d to r.coerceAtMost(WLTP_MAX_KM)
-                    }
-                    val fillPath = Path().apply {
-                        moveTo(xOf(cappedForFill.first().first), yOf(cappedForFill.first().second))
-                        cappedForFill.drop(1).forEach { (d, r) -> lineTo(xOf(d), yOf(r)) }
-                        cappedForFill.reversed().forEach { (d, _) ->
-                            lineTo(xOf(d), yOf(interpolateBmsAt(d)))
+                // Y grid lines + labels
+                val yStepKm = when {
+                    startBmsRange > 300 -> 100.0
+                    startBmsRange > 150 -> 50.0
+                    startBmsRange > 75  -> 25.0
+                    else                -> 10.0
+                }
+                var yTick = (yMin / yStepKm).toInt() * yStepKm
+                while (yTick <= yMax) {
+                    val y = yOf(yTick)
+                    drawLine(gridLineColor, Offset(padL, y), Offset(w - padR, y), 1f)
+                    nc.drawText("${yTick.roundToInt()}", padL - 6f, y + 5f, labelPaint)
+                    yTick += yStepKm
+                }
+
+                // X axis
+                drawLine(axisColor, Offset(padL, padT + chartH), Offset(w - padR, padT + chartH), 1.5f)
+
+                // X ticks — 5 evenly spaced labels
+                val xStep = maxDistanceKm / 4.0
+                for (i in 0..4) {
+                    val dist = i * xStep
+                    val x = xOf(dist)
+                    drawLine(axisColor, Offset(x, padT + chartH), Offset(x, padT + chartH + 5f), 1.5f)
+                    nc.drawText("%.1f".format(dist), x, h - 4f, xLabelPaint)
+                }
+
+                if (bmsPoints.isNotEmpty()) {
+
+                    // ── BMS reference line (gray dashed, always visible) ──────────
+                    if (bmsPoints.size >= 2) {
+                        val bmsPath = Path().apply {
+                            moveTo(xOf(bmsPoints.first().first), yOf(bmsPoints.first().second))
+                            bmsPoints.drop(1).forEach { (d, r) -> lineTo(xOf(d), yOf(r)) }
                         }
-                        close()
-                    }
-                    val fillColor = if (beating) RegenGreen.copy(alpha = 0.15f)
-                                    else         AccelerationOrange.copy(alpha = 0.12f)
-                    drawPath(fillPath, fillColor)
-
-                    // ── Split projected into normal (≤ WLTP) and saturated (> WLTP) ──
-                    // Saturated segments are drawn as dash-dot at the chart ceiling to
-                    // signal the projection is unconstrained (e.g. very low speed at trip start).
-                    val normalPath     = Path()
-                    val saturatedPath  = Path()
-                    var normalStarted  = false
-                    var satStarted     = false
-
-                    projectedPoints.forEach { (d, r) ->
-                        val x = xOf(d)
-                        if (r <= WLTP_MAX_KM) {
-                            val y = yOf(r)
-                            if (!normalStarted) { normalPath.moveTo(x, y); normalStarted = true }
-                            else normalPath.lineTo(x, y)
-                            satStarted = false   // break saturated segment
-                        } else {
-                            // Pin Y to WLTP ceiling so the dash-dot appears at the top of the chart
-                            val y = yOf(WLTP_MAX_KM)
-                            if (!satStarted) { saturatedPath.moveTo(x, y); satStarted = true }
-                            else saturatedPath.lineTo(x, y)
-                            normalStarted = false
-                        }
-                    }
-
-                    // Draw solid line for normal range
-                    if (normalStarted) {
                         drawPath(
-                            normalPath,
-                            color = accentColor,
-                            style = Stroke(width = 3f, cap = StrokeCap.Round, join = StrokeJoin.Round)
-                        )
-                    }
-
-                    // Draw dash-dot for saturated (beyond WLTP) — dimmed to indicate uncertainty
-                    if (satStarted) {
-                        drawPath(
-                            saturatedPath,
-                            color = accentColor.copy(alpha = 0.45f),
+                            path  = bmsPath,
+                            color = bmsLineColor,
                             style = Stroke(
                                 width      = 2f,
                                 cap        = StrokeCap.Round,
-                                pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 4f, 2f, 4f))
+                                pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 8f))
                             )
                         )
                     }
 
-                    // Current position dot — use capped Y so it stays inside the chart
-                    val last  = projectedPoints.last()
-                    val dotX  = xOf(last.first)
-                    val dotY  = yOf(last.second.coerceAtMost(WLTP_MAX_KM))
-                    drawCircle(accentColor.copy(alpha = 0.25f), 18f, Offset(dotX, dotY))
-                    drawCircle(accentColor,                      8f,  Offset(dotX, dotY))
-                    drawCircle(Color.White,                      3f,  Offset(dotX, dotY))
-                }
+                    // ── Projected line — only drawn once stabilised ───────────────
+                    if (projectedPoints.size >= 2) {
 
-            } else {
-                nc.drawText(
-                    "No trip data yet",
-                    padL + chartW / 2f,
-                    padT + chartH / 2f,
-                    android.graphics.Paint().apply {
-                        color = textColor.copy(alpha = 0.3f).toArgb()
-                        textSize = 28f; textAlign = android.graphics.Paint.Align.CENTER; isAntiAlias = true
+                        // BMS is linearly interpolated at each projected X so the fill
+                        // is correct even when the two series have slightly different sample positions.
+                        fun interpolateBmsAt(targetDist: Double): Double {
+                            if (bmsPoints.isEmpty()) return 0.0
+                            if (targetDist <= bmsPoints.first().first) return bmsPoints.first().second
+                            if (targetDist >= bmsPoints.last().first)  return bmsPoints.last().second
+                            val hi = bmsPoints.indexOfFirst { it.first >= targetDist }
+                            if (hi <= 0) return bmsPoints.first().second
+                            val lo = hi - 1
+                            val (d0, r0) = bmsPoints[lo]
+                            val (d1, r1) = bmsPoints[hi]
+                            val t = if (d1 > d0) (targetDist - d0) / (d1 - d0) else 0.0
+                            return r0 + t * (r1 - r0)
+                        }
+
+                        // Clamp projected to WLTP_MAX for fill so it stays within chart bounds
+                        val cappedForFill = projectedPoints.map { (d, r) ->
+                            d to r.coerceAtMost(wltpKm.toDouble())
+                        }
+                        val fillPath = Path().apply {
+                            moveTo(xOf(cappedForFill.first().first), yOf(cappedForFill.first().second))
+                            cappedForFill.drop(1).forEach { (d, r) -> lineTo(xOf(d), yOf(r)) }
+                            cappedForFill.reversed().forEach { (d, _) ->
+                                lineTo(xOf(d), yOf(interpolateBmsAt(d)))
+                            }
+                            close()
+                        }
+                        val fillColor = if (beating) RegenGreen.copy(alpha = 0.15f)
+                                        else         AccelerationOrange.copy(alpha = 0.12f)
+                        drawPath(fillPath, fillColor)
+
+                        // ── Split projected into normal (≤ WLTP) and saturated (> WLTP) ──
+                        // Saturated segments are drawn as dash-dot at the chart ceiling to
+                        // signal the projection is unconstrained (e.g. very low speed at trip start).
+                        val normalPath     = Path()
+                        val saturatedPath  = Path()
+                        var normalStarted  = false
+                        var satStarted     = false
+
+                        projectedPoints.forEach { (d, r) ->
+                            val x = xOf(d)
+                            if (r <= wltpKm) {
+                                val y = yOf(r)
+                                if (!normalStarted) { normalPath.moveTo(x, y); normalStarted = true }
+                                else normalPath.lineTo(x, y)
+                                satStarted = false   // break saturated segment
+                            } else {
+                                // Pin Y to WLTP ceiling so the dash-dot appears at the top of the chart
+                                val y = yOf(wltpKm.toDouble())
+                                if (!satStarted) { saturatedPath.moveTo(x, y); satStarted = true }
+                                else saturatedPath.lineTo(x, y)
+                                normalStarted = false
+                            }
+                        }
+
+                        // Draw solid line for normal range
+                        if (normalStarted) {
+                            drawPath(
+                                normalPath,
+                                color = accentColor,
+                                style = Stroke(width = 3f, cap = StrokeCap.Round, join = StrokeJoin.Round)
+                            )
+                        }
+
+                        // Draw dash-dot for saturated (beyond WLTP) — dimmed to indicate uncertainty
+                        if (satStarted) {
+                            drawPath(
+                                saturatedPath,
+                                color = accentColor.copy(alpha = 0.45f),
+                                style = Stroke(
+                                    width      = 2f,
+                                    cap        = StrokeCap.Round,
+                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 4f, 2f, 4f))
+                                )
+                            )
+                        }
+
+                        // Current position dot — use capped Y so it stays inside the chart
+                        val last  = projectedPoints.last()
+                        val dotX  = xOf(last.first)
+                        val dotY  = yOf(last.second.coerceAtMost(wltpKm.toDouble()))
+                        drawCircle(accentColor.copy(alpha = 0.25f), 18f, Offset(dotX, dotY))
+                        drawCircle(accentColor,                      8f,  Offset(dotX, dotY))
+                        drawCircle(Color.White,                      3f,  Offset(dotX, dotY))
                     }
-                )
-            }
-        }
 
-        // ── Legend ────────────────────────────────────────────────────────────
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 2.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Canvas(modifier = Modifier.size(20.dp, 3.dp)) {
-                drawLine(
-                    color = bmsLineColor, start = Offset(0f, size.height / 2),
-                    end = Offset(size.width, size.height / 2), strokeWidth = 3f,
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 4f))
-                )
+                } else {
+                    nc.drawText(
+                        "No trip data yet",
+                        padL + chartW / 2f,
+                        padT + chartH / 2f,
+                        android.graphics.Paint().apply {
+                            color = textColor.copy(alpha = 0.3f).toArgb()
+                            textSize = 28f; textAlign = android.graphics.Paint.Align.CENTER; isAntiAlias = true
+                        }
+                    )
+                }
             }
-            Spacer(Modifier.width(5.dp))
-            Text(
-                text  = "BMS estimate",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(Modifier.width(20.dp))
-            Canvas(modifier = Modifier.size(20.dp, 3.dp)) {
-                drawLine(
-                    color = accentColor, start = Offset(0f, size.height / 2),
-                    end = Offset(size.width, size.height / 2), strokeWidth = 3f
-                )
-            }
-            Spacer(Modifier.width(5.dp))
-            Text(
-                text  = "Projected (actual)",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
 
-        Spacer(Modifier.height(4.dp))
+            // ── Legend ────────────────────────────────────────────────────────────
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Canvas(modifier = Modifier.size(20.dp, 3.dp)) {
+                    drawLine(
+                        color = bmsLineColor, start = Offset(0f, size.height / 2),
+                        end = Offset(size.width, size.height / 2), strokeWidth = 3f,
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 4f))
+                    )
+                }
+                Spacer(Modifier.width(5.dp))
+                Text(
+                    text  = "BMS estimate",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.width(20.dp))
+                Canvas(modifier = Modifier.size(20.dp, 3.dp)) {
+                    drawLine(
+                        color = accentColor, start = Offset(0f, size.height / 2),
+                        end = Offset(size.width, size.height / 2), strokeWidth = 3f
+                    )
+                }
+                Spacer(Modifier.width(5.dp))
+                Text(
+                    text  = "Projected (actual)",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(Modifier.height(4.dp))
+        }
     }
 }

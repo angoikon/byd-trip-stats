@@ -95,6 +95,9 @@ fun SettingsScreen(
     var selectedTab       by remember { mutableStateOf(0) }
     val tabs = listOf("Network", "Data", "About & FAQ")
 
+    val telemetry by viewModel.currentTelemetry.collectAsState()
+    val mqttConnectionError by viewModel.mqttConnectionError.collectAsState()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -141,6 +144,8 @@ fun SettingsScreen(
                         username      = username,     onUsername   = { username = it },
                         password      = password,     onPassword   = { password = it },
                         mqttConnected = mqttConnected,
+                        telemetryReceived = telemetry != null,
+                        mqttConnectionError = mqttConnectionError,
                         showDebug     = DEBUG_CONNECTIONS,
                         onShowDebug   = { showDebugDialog = true },
                         onSave = {
@@ -209,6 +214,8 @@ private fun MqttTab(
     username     : String, onUsername   : (String) -> Unit,
     password     : String, onPassword   : (String) -> Unit,
     mqttConnected: Boolean,
+    telemetryReceived   : Boolean,
+    mqttConnectionError : String?,
     showDebug    : Boolean,
     onShowDebug  : () -> Unit,
     onSave       : () -> Unit,
@@ -264,26 +271,53 @@ private fun MqttTab(
                     modifier            = Modifier.padding(14.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
+                    val usingInternalBroker = brokerUrl.trim().let {
+                        it == "127.0.0.1" || it == "localhost" || it == "::1"
+                    }
+
+                    val statusIcon = when {
+                        mqttConnectionError != null -> Icons.Filled.SyncProblem
+                        telemetryReceived -> Icons.Filled.Sync
+                        else -> Icons.Filled.SyncDisabled
+                    }
+
+                    val statusColor = when {
+                        mqttConnectionError != null -> MaterialTheme.colorScheme.error
+                        telemetryReceived -> RegenGreen
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+
+                    val statusText = when {
+                        mqttConnectionError != null -> "Connection error"
+                        telemetryReceived -> "Receiving telemetry ✓"
+                        mqttConnected -> "Connected, waiting for data"
+                        else -> "Disconnected"
+                    }
+
                     Icon(
-                        if (mqttConnected) Icons.Filled.Sync else Icons.Filled.SyncDisabled,
+                        imageVector = statusIcon,
                         contentDescription = null,
-                        tint     = if (mqttConnected) RegenGreen else MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = statusColor,
                         modifier = Modifier.size(24.dp)
                     )
-                    Text("Connection status",
-                        style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+
                     Text(
-                        if (brokerUrl.trim().let { it == "127.0.0.1" || it == "localhost" || it == "::1" })
-                            "MQTT · Internal broker"
-                        else
-                            "MQTT · External broker",
+                        "Connection status",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        if (usingInternalBroker) "MQTT · Internal broker" else "MQTT · External broker",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
                     Text(
-                        if (mqttConnected) "Connected ✓" else "Disconnected",
-                        style      = MaterialTheme.typography.bodySmall,
+                        statusText,
+                        style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Medium,
-                        color      = if (mqttConnected) RegenGreen else BydErrorRed
+                        color = statusColor
                     )
                 }
             }
@@ -339,8 +373,7 @@ private fun MqttTab(
                     "In Electro app, set the publish interval to 1 second while the car is ON " +
                     "and any longer interval while OFF (5 min is fine).\n\n" +
                     "For the internal broker use 127.0.0.1 · port 1883 · no SSL · no credentials. " +
-                    "Find the topic in Electro → Integrations → MQTT " +
-                    "(Seal default: electro/telemetry/byd-seal/data).",
+                    "Find the topic in Electro → Integrations → MQTT ",
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -547,6 +580,7 @@ private fun AboutTab() {
             Column(modifier = Modifier.padding(16.dp)) {
                 SettingsDetailRow("App",         "BYD Trip Stats")
                 SettingsDetailRow("Version",     "1.0.0")
+                SettingsDetailRow("Changelog", "What's new", url = "https://github.com/angoikon/byd-trip-stats/blob/main/CHANGELOG.md")
                 SettingsDetailRow("Author",      "Angelos Oikonomou (angoikon)")
                 SettingsDetailRow("Platform",    "Android 10 · API 29")
                 SettingsDetailRow("License",     "BUSL 1.1")
@@ -676,7 +710,7 @@ private fun buildFaqList(): List<FaqEntry> = listOf(
         "2. Broker URL has no http:// or https:// prefix — bare hostname or IP only\n" +
         "3. Port 1883 for plain connections, 8883 for TLS/SSL\n" +
         "4. For the internal broker: URL = 127.0.0.1, Port = 1883, no username/password\n" +
-        "5. The topic matches Electro exactly (Seal default: electro/telemetry/byd-seal/data — " +
+        "5. The topic matches Electro exactly — " +
         "find your model's topic in Electro → Integrations → MQTT)\n" +
         "6. Tap Save & Restart after every change"
     ),

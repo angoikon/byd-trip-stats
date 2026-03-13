@@ -33,6 +33,7 @@ import com.byd.tripstats.ui.components.MotorRpmChart
 import com.byd.tripstats.ui.components.OsmRouteMap
 import com.byd.tripstats.ui.components.PowerChart
 import com.byd.tripstats.ui.components.RouteAnalysisTab
+import com.byd.tripstats.ui.components.TripHeatmapsTab
 import com.byd.tripstats.ui.components.SocChart
 import com.byd.tripstats.ui.components.SpeedChart
 import com.byd.tripstats.ui.theme.*

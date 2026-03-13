@@ -1,4 +1,4 @@
-package com.byd.tripstats.ui.screens
+package com.byd.tripstats.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -20,11 +20,14 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.byd.tripstats.data.config.Drivetrain
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
+import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.ui.components.drawCrosshair
 import kotlin.math.abs
 import kotlin.math.log10
@@ -44,6 +47,11 @@ fun TripHeatmapsTab(dataPoints: List<TripDataPointEntity>) {
         }
         return
     }
+
+    val context = LocalContext.current
+    val prefs = remember { PreferencesManager(context.applicationContext) }
+    val selectedCar by prefs.selectedCarConfig.collectAsState(initial = null)
+    val car = selectedCar ?: return
 
     Column(
         modifier = Modifier
@@ -78,10 +86,22 @@ fun TripHeatmapsTab(dataPoints: List<TripDataPointEntity>) {
 
         // 4. Motor RPM vs speed — powertrain operating envelope
         HeatmapCard(
-            title    = "Motor RPM vs Speed",
-            subtitle = "Powertrain operating map — near-linear for a direct-drive EV"
+            title = when (car.drivetrain) {
+                Drivetrain.FWD -> "Front Motor RPM vs Speed"
+                Drivetrain.RWD -> "Rear Motor RPM vs Speed"
+                Drivetrain.AWD -> "Motor RPM vs Speed"
+            },
+            subtitle = when (car.drivetrain) {
+                Drivetrain.FWD -> "Front motor operating map — near-linear for a direct-drive EV"
+                Drivetrain.RWD -> "Rear motor operating map — near-linear for a direct-drive EV"
+                Drivetrain.AWD -> "Dominant motor RPM operating map — near-linear for a direct-drive EV"
+            }
         ) {
-            RpmVsSpeedHeatmap(dataPoints, Modifier.fillMaxSize())
+            RpmVsSpeedHeatmap(
+                dataPoints = dataPoints,
+                drivetrain = car.drivetrain,
+                modifier = Modifier.fillMaxSize()
+            )
         }
 
         // 5. Battery temperature vs power — thermal behaviour profile
@@ -125,11 +145,13 @@ fun TripHeatmapsTab(dataPoints: List<TripDataPointEntity>) {
         }
 
         // 10. Front RPM vs Rear RPM — AWD torque split
-        HeatmapCard(
-            title    = "Front vs Rear Motor RPM",
-            subtitle = "AWD torque split — diagonal = equal share, off-diagonal = one motor dominant"
-        ) {
-            FrontVsRearRpmHeatmap(dataPoints, Modifier.fillMaxSize())
+        if (car.drivetrain == Drivetrain.AWD) {
+            HeatmapCard(
+                title    = "Front vs Rear Motor RPM",
+                subtitle = "AWD torque split — diagonal = equal share, off-diagonal = one motor dominant"
+            ) {
+                FrontVsRearRpmHeatmap(dataPoints, Modifier.fillMaxSize())
+            }
         }
     }
 }
@@ -248,18 +270,26 @@ private fun RegenVsSpeedHeatmap(
 @Composable
 private fun RpmVsSpeedHeatmap(
     dataPoints: List<TripDataPointEntity>,
+    drivetrain: Drivetrain,
     modifier: Modifier = Modifier
 ) {
     val xBins = 14; val yBins = 12
     val xMin  = 0f;    val xMax = 160f    // km/h
     val yMin  = 0f;    val yMax = 14000f  // RPM
 
-    val rpmPoints = remember(dataPoints) {
+    val rpmPoints = remember(dataPoints, drivetrain) {
         dataPoints.mapNotNull { p ->
-            val spd      = p.speed.toFloat().takeIf { it >= 0f } ?: return@mapNotNull null
-            val frontRpm = p.engineSpeedFront.toFloat()
-            val rearRpm  = p.engineSpeedRear.toFloat()
-            val rpm      = max(frontRpm, rearRpm).takeIf { it > 0f } ?: return@mapNotNull null
+            val spd = p.speed.toFloat().takeIf { it >= 0f } ?: return@mapNotNull null
+
+            val rpm = when (drivetrain) {
+                Drivetrain.FWD -> p.engineSpeedFront.toFloat()
+                Drivetrain.RWD -> p.engineSpeedRear.toFloat()
+                Drivetrain.AWD -> max(
+                    p.engineSpeedFront.toFloat(),
+                    p.engineSpeedRear.toFloat()
+                )
+            }.takeIf { it > 0f } ?: return@mapNotNull null
+
             spd to rpm
         }
     }
@@ -284,7 +314,11 @@ private fun RpmVsSpeedHeatmap(
         xLabels    = axisLabels(xMin, xMax, xBins),
         yLabels    = axisLabels(yMin, yMax, yBins, transform = ::fmtRpm),
         xAxisLabel = "Speed (km/h)",
-        yAxisLabel = "Motor RPM",
+        yAxisLabel = when (drivetrain) {
+            Drivetrain.FWD -> "Front Motor RPM"
+            Drivetrain.RWD -> "Rear Motor RPM"
+            Drivetrain.AWD -> "Motor RPM"
+        },
         xMin = xMin, xMax = xMax, yMin = yMin, yMax = yMax,
         yValueFmt  = ::fmtRpm,
         modifier   = modifier

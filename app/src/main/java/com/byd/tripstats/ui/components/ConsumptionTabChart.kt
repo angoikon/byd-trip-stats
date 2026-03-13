@@ -2,7 +2,6 @@ package com.byd.tripstats.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,15 +22,13 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
-
-// BYD Seal average consumption reference line in kWh / 100km — used in ConsumptionCanvas as a horizontal benchmark line.
-// Taken by ev-database.org real-world tests, not the official WLTP rating. See https://ev-database.org/car/2002/BYD-SEAL-825-kWh-AWD-Excellence for details.
-private const val SEAL_AVERAGE_KWH = 18.5 // TODO: Import from config
 
 // ── Thumbnail ─────────────────────────────────────────────────────────────────
 
@@ -53,7 +50,7 @@ fun WeeklyEnergyThumbnail(
         val padding = 8.dp.toPx() // Keep the line away from the actual edges
         val w = size.width - (padding * 2)
         val h = size.height - (padding * 2)
-        
+
         val values = data.map { it.avgKwhPer100km.toFloat() }
         val vMin = values.minOrNull() ?: 0f
         val vMax = values.maxOrNull() ?: 1f
@@ -71,13 +68,13 @@ fun WeeklyEnergyThumbnail(
                     lineTo(xOf(i), yOf(values[i]))
                 }
             }
-            
+
             drawPath(
                 path = path,
                 color = lineColor,
                 style = Stroke(
-                    width = 2.5f, 
-                    cap = StrokeCap.Round, 
+                    width = 2.5f,
+                    cap = StrokeCap.Round,
                     join = StrokeJoin.Round
                 )
             )
@@ -109,6 +106,12 @@ fun ConsumptionChartExpanded(
     onClose: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val prefs = remember { PreferencesManager(context.applicationContext) }
+    val selectedCar by prefs.selectedCarConfig.collectAsState(initial = null)
+
+    val referenceConsumptionKwhPer100km = selectedCar?.referenceConsumptionKwhPer100km
+
     var selectedTab by remember { mutableStateOf(ConsumptionTab.WEEK) }
 
     val activeData = when (selectedTab) {
@@ -205,6 +208,7 @@ fun ConsumptionChartExpanded(
         ConsumptionCanvas(
             data = activeData,
             labelEvery = labelEvery,
+            referenceConsumptionKwhPer100km = referenceConsumptionKwhPer100km,
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
@@ -239,6 +243,7 @@ private fun Modifier.outline(
 private fun ConsumptionCanvas(
     data: List<DashboardViewModel.DailyEfficiency>,
     labelEvery: Int,
+    referenceConsumptionKwhPer100km: Double?,
     modifier: Modifier = Modifier
 ) {
     // Resolve all theme-aware colors before entering DrawScope
@@ -279,10 +284,14 @@ private fun ConsumptionCanvas(
             return@Canvas
         }
 
-        val values  = data.map { it.avgKwhPer100km }
-        val allVals = values + listOf(SEAL_AVERAGE_KWH)
-        val rawMin  = allVals.min()
-        val rawMax  = allVals.max()
+        val values = data.map { it.avgKwhPer100km }
+        val allVals = if (referenceConsumptionKwhPer100km != null) {
+            values + listOf(referenceConsumptionKwhPer100km)
+        } else {
+            values
+        }
+        val rawMin = allVals.min()
+        val rawMax = allVals.max()
         val yStep = when {
             rawMax - rawMin < 5  -> 1.0
             rawMax - rawMin < 15 -> 2.0
@@ -344,24 +353,29 @@ private fun ConsumptionCanvas(
             }
         }
 
-        // BYD Seal average reference line (dashed orange — distinct from cobalt line)
-        val sealY = yOf(SEAL_AVERAGE_KWH)
-        drawLine(
-            color = sealLineColor,
-            start = Offset(padL, sealY),
-            end = Offset(w - padR, sealY),
-            strokeWidth = 2f,
-            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 7f))
-        )
-        labelPaint.color     = sealLineColor.toArgb()
-        labelPaint.textSize  = 19f
-        labelPaint.textAlign = android.graphics.Paint.Align.LEFT
-        nc.drawText(
-            "BYD Seal avg (${SEAL_AVERAGE_KWH.toFloat()} kWh)",
-            padL + 6f,
-            sealY - 6f,
-            labelPaint
-        )
+        // Selected car average reference line (dashed orange — distinct from cobalt line)
+        referenceConsumptionKwhPer100km?.let { referenceValue ->
+            val referenceY = yOf(referenceValue)
+
+            drawLine(
+                color = sealLineColor,
+                start = Offset(padL, referenceY),
+                end = Offset(w - padR, referenceY),
+                strokeWidth = 2f,
+                pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 7f))
+            )
+
+            labelPaint.color = sealLineColor.toArgb()
+            labelPaint.textSize = 19f
+            labelPaint.textAlign = android.graphics.Paint.Align.LEFT
+
+            nc.drawText(
+                "Selected car avg (${String.format("%.1f", referenceValue)} kWh/100km)",
+                padL + 6f,
+                referenceY - 6f,
+                labelPaint
+            )
+        }
 
         // Area fill under the data line — vertical gradient matching other charts
         if (data.size >= 2) {

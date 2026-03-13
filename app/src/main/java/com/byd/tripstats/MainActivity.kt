@@ -14,16 +14,24 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
+import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.service.MqttService
 import com.byd.tripstats.ui.navigation.AppNavigation
+import com.byd.tripstats.ui.screens.InitializationScreen
 import com.byd.tripstats.ui.theme.BydTripStatsTheme
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 
 class MainActivity : ComponentActivity() {
 
@@ -75,11 +83,30 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val navController = rememberNavController()
-                    AppNavigation(
-                        navController = navController,
-                        viewModel = viewModel
-                    )
+                    val prefs = remember { PreferencesManager(applicationContext) }
+                    val selectedCarId by prefs.selectedCarId.collectAsState(initial = null)
+                    val mqttSettings by prefs.mqttSettings.collectAsState(initial = null)
+
+                    // Wait for DataStore to emit before showing anything
+                    if (selectedCarId == null && mqttSettings != null) {
+                        InitializationScreen(
+                            initialTopic = mqttSettings!!.topic,
+                            onContinue = { car, topic ->
+                                prefs.saveInitialSetup(car.id, topic)
+                            }
+                        )
+                    } else if (selectedCarId == null) {
+                        // DataStore hasn't emitted yet — show nothing or a spinner
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
+                    } else {
+                        val navController = rememberNavController()
+                        AppNavigation(
+                            navController = navController,
+                            viewModel = viewModel
+                        )
+                    }
                 }
             }
         }
