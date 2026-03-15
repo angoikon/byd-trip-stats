@@ -5,10 +5,14 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.byd.tripstats.data.local.BydStatsDatabase
+import com.byd.tripstats.data.local.entity.ChargingDataPointEntity
+import com.byd.tripstats.data.local.entity.ChargingSessionEntity
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
 import com.byd.tripstats.data.local.entity.TripEntity
 import com.byd.tripstats.data.local.entity.TripStatsEntity
 import com.byd.tripstats.data.model.VehicleTelemetry
+import com.byd.tripstats.data.preferences.PreferencesManager
+import com.byd.tripstats.data.repository.ChargingRepository
 import com.byd.tripstats.data.repository.TripRepository
 import com.byd.tripstats.service.MqttBrokerService
 import com.byd.tripstats.service.MqttService
@@ -36,7 +40,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     private val TAG = "DashboardViewModel"
 
-    private val tripRepository = TripRepository.getInstance(application)
+    private val tripRepository      = TripRepository.getInstance(application)
+    private val chargingRepository  = ChargingRepository.getInstance(application)
+    private val preferencesManager  = PreferencesManager(application)
 
     // ── MQTT state ────────────────────────────────────────────────────────────
 
@@ -45,6 +51,11 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     private val _mqttConnectionError = MutableStateFlow<String?>(null)
     val mqttConnectionError: StateFlow<String?> = _mqttConnectionError.asStateFlow()
+
+    // ── Car config ────────────────────────────────────────────────────────────
+
+    val selectedCarConfig = preferencesManager.selectedCarConfig
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     // ── Telemetry & trip state (from repository) ──────────────────────────────
 
@@ -56,6 +67,36 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     val currentTripId: StateFlow<Long?> = tripRepository.currentTripId
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    // ── Charging session state ────────────────────────────────────────────────
+
+    val isChargingSession: StateFlow<Boolean> = chargingRepository.isCharging
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    val allChargingSessions: StateFlow<List<ChargingSessionEntity>> =
+        chargingRepository.getAllSessions()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    private val _selectedSessionId = MutableStateFlow<Long?>(null)
+
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    val selectedSession: StateFlow<ChargingSessionEntity?> =
+        _selectedSessionId.flatMapLatest { id ->
+            if (id == null) flowOf(null)
+            else chargingRepository.getDataPointsForSession(id).map { _ ->
+                chargingRepository.getSessionById(id)
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    val selectedSessionDataPoints: StateFlow<List<ChargingDataPointEntity>> =
+        _selectedSessionId.flatMapLatest { id ->
+            if (id == null) flowOf(emptyList())
+            else chargingRepository.getDataPointsForSession(id)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    fun selectSession(sessionId: Long) { _selectedSessionId.value = sessionId }
+    fun clearSelectedSession()         { _selectedSessionId.value = null }
 
     // ── Trip list & stats ─────────────────────────────────────────────────────
 
@@ -390,6 +431,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     java.time.Instant.parse(telemetry.currentDatetime).toEpochMilli()
                 }.getOrNull() ?: System.currentTimeMillis()
 
+                // Feed every packet to the charging repository regardless of trip state
+                chargingRepository.onTelemetry(telemetry, selectedCarConfig.value)
+
                 when {
                     inTrip && !wasInTrip -> {
                         // ── Trip start ────────────────────────────────────────
@@ -488,7 +532,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
                         // ── 7. Fallback chain ─────────────────────────────────
                         val isStabilised = distKm >= STABILISATION_KM
-                        val remainingEnergyWh = BATTERY_CAPACITY_KWH * 1000.0 * (telemetry.soc / 100.0)
+                        val batteryKwh = selectedCarConfig.value?.batteryKwh ?: BATTERY_CAPACITY_KWH
+                        val remainingEnergyWh = batteryKwh * 1000.0 * (telemetry.soc / 100.0)
 
                         val (projectedRange, model) = when {
                             // Level 1: rolling window ready and past stabilisation window
@@ -785,4 +830,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     fun deleteTrips(tripIds: List<Long>) {
         viewModelScope.launch { tripRepository.deleteTrips(tripIds) }
     }
+
+    // ── Charging session helpers ───────────────────────────────────────────────
+
+    suspend fun getChargingSessionDataPoints(sessionId: Long): List<ChargingDataPointEntity> =
+        chargingRepository.getDataPointsForSessionSync(sessionId)
 }

@@ -3,6 +3,9 @@ package com.byd.tripstats.ui.components
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -12,6 +15,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.text.font.FontWeight
@@ -72,6 +76,17 @@ fun LiquidFillBattery(
             repeatMode = RepeatMode.Reverse
         ),
         label = "glowAnimation"
+    )
+
+    // Bolt pulse animation — only active when charging
+    val boltScale by infiniteTransition.animateFloat(
+        initialValue = if (isCharging) 0.85f else 1f,
+        targetValue  = if (isCharging) 1.15f else 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 900, easing = EaseInOutSine),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "boltPulse"
     )
     
     Box(
@@ -204,20 +219,16 @@ fun LiquidFillBattery(
             }
         }
         
-        // Percentage text overlay
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            if (isCharging) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "⚡",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = BydElectricBlue
-                )
-            }
+        // Charging bolt overlay — Icon respects color, emoji does not
+        if (isCharging) {
+            Icon(
+                imageVector = Icons.Filled.Bolt,
+                contentDescription = "Charging",
+                tint = BydElectricBlue,
+                modifier = Modifier
+                    .size(28.dp)
+                    .graphicsLayer(scaleX = boltScale, scaleY = boltScale)
+            )
         }
     }
 }

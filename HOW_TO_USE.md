@@ -57,9 +57,9 @@ The dashboard is what you see when you're driving. Here's what everything means.
 
 - **Car name** (tappable) — shows your currently selected model. Tap it to switch cars
 - **Sync icon** (top right area) — shows the connection status:
-  - 🟢 Green sync icon — connected and receiving live data
-  - 🔴 Red sync icon — connection error (check Settings)
-  - ⚫ Disabled icon — connected byt not receiving telemetry (check settings)
+  - 🟢 Green — connected and receiving live data
+  - 🔴 Red — connection error (check Settings)
+  - ⚫ Disabled — connected byt not receiving telemetry (check settings)
 
 ### Energy Flow Area
 
@@ -249,7 +249,7 @@ BYD DiLink has a built-in autostart manager that kills apps after a car restart 
 
 ## Tips
 
-- **Set Electro's publish interval to 1 second** while the car is on — this gives smooth charts and accurate consumption figures. While the car is off, 5 minutes is fine.
+- **Set Electro's publish interval to 1 second** while the car is on — this gives smooth charts and accurate consumption figures. While the car is off, 1 minutes is fine.
 - **The range projection needs about 2 km to calibrate** — it will show "Calibrating…" at the start of a trip. This is normal.
 - If the MQTT connection shows an error after changing settings, tap **Save & Restart MQTT connection** in Settings → Network.
 - The consumption chart thumbnail on the dashboard shows the last 7 days. Tap it to see 30-day and 12-month views.

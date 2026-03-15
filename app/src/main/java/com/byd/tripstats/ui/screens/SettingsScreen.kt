@@ -371,7 +371,7 @@ private fun MqttTab(
                     tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
                 Text(
                     "In Electro app, set the publish interval to 1 second while the car is ON " +
-                    "and any longer interval while OFF (5 min is fine).\n\n" +
+                    "and 1 min when the car is off.\n\n" +
                     "For the internal broker use 127.0.0.1 · port 1883 · no SSL · no credentials. " +
                     "Find the topic in Electro → Integrations → MQTT ",
                     style = MaterialTheme.typography.bodyMedium
@@ -699,8 +699,8 @@ private fun buildFaqList(): List<FaqEntry> = listOf(
         "What should my Electro publish interval be?",
         "Set the interval to 1 second while the car is ON — this gives smooth " +
         "charts and accurate statistics - you don't need faster intervals. " +
-        "While the car is OFF, any longer interval is fine; " +
-        "5 minutes is a sensible default and reduces unnecessary load."
+        "While the car is OFF, 1 minute interval is fine; It is a sensibe default " +
+        "and reduces unnecessary load plus you can get nice charging charts when the car is off."
     ),
 
     FaqEntry(

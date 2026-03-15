@@ -12,10 +12,13 @@ import com.byd.tripstats.data.local.dao.TripDao
 import com.byd.tripstats.data.local.dao.TripDataPointDao
 import com.byd.tripstats.data.local.dao.TripStatsDao
 import com.byd.tripstats.data.local.dao.TripSegmentDao
+import com.byd.tripstats.data.local.dao.ChargingSessionDao
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
 import com.byd.tripstats.data.local.entity.TripEntity
 import com.byd.tripstats.data.local.entity.TripStatsEntity
 import com.byd.tripstats.data.local.entity.TripSegmentEntity
+import com.byd.tripstats.data.local.entity.ChargingSessionEntity
+import com.byd.tripstats.data.local.entity.ChargingDataPointEntity
 import android.os.Environment
 import java.io.File
 import java.io.IOException
@@ -25,9 +28,11 @@ import java.io.IOException
         TripEntity::class,
         TripDataPointEntity::class,
         TripStatsEntity::class,
-        TripSegmentEntity::class
+        TripSegmentEntity::class,
+        ChargingSessionEntity::class,
+        ChargingDataPointEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -36,6 +41,7 @@ abstract class BydStatsDatabase : RoomDatabase() {
     abstract fun tripDataPointDao(): TripDataPointDao
     abstract fun tripStatsDao(): TripStatsDao
     abstract fun tripSegmentDao(): TripSegmentDao
+    abstract fun chargingSessionDao(): ChargingSessionDao
 
     companion object {
         private const val TAG = "BydStatsDatabase"
@@ -54,6 +60,7 @@ abstract class BydStatsDatabase : RoomDatabase() {
                 )
                     // .fallbackToDestructiveMigration()
                     // .fallbackToDestructiveMigrationOnDowngrade()
+                    .addMigrations(MIGRATION_1_2)
                     .build()
                 INSTANCE = instance
                 instance
@@ -82,6 +89,65 @@ abstract class BydStatsDatabase : RoomDatabase() {
         //     }
         // }
         // Add to getDatabase: .addMigrations(MIGRATION_X_Y)
+
+        // ── Migration 1 → 2 ──────────────────────────────────────────────────
+        // Adds:
+        //   • 5 new columns to trip_data_points (tyre temps + socPanel)
+        //   • charging_sessions table
+        //   • charging_data_points table
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // New trip_data_points columns
+                database.execSQL("ALTER TABLE trip_data_points ADD COLUMN socPanel INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("ALTER TABLE trip_data_points ADD COLUMN tyreTempLF INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("ALTER TABLE trip_data_points ADD COLUMN tyreTempRF INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("ALTER TABLE trip_data_points ADD COLUMN tyreTempLR INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("ALTER TABLE trip_data_points ADD COLUMN tyreTempRR INTEGER NOT NULL DEFAULT 0")
+
+                // Charging sessions table
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS charging_sessions (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        startTime INTEGER NOT NULL,
+                        endTime INTEGER,
+                        socStart REAL NOT NULL,
+                        socEnd REAL,
+                        kwhAdded REAL,
+                        peakKw REAL NOT NULL DEFAULT 0,
+                        avgKw REAL NOT NULL DEFAULT 0,
+                        batteryTempStart REAL NOT NULL DEFAULT 0,
+                        batteryTempEnd REAL,
+                        voltageStart INTEGER NOT NULL DEFAULT 0,
+                        voltageEnd INTEGER,
+                        batteryKwh REAL NOT NULL DEFAULT 0,
+                        carConfigId TEXT NOT NULL DEFAULT '',
+                        isActive INTEGER NOT NULL DEFAULT 1
+                    )
+                """.trimIndent())
+
+                // Charging data points table
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS charging_data_points (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        sessionId INTEGER NOT NULL,
+                        timestamp INTEGER NOT NULL,
+                        soc REAL NOT NULL,
+                        socPanel INTEGER NOT NULL DEFAULT 0,
+                        chargingPower REAL NOT NULL,
+                        batteryTotalVoltage INTEGER NOT NULL DEFAULT 0,
+                        battery12vVoltage REAL NOT NULL DEFAULT 0,
+                        batteryTempAvg REAL NOT NULL DEFAULT 0,
+                        batteryCellTempMin INTEGER NOT NULL DEFAULT 0,
+                        batteryCellTempMax INTEGER NOT NULL DEFAULT 0,
+                        batteryCellVoltageMin REAL NOT NULL DEFAULT 0,
+                        batteryCellVoltageMax REAL NOT NULL DEFAULT 0,
+                        FOREIGN KEY(sessionId) REFERENCES charging_sessions(id) ON DELETE CASCADE
+                    )
+                """.trimIndent())
+
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_charging_data_points_sessionId ON charging_data_points(sessionId)")
+            }
+        }
 
         fun getBackupDir(): File =
             File(

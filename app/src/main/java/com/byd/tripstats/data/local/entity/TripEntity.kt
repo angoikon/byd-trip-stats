@@ -86,6 +86,13 @@ data class TripDataPointEntity(
     val battery12vVoltage: Double = 0.0,
     val batteryCellVoltageMax: Double = 0.0,
     val batteryCellVoltageMin: Double = 0.0,
+    // ── New columns (DB v2 / Electro telemetry v2) ────────────────────────────
+    /** Displayed SoC on the instrument panel — compare with soc for BMS calibration insight */
+    val socPanel: Int = 0,
+    val tyreTempLF: Int = 0,
+    val tyreTempRF: Int = 0,
+    val tyreTempLR: Int = 0,
+    val tyreTempRR: Int = 0,
     // Escape hatch for future MQTT keys that don't yet have a first-class column.
     // Store as JSON: {"hvacPower": 1.2, ...}
     // When a new key becomes stable/important, promote it to its own column

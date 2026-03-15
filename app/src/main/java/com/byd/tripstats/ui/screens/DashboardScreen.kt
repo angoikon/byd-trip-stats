@@ -62,6 +62,7 @@ private const val SHOW_MOCK_BUTTON = false  // Set to true for testing, false fo
 fun DashboardScreen(
     viewModel: DashboardViewModel,
     onNavigateToHistory: () -> Unit,
+    onNavigateToCharging: () -> Unit,
     onNavigateToSettings: () -> Unit
 ) {
     val telemetry by viewModel.currentTelemetry.collectAsState()
@@ -299,6 +300,7 @@ fun DashboardScreen(
                 onStartTrip = { viewModel.startManualTrip() },
                 onEndTrip = { viewModel.endManualTrip() },
                 onToggleAutoDetection = { viewModel.toggleAutoTripDetection() },
+                onNavigateToCharging = onNavigateToCharging,
                 widthSizeClass = widthSizeClass,
                 modifier = Modifier.padding(paddingValues)
             )
@@ -398,6 +400,7 @@ fun DashboardContent(
     onStartTrip: () -> Unit,
     onEndTrip: () -> Unit,
     onToggleAutoDetection: () -> Unit,
+    onNavigateToCharging: () -> Unit = {},
     widthSizeClass: WindowWidthSizeClass = WindowWidthSizeClass.Expanded
 ) {
     // ── Session distance — resets to 0 on every app start (= every engine start) ──────────────
@@ -483,6 +486,7 @@ fun DashboardContent(
                         monthlyEfficiency = monthlyEfficiency,
                         yearlyEfficiency = yearlyEfficiency,
                         sessionDistanceKm = sessionDistanceKm,
+                        onNavigateToCharging = onNavigateToCharging,
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
@@ -539,6 +543,7 @@ fun DashboardContent(
                         monthlyEfficiency = monthlyEfficiency,
                         yearlyEfficiency = yearlyEfficiency,
                         sessionDistanceKm = sessionDistanceKm,
+                        onNavigateToCharging = onNavigateToCharging,
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
@@ -586,6 +591,7 @@ fun EnergyFlowDiagram(
     monthlyEfficiency: List<DashboardViewModel.DailyEfficiency>,
     yearlyEfficiency: List<DashboardViewModel.DailyEfficiency>,
     sessionDistanceKm: Double = 0.0,
+    onNavigateToCharging: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val power = telemetry.enginePower
@@ -701,7 +707,7 @@ fun EnergyFlowDiagram(
                         flowOffset = flowOffset
                     )
 
-                // Animated liquid fill battery
+                // Animated liquid fill battery — tap to open charging history
                     LiquidFillBattery(
                         soc = telemetry.soc.toFloat(),
                         isCharging = isCharging,
@@ -710,6 +716,7 @@ fun EnergyFlowDiagram(
                         modifier = Modifier
                             .align(Alignment.TopStart)
                             .padding(start = 16.dp)
+                            .clickable { onNavigateToCharging() }
                     )
 
                 // AWD drivetrain with tyre pressures

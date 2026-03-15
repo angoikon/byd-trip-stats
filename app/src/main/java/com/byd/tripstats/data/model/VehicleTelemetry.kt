@@ -31,7 +31,20 @@ data class VehicleTelemetry(
     @SerialName("tyre_pressure_left_front_psi") val tyrePressureLF: Double = 0.0,
     @SerialName("tyre_pressure_right_front_psi") val tyrePressureRF: Double = 0.0,
     @SerialName("tyre_pressure_left_rear_psi") val tyrePressureLR: Double = 0.0,
-    @SerialName("tyre_pressure_right_rear_psi") val tyrePressureRR: Double = 0.0
+    @SerialName("tyre_pressure_right_rear_psi") val tyrePressureRR: Double = 0.0,
+    // ── New fields (Electro telemetry v2) ─────────────────────────────────────
+    @SerialName("tyre_temperature_left_front_c")  val tyreTempLF: Int = 0,
+    @SerialName("tyre_temperature_right_front_c") val tyreTempRF: Int = 0,
+    @SerialName("tyre_temperature_left_rear_c")   val tyreTempLR: Int = 0,
+    @SerialName("tyre_temperature_right_rear_c")  val tyreTempRR: Int = 0,
+    /** Displayed SoC on the car's instrument panel — may differ slightly from raw soc */
+    @SerialName("soc_panel") val socPanel: Int = 0,
+    @SerialName("car_locked") val carLocked: Int = 0,
+    @SerialName("any_door_opened") val anyDoorOpened: Int = 0,
+    /** PHEV-only — always 0 on BEV models */
+    @SerialName("fuel_percentage") val fuelPercentage: Int = 0,
+    /** PHEV-only — always 0 on BEV models */
+    @SerialName("fuel_driving_range_km") val fuelDrivingRangeKm: Int = 0
 ) {
     // Helper properties for calculations
     val isCarOn: Boolean
@@ -72,6 +85,8 @@ data class VehicleTelemetry(
      * remove from here.
      */
     fun toRawJson(): String {
-        return """{"charging_power":$chargingPower,"wifi_ssid":"$wifiSsid"}"""
+        return """{"charging_power":$chargingPower,"wifi_ssid":"$wifiSsid",""" +
+            """"car_locked":$carLocked,"any_door_opened":$anyDoorOpened,""" +
+            """"fuel_percentage":$fuelPercentage,"fuel_driving_range_km":$fuelDrivingRangeKm}"""
     }
 }
