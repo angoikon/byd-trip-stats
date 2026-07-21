@@ -298,8 +298,12 @@ class Dilink5Client {
         }
     }
 
-    // collectdata typed listener — HV bus V/I + motor RPM (event-only; getters dead). All callbacks
-    // are (int a, int b) where b = value, a = a constant signal tag (ignored).
+    // collectdata typed listener — HV bus V/I + motor RPM (event-only; getters dead). Decompiled
+    // CollectDataManagerImpl.collectData() confirms (a, b) = (front, rear) for onDriverMotorSpeed —
+    // separate HAL IDs/packet fields per side, not a tag. On RWD "a" reads a constant 50535 (outside
+    // the RPM guard below, so it's naturally suppressed); on AWD it should carry real front RPM.
+    // Volt/current stay rear-only (untested whether "a" is meaningful there too, and both callbacks
+    // are @Deprecated in the real listener).
     private fun registerCollectData(dev: Any, ds: BydVehicleDataSource) {
         try {
             val l = object : AbsBYDAutoCollectDataListener() {
@@ -310,7 +314,11 @@ class Dilink5Client {
                     if (b in -2000..2000) { lastHvCurrent = b; ds.applyDilink5HvCurrent(b); pushPower(ds) }  // signed A (regen negative)
                 }
                 override fun onDriverMotorSpeed(a: Int, b: Int) {
-                    if (b in 0..30_000) ds.applyDaemonTelemetry(speedKmh = null, gear = null, powerKw = null, rearRpm = b)
+                    val front = a.takeIf { it in 0..30_000 }
+                    val rear = b.takeIf { it in 0..30_000 }
+                    if (front != null || rear != null) {
+                        ds.applyDaemonTelemetry(speedKmh = null, gear = null, powerKw = null, frontRpm = front, rearRpm = rear)
+                    }
                 }
             }
             dev.javaClass.getMethod("registerListener", AbsBYDAutoCollectDataListener::class.java).invoke(dev, l)
