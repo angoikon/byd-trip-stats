@@ -5246,15 +5246,14 @@ class BydVehicleDataSource(context: Context) {
         // getWheelTemperature and the events both return 0 then). Dropping it keeps the last real
         // temp on screen instead of blanking each wheel back to "no data".
         if (tempC <= 0 || tempC > 120) return
-        // Tyre EVENT wheel index is 0-based (= getter area − 1): 0=LF, 1=RF, 2=LR, 3=RR. Confirmed
-        // on-car 2026-07-12 by matching press-event kPa per index against the per-area byType getter
-        // (event 0≈LF pressure, 1≈RF, 2≈LR, 3≈RR). NOTE: earlier assumed 1-based with 0=sentinel —
-        // that was wrong; it dropped LF and shifted every wheel by one (RR never populated).
+        // Tyre EVENT wheel index is 0-based: 0=LF, 1=RF confirmed correct on-car. The rear pair is
+        // swapped from the front's pattern (confirmed on-car 2026-07-21, AWD test): 2=RR, 3=LR, not
+        // 2=LR, 3=RR as the front/rear symmetry would suggest.
         when (wheel) {
             0 -> _tyreTempLF.value = tempC
             1 -> _tyreTempRF.value = tempC
-            2 -> _tyreTempLR.value = tempC
-            3 -> _tyreTempRR.value = tempC
+            2 -> _tyreTempRR.value = tempC
+            3 -> _tyreTempLR.value = tempC
             else -> return   // out of range
         }
         publishSnapshot()
