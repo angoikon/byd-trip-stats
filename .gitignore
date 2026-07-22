@@ -17,6 +17,9 @@ MD
 app/src/main/assets/changelog.md
 # Compile-time bydauto stubs — built from source by the :app bydautoStubsJar task.
 app/libs/bydauto-stubs.jar
+# Private-telemetry binary handed to trusted contributors (telemetry hooks only, no Pro secret).
+# Never commit — it's the closed-source runtime mappings. Source lives in private-telemetry/.
+app/libs/private-telemetry.jar
 # Cloud and local LLMs
 .claude
 .opencode

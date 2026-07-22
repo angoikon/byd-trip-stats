@@ -301,8 +301,15 @@ dependencies {
     // Window size classes for responsive design
     implementation("androidx.compose.material3:material3-window-size-class:1.3.1")
 
-    rootProject.findProject(":private-telemetry")?.let {
-        implementation(it)
+    // Private-telemetry hooks (RuntimeExtensionHooks / ProLicenseHooks), loaded reflectively at
+    // runtime. Maintainer builds from the source module; a trusted contributor without the source
+    // can instead drop a binary at app/libs/private-telemetry.jar (telemetry hooks only) and still
+    // reproduce release builds. Prefer the source module when present.
+    val privateTelemetry = rootProject.findProject(":private-telemetry")
+    if (privateTelemetry != null) {
+        implementation(privateTelemetry)
+    } else {
+        file("libs/private-telemetry.jar").takeIf { it.exists() }?.let { implementation(files(it)) }
     }
 
     // ── Unit tests (src/test) ─────────────────────────────────────────────────
