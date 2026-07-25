@@ -38,6 +38,7 @@ import com.byd.tripstats.R
 import com.byd.tripstats.data.backup.LocalBackupManager
 import com.byd.tripstats.data.backup.TelegramManager
 import com.byd.tripstats.data.entitlement.EntitlementManager
+import com.byd.tripstats.sdk.DiLink5Platform
 import com.byd.tripstats.ui.components.BrandNavigationBar
 import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
@@ -136,10 +137,13 @@ fun LocalBackupScreen(
         val s = backupState
         if (s is LocalBackupManager.BackupState.Success && s.restartRequired) {
             delay(2000)
+            // DiLink-5: do NOT auto-relaunch. An app-initiated kill + immediate relaunch
+            // races the bydauto SDK classloader injection and boot-loops the head unit
+            // (2.13.0 incident). The process just ends; the user reopens (safe, like adb install -r).
             val launchIntent = context.packageManager
                 .getLaunchIntentForPackage(context.packageName)
                 ?.apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK) }
-            if (launchIntent != null) {
+            if (launchIntent != null && !DiLink5Platform.isDiLink5) {
                 val pending = PendingIntent.getActivity(
                     context, 0, launchIntent,
                     PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
@@ -829,11 +833,13 @@ fun LocalBackupScreen(
                                             manager.backupDatabase()
                                             // 2. Wipe via ViewModel (closes Room, deletes file)
                                             viewModel.resetDatabase()
-                                            // 3. Restart app so Room recreates the schema cleanly
+                                            // 3. Restart app so Room recreates the schema cleanly.
+                                            //    DiLink-5: skip auto-relaunch (SDK-injection race → head-unit
+                                            //    boot loop, 2.13.0 incident). Process ends; user reopens.
                                             val launchIntent = context.packageManager
                                                 .getLaunchIntentForPackage(context.packageName)
                                                 ?.apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK) }
-                                            if (launchIntent != null) {
+                                            if (launchIntent != null && !DiLink5Platform.isDiLink5) {
                                                 val pending = PendingIntent.getActivity(
                                                     context, 1, launchIntent,
                                                     PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT

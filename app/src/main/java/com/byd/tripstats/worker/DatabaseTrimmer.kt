@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.byd.tripstats.data.local.BydStatsDatabase
+import com.byd.tripstats.sdk.DiLink5Platform
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -135,31 +136,41 @@ object DatabaseTrimmer {
             //   4. Close the raw connection.
             //   5. Signal restartRequired so the UI restarts the process; Room
             //      will reopen cleanly on next launch.
-            _state.value = State.InProgress("Stopping service & reclaiming space (VACUUM)…")
             var vacuumOk = false
             var vacuumError: String? = null
-            try {
-                com.byd.tripstats.service.VehicleTelemetryService.stop(context)
-                // Give in-flight writes a moment to drain.
-                kotlinx.coroutines.delay(500)
-                BydStatsDatabase.closeDatabase()
-
-                val dbFile = context.getDatabasePath("byd_stats_database")
-                val raw = android.database.sqlite.SQLiteDatabase.openDatabase(
-                    dbFile.path, null,
-                    android.database.sqlite.SQLiteDatabase.OPEN_READWRITE
-                )
+            // DiLink-5: NEVER run the VACUUM path here. It closes Room and signals a
+            // process self-restart, and an app-initiated kill + auto-relaunch races the
+            // bydauto SDK classloader injection — which wedges the OEM com.byd.data.collect
+            // service and boot-loops the head unit (ADAS/cluster fault; the 2.13.0 incident).
+            // Phases A–D still trim the rows in place; we just don't reclaim the freed pages.
+            val skipVacuum = DiLink5Platform.isDiLink5
+            if (skipVacuum) {
+                Log.i(TAG, "Phase E — VACUUM skipped on DiLink-5 (self-restart hazard); rows trimmed in place")
+            } else {
+                _state.value = State.InProgress("Stopping service & reclaiming space (VACUUM)…")
                 try {
-                    raw.rawQuery("PRAGMA wal_checkpoint(TRUNCATE)", null).use { it.moveToFirst() }
-                    raw.execSQL("VACUUM")
-                    vacuumOk = true
-                    Log.i(TAG, "Phase E — VACUUM ok via raw SQLite")
-                } finally {
-                    raw.close()
+                    com.byd.tripstats.service.VehicleTelemetryService.stop(context)
+                    // Give in-flight writes a moment to drain.
+                    kotlinx.coroutines.delay(500)
+                    BydStatsDatabase.closeDatabase()
+
+                    val dbFile = context.getDatabasePath("byd_stats_database")
+                    val raw = android.database.sqlite.SQLiteDatabase.openDatabase(
+                        dbFile.path, null,
+                        android.database.sqlite.SQLiteDatabase.OPEN_READWRITE
+                    )
+                    try {
+                        raw.rawQuery("PRAGMA wal_checkpoint(TRUNCATE)", null).use { it.moveToFirst() }
+                        raw.execSQL("VACUUM")
+                        vacuumOk = true
+                        Log.i(TAG, "Phase E — VACUUM ok via raw SQLite")
+                    } finally {
+                        raw.close()
+                    }
+                } catch (ve: Exception) {
+                    vacuumError = ve.message
+                    Log.w(TAG, "VACUUM failed: ${ve.message}", ve)
                 }
-            } catch (ve: Exception) {
-                vacuumError = ve.message
-                Log.w(TAG, "VACUUM failed: ${ve.message}", ve)
             }
 
             val favTrips    = countFavourites(sqLiteDb, "trips")
@@ -174,7 +185,13 @@ object DatabaseTrimmer {
                 if (favTrips > 0 || favSessions > 0) {
                     append("Skipped $favTrips favourited trip(s) and $favSessions favourited charging session(s) — kept at full detail. ")
                 }
-                append(if (vacuumOk) "Database vacuumed." else "VACUUM failed (${vacuumError ?: "unknown"}).")
+                append(
+                    when {
+                        vacuumOk   -> "Database vacuumed."
+                        skipVacuum -> "Disk-reclaim (VACUUM) skipped on this device."
+                        else       -> "VACUUM failed (${vacuumError ?: "unknown"})."
+                    }
+                )
             }
 
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

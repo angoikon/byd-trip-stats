@@ -40,11 +40,18 @@ android {
     val versionMinor    = 13
     val versionPatch    = 0
     val versionPre      = 99 // 99 = stable; 1–98 = beta (e.g. 1 → "beta01")
+    // Hotfix revision for the SAME versionName. Bumps versionCode ONLY — the in-app
+    // updater compares the GitHub tag against versionName (UpdateRepository.isNewerVersion),
+    // NOT versionCode, so this does NOT auto-trigger an update, yet it lets us tell the
+    // fixed 2.13.0 build apart from the withdrawn one. Keep 0 < rev < 99 (rev 99 would
+    // reach the next patch's base and break upgrade ordering). 0 = original.
+    val versionRevision = 1
 
     val computedVersionCode = versionMajor * 1_000_000 +
                               versionMinor *    10_000 +
                               versionPatch *       100 +
-                              versionPre
+                              versionPre +
+                              versionRevision
     val computedVersionName = if (versionPre == 99)
         "$versionMajor.$versionMinor.$versionPatch"
     else
