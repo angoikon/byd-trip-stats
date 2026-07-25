@@ -45,7 +45,7 @@ android {
     // NOT versionCode, so this does NOT auto-trigger an update, yet it lets us tell the
     // fixed 2.13.0 build apart from the withdrawn one. Keep 0 < rev < 99 (rev 99 would
     // reach the next patch's base and break upgrade ordering). 0 = original.
-    val versionRevision = 1
+    val versionRevision = 2
 
     val computedVersionCode = versionMajor * 1_000_000 +
                               versionMinor *    10_000 +

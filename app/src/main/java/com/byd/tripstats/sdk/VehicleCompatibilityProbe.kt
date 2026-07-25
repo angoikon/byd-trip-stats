@@ -183,17 +183,25 @@ object VehicleCompatibilityProbe {
             val changed = mutableListOf<String>()
 
             // ── No-arg getters ────────────────────────────────────────────────
-            cls.methods
-                .filter { it.parameterCount == 0 && it.name !in excludedMethods }
-                .sortedBy { it.name }
-                .forEach { method ->
-                    runCatching {
-                        val result = method.invoke(device)
-                        val rawStr = encodeValue(result)
-                        val prev = snapshot.put(method.name, rawStr)
-                        if (prev != rawStr) changed.add("${method.name}=$rawStr")
+            // NOT on DiLink-5. This blindly invokes EVERY no-arg method on the *injected* OEM
+            // device — including side-effecting ones (resetData(), setAllStatus() were both seen
+            // in DI5 captures) — and on some DI5 firmware that wedges com.byd.data.collect and
+            // boot-loops the head unit (cluster/ADAS fault). D3 uses inert stubs so it stays there.
+            // On D5 we keep the field constants + allowlisted indexed getters below and the pushed
+            // event path (recordDispatchedFeature); a future event-tap restores the rest safely.
+            if (!DiLink5Platform.isDiLink5) {
+                cls.methods
+                    .filter { it.parameterCount == 0 && it.name !in excludedMethods }
+                    .sortedBy { it.name }
+                    .forEach { method ->
+                        runCatching {
+                            val result = method.invoke(device)
+                            val rawStr = encodeValue(result)
+                            val prev = snapshot.put(method.name, rawStr)
+                            if (prev != rawStr) changed.add("${method.name}=$rawStr")
+                        }
                     }
-                }
+            }
 
             // ── Public fields (location and VIN excluded) ────────────────────
             cls.fields
