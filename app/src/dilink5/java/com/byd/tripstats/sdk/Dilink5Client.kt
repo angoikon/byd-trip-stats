@@ -10,6 +10,11 @@ import android.hardware.bydauto.collectdata.AbsBYDAutoCollectDataListener
 import android.hardware.bydauto.instrument.AbsBYDAutoInstrumentListener
 import android.hardware.bydauto.speed.AbsBYDAutoSpeedListener
 import android.hardware.bydauto.charging.AbsBYDAutoChargingListener
+import android.hardware.bydauto.setting.AbsBYDAutoSettingListener
+import android.hardware.bydauto.sensor.AbsBYDAutoSensorListener
+import android.hardware.bydauto.pm2p5.AbsBYDAutoPM2p5Listener
+import android.hardware.bydauto.energy.AbsBYDAutoEnergyListener
+import android.hardware.bydauto.ac.AbsBYDAutoAcListener
 
 /**
  * DiLink-5 (Sealion 7) telemetry client — present ONLY in the `dilink5` flavor; loaded reflectively
@@ -44,6 +49,22 @@ class Dilink5Client {
     private var otaDev: Any? = null   // 12V aux voltage via getBatteryVoltage(0)
     private var acDev: Any? = null    // ambient temp via getTemprature(4=AC_TEMPERATURE_OUT)
     private var tyreListener: Any? = null   // typed tyre listener (per-wheel temp events)
+    private var settingDev: Any? = null     // regen (energy feedback) mode select
+    private var settingListener: Any? = null   // typed regen-mode listener (poll once, then events)
+
+    // ── Compat-probe-only devices ────────────────────────────────────────────────
+    // Confirmed dead on the dev car (slope on a real incline,
+    // PM2.5 on an AC toggle, energy.getEnergyFeedback on a parked regen toggle, all 3
+    // battery-temp candidates on a full DC-charge session). Wired here to feed ONLY
+    // VehicleCompatibilityProbe (never ds.applyDilink5*) so another vehicle's firmware
+    // can prove one of these real without polluting this car's confirmed telemetry.
+    private var sensorDev: Any? = null
+    private var sensorListener: Any? = null
+    private var pm2p5Dev: Any? = null
+    private var pm2p5Listener: Any? = null
+    private var energyDev: Any? = null
+    private var energyListener: Any? = null
+    private var acListener: Any? = null   // battery-temp event only; acDev already bound for ambient temp
     private var collectDataDev: Any? = null
     private var collectDataListener: Any? = null
     // Latest HV bus readings from collectdata events → real power = V·I.
@@ -71,13 +92,29 @@ class Dilink5Client {
                     // onSOCBatteryPercentageChanged is the same value via a separate event; kept
                     // wired but never observed firing (getter twin is a hardcoded-0 stub).
                     override fun onElecPercentageChanged(v: Double) {
+                        VehicleCompatibilityProbe.recordTypedEvent("statistic", "onElecPercentageChanged", v)
                         ds.applyDilink5Telemetry(socPanelPct = kotlin.math.round(v).toInt())
                     }
-                    override fun onSOCBatteryPercentageChanged(v: Int) { ds.applyDilink5Telemetry(socPanelPct = v) }
-                    override fun onTotalMileageValueChanged(v: Float) { ds.applyDilink5Telemetry(totalMileageKm = v.toDouble()) }
-                    override fun onElecDrivingRangeChanged(v: Int) { ds.applyDilink5Telemetry(elecRangeKm = v) }
-                    override fun onDrivingRangeValueChanged(v: Int) { ds.applyDilink5Telemetry(elecRangeKm = v) }
-                    override fun onEVRemainingBatteryPowerChanged(v: Float) { onUsable(v.toDouble(), ds) }
+                    override fun onSOCBatteryPercentageChanged(v: Int) {
+                        VehicleCompatibilityProbe.recordTypedEvent("statistic", "onSOCBatteryPercentageChanged", v)
+                        ds.applyDilink5Telemetry(socPanelPct = v)
+                    }
+                    override fun onTotalMileageValueChanged(v: Float) {
+                        VehicleCompatibilityProbe.recordTypedEvent("statistic", "onTotalMileageValueChanged", v)
+                        ds.applyDilink5Telemetry(totalMileageKm = v.toDouble())
+                    }
+                    override fun onElecDrivingRangeChanged(v: Int) {
+                        VehicleCompatibilityProbe.recordTypedEvent("statistic", "onElecDrivingRangeChanged", v)
+                        ds.applyDilink5Telemetry(elecRangeKm = v)
+                    }
+                    override fun onDrivingRangeValueChanged(v: Int) {
+                        VehicleCompatibilityProbe.recordTypedEvent("statistic", "onDrivingRangeValueChanged", v)
+                        ds.applyDilink5Telemetry(elecRangeKm = v)
+                    }
+                    override fun onEVRemainingBatteryPowerChanged(v: Float) {
+                        VehicleCompatibilityProbe.recordTypedEvent("statistic", "onEVRemainingBatteryPowerChanged", v)
+                        onUsable(v.toDouble(), ds)
+                    }
                 }
                 statListener = l
                 dev.registerListener(l)
@@ -115,6 +152,26 @@ class Dilink5Client {
         // ac: ambient/outside-air temp via getTemprature(4) (4 = AC_TEMPERATURE_OUT; SDK range
         // -40..50 °C). The instrument getOutCarTemperature getter is dead; this is the live source.
         acDev = bind(ctx, "android.hardware.bydauto.ac.BYDAutoAcDevice")
+        // Regen (energy feedback) mode select: poll once for the initial value, then rely on the
+        // event for changes (see registerSettingListener). Needs BYDAUTO_SETTING_COMMON.
+        settingDev = bind(ctx, "android.hardware.bydauto.setting.BYDAutoSettingDevice")
+        settingDev?.let { registerSettingListener(it, ds) }
+        // Compat-probe-only: dead-on-dev-car signals, probed for other vehicles (see field comments).
+        sensorDev = bind(ctx, "android.hardware.bydauto.sensor.BYDAutoSensorDevice")
+        sensorDev?.let { registerSensorProbe(it) }
+        pm2p5Dev = bind(ctx, "android.hardware.bydauto.pm2p5.BYDAutoPM2p5Device")
+        pm2p5Dev?.let { registerPm2p5Probe(it) }
+        energyDev = bind(ctx, "android.hardware.bydauto.energy.BYDAutoEnergyDevice")
+        energyDev?.let { registerEnergyProbe(it) }
+        registerAcBatteryTempProbe(acDev)
+        // charging/ota already bound above (real telemetry uses them) — just add the battery-temp
+        // poll here; no new device, no new permission.
+        reflGetDouble(chargingDev, "getChargeBatteryTemp")?.let {
+            VehicleCompatibilityProbe.recordTypedEvent("battery-temp", "charging.getChargeBatteryTemp(poll)", it)
+        }
+        reflGetIntArg(otaDev, "getBatteryTemp", 1)?.let {
+            VehicleCompatibilityProbe.recordTypedEvent("battery-temp", "ota.getBatteryTemp(1)(poll)", it)
+        }
 
         // 3) adaptive poll — fast ONLY while driving / DC-charging; backs off to 30s when parked so
         //    we don't wake the head unit at 1 Hz on a parked car (the statistic LISTENER still pushes
@@ -160,8 +217,15 @@ class Dilink5Client {
         try { instrumentListener?.let { l -> instrumentDev?.javaClass?.getMethod("unregisterListener", AbsBYDAutoInstrumentListener::class.java)?.invoke(instrumentDev, l) } } catch (_: Throwable) {}
         try { speedListener?.let { l -> speedDev?.javaClass?.getMethod("unregisterListener", AbsBYDAutoSpeedListener::class.java)?.invoke(speedDev, l) } } catch (_: Throwable) {}
         try { chargingListener?.let { l -> chargingDev?.javaClass?.getMethod("unregisterListener", AbsBYDAutoChargingListener::class.java)?.invoke(chargingDev, l) } } catch (_: Throwable) {}
-        tyreListener = null; collectDataListener = null; instrumentListener = null; speedListener = null; chargingListener = null
-        chargingDev = null; speedDev = null; healthDev = null; tyreDev = null; collectDataDev = null; instrumentDev = null; otaDev = null; acDev = null
+        try { settingListener?.let { l -> settingDev?.javaClass?.getMethod("unregisterListener", AbsBYDAutoSettingListener::class.java)?.invoke(settingDev, l) } } catch (_: Throwable) {}
+        try { sensorListener?.let { l -> sensorDev?.javaClass?.getMethod("unregisterListener", AbsBYDAutoSensorListener::class.java)?.invoke(sensorDev, l) } } catch (_: Throwable) {}
+        try { pm2p5Listener?.let { l -> pm2p5Dev?.javaClass?.getMethod("unregisterListener", AbsBYDAutoPM2p5Listener::class.java)?.invoke(pm2p5Dev, l) } } catch (_: Throwable) {}
+        try { energyListener?.let { l -> energyDev?.javaClass?.getMethod("unregisterListener", AbsBYDAutoEnergyListener::class.java)?.invoke(energyDev, l) } } catch (_: Throwable) {}
+        try { acListener?.let { l -> acDev?.javaClass?.getMethod("unregisterListener", AbsBYDAutoAcListener::class.java)?.invoke(acDev, l) } } catch (_: Throwable) {}
+        tyreListener = null; collectDataListener = null; instrumentListener = null; speedListener = null; chargingListener = null; settingListener = null
+        sensorListener = null; pm2p5Listener = null; energyListener = null; acListener = null
+        chargingDev = null; speedDev = null; healthDev = null; tyreDev = null; collectDataDev = null; instrumentDev = null; otaDev = null; acDev = null; settingDev = null
+        sensorDev = null; pm2p5Dev = null; energyDev = null
         Log.i(tag, "stopped")
     }
 
@@ -248,6 +312,7 @@ class Dilink5Client {
         try {
             val l = object : AbsBYDAutoTyreListener() {
                 override fun onTyreTemperatureValueChanged(wheel: Int, value: Int) {
+                    VehicleCompatibilityProbe.recordTypedEvent("tyre", "onTyreTemperatureValueChanged[$wheel]", value)
                     ds.applyDilink5TyreTemp(wheel, value)
                 }
             }
@@ -267,8 +332,14 @@ class Dilink5Client {
             // Both overloads declared: D5 calls Float (confirmed), D3 may call Double — same
             // belt-and-suspenders pattern as the speed listener's int/double pair.
             val l = object : AbsBYDAutoChargingListener() {
-                override fun onChargingPowerChanged(power: Float) { ds.applyDilink5Telemetry(chargingPowerKw = power.toDouble()) }
-                override fun onChargingPowerChanged(power: Double) { ds.applyDilink5Telemetry(chargingPowerKw = power) }
+                override fun onChargingPowerChanged(power: Float) {
+                    VehicleCompatibilityProbe.recordTypedEvent("charging", "onChargingPowerChanged(Float)", power)
+                    ds.applyDilink5Telemetry(chargingPowerKw = power.toDouble())
+                }
+                override fun onChargingPowerChanged(power: Double) {
+                    VehicleCompatibilityProbe.recordTypedEvent("charging", "onChargingPowerChanged(Double)", power)
+                    ds.applyDilink5Telemetry(chargingPowerKw = power)
+                }
             }
             dev.javaClass.getMethod("registerListener", AbsBYDAutoChargingListener::class.java).invoke(dev, l)
             chargingListener = l
@@ -285,6 +356,7 @@ class Dilink5Client {
         try {
             val l = object : AbsBYDAutoSpeedListener() {
                 override fun onSpeedChanged(speed: Double) {
+                    VehicleCompatibilityProbe.recordTypedEvent("speed", "onSpeedChanged", speed)
                     ds.applyDaemonTelemetry(speedKmh = speed, gear = null, powerKw = null, rearRpm = null)
                 }
             }
@@ -307,12 +379,15 @@ class Dilink5Client {
         try {
             val l = object : AbsBYDAutoCollectDataListener() {
                 override fun onMotorMCUGeneratrixVolt(a: Int, b: Int) {
+                    VehicleCompatibilityProbe.recordTypedEvent("collectdata", "onMotorMCUGeneratrixVolt", "a=$a b=$b")
                     if (b in 100..1000) { lastHvVolt = b; ds.applyDilink5HvVoltage(b); pushPower(ds) }
                 }
                 override fun onMotorMCUGeneratrixCurrent(a: Int, b: Int) {
+                    VehicleCompatibilityProbe.recordTypedEvent("collectdata", "onMotorMCUGeneratrixCurrent", "a=$a b=$b")
                     if (b in -2000..2000) { lastHvCurrent = b; ds.applyDilink5HvCurrent(b); pushPower(ds) }  // signed A (regen negative)
                 }
                 override fun onDriverMotorSpeed(a: Int, b: Int) {
+                    VehicleCompatibilityProbe.recordTypedEvent("collectdata", "onDriverMotorSpeed", "a=$a b=$b")
                     val front = a.takeIf { it in 0..30_000 }
                     val rear = b.takeIf { it in 0..30_000 }
                     if (front != null || rear != null) {
@@ -335,8 +410,14 @@ class Dilink5Client {
     private fun registerInstrumentListener(dev: Any, ds: BydVehicleDataSource) {
         try {
             val l = object : AbsBYDAutoInstrumentListener() {
-                override fun onSportModeStateChanged(state: Int) { ds.applyDilink5DriveMode(state) }
-                override fun onOutCarTemperatureChanged(tempC: Int) { ds.applyDilink5AmbientTemp(tempC) }
+                override fun onSportModeStateChanged(state: Int) {
+                    VehicleCompatibilityProbe.recordTypedEvent("instrument", "onSportModeStateChanged", state)
+                    ds.applyDilink5DriveMode(state)
+                }
+                override fun onOutCarTemperatureChanged(tempC: Int) {
+                    VehicleCompatibilityProbe.recordTypedEvent("instrument", "onOutCarTemperatureChanged", tempC)
+                    ds.applyDilink5AmbientTemp(tempC)
+                }
             }
             dev.javaClass.getMethod("registerListener", AbsBYDAutoInstrumentListener::class.java).invoke(dev, l)
             instrumentListener = l
@@ -344,6 +425,112 @@ class Dilink5Client {
         } catch (t: Throwable) {
             val c = (t as? java.lang.reflect.InvocationTargetException)?.cause ?: t
             Log.w(tag, "instrument listener failed: ${c.javaClass.simpleName}: ${c.message}")
+        }
+    }
+
+    // Regen mode: poll once for the initial value (no repeated polling — the setter is a manual,
+    // rarely-changed UI toggle, not a fast-changing telemetry field), then register the typed
+    // listener for onEnergyFeedbackStrengthChanged so subsequent changes arrive live.
+    private fun registerSettingListener(dev: Any, ds: BydVehicleDataSource) {
+        reflGetInt(dev, "getEnergyFeedback")?.let {
+            VehicleCompatibilityProbe.recordTypedEvent("setting", "getEnergyFeedback(poll)", it)
+            ds.applyDilink5RegenMode(it)
+        }
+        try {
+            val l = object : AbsBYDAutoSettingListener() {
+                override fun onEnergyFeedbackStrengthChanged(strength: Int) {
+                    VehicleCompatibilityProbe.recordTypedEvent("setting", "onEnergyFeedbackStrengthChanged", strength)
+                    ds.applyDilink5RegenMode(strength)
+                }
+            }
+            dev.javaClass.getMethod("registerListener", AbsBYDAutoSettingListener::class.java).invoke(dev, l)
+            settingListener = l
+            Log.i(tag, "setting listener registered")
+        } catch (t: Throwable) {
+            val c = (t as? java.lang.reflect.InvocationTargetException)?.cause ?: t
+            Log.w(tag, "setting listener failed: ${c.javaClass.simpleName}: ${c.message}")
+        }
+    }
+
+    // ── Compat-probe-only registrations (poll once, then listen) ─────────────────
+    // All confirmed dead on the dev car — feed VehicleCompatibilityProbe only, never ds.applyDilink5*.
+
+    private fun registerSensorProbe(dev: Any) {
+        reflGetInt(dev, "getSlope")?.let { VehicleCompatibilityProbe.recordTypedEvent("sensor", "getSlope(poll)", it) }
+        try {
+            val l = object : AbsBYDAutoSensorListener() {
+                override fun onSlopeValueChanged(slope: Int) {
+                    VehicleCompatibilityProbe.recordTypedEvent("sensor", "onSlopeValueChanged", slope)
+                }
+            }
+            dev.javaClass.getMethod("registerListener", AbsBYDAutoSensorListener::class.java).invoke(dev, l)
+            sensorListener = l
+            Log.i(tag, "sensor probe listener registered")
+        } catch (t: Throwable) {
+            val c = (t as? java.lang.reflect.InvocationTargetException)?.cause ?: t
+            Log.w(tag, "sensor probe listener failed: ${c.javaClass.simpleName}: ${c.message}")
+        }
+    }
+
+    private fun registerPm2p5Probe(dev: Any) {
+        reflGetInt(dev, "getPM2p5OnlineState")?.let { VehicleCompatibilityProbe.recordTypedEvent("pm2p5", "getPM2p5OnlineState(poll)", it) }
+        reflGetIntArray(dev, "getPM2p5Level")?.let { VehicleCompatibilityProbe.recordTypedEvent("pm2p5", "getPM2p5Level(poll)", it.joinToString(",")) }
+        reflGetIntArray(dev, "getPM2p5Value")?.let { VehicleCompatibilityProbe.recordTypedEvent("pm2p5", "getPM2p5Value(poll)", it.joinToString(",")) }
+        try {
+            val l = object : AbsBYDAutoPM2p5Listener() {
+                override fun onPM2p5ValueChanged(inCar: Int, outCar: Int) {
+                    VehicleCompatibilityProbe.recordTypedEvent("pm2p5", "onPM2p5ValueChanged", "in=$inCar out=$outCar")
+                }
+                override fun onPM2p5LevelChanged(inCar: Int, outCar: Int) {
+                    VehicleCompatibilityProbe.recordTypedEvent("pm2p5", "onPM2p5LevelChanged", "in=$inCar out=$outCar")
+                }
+                override fun onPM2p5OnlineStateChanged(state: Int) {
+                    VehicleCompatibilityProbe.recordTypedEvent("pm2p5", "onPM2p5OnlineStateChanged", state)
+                }
+            }
+            dev.javaClass.getMethod("registerListener", AbsBYDAutoPM2p5Listener::class.java).invoke(dev, l)
+            pm2p5Listener = l
+            Log.i(tag, "pm2p5 probe listener registered")
+        } catch (t: Throwable) {
+            val c = (t as? java.lang.reflect.InvocationTargetException)?.cause ?: t
+            Log.w(tag, "pm2p5 probe listener failed: ${c.javaClass.simpleName}: ${c.message}")
+        }
+    }
+
+    private fun registerEnergyProbe(dev: Any) {
+        reflGetInt(dev, "getEnergyFeedback")?.let { VehicleCompatibilityProbe.recordTypedEvent("energy", "getEnergyFeedback(poll)", it) }
+        try {
+            val l = object : AbsBYDAutoEnergyListener() {
+                override fun onEnergyFeedbackLevelChanged(level: Int) {
+                    VehicleCompatibilityProbe.recordTypedEvent("energy", "onEnergyFeedbackLevelChanged", level)
+                }
+            }
+            dev.javaClass.getMethod("registerListener", AbsBYDAutoEnergyListener::class.java).invoke(dev, l)
+            energyListener = l
+            Log.i(tag, "energy probe listener registered")
+        } catch (t: Throwable) {
+            val c = (t as? java.lang.reflect.InvocationTargetException)?.cause ?: t
+            Log.w(tag, "energy probe listener failed: ${c.javaClass.simpleName}: ${c.message}")
+        }
+    }
+
+    private fun registerAcBatteryTempProbe(dev: Any?) {
+        if (dev == null) return
+        reflGetDouble(dev, "getAcSubBatteryTemperature")?.let {
+            VehicleCompatibilityProbe.recordTypedEvent("battery-temp", "ac.getAcSubBatteryTemperature(poll)", it)
+        }
+        try {
+            val l = object : AbsBYDAutoAcListener() {
+                override fun onOtaSubBatteryTemperatureChanged(temp: Int) {
+                    VehicleCompatibilityProbe.recordTypedEvent("battery-temp", "onOtaSubBatteryTemperatureChanged", temp)
+                }
+            }
+            dev.javaClass.getMethod("registerListener", AbsBYDAutoAcListener::class.java).invoke(dev, l)
+            acListener = l
+            Log.i(tag, "ac battery-temp probe listener registered")
+        } catch (t: Throwable) {
+            val c = (t as? java.lang.reflect.InvocationTargetException)?.cause ?: t
+            Log.w(tag, "ac battery-temp probe listener failed: ${c.javaClass.simpleName}: ${c.message}")
         }
     }
 
@@ -381,5 +568,8 @@ class Dilink5Client {
     }
     private fun reflGetString(dev: Any?, getter: String): String? = dev?.let {
         runCatching { (it.javaClass.getMethod(getter).invoke(it) as? String)?.takeIf { s -> s.isNotBlank() } }.getOrNull()
+    }
+    private fun reflGetIntArray(dev: Any?, getter: String): IntArray? = dev?.let {
+        runCatching { it.javaClass.getMethod(getter).invoke(it) as? IntArray }.getOrNull()
     }
 }

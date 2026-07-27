@@ -172,9 +172,6 @@ object VehicleCompatibilityProbe {
         if (!_isEnabled.value) return
         try {
             val cls = device.javaClass
-            deviceClasses[label] = cls.name
-
-            val snapshot = deviceSnapshots.getOrPut(label) { LinkedHashMap() }
             val excludedMethods = setOf(
                 "getClass", "wait", "notify", "notifyAll", "hashCode", "equals", "toString",
                 // VIN uniquely identifies the physical vehicle — exclude for privacy
@@ -182,72 +179,82 @@ object VehicleCompatibilityProbe {
             )
             val changed = mutableListOf<String>()
 
-            // ── No-arg getters ────────────────────────────────────────────────
-            // NOT on DiLink-5. This blindly invokes EVERY no-arg method on the *injected* OEM
-            // device — including side-effecting ones (resetData(), setAllStatus() were both seen
-            // in DI5 captures) — and on some DI5 firmware that wedges com.byd.data.collect and
-            // boot-loops the head unit (cluster/ADAS fault). D3 uses inert stubs so it stays there.
-            // On D5 we keep the field constants + allowlisted indexed getters below and the pushed
-            // event path (recordDispatchedFeature); a future event-tap restores the rest safely.
-            if (!DiLink5Platform.isDiLink5) {
-                cls.methods
-                    .filter { it.parameterCount == 0 && it.name !in excludedMethods }
+            // deviceSnapshots/deviceClasses are plain (non-concurrent) maps. This is the loop
+            // thread on D3, but on D5 typed listeners can call recordTypedEvent on separate
+            // binder threads concurrently — synchronize every mutation/iteration on the same
+            // lock so they can never race (ConcurrentModificationException, dropped entries,
+            // wrong entryCount).
+            synchronized(deviceSnapshots) {
+                deviceClasses[label] = cls.name
+                val snapshot = deviceSnapshots.getOrPut(label) { LinkedHashMap() }
+
+                // ── No-arg getters ────────────────────────────────────────────
+                // NOT on DiLink-5. This blindly invokes EVERY no-arg method on the *injected* OEM
+                // device — including side-effecting ones (resetData(), setAllStatus() were both seen
+                // in DI5 captures) — and on some DI5 firmware that wedges com.byd.data.collect and
+                // boot-loops the head unit (cluster/ADAS fault). D3 uses inert stubs so it stays there.
+                // On D5 we keep the field constants + allowlisted indexed getters below and the pushed
+                // event path (recordDispatchedFeature); a future event-tap restores the rest safely.
+                if (!DiLink5Platform.isDiLink5) {
+                    cls.methods
+                        .filter { it.parameterCount == 0 && it.name !in excludedMethods }
+                        .sortedBy { it.name }
+                        .forEach { method ->
+                            runCatching {
+                                val result = method.invoke(device)
+                                val rawStr = encodeValue(result)
+                                val prev = snapshot.put(method.name, rawStr)
+                                if (prev != rawStr) changed.add("${method.name}=$rawStr")
+                            }
+                        }
+                }
+
+                // ── Public fields (location and VIN excluded) ────────────────
+                cls.fields
+                    .filter { !it.name.contains("latitude", ignoreCase = true) &&
+                              !it.name.contains("longitude", ignoreCase = true) &&
+                              !it.name.contains("vin", ignoreCase = true) }
                     .sortedBy { it.name }
-                    .forEach { method ->
+                    .forEach { field ->
                         runCatching {
-                            val result = method.invoke(device)
-                            val rawStr = encodeValue(result)
-                            val prev = snapshot.put(method.name, rawStr)
-                            if (prev != rawStr) changed.add("${method.name}=$rawStr")
+                            val rawStr = encodeValue(field.get(device))
+                            val key = "field:${field.name}"
+                            val prev = snapshot.put(key, rawStr)
+                            if (prev != rawStr) changed.add("$key=$rawStr")
                         }
                     }
-            }
 
-            // ── Public fields (location and VIN excluded) ────────────────────
-            cls.fields
-                .filter { !it.name.contains("latitude", ignoreCase = true) &&
-                          !it.name.contains("longitude", ignoreCase = true) &&
-                          !it.name.contains("vin", ignoreCase = true) }
-                .sortedBy { it.name }
-                .forEach { field ->
-                    runCatching {
-                        val rawStr = encodeValue(field.get(device))
-                        val key = "field:${field.name}"
-                        val prev = snapshot.put(key, rawStr)
-                        if (prev != rawStr) changed.add("$key=$rawStr")
+                // ── Indexed (1-arg int) getters — wheel, seat, door, cell slots ──
+                val indexedMethods = cls.methods
+                    .filter { m ->
+                        m.parameterCount == 1 &&
+                        m.parameterTypes[0] == Int::class.javaPrimitiveType &&
+                        m.name in INDEXED_GETTER_NAMES
                     }
-                }
-
-            // ── Indexed (1-arg int) getters — wheel, seat, door, cell slots ──
-            val indexedMethods = cls.methods
-                .filter { m ->
-                    m.parameterCount == 1 &&
-                    m.parameterTypes[0] == Int::class.javaPrimitiveType &&
-                    m.name in INDEXED_GETTER_NAMES
-                }
-                .sortedBy { it.name }
-            if (indexedMethods.isNotEmpty()) {
-                for (idx in 0..INDEXED_PROBE_MAX) {
-                    indexedMethods.forEach { method ->
-                        runCatching {
-                            val result = method.invoke(device, idx)
-                            val rawStr = encodeValue(result)
-                            // Skip zero/null to keep the report readable; non-zero values
-                            // are the diagnostic signal we care about.
-                            if (rawStr != "null" && rawStr != "0" && rawStr != "0.0" && rawStr != "false") {
-                                val key = "${method.name}[$idx]"
-                                val prev = snapshot.put(key, rawStr)
-                                if (prev != rawStr) changed.add("$key=$rawStr")
+                    .sortedBy { it.name }
+                if (indexedMethods.isNotEmpty()) {
+                    for (idx in 0..INDEXED_PROBE_MAX) {
+                        indexedMethods.forEach { method ->
+                            runCatching {
+                                val result = method.invoke(device, idx)
+                                val rawStr = encodeValue(result)
+                                // Skip zero/null to keep the report readable; non-zero values
+                                // are the diagnostic signal we care about.
+                                if (rawStr != "null" && rawStr != "0" && rawStr != "0.0" && rawStr != "false") {
+                                    val key = "${method.name}[$idx]"
+                                    val prev = snapshot.put(key, rawStr)
+                                    if (prev != rawStr) changed.add("$key=$rawStr")
+                                }
                             }
                         }
                     }
                 }
+
+                _entryCount.value = deviceSnapshots.values.sumOf { it.size }
             }
 
             val now = Instant.now().toString()
             _lastCaptureAt.value = now
-            _entryCount.value = deviceSnapshots.values.sumOf { it.size }
-
             if (changed.isNotEmpty()) {
                 val line = "[$now][$label] ${changed.joinToString(" | ")}"
                 changeLog.offer(line)
@@ -270,32 +277,34 @@ object VehicleCompatibilityProbe {
     fun recordPhevSection(devices: Map<String, Any?>) {
         if (!_isEnabled.value) return
         try {
-            val snapshot = deviceSnapshots.getOrPut("phev-sweep") { LinkedHashMap() }
             val changed = mutableListOf<String>()
 
-            devices.forEach { (deviceLabel, device) ->
-                if (device == null) return@forEach
-                val cls = device.javaClass
-                PHEV_NAMED_GETTERS.forEach { getterName ->
-                    runCatching {
-                        val method = cls.methods.firstOrNull {
-                            it.name == getterName && it.parameterCount == 0
-                        } ?: return@runCatching
-                        val result = method.invoke(device) ?: return@runCatching
-                        val rawStr = encodeValue(result)
-                        if (rawStr != "null" && rawStr != "0" && rawStr != "0.0" && rawStr != "false") {
-                            val key = "$deviceLabel.$getterName"
-                            val prev = snapshot.put(key, rawStr)
-                            if (prev != rawStr) changed.add("$key=$rawStr")
+            synchronized(deviceSnapshots) {
+                val snapshot = deviceSnapshots.getOrPut("phev-sweep") { LinkedHashMap() }
+                devices.forEach { (deviceLabel, device) ->
+                    if (device == null) return@forEach
+                    val cls = device.javaClass
+                    PHEV_NAMED_GETTERS.forEach { getterName ->
+                        runCatching {
+                            val method = cls.methods.firstOrNull {
+                                it.name == getterName && it.parameterCount == 0
+                            } ?: return@runCatching
+                            val result = method.invoke(device) ?: return@runCatching
+                            val rawStr = encodeValue(result)
+                            if (rawStr != "null" && rawStr != "0" && rawStr != "0.0" && rawStr != "false") {
+                                val key = "$deviceLabel.$getterName"
+                                val prev = snapshot.put(key, rawStr)
+                                if (prev != rawStr) changed.add("$key=$rawStr")
+                            }
                         }
                     }
                 }
+                if (changed.isNotEmpty()) _entryCount.value = deviceSnapshots.values.sumOf { it.size }
             }
 
             if (changed.isNotEmpty()) {
                 val now = Instant.now().toString()
                 _lastCaptureAt.value = now
-                _entryCount.value = deviceSnapshots.values.sumOf { it.size }
                 val line = "[$now][phev-sweep] ${changed.joinToString(" | ")}"
                 changeLog.offer(line)
                 while (changeLog.size > CHANGE_LOG_MAX) changeLog.poll()
@@ -315,32 +324,34 @@ object VehicleCompatibilityProbe {
     fun recordTemperatureSection(devices: Map<String, Any?>) {
         if (!_isEnabled.value) return
         try {
-            val snapshot = deviceSnapshots.getOrPut("temp-sweep") { LinkedHashMap() }
             val changed = mutableListOf<String>()
 
-            devices.forEach { (deviceLabel, device) ->
-                if (device == null) return@forEach
-                val cls = device.javaClass
-                TEMP_NAMED_GETTERS.forEach { getterName ->
-                    runCatching {
-                        val method = cls.methods.firstOrNull {
-                            it.name == getterName && it.parameterCount == 0
-                        } ?: return@runCatching
-                        val result = method.invoke(device) ?: return@runCatching
-                        val rawStr = encodeValue(result)
-                        if (rawStr != "null" && rawStr != "0" && rawStr != "0.0" && rawStr != "false") {
-                            val key = "$deviceLabel.$getterName"
-                            val prev = snapshot.put(key, rawStr)
-                            if (prev != rawStr) changed.add("$key=$rawStr")
+            synchronized(deviceSnapshots) {
+                val snapshot = deviceSnapshots.getOrPut("temp-sweep") { LinkedHashMap() }
+                devices.forEach { (deviceLabel, device) ->
+                    if (device == null) return@forEach
+                    val cls = device.javaClass
+                    TEMP_NAMED_GETTERS.forEach { getterName ->
+                        runCatching {
+                            val method = cls.methods.firstOrNull {
+                                it.name == getterName && it.parameterCount == 0
+                            } ?: return@runCatching
+                            val result = method.invoke(device) ?: return@runCatching
+                            val rawStr = encodeValue(result)
+                            if (rawStr != "null" && rawStr != "0" && rawStr != "0.0" && rawStr != "false") {
+                                val key = "$deviceLabel.$getterName"
+                                val prev = snapshot.put(key, rawStr)
+                                if (prev != rawStr) changed.add("$key=$rawStr")
+                            }
                         }
                     }
                 }
+                if (changed.isNotEmpty()) _entryCount.value = deviceSnapshots.values.sumOf { it.size }
             }
 
             if (changed.isNotEmpty()) {
                 val now = Instant.now().toString()
                 _lastCaptureAt.value = now
-                _entryCount.value = deviceSnapshots.values.sumOf { it.size }
                 val line = "[$now][temp-sweep] ${changed.joinToString(" | ")}"
                 changeLog.offer(line)
                 while (changeLog.size > CHANGE_LOG_MAX) changeLog.poll()
@@ -362,7 +373,6 @@ object VehicleCompatibilityProbe {
         if (!_isEnabled.value) return
         if (featureEntries.isEmpty()) return
         try {
-            val snapshot = deviceSnapshots.getOrPut("$label-features") { LinkedHashMap() }
             val changed = mutableListOf<String>()
 
             // BYD StatisticDevice-style: device.get(int featureId) → BYDAutoDeviceValue
@@ -372,31 +382,34 @@ object VehicleCompatibilityProbe {
                 m.parameterTypes[0] == Int::class.javaPrimitiveType
             }
 
-            featureEntries.forEach { (name, featureId) ->
-                runCatching {
-                    val result = getMethod?.invoke(device, featureId) ?: return@runCatching
-                    // BYDAutoDeviceValue: try getIntValue() then getDoubleValue()
-                    val value: Any? = runCatching {
-                        result.javaClass.getMethod("getIntValue").invoke(result)
-                    }.getOrNull() ?: runCatching {
-                        result.javaClass.getMethod("getDoubleValue").invoke(result)
-                    }.getOrNull() ?: runCatching {
-                        result.javaClass.getMethod("getStringValue").invoke(result)
-                    }.getOrNull()
+            synchronized(deviceSnapshots) {
+                val snapshot = deviceSnapshots.getOrPut("$label-features") { LinkedHashMap() }
+                featureEntries.forEach { (name, featureId) ->
+                    runCatching {
+                        val result = getMethod?.invoke(device, featureId) ?: return@runCatching
+                        // BYDAutoDeviceValue: try getIntValue() then getDoubleValue()
+                        val value: Any? = runCatching {
+                            result.javaClass.getMethod("getIntValue").invoke(result)
+                        }.getOrNull() ?: runCatching {
+                            result.javaClass.getMethod("getDoubleValue").invoke(result)
+                        }.getOrNull() ?: runCatching {
+                            result.javaClass.getMethod("getStringValue").invoke(result)
+                        }.getOrNull()
 
-                    val rawStr = encodeValue(value)
-                    if (rawStr != "null" && rawStr != "0" && rawStr != "0.0") {
-                        val key = "$name[fid=$featureId]"
-                        val prev = snapshot.put(key, rawStr)
-                        if (prev != rawStr) changed.add("$key=$rawStr")
+                        val rawStr = encodeValue(value)
+                        if (rawStr != "null" && rawStr != "0" && rawStr != "0.0") {
+                            val key = "$name[fid=$featureId]"
+                            val prev = snapshot.put(key, rawStr)
+                            if (prev != rawStr) changed.add("$key=$rawStr")
+                        }
                     }
                 }
+                if (changed.isNotEmpty()) _entryCount.value = deviceSnapshots.values.sumOf { it.size }
             }
 
             if (changed.isNotEmpty()) {
                 val now = Instant.now().toString()
                 _lastCaptureAt.value = now
-                _entryCount.value = deviceSnapshots.values.sumOf { it.size }
                 val line = "[$now][$label-features] ${changed.joinToString(" | ")}"
                 changeLog.offer(line)
                 while (changeLog.size > CHANGE_LOG_MAX) changeLog.poll()
@@ -418,7 +431,6 @@ object VehicleCompatibilityProbe {
     fun recordDispatchedFeature(label: String, featureId: Int, raw: Number) {
         if (!_isEnabled.value) return
         try {
-            val snapshot = deviceSnapshots.getOrPut("$label-dispatched") { LinkedHashMap() }
             val d = raw.toDouble()
             val pctHint = when {
                 d in 0.0..100.0 -> " (pct≈${"%.1f".format(d)})"
@@ -427,16 +439,58 @@ object VehicleCompatibilityProbe {
             }
             val key = "0x%08X".format(featureId)
             val value = "${if (d == Math.floor(d)) d.toLong().toString() else d.toString()}$pctHint"
-            val prev = snapshot.put(key, value)
+
+            val changedNow: Boolean
+            synchronized(deviceSnapshots) {
+                val snapshot = deviceSnapshots.getOrPut("$label-dispatched") { LinkedHashMap() }
+                val prev = snapshot.put(key, value)
+                changedNow = prev != value
+                _entryCount.value = deviceSnapshots.values.sumOf { it.size }
+            }
+
             val now = Instant.now().toString()
             _lastCaptureAt.value = now
-            _entryCount.value = deviceSnapshots.values.sumOf { it.size }
-            if (prev != value) {
+            if (changedNow) {
                 changeLog.offer("[$now][$label-dispatched] $key=$value")
                 while (changeLog.size > CHANGE_LOG_MAX) changeLog.poll()
             }
         } catch (t: Throwable) {
             Log.w(TAG, "recordDispatchedFeature($label) failed: ${t.message}")
+        }
+    }
+
+    /**
+     * Records a value delivered through one of DiLink-5's typed listener callbacks
+     * (statistic/charging/speed/tyre/collectdata/instrument/setting — see Dilink5Client)
+     * under "[label]-events". DiLink-5 only: the D3 flavor has no equivalent typed-listener
+     * tap and this bucket would be meaningless there.
+     *
+     * Unlike [recordDevice] (disabled on D5 — blindly invoking every no-arg getter on the
+     * injected OEM device hit side-effecting methods and boot-looped the head unit), this
+     * only forwards values already delivered to an existing, already-firing callback — no
+     * new getter or reflection call is made, so it carries none of that risk.
+     */
+    fun recordTypedEvent(label: String, key: String, value: Any?) {
+        if (!DiLink5Platform.isDiLink5) return
+        if (!_isEnabled.value) return
+        try {
+            val rawStr = encodeValue(value)
+            val changedNow: Boolean
+            synchronized(deviceSnapshots) {
+                val snapshot = deviceSnapshots.getOrPut("$label-events") { LinkedHashMap() }
+                val prev = snapshot.put(key, rawStr)
+                changedNow = prev != rawStr
+                _entryCount.value = deviceSnapshots.values.sumOf { it.size }
+            }
+
+            val now = Instant.now().toString()
+            _lastCaptureAt.value = now
+            if (changedNow) {
+                changeLog.offer("[$now][$label-events] $key=$rawStr")
+                while (changeLog.size > CHANGE_LOG_MAX) changeLog.poll()
+            }
+        } catch (t: Throwable) {
+            Log.w(TAG, "recordTypedEvent($label, $key) failed: ${t.message}")
         }
     }
 
@@ -446,18 +500,19 @@ object VehicleCompatibilityProbe {
      * Serialise the current snapshot to a JSON string ready to write to disk.
      * Structure:
      * {
-     *   "schema": 2,
+     *   "schema": 3,
      *   "capturedAt": "...",
      *   "androidBuild": "...",
      *   "deviceClasses": { "climate": "...", ... },
-     *   "deviceSnapshots": { "climate": { ... }, "phev-sweep": { ... }, ... },
+     *   "deviceSnapshots": { "climate": { ... }, "phev-sweep": { ... },
+     *                        "statistic-events": { ... }, ... },  // schema 3: DiLink-5 typed-listener taps
      *   "vehicleAnalysis": { "energyMode": "...", "phevSignalsFound": [...] },
      *   "changeLog": [ "...", ... ]
      * }
      */
     fun buildReportJson(): String {
         val root = JSONObject()
-        root.put("schema", 2)
+        root.put("schema", 3)
         root.put("capturedAt", Instant.now().toString())
         root.put("captureStartedAt", captureStartedAt.ifBlank { Instant.now().toString() })
         root.put("androidBuild", androidBuild)
@@ -475,20 +530,26 @@ object VehicleCompatibilityProbe {
         vehicleInfo.put("wltpKm",                  userModelWltpKm ?: 0)
         root.put("vehicleInfo", vehicleInfo)
 
-        val classes = JSONObject()
-        deviceClasses.forEach { (label, cls) -> classes.put(label, cls) }
-        root.put("deviceClasses", classes)
+        // deviceSnapshots/deviceClasses can be mutated concurrently by D5's typed-listener
+        // binder threads (recordTypedEvent) — lock the whole read (including the nested
+        // buildVehicleAnalysis() call, safe via Java's reentrant synchronized) so a report
+        // can never be serialized mid-mutation.
+        synchronized(deviceSnapshots) {
+            val classes = JSONObject()
+            deviceClasses.forEach { (label, cls) -> classes.put(label, cls) }
+            root.put("deviceClasses", classes)
 
-        val snapshots = JSONObject()
-        deviceSnapshots.forEach { (label, methods) ->
-            val deviceObj = JSONObject()
-            methods.forEach { (method, value) -> deviceObj.put(method, value) }
-            snapshots.put(label, deviceObj)
+            val snapshots = JSONObject()
+            deviceSnapshots.forEach { (label, methods) ->
+                val deviceObj = JSONObject()
+                methods.forEach { (method, value) -> deviceObj.put(method, value) }
+                snapshots.put(label, deviceObj)
+            }
+            root.put("deviceSnapshots", snapshots)
+
+            // ── PHEV analysis summary ─────────────────────────────────────────
+            root.put("vehicleAnalysis", buildVehicleAnalysis())
         }
-        root.put("deviceSnapshots", snapshots)
-
-        // ── PHEV analysis summary ─────────────────────────────────────────────
-        root.put("vehicleAnalysis", buildVehicleAnalysis())
 
         val log = JSONArray()
         changeLog.toList().forEach { log.put(it) }
@@ -827,8 +888,10 @@ object VehicleCompatibilityProbe {
      */
     @Synchronized
     fun clear() {
-        deviceSnapshots.clear()
-        deviceClasses.clear()
+        synchronized(deviceSnapshots) {
+            deviceSnapshots.clear()
+            deviceClasses.clear()
+        }
         changeLog.clear()
         captureStartedAt = ""
         _entryCount.value = 0

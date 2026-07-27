@@ -122,9 +122,14 @@ class LocalBackupManager private constructor(private val context: Context) {
                 FileInputStream(dbFile).use { input -> input.copyTo(out) }
             } ?: throw Exception("Could not open output stream")
 
-            // Mark complete — file becomes visible in file manager
+            // Mark complete — file becomes visible in file manager. Explicitly stamp SIZE/
+            // DATE_MODIFIED here rather than relying on the platform to backfill them on
+            // IS_PENDING clear — this BYD ROM's MediaProvider doesn't, leaving the row stuck
+            // at its insert-time defaults (0 bytes / epoch date) forever.
             values.clear()
             values.put(MediaStore.Downloads.IS_PENDING, 0)
+            values.put(MediaStore.Downloads.SIZE, dbFile.length())
+            values.put(MediaStore.Downloads.DATE_MODIFIED, System.currentTimeMillis() / 1000L)
             resolver.update(uri, values, null, null)
 
             // Also write to private app dir for ADB access
@@ -383,9 +388,14 @@ class LocalBackupManager private constructor(private val context: Context) {
             // Also scan the removable SD card (Pro backups land there).
             val sdResults = scanSdCardBackups()
 
-            // Merge, deduplicate by name, sort newest first
+            // Merge, deduplicate by name — sort newest first. Prefer whichever representation
+            // reports the largest size rather than naively keeping the first (MediaStore) one:
+            // on this ROM the MediaStore row can be stuck at 0 bytes / epoch date (see
+            // backupDatabase()'s SIZE/DATE_MODIFIED stamp), while the private-dir/filesystem/SD
+            // copies of the same file always carry the real File.length()/lastModified().
             val merged = (results + privateResults + filesystemResults + sdResults)
-                .distinctBy { it.name }
+                .groupBy { it.name }
+                .map { (_, group) -> group.maxByOrNull { it.sizeBytes } ?: group.first() }
                 .sortedByDescending { it.dateModified }
 
             _localBackups.value = merged

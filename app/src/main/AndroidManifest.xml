@@ -46,6 +46,9 @@
     <!-- BYD DiLink permissions -->
     <uses-permission android:name="android.permission.BYDAUTO_SPEED_GET" />
     <uses-permission android:name="android.permission.BYDAUTO_ENERGY_GET" />
+    <uses-permission android:name="android.permission.BYDAUTO_ENERGY_COMMON" />
+    <uses-permission android:name="android.permission.BYDAUTO_PM2P5_GET" />
+    <uses-permission android:name="android.permission.BYDAUTO_PM2P5_COMMON" />
     <uses-permission android:name="android.permission.BYDAUTO_INSTRUMENT_GET" />
     <uses-permission android:name="android.permission.BYDAUTO_INSTRUMENT_COMMON" />
     <uses-permission android:name="android.permission.BYDAUTO_AC_GET" />
@@ -67,6 +70,7 @@
     <uses-permission android:name="android.permission.BYDAUTO_TYRE_GET" />
     <uses-permission android:name="android.permission.BYDAUTO_TYRE_COMMON" />
     <uses-permission android:name="android.permission.BYDAUTO_SETTING_GET" />
+    <uses-permission android:name="android.permission.BYDAUTO_SETTING_COMMON" />
     <uses-permission android:name="android.permission.BYDAUTO_STATISTIC_GET" />
     <!-- DiLink-5: getInstance enforces *_COMMON server-side. STATISTIC_COMMON is `dangerous` on D5
          (declare here; grant once via `adb shell pm grant com.byd.tripstats
@@ -78,6 +82,7 @@
     <uses-permission android:name="android.permission.BYDAUTO_VEHICLEHEALTH_GET" />
     <uses-permission android:name="android.permission.BYDAUTO_VEHICLEHEALTH_COMMON" />
     <uses-permission android:name="android.permission.BYDAUTO_SENSOR_GET" />
+    <uses-permission android:name="android.permission.BYDAUTO_SENSOR_COMMON" />
     <uses-permission android:name="android.permission.BYDAUTO_MQTT_GET" />
     <uses-permission android:name="android.permission.BYDAUTO_TEST_GET" />
     <!-- Signal device — raw CAN data -->
