@@ -4088,7 +4088,13 @@ class BydVehicleDataSource(context: Context) {
             val hvVoltage      = invokeIntGetter(device, *m51["hvVoltage"].orEmpty().toTypedArray())
             val hvCurrent      = invokeNumericDoubleGetter(device, *m51["hvCurrent"].orEmpty().toTypedArray())
             val auxBatt12v     = invokeNumericDoubleGetter(device, *m51["aux12v"].orEmpty().toTypedArray())
-            val roadSlope      = invokeNumericDoubleGetter(device, *m51["roadSlope"].orEmpty().toTypedArray())
+            // sensor.getSlope() confirmed dead on DiLink-5 (constant -1 through a real incline
+            // test) — skip the call there so roadSlopeDeg stays null and
+            // the dashboard subtitle just doesn't render (see VehicleStats/DashboardCards), instead
+            // of showing a bogus "-1.0°". Left as-is on D3 — not confirmed dead there.
+            val roadSlope      = if (!DiLink5Platform.isDiLink5) {
+                invokeNumericDoubleGetter(device, *m51["roadSlope"].orEmpty().toTypedArray())
+            } else null
             _vehicleSnapshot.value = _vehicleSnapshot.value.copy(
                 cabinTemperature = cabinTemp   ?: _vehicleSnapshot.value.cabinTemperature,
                 roadSlopeDeg     = roadSlope   ?: _vehicleSnapshot.value.roadSlopeDeg,
@@ -5237,6 +5243,21 @@ class BydVehicleDataSource(context: Context) {
     fun applyDilink5DriveMode(raw: Int) {
         if (raw !in 1..6) return
         updateDriveModeCandidate(raw, strong = true, source = "d5-sportmode")
+        publishSnapshot()
+    }
+
+    // DiLink-5 regen (energy feedback) strength from setting.getEnergyFeedback() / its event
+    // onEnergyFeedbackStrengthChanged. Confirmed on-car: raw 2=Standard,
+    // 3=High — remapped to the app's canonical 1=Standard/2=High encoding used everywhere else
+    // (UI, trip JSON, MQTT). The parallel energy.getEnergyFeedback() (CarBodyManager path) is
+    // dead (constant 0 through a parked toggle test) — not used.
+    fun applyDilink5RegenMode(raw: Int) {
+        val normalized = when (raw) {
+            2 -> 1  // Standard
+            3 -> 2  // High
+            else -> return
+        }
+        updateRegenModeCandidate(normalized, strong = true, source = "d5-setting")
         publishSnapshot()
     }
 

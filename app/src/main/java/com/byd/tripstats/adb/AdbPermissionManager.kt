@@ -79,6 +79,12 @@ object AdbPermissionManager {
         "android.permission.BYDAUTO_TYRE_COMMON",
         "android.permission.BYDAUTO_AC_COMMON",
         "android.permission.BYDAUTO_OTA_COMMON",   // getTBoxSerialNumber (license device id) is COMMON-gated
+        "android.permission.BYDAUTO_SETTING_COMMON",   // setting.getEnergyFeedback() (regen mode) is COMMON-gated
+        // Compat-probe-only devices below — confirmed dead on the dev car,
+        // granted anyway so the probe can surface whether they're real on other vehicles.
+        "android.permission.BYDAUTO_ENERGY_COMMON",
+        "android.permission.BYDAUTO_SENSOR_COMMON",
+        "android.permission.BYDAUTO_PM2P5_COMMON",
     )
 
     sealed class SetupState {
