@@ -837,6 +837,10 @@
     <string name="tariff_input_desc">הזינו את מחיר הטעינה הביתי כדי שעלויות הנסיעות ישתמשו בתעריף הקבוע שלכם כבסיס.</string>
     <string name="price_per_kwh_label">מחיר ל-kWh</string>
     <string name="currency_label">מטבע</string>
+    <string name="currency_custom_option">מותאם אישית…</string>
+    <string name="currency_custom_label">סמל מותאם אישית</string>
+    <string name="currency_custom_placeholder">לדוגמה kr, zł, ₺, Fr</string>
+    <string name="currency_custom_hint">1–4 תווים, ללא ספרות</string>
     <string name="active_tariff_value">פעיל: %1$s %2$s / kWh</string>
     <string name="timeout_dialog_title">פסק זמן לנסיעה לאחר כיבוי מנוע</string>
     <string name="timeout_input_desc">הנסיעה נשארת פתוחה כך וכך דקות לאחר כיבוי המנוע. ברירת מחדל %1$s דקות.</string>
@@ -980,6 +984,9 @@
     <string name="about_install_note">כפתור ההתקנה יהפוך זמין בחנייה ללא נסיעה או טעינה פעילה</string>
     <string name="about_install_now">התקן עכשיו</string>
     <string name="about_download_update">הורד עדכון</string>
+    <string name="about_update_manual_di5_instructions">התקנה אוטומטית אינה זמינה ב-DiLink 5. במחשב או בטלפון, הורד את קובץ ה-APK של גרסה זו מדף הגרסאות, ולאחר מכן התקן אותו דרך ADB:</string>
+    <string name="about_update_manual_di5_command">adb install -r %1$s</string>
+    <string name="about_update_open_releases">פתח את דף הגרסאות</string>
 
     <!-- FAQ -->
     <string name="faq_section_title">שאלות נפוצות</string>

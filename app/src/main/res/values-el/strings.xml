@@ -763,6 +763,10 @@
     <string name="tariff_input_desc">Εισάγετε την τιμή οικιακής φόρτισης ώστε τα κόστη διαδρομής να χρησιμοποιούν το σταθερό τιμολόγιο σας ως βάση αναφοράς.</string>
     <string name="price_per_kwh_label">Τιμή ανά kWh</string>
     <string name="currency_label">Νόμισμα</string>
+    <string name="currency_custom_option">Προσαρμογή…</string>
+    <string name="currency_custom_label">Προσαρμοσμένο σύμβολο</string>
+    <string name="currency_custom_placeholder">π.χ. kr, zł, ₺, Fr</string>
+    <string name="currency_custom_hint">1–4 χαρακτήρες, χωρίς ψηφία</string>
     <string name="active_tariff_value">Ενεργό: %1$s %2$s / kWh</string>
     <string name="timeout_dialog_title">Χρονικό όριο σβησίματος κινητήρα</string>
     <string name="timeout_input_desc">Η διαδρομή παραμένει ανοιχτή για αυτόν τον αριθμό λεπτών μετά το σβήσιμο κινητήρα. Προεπιλογή: %1$s λεπτά.</string>
@@ -895,6 +899,9 @@
     <string name="about_install_note">Το κουμπί Εγκατάσταση θα είναι διαθέσιμο κατά τη στάθμευση χωρίς ενεργή διαδρομή ή φόρτιση</string>
     <string name="about_install_now">Εγκατάσταση τώρα</string>
     <string name="about_download_update">Λήψη ενημέρωσης</string>
+    <string name="about_update_manual_di5_instructions">Η αυτόματη εγκατάσταση δεν είναι διαθέσιμη στο DiLink 5. Από υπολογιστή ή τηλέφωνο, κατεβάστε το APK αυτής της έκδοσης από τη σελίδα εκδόσεων και στη συνέχεια, εγκαταστήστε το μέσω ADB:</string>
+    <string name="about_update_manual_di5_command">adb install -r %1$s</string>
+    <string name="about_update_open_releases">Άνοιγμα σελίδας εκδόσεων</string>
     <string name="faq_section_title">Συχνές ερωτήσεις</string>
     <string name="faq_q_no_electro">Σε αντίθεση με παλαιότερες εκδόσεις, αληθεύει ότι η εφαρμογή Electro δεν χρειάζεται πλέον;</string>
     <string name="faq_a_no_electro">Σωστά. Το BYD Trip Stats λειτουργεί ως αυτόνομη εφαρμογή σε υποστηριζόμενα οχήματα, οπότε η καταγραφή διαδρομών και οι συνεδρίες φόρτισης λειτουργούν χωρίς το Electro.\n\nΤο Electro παραμένει χρήσιμη εφαρμογή-συνοδός για ιδιοκτήτες που θέλουν τις δικές του λειτουργίες, αλλά δεν απαιτείται πλέον για το BYD Trip Stats.</string>

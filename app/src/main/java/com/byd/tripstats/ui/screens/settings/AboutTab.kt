@@ -170,6 +170,7 @@ internal fun AboutTab(viewModel: DashboardViewModel) {
             downloadedApk    = downloadedApk,
             canInstallNow    = canInstallNow,
             isChecking       = isCheckingUpdate,
+            isDiLink5        = com.byd.tripstats.sdk.DiLink5Platform.isDiLink5,
             onDownload       = { viewModel.downloadUpdate() },
             onInstall        = { viewModel.installUpdate() },
             onCancel         = { viewModel.cancelDownload() },
@@ -194,6 +195,7 @@ private fun UpdateCard(
     downloadedApk   : java.io.File?,
     canInstallNow   : Boolean,
     isChecking      : Boolean = false,
+    isDiLink5       : Boolean = false,
     onDownload      : () -> Unit,
     onInstall       : () -> Unit,
     onCancel        : () -> Unit,
@@ -233,6 +235,15 @@ private fun UpdateCard(
                 }
             }
         }
+        return
+    }
+
+    // DiLink-5: the in-app download + silent PackageInstaller can't complete on the head unit
+    // (unprivileged, no installer UI), so surface the update as available with manual `adb install -r`
+    // instructions instead of the Download/Install flow. The badge on the About tab still appears
+    // (it keys off updateInfo). DiLink-3 keeps the full auto-update card below.
+    if (isDiLink5 && updateInfo != null) {
+        Di5ManualUpdateCard(updateInfo)
         return
     }
 
@@ -370,6 +381,95 @@ private fun UpdateCard(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+// DiLink-5 manual-update card: update detected, but installed by the user via `adb install -r`.
+@Composable
+private fun Di5ManualUpdateCard(
+    updateInfo: com.byd.tripstats.data.repository.UpdateRepository.UpdateInfo
+) {
+    val context = LocalContext.current
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors   = CardDefaults.cardColors(containerColor = AccelerationOrange.copy(alpha = 0.12f)),
+        border   = BorderStroke(1.dp, AccelerationOrange.copy(alpha = 0.4f))
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment     = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Filled.NewReleases, null, tint = AccelerationOrange, modifier = Modifier.size(22.dp))
+                Column {
+                    Text(
+                        stringResource(R.string.about_update_available, updateInfo.latestVersion),
+                        style      = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        stringResource(R.string.about_current_version, updateInfo.currentVersion),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            if (updateInfo.releaseNotes.isNotBlank()) {
+                Text(
+                    updateInfo.releaseNotes,
+                    style    = MaterialTheme.typography.bodySmall,
+                    color    = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 4,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment     = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Filled.Info, null,
+                    tint     = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(14.dp))
+                Text(
+                    stringResource(R.string.about_update_manual_di5_instructions),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            // The exact command, monospace so it copies accurately.
+            Surface(
+                color    = MaterialTheme.colorScheme.surfaceVariant,
+                shape    = MaterialTheme.shapes.small,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    stringResource(R.string.about_update_manual_di5_command, updateInfo.apkName),
+                    style      = MaterialTheme.typography.bodySmall,
+                    fontFamily = FontFamily.Monospace,
+                    modifier   = Modifier.padding(horizontal = 10.dp, vertical = 8.dp)
+                )
+            }
+
+            TextButton(
+                onClick = {
+                    runCatching {
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW,
+                                Uri.parse("https://github.com/angoikon/byd-trip-stats/releases/latest"))
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        )
+                    }
+                },
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Icon(Icons.AutoMirrored.Filled.OpenInNew, null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(stringResource(R.string.about_update_open_releases))
             }
         }
     }

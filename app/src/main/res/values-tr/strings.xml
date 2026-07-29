@@ -840,6 +840,10 @@
     <string name="tariff_input_desc">Seyahat maliyetlerinin sabit tarifinizi taban olarak kullanabilmesi için ev şarj fiyatınızı girin.</string>
     <string name="price_per_kwh_label">kWh başına fiyat</string>
     <string name="currency_label">Para birimi</string>
+    <string name="currency_custom_option">Özel…</string>
+    <string name="currency_custom_label">Özel sembol</string>
+    <string name="currency_custom_placeholder">ör. kr, zł, ₺, Fr</string>
+    <string name="currency_custom_hint">1–4 karakter, rakam yok</string>
     <string name="active_tariff_value">Etkin: %1$s %2$s / kWh</string>
     <string name="timeout_dialog_title">Motor kapalı seyahat zaman aşımı</string>
     <string name="timeout_input_desc">Motor kapandıktan sonra seyahat bu kadar dakika açık kalır. Varsayılan %1$s dk\'dır.</string>
@@ -984,6 +988,9 @@
     <string name="about_install_note">Yükleme düğmesi, park edilmiş ve etkin seyahat veya şarj yokken kullanılabilir olacak</string>
     <string name="about_install_now">Şimdi yükle</string>
     <string name="about_download_update">Güncellemeyi indir</string>
+    <string name="about_update_manual_di5_instructions">Otomatik yükleme DiLink 5\'te kullanılamaz. Bir PC veya telefonda, bu sürümün APK\'sını sürümler sayfasından indirin, ardından ADB ile yükleyin:</string>
+    <string name="about_update_manual_di5_command">adb install -r %1$s</string>
+    <string name="about_update_open_releases">Sürümler sayfasını aç</string>
 
     <!-- FAQ -->
     <string name="faq_section_title">SSS</string>

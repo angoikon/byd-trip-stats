@@ -763,6 +763,10 @@
     <string name="tariff_input_desc">यात्रा लागत के लिए निश्चित संदर्भ दर के रूप में उपयोग करने के लिए अपनी घरेलू चार्जिंग दर दर्ज करें।</string>
     <string name="price_per_kwh_label">प्रति kWh मूल्य</string>
     <string name="currency_label">मुद्रा</string>
+    <string name="currency_custom_option">कस्टम…</string>
+    <string name="currency_custom_label">कस्टम प्रतीक</string>
+    <string name="currency_custom_placeholder">उदा. kr, zł, ₺, Fr</string>
+    <string name="currency_custom_hint">1–4 अक्षर, कोई अंक नहीं</string>
     <string name="active_tariff_value">सक्रिय: %1$s %2$s / kWh</string>
     <string name="timeout_dialog_title">इंजन बंद टाइमआउट</string>
     <string name="timeout_input_desc">इंजन बंद होने के बाद यात्रा इतने मिनट खुली रहेगी। डिफ़ॉल्ट: %1$s मिनट।</string>
@@ -895,6 +899,9 @@
     <string name="about_install_note">इंस्टॉल बटन तब उपलब्ध होगा जब पार्क किया हो और कोई सक्रिय यात्रा या चार्जिंग न हो।</string>
     <string name="about_install_now">अभी इंस्टॉल करें</string>
     <string name="about_download_update">अपडेट डाउनलोड करें</string>
+    <string name="about_update_manual_di5_instructions">स्वचालित इंस्टॉल DiLink 5 पर उपलब्ध नहीं है। किसी PC या फ़ोन पर, रिलीज़ पेज से इस वर्शन की APK डाउनलोड करें, फिर उसे ADB के ज़रिए इंस्टॉल करें:</string>
+    <string name="about_update_manual_di5_command">adb install -r %1$s</string>
+    <string name="about_update_open_releases">रिलीज़ पेज खोलें</string>
     <string name="faq_section_title">अक्सर पूछे जाने वाले प्रश्न</string>
     <string name="faq_q_no_electro">पुराने संस्करणों के विपरीत, क्या यह सच है कि Electro ऐप अब आवश्यक नहीं है?</string>
     <string name="faq_a_no_electro">हां। BYD Trip Stats समर्थित कारों पर एक स्टैंडअलोन ऐप के रूप में चलता है, इसलिए यात्रा और चार्जिंग सत्र रिकॉर्डिंग Electro के बिना काम करती है।\n\nElectro उन मालिकों के लिए एक उपयोगी साथी ऐप बना हुआ है जो इसकी अपनी सुविधाएं चाहते हैं, लेकिन BYD Trip Stats के लिए अब आवश्यक नहीं है।</string>

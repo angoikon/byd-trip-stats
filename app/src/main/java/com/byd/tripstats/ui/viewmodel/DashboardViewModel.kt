@@ -1718,6 +1718,11 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     // ── Update actions ────────────────────────────────────────────────────────
 
     fun downloadUpdate() {
+        // DiLink-5: in-app download + silent PackageInstaller can't complete on the head unit
+        // (unprivileged, no installer UI), and a post-install self-relaunch is a boot-loop hazard
+        // there. Updates on D5 are delivered by manual `adb install -r` — see AboutTab's D5 card.
+        // The update badge/notice still shows (checkForUpdate keeps running); only the auto path is off.
+        if (com.byd.tripstats.sdk.DiLink5Platform.isDiLink5) return
         val info = updateInfo.value ?: return
         updateRepository.downloadUpdate(info)
         // Poll progress every second and push to our own StateFlow
@@ -1732,6 +1737,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun installUpdate() {
+        // DiLink-5: never drive the silent installer / self-relaunch on the head unit (see
+        // downloadUpdate). D5 updates are sideloaded via `adb install -r`.
+        if (com.byd.tripstats.sdk.DiLink5Platform.isDiLink5) return
         val apk = downloadedApk.value ?: return
         if (!canInstallNow.value) {
             Log.w(TAG, "installUpdate called but canInstallNow = false")

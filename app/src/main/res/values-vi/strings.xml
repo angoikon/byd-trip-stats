@@ -837,6 +837,10 @@
     <string name="tariff_input_desc">Nhập giá sạc tại nhà để chi phí chuyến đi dùng biểu giá cố định của bạn làm cơ sở.</string>
     <string name="price_per_kwh_label">Giá mỗi kWh</string>
     <string name="currency_label">Tiền tệ</string>
+    <string name="currency_custom_option">Tùy chỉnh…</string>
+    <string name="currency_custom_label">Ký hiệu tùy chỉnh</string>
+    <string name="currency_custom_placeholder">ví dụ: kr, zł, ₺, Fr</string>
+    <string name="currency_custom_hint">1–4 ký tự, không có chữ số</string>
     <string name="active_tariff_value">Đang hoạt động: %1$s %2$s / kWh</string>
     <string name="timeout_dialog_title">Thời gian chờ chuyến đi sau khi tắt máy</string>
     <string name="timeout_input_desc">Chuyến đi mở trong bấy nhiêu phút sau khi tắt máy. Mặc định là %1$s phút.</string>
@@ -980,6 +984,9 @@
     <string name="about_install_note">Nút cài đặt sẽ khả dụng khi đỗ mà không có chuyến đi hoặc sạc đang hoạt động</string>
     <string name="about_install_now">Cài đặt ngay</string>
     <string name="about_download_update">Tải cập nhật</string>
+    <string name="about_update_manual_di5_instructions">Cài đặt tự động không khả dụng trên DiLink 5. Trên PC hoặc điện thoại, hãy tải APK của phiên bản này từ trang phát hành, sau đó cài đặt qua ADB:</string>
+    <string name="about_update_manual_di5_command">adb install -r %1$s</string>
+    <string name="about_update_open_releases">Mở trang phát hành</string>
 
     <!-- FAQ -->
     <string name="faq_section_title">FAQ</string>

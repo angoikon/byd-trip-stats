@@ -840,6 +840,10 @@
     <string name="tariff_input_desc">Syötä kotilatauksesi hinta jotta matkan kustannukset voivat käyttää kiinteää tariffiasi perustana.</string>
     <string name="price_per_kwh_label">Hinta per kWh</string>
     <string name="currency_label">Valuutta</string>
+    <string name="currency_custom_option">Mukautettu…</string>
+    <string name="currency_custom_label">Mukautettu symboli</string>
+    <string name="currency_custom_placeholder">esim. kr, zł, ₺, Fr</string>
+    <string name="currency_custom_hint">1–4 merkkiä, ei numeroita</string>
     <string name="active_tariff_value">Aktiivinen: %1$s %2$s / kWh</string>
     <string name="timeout_dialog_title">Moottorin sammutuksen aikakatkaisu</string>
     <string name="timeout_input_desc">Matka pysyy auki tämän monta minuuttia moottorin sammumisen jälkeen. Oletus on %1$s min.</string>
@@ -984,6 +988,9 @@
     <string name="about_install_note">Asennuspainike tulee saataville kun pysäköitynä ilman aktiivista matkaa tai latausta</string>
     <string name="about_install_now">Asenna nyt</string>
     <string name="about_download_update">Lataa päivitys</string>
+    <string name="about_update_manual_di5_instructions">Automaattinen asennus ei ole käytettävissä DiLink 5:ssä. Lataa tämän version APK julkaisusivulta tietokoneella tai puhelimella ja asenna se sitten ADB:n kautta:</string>
+    <string name="about_update_manual_di5_command">adb install -r %1$s</string>
+    <string name="about_update_open_releases">Avaa julkaisusivu</string>
 
     <!-- FAQ -->
     <string name="faq_section_title">FAQ</string>

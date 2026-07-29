@@ -840,6 +840,10 @@
     <string name="tariff_input_desc">走行コストが固定料金をベースラインとして使用できるよう、自宅の充電価格を入力してください。</string>
     <string name="price_per_kwh_label">kWhあたりの価格</string>
     <string name="currency_label">通貨</string>
+    <string name="currency_custom_option">カスタム…</string>
+    <string name="currency_custom_label">カスタム記号</string>
+    <string name="currency_custom_placeholder">例: kr, zł, ₺, Fr</string>
+    <string name="currency_custom_hint">1〜4文字、数字なし</string>
     <string name="active_tariff_value">現在：%1$s %2$s / kWh</string>
     <string name="timeout_dialog_title">エンジンオフ後のタイムアウト</string>
     <string name="timeout_input_desc">エンジンがオフになってからこの分数の間、トリップが開いたままになります。デフォルトは %1$s 分です。</string>
@@ -984,6 +988,9 @@
     <string name="about_install_note">インストールボタンは、アクティブな走行や充電がない駐車状態のときに利用可能になります</string>
     <string name="about_install_now">今すぐインストール</string>
     <string name="about_download_update">更新をダウンロード</string>
+    <string name="about_update_manual_di5_instructions">自動インストールは DiLink 5 では利用できません。PC またはスマートフォンで、リリースページからこのバージョンの APK をダウンロードし、ADB でインストールしてください:</string>
+    <string name="about_update_manual_di5_command">adb install -r %1$s</string>
+    <string name="about_update_open_releases">リリースページを開く</string>
 
     <!-- FAQ -->
     <string name="faq_section_title">よくある質問</string>

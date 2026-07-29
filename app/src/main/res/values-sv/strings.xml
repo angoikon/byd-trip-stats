@@ -840,6 +840,10 @@
     <string name="tariff_input_desc">Ange ditt hemmaladdningspris så att resekostnader kan använda din fasta taxa som baslinje.</string>
     <string name="price_per_kwh_label">Pris per kWh</string>
     <string name="currency_label">Valuta</string>
+    <string name="currency_custom_option">Anpassad…</string>
+    <string name="currency_custom_label">Anpassad symbol</string>
+    <string name="currency_custom_placeholder">t.ex. kr, zł, ₺, Fr</string>
+    <string name="currency_custom_hint">1–4 tecken, inga siffror</string>
     <string name="active_tariff_value">Aktiv: %1$s %2$s / kWh</string>
     <string name="timeout_dialog_title">Timeout för resa vid motor av</string>
     <string name="timeout_input_desc">Resan förblir öppen i det här antalet minuter efter att motorn stängs av. Standard är %1$s min.</string>
@@ -984,6 +988,9 @@
     <string name="about_install_note">Installationsknappen blir tillgänglig när parkerad utan aktiv resa eller laddning</string>
     <string name="about_install_now">Installera nu</string>
     <string name="about_download_update">Ladda ner uppdatering</string>
+    <string name="about_update_manual_di5_instructions">Automatisk installation är inte tillgänglig på DiLink 5. Ladda ner den här versionens APK från utgåvesidan på en dator eller telefon och installera den sedan via ADB:</string>
+    <string name="about_update_manual_di5_command">adb install -r %1$s</string>
+    <string name="about_update_open_releases">Öppna utgåvesidan</string>
 
     <!-- FAQ -->
     <string name="faq_section_title">FAQ</string>

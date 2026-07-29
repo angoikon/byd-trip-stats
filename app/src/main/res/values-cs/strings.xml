@@ -837,6 +837,10 @@
     <string name="tariff_input_desc">Zadejte cenu domácího nabíjení, aby náklady jízd používaly váš pevný tarif jako základ.</string>
     <string name="price_per_kwh_label">Cena za kWh</string>
     <string name="currency_label">Měna</string>
+    <string name="currency_custom_option">Vlastní…</string>
+    <string name="currency_custom_label">Vlastní symbol</string>
+    <string name="currency_custom_placeholder">např. kr, zł, ₺, Fr</string>
+    <string name="currency_custom_hint">1–4 znaky, bez číslic</string>
     <string name="active_tariff_value">Aktivní: %1$s %2$s / kWh</string>
     <string name="timeout_dialog_title">Časový limit jízdy po vypnutí</string>
     <string name="timeout_input_desc">Jízda zůstává otevřená tolik minut po vypnutí motoru. Výchozí je %1$s min.</string>
@@ -980,6 +984,9 @@
     <string name="about_install_note">Tlačítko instalace bude dostupné při parkování bez aktivní jízdy nebo nabíjení</string>
     <string name="about_install_now">Nainstalovat nyní</string>
     <string name="about_download_update">Stáhnout aktualizaci</string>
+    <string name="about_update_manual_di5_instructions">Automatická instalace není na DiLink 5 dostupná. V počítači nebo telefonu si stáhněte APK této verze ze stránky vydání a poté ho nainstalujte přes ADB:</string>
+    <string name="about_update_manual_di5_command">adb install -r %1$s</string>
+    <string name="about_update_open_releases">Otevřít stránku vydání</string>
 
     <!-- FAQ -->
     <string name="faq_section_title">FAQ</string>

@@ -840,6 +840,10 @@
     <string name="tariff_input_desc">Voer je thuislaadprijs in zodat ritkosten je vaste tarief als basislijn kunnen gebruiken.</string>
     <string name="price_per_kwh_label">Prijs per kWh</string>
     <string name="currency_label">Valuta</string>
+    <string name="currency_custom_option">Aangepast…</string>
+    <string name="currency_custom_label">Aangepast symbool</string>
+    <string name="currency_custom_placeholder">bijv. kr, zł, ₺, Fr</string>
+    <string name="currency_custom_hint">1–4 tekens, geen cijfers</string>
     <string name="active_tariff_value">Actief: %1$s %2$s / kWh</string>
     <string name="timeout_dialog_title">Time-out na motoruitschakeling</string>
     <string name="timeout_input_desc">Rit blijft dit aantal minuten open nadat de motor uitschakelt. Standaard is %1$s min.</string>
@@ -984,6 +988,9 @@
     <string name="about_install_note">Installatieknop wordt beschikbaar wanneer geparkeerd zonder actieve rit of opladen</string>
     <string name="about_install_now">Nu installeren</string>
     <string name="about_download_update">Update downloaden</string>
+    <string name="about_update_manual_di5_instructions">Automatische installatie is niet beschikbaar op DiLink 5. Download op een pc of telefoon de APK van deze versie van de releasespagina en installeer deze vervolgens via ADB:</string>
+    <string name="about_update_manual_di5_command">adb install -r %1$s</string>
+    <string name="about_update_open_releases">Releasespagina openen</string>
 
     <!-- FAQ -->
     <string name="faq_section_title">FAQ</string>

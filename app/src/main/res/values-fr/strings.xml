@@ -763,6 +763,10 @@
     <string name="tariff_input_desc">Saisissez votre prix de charge à domicile pour que les coûts de trajet utilisent votre tarif fixe comme référence.</string>
     <string name="price_per_kwh_label">Prix par kWh</string>
     <string name="currency_label">Devise</string>
+    <string name="currency_custom_option">Personnalisé…</string>
+    <string name="currency_custom_label">Symbole personnalisé</string>
+    <string name="currency_custom_placeholder">p. ex. kr, zł, ₺, Fr</string>
+    <string name="currency_custom_hint">1 à 4 caractères, sans chiffres</string>
     <string name="active_tariff_value">Actif: %1$s %2$s / kWh</string>
     <string name="timeout_dialog_title">Délai d\'arrêt moteur</string>
     <string name="timeout_input_desc">Le trajet reste ouvert pendant ce nombre de minutes après extinction du moteur. Par défaut: %1$s min.</string>
@@ -895,6 +899,9 @@
     <string name="about_install_note">Le bouton Installer sera disponible quand stationné sans trajet ou charge active</string>
     <string name="about_install_now">Installer maintenant</string>
     <string name="about_download_update">Télécharger la mise à jour</string>
+    <string name="about_update_manual_di5_instructions">L\'installation automatique n\'est pas disponible sur DiLink 5. Sur un PC ou un téléphone, téléchargez l\'APK de cette version depuis la page des versions, puis installez-le via ADB :</string>
+    <string name="about_update_manual_di5_command">adb install -r %1$s</string>
+    <string name="about_update_open_releases">Ouvrir la page des versions</string>
     <string name="faq_section_title">FAQ</string>
     <string name="faq_q_no_electro">Contrairement aux versions plus anciennes, est-il vrai que l\'app Electro n\'est plus nécessaire?</string>
     <string name="faq_a_no_electro">Correct. BYD Trip Stats fonctionne comme une app autonome sur les véhicules pris en charge, donc l\'enregistrement des trajets et les sessions de charge fonctionnent sans Electro.\n\nElectro reste une app compagnon utile pour les propriétaires qui veulent ses propres fonctionnalités, mais elle n\'est plus requise pour BYD Trip Stats.</string>

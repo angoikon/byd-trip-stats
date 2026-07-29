@@ -840,6 +840,10 @@
     <string name="tariff_input_desc">Enter your home charging price so trip costs can use your fixed tariff as the baseline.</string>
     <string name="price_per_kwh_label">Price per kWh</string>
     <string name="currency_label">Currency</string>
+    <string name="currency_custom_option">Custom…</string>
+    <string name="currency_custom_label">Custom symbol</string>
+    <string name="currency_custom_placeholder">e.g. kr, zł, ₺, Fr</string>
+    <string name="currency_custom_hint">1–4 characters, no digits</string>
     <string name="active_tariff_value">Active: %1$s %2$s / kWh</string>
     <string name="timeout_dialog_title">Engine-off trip timeout</string>
     <string name="timeout_input_desc">Trip stays open for this many minutes after the engine turns off. Default is %1$s min.</string>
@@ -984,6 +988,9 @@
     <string name="about_install_note">Install button will become available when parked with no active trip or charging</string>
     <string name="about_install_now">Install now</string>
     <string name="about_download_update">Download update</string>
+    <string name="about_update_manual_di5_instructions">Automatic install isn\'t available on DiLink 5. On a PC or phone, download this version\'s APK from the releases page, then install it over ADB:</string>
+    <string name="about_update_manual_di5_command">adb install -r %1$s</string>
+    <string name="about_update_open_releases">Open releases page</string>
 
     <!-- FAQ -->
     <string name="faq_section_title">FAQ</string>

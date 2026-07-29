@@ -837,6 +837,10 @@
     <string name="tariff_input_desc">Masukkan harga pengisian rumah Anda agar biaya perjalanan menggunakan tarif tetap Anda sebagai dasar.</string>
     <string name="price_per_kwh_label">Harga per kWh</string>
     <string name="currency_label">Mata uang</string>
+    <string name="currency_custom_option">Kustom…</string>
+    <string name="currency_custom_label">Simbol kustom</string>
+    <string name="currency_custom_placeholder">mis. kr, zł, ₺, Fr</string>
+    <string name="currency_custom_hint">1–4 karakter, tanpa angka</string>
     <string name="active_tariff_value">Aktif: %1$s %2$s / kWh</string>
     <string name="timeout_dialog_title">Batas waktu perjalanan mesin mati</string>
     <string name="timeout_input_desc">Perjalanan tetap terbuka selama sekian menit setelah mesin dimatikan. Bawaan adalah %1$s mnt.</string>
@@ -980,6 +984,9 @@
     <string name="about_install_note">Tombol pasang akan tersedia saat parkir tanpa perjalanan atau pengisian aktif</string>
     <string name="about_install_now">Pasang sekarang</string>
     <string name="about_download_update">Unduh pembaruan</string>
+    <string name="about_update_manual_di5_instructions">Instalasi otomatis tidak tersedia di DiLink 5. Di PC atau ponsel, unduh APK versi ini dari halaman rilis, lalu instal melalui ADB:</string>
+    <string name="about_update_manual_di5_command">adb install -r %1$s</string>
+    <string name="about_update_open_releases">Buka halaman rilis</string>
 
     <!-- FAQ -->
     <string name="faq_section_title">FAQ</string>

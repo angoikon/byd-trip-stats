@@ -840,6 +840,10 @@
     <string name="tariff_input_desc">Inserisci il tuo prezzo di ricarica domestica così i costi del viaggio possono usare la tua tariffa fissa come base.</string>
     <string name="price_per_kwh_label">Prezzo per kWh</string>
     <string name="currency_label">Valuta</string>
+    <string name="currency_custom_option">Personalizzato…</string>
+    <string name="currency_custom_label">Simbolo personalizzato</string>
+    <string name="currency_custom_placeholder">es. kr, zł, ₺, Fr</string>
+    <string name="currency_custom_hint">1–4 caratteri, senza cifre</string>
     <string name="active_tariff_value">Attiva: %1$s %2$s / kWh</string>
     <string name="timeout_dialog_title">Timeout spegnimento motore</string>
     <string name="timeout_input_desc">Il viaggio rimane aperto per questo numero di minuti dopo lo spegnimento del motore. Il valore predefinito è %1$s min.</string>
@@ -984,6 +988,9 @@
     <string name="about_install_note">Il pulsante di installazione sarà disponibile quando parcheggiato senza viaggio attivo o ricarica in corso</string>
     <string name="about_install_now">Installa ora</string>
     <string name="about_download_update">Scarica aggiornamento</string>
+    <string name="about_update_manual_di5_instructions">L\'installazione automatica non è disponibile su DiLink 5. Su un PC o telefono, scarica l\'APK di questa versione dalla pagina delle versioni, quindi installalo tramite ADB:</string>
+    <string name="about_update_manual_di5_command">adb install -r %1$s</string>
+    <string name="about_update_open_releases">Apri pagina delle versioni</string>
 
     <!-- FAQ -->
     <string name="faq_section_title">FAQ</string>

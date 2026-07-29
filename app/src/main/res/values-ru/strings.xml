@@ -837,6 +837,10 @@
     <string name="tariff_input_desc">Введите цену домашней зарядки, чтобы стоимость поездок использовала ваш фиксированный тариф как базу.</string>
     <string name="price_per_kwh_label">Цена за кВт·ч</string>
     <string name="currency_label">Валюта</string>
+    <string name="currency_custom_option">Пользовательский…</string>
+    <string name="currency_custom_label">Свой символ</string>
+    <string name="currency_custom_placeholder">напр. kr, zł, ₺, Fr</string>
+    <string name="currency_custom_hint">1–4 символа, без цифр</string>
     <string name="active_tariff_value">Активный: %1$s %2$s / кВт·ч</string>
     <string name="timeout_dialog_title">Тайм-аут поездки после выключения</string>
     <string name="timeout_input_desc">Поездка остаётся открытой столько минут после выключения двигателя. По умолчанию %1$s мин.</string>
@@ -980,6 +984,9 @@
     <string name="about_install_note">Кнопка установки станет доступна на стоянке без активной поездки и зарядки</string>
     <string name="about_install_now">Установить сейчас</string>
     <string name="about_download_update">Скачать обновление</string>
+    <string name="about_update_manual_di5_instructions">Автоматическая установка недоступна на DiLink 5. На компьютере или телефоне скачайте APK этой версии со страницы релизов, затем установите его через ADB:</string>
+    <string name="about_update_manual_di5_command">adb install -r %1$s</string>
+    <string name="about_update_open_releases">Открыть страницу релизов</string>
 
     <!-- FAQ -->
     <string name="faq_section_title">FAQ</string>

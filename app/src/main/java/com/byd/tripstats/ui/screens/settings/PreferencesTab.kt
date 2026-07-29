@@ -47,6 +47,10 @@ import com.byd.tripstats.ui.theme.ToggleUncheckedTrack
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import kotlinx.coroutines.launch
 
+// Sentinel used as the "code" of the free-text currency choice, so a user-entered symbol
+// (kr, zł, ₺, Fr, …) can be persisted and detected without waiting for it to be added officially.
+private const val CURRENCY_CUSTOM = "Custom"
+
 @Composable
 internal fun AppPreferencesTab(
     viewModel: DashboardViewModel,
@@ -107,7 +111,14 @@ internal fun AppPreferencesTab(
     }
     var currencyMenuExpanded by remember { mutableStateOf(false) }
     var selectedCurrency by remember(currencySymbol) {
-        mutableStateOf(currencyOptions.firstOrNull { it.first == currencySymbol } ?: currencyOptions.first())
+        mutableStateOf(
+            currencyOptions.firstOrNull { it.first == currencySymbol }
+                ?: (currencySymbol to CURRENCY_CUSTOM)   // a previously-saved custom symbol round-trips as Custom
+        )
+    }
+    // Free-text symbol backing the "Custom…" choice; seeded from a saved custom symbol so it persists.
+    var customCurrencyInput by remember(currencySymbol) {
+        mutableStateOf(if (currencyOptions.none { it.first == currencySymbol }) currencySymbol else "")
     }
 
     Column(
@@ -896,7 +907,32 @@ internal fun AppPreferencesTab(
                                     }
                                 )
                             }
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.currency_custom_option)) },
+                                onClick = {
+                                    selectedCurrency = customCurrencyInput to CURRENCY_CUSTOM
+                                    currencyMenuExpanded = false
+                                }
+                            )
                         }
+                    }
+                    if (selectedCurrency.second == CURRENCY_CUSTOM) {
+                        OutlinedTextField(
+                            value = customCurrencyInput,
+                            onValueChange = {
+                                // Validate as you type: a currency symbol is short and carries no digits
+                                // or whitespace (kr, zł, A$, ₺, Fr, Kč…). Drop disallowed characters and
+                                // cap at 4. The saved symbol is used verbatim for display everywhere.
+                                customCurrencyInput = it.filterNot { c -> c.isDigit() || c.isWhitespace() }.take(4)
+                                selectedCurrency = customCurrencyInput to CURRENCY_CUSTOM
+                            },
+                            label = { Text(stringResource(R.string.currency_custom_label)) },
+                            placeholder = { Text(stringResource(R.string.currency_custom_placeholder)) },
+                            supportingText = { Text(stringResource(R.string.currency_custom_hint)) },
+                            isError = customCurrencyInput.isBlank(),
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                     if (electricityPrice > 0.0) {
                         Text(
@@ -911,7 +947,9 @@ internal fun AppPreferencesTab(
                 Button(
                     onClick = {
                         val price = priceInput.replace(',', '.').toDoubleOrNull()
-                        viewModel.saveElectricityPrice(price ?: 0.0, selectedCurrency.first)
+                        // Never persist an empty custom symbol — keep the previous one if left blank.
+                        val symbol = selectedCurrency.first.ifBlank { currencySymbol }
+                        viewModel.saveElectricityPrice(price ?: 0.0, symbol)
                         showTariffDialog = false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = BydElectricAzure)

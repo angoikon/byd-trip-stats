@@ -840,6 +840,10 @@
     <string name="tariff_input_desc">输入您的家用充电价格，以便将其作为行程费用估算的基准电价。</string>
     <string name="price_per_kwh_label">每 kWh 价格</string>
     <string name="currency_label">货币</string>
+    <string name="currency_custom_option">自定义…</string>
+    <string name="currency_custom_label">自定义符号</string>
+    <string name="currency_custom_placeholder">例如 kr、zł、₺、Fr</string>
+    <string name="currency_custom_hint">1–4 个字符，不含数字</string>
     <string name="active_tariff_value">当前：%1$s %2$s / kWh</string>
     <string name="timeout_dialog_title">车辆关闭后行程超时</string>
     <string name="timeout_input_desc">车辆关闭后行程保持开启的分钟数。默认为 %1$s 分钟。</string>
@@ -984,6 +988,9 @@
     <string name="about_install_note">停车且无活跃行程或充电时，安装按钮将变为可用</string>
     <string name="about_install_now">立即安装</string>
     <string name="about_download_update">下载更新</string>
+    <string name="about_update_manual_di5_instructions">DiLink 5 不支持自动安装。请在电脑或手机上从发布页面下载此版本的 APK，然后通过 ADB 安装:</string>
+    <string name="about_update_manual_di5_command">adb install -r %1$s</string>
+    <string name="about_update_open_releases">打开发布页面</string>
 
     <!-- FAQ -->
     <string name="faq_section_title">常见问题</string>

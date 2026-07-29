@@ -837,6 +837,10 @@
     <string name="tariff_input_desc">Introduceți prețul de încărcare acasă pentru ca costurile călătoriilor să folosească tariful dvs. fix ca referință.</string>
     <string name="price_per_kwh_label">Preț per kWh</string>
     <string name="currency_label">Monedă</string>
+    <string name="currency_custom_option">Personalizat…</string>
+    <string name="currency_custom_label">Simbol personalizat</string>
+    <string name="currency_custom_placeholder">de ex. kr, zł, ₺, Fr</string>
+    <string name="currency_custom_hint">1–4 caractere, fără cifre</string>
     <string name="active_tariff_value">Activ: %1$s %2$s / kWh</string>
     <string name="timeout_dialog_title">Timp de așteptare după oprirea motorului</string>
     <string name="timeout_input_desc">Călătoria rămâne deschisă atâtea minute după oprirea motorului. Implicit %1$s min.</string>
@@ -980,6 +984,9 @@
     <string name="about_install_note">Butonul de instalare va deveni disponibil parcat, fără călătorie sau încărcare activă</string>
     <string name="about_install_now">Instalează acum</string>
     <string name="about_download_update">Descarcă actualizarea</string>
+    <string name="about_update_manual_di5_instructions">Instalarea automată nu este disponibilă pe DiLink 5. Pe un PC sau telefon, descarcă APK-ul acestei versiuni de pe pagina de versiuni, apoi instalează-l prin ADB:</string>
+    <string name="about_update_manual_di5_command">adb install -r %1$s</string>
+    <string name="about_update_open_releases">Deschide pagina de versiuni</string>
 
     <!-- FAQ -->
     <string name="faq_section_title">FAQ</string>

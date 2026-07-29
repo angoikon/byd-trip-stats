@@ -94,7 +94,19 @@ object TelemetryDaemonMain {
         val at = Class.forName(s(97,110,100,114,111,105,100,46,97,112,112,46,65,99,116,105,118,105,116,121,84,104,114,101,97,100))
         val sysMain = at.getMethod(s(115,121,115,116,101,109,77,97,105,110)).invoke(null)
         val base = at.getMethod(s(103,101,116,83,121,115,116,101,109,67,111,110,116,101,120,116)).invoke(sysMain) as Context
+        // DiLink-3 only: getSystemContext() reports package "android" (uid 1000), but this daemon
+        // runs as uid 2000 (shell). On Android 11+ the framework enforces package↔uid on binder ops
+        // ("Given calling package android does not match caller's uid 2000"), which throws inside the
+        // SDK's listener-callback path and ends Looper.loop() mid-stream — after that the daemon still
+        // accepts client connections but pushes no telemetry. Presenting the real uid-2000 package
+        // (com.android.shell) via getOpPackageName makes AppOps.checkPackage(2000, ...) match, so the
+        // callback path is accepted and the loop survives.
+        //   Gated to DiLink-3: DiLink-5 never uses this daemon (it reads telemetry in-process through
+        //   Dilink5Client), so its context is left exactly as getSystemContext() returns it.
+        val di3 = runCatching { !com.byd.tripstats.sdk.DiLink5Platform.isDiLink5 }.getOrDefault(true)
+        val shellPkg = s(99,111,109,46,97,110,100,114,111,105,100,46,115,104,101,108,108) // "com.android.shell"
         object : ContextWrapper(base) {
+            override fun getOpPackageName(): String = if (di3) shellPkg else super.getOpPackageName()
             override fun checkCallingOrSelfPermission(p: String) = 0
             override fun checkCallingPermission(p: String) = 0
             override fun checkSelfPermission(p: String) = 0

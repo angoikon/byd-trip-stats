@@ -837,6 +837,10 @@
     <string name="tariff_input_desc">Adja meg az otthoni töltési árat, hogy az útköltségek az Ön fix tarifáját használják alapként.</string>
     <string name="price_per_kwh_label">Ár kWh-nként</string>
     <string name="currency_label">Pénznem</string>
+    <string name="currency_custom_option">Egyéni…</string>
+    <string name="currency_custom_label">Egyéni szimbólum</string>
+    <string name="currency_custom_placeholder">pl. kr, zł, ₺, Fr</string>
+    <string name="currency_custom_hint">1–4 karakter, számjegyek nélkül</string>
     <string name="active_tariff_value">Aktív: %1$s %2$s / kWh</string>
     <string name="timeout_dialog_title">Út-időkorlát motor leállítása után</string>
     <string name="timeout_input_desc">Az út ennyi percig marad nyitva a motor leállítása után. Alapértelmezés: %1$s perc.</string>
@@ -980,6 +984,9 @@
     <string name="about_install_note">A telepítés gomb parkoláskor válik elérhetővé, aktív út vagy töltés nélkül</string>
     <string name="about_install_now">Telepítés most</string>
     <string name="about_download_update">Frissítés letöltése</string>
+    <string name="about_update_manual_di5_instructions">Az automatikus telepítés nem érhető el DiLink 5 rendszeren. Számítógépen vagy telefonon töltse le ennek a verziónak az APK-ját a kiadások oldaláról, majd telepítse ADB-n keresztül:</string>
+    <string name="about_update_manual_di5_command">adb install -r %1$s</string>
+    <string name="about_update_open_releases">Kiadások oldalának megnyitása</string>
 
     <!-- FAQ -->
     <string name="faq_section_title">GYIK</string>

@@ -840,6 +840,10 @@
     <string name="tariff_input_desc">Angiv din hjemmeopladningspris, så turomkostninger kan bruge din faste takst som baseline.</string>
     <string name="price_per_kwh_label">Pris pr. kWh</string>
     <string name="currency_label">Valuta</string>
+    <string name="currency_custom_option">Tilpasset…</string>
+    <string name="currency_custom_label">Tilpasset symbol</string>
+    <string name="currency_custom_placeholder">f.eks. kr, zł, ₺, Fr</string>
+    <string name="currency_custom_hint">1–4 tegn, ingen tal</string>
     <string name="active_tariff_value">Aktiv: %1$s %2$s / kWh</string>
     <string name="timeout_dialog_title">Motor-slukket tur-timeout</string>
     <string name="timeout_input_desc">Turen forbliver åben dette antal minutter efter motoren slukker. Standard er %1$s min.</string>
@@ -984,6 +988,9 @@
     <string name="about_install_note">Installationsknappen bliver tilgængelig, når parkeret uden aktiv tur eller opladning</string>
     <string name="about_install_now">Installér nu</string>
     <string name="about_download_update">Download opdatering</string>
+    <string name="about_update_manual_di5_instructions">Automatisk installation er ikke tilgængelig på DiLink 5. Download denne versions APK fra udgivelsessiden på en pc eller telefon, og installer den derefter via ADB:</string>
+    <string name="about_update_manual_di5_command">adb install -r %1$s</string>
+    <string name="about_update_open_releases">Åbn udgivelsesside</string>
 
     <!-- FAQ -->
     <string name="faq_section_title">FAQ</string>
