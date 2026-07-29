@@ -37,15 +37,16 @@ android {
     // A stable release always has a higher versionCode than any beta of the same
     // version, so beta testers automatically receive the stable upgrade via sideload.
     val versionMajor    = 2
-    val versionMinor    = 13
+    val versionMinor    = 14
     val versionPatch    = 0
     val versionPre      = 99 // 99 = stable; 1–98 = beta (e.g. 1 → "beta01")
     // Hotfix revision for the SAME versionName. Bumps versionCode ONLY — the in-app
     // updater compares the GitHub tag against versionName (UpdateRepository.isNewerVersion),
-    // NOT versionCode, so this does NOT auto-trigger an update, yet it lets us tell the
-    // fixed 2.13.0 build apart from the withdrawn one. Keep 0 < rev < 99 (rev 99 would
-    // reach the next patch's base and break upgrade ordering). 0 = original.
-    val versionRevision = 2
+    // NOT versionCode, so this does NOT auto-trigger an update, yet it lets us rebuild the
+    // same versionName (e.g. to replace a withdrawn build) with a distinguishable versionCode.
+    // Keep 0 < rev < 99 (rev 99 would reach the next patch's base and break upgrade ordering).
+    // 0 = original; reset to 0 for each new versionName.
+    val versionRevision = 0
 
     val computedVersionCode = versionMajor * 1_000_000 +
                               versionMinor *    10_000 +

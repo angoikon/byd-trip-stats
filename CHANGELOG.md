@@ -1,3 +1,27 @@
+## [2.14.0] - 2026-Jul-29
+
+> **What's new in a nutshell**
+>
+> A **DiLink-5 follow-up** release, again with big thanks to **[@cagdasbas](https://github.com/cagdasbas)**. On the **BYD Sealion 7**, the **regen (energy-recovery) level now reads the car's real setting** — **Standard / High** — live from the vehicle instead of a placeholder; the dashboard **no longer shows a bogus road-slope figure** (a false **−1.0°** the Sealion 7 doesn't actually report); and a **backup-list bug is fixed** so saved backups show their real **size and date** instead of appearing as empty **0-byte / 1970** files, with the newest copy offered when the same backup exists twice. DiLink-5 also gets a **clearer update flow**: since a head unit can't complete an in-app install, the app now shows that a new version is available together with the **exact `adb install -r` command** to run from a PC or phone (**Settings → About & FAQ**), instead of a Download button that can't finish — the update **badge still appears** as before. On **DiLink-3**, this release **restores instant live speed and power** for setups using the fast telemetry path, which had dropped to a once-a-second update after a head-unit firmware change. As always the two builds are separate, and neither change affects the other vehicle.
+
+### Added
+
+- **DiLink-5: real regen (energy-recovery) mode** — the regen level shown on the dashboard now reflects the Sealion 7's actual **Standard / High** energy-recovery setting, read live from the car, instead of a fixed placeholder value. Contributed by **[@cagdasbas](https://github.com/cagdasbas)**.
+- **Fuller compatibility reports on DiLink-5** — the vehicle-compatibility report (the diagnostics export you can send in to help add or verify vehicle support) now also captures the live values the car **pushes** through its typed listeners on DiLink-5 — state of charge, range, mileage, speed, charging power, motor RPM / voltage / current, regen level, battery and tyre temperatures, air-quality (PM2.5), road slope and more. On DiLink-5 most of these arrive as pushed events rather than readable getters, so the earlier getter-only sweep couldn't see them; capturing them makes Sealion 7 reports far more complete (and the report's data collection is now thread-safe). Contributed by **[@cagdasbas](https://github.com/cagdasbas)**.
+- **Custom currency for the electricity tariff** — the currency picker (Settings → Preferences → Electricity tariff) now has a **Custom…** option where you can type your own symbol — **kr, zł, ₺, Fr** and the like — instead of waiting for it to be added to the built-in list. Your symbol is saved and used everywhere costs are shown (trip history, monthly totals, trip details). The built-in shortcuts (€, £, $, A$, ฿, R$, RM) are unchanged.
+
+### Changed
+
+- **DiLink-5: app updates are now installed manually** — a DiLink-5 head unit can't complete the in-app silent install (and a self-relaunch there risks a boot loop), so instead of a **Download** button the **About & FAQ** screen now shows that a new version is available (with its version number and release notes) and the **exact command to install it** — `adb install -r <apk>` — from your PC or phone, plus a link to the releases page. The **update badge still appears** as before. **DiLink-3 auto-update is unchanged** — it still downloads and installs in-app.
+
+### Fixed
+
+- **DiLink-5: no more false road-slope reading** — the dashboard no longer shows a bogus **−1.0°** road slope on the Sealion 7 (which doesn't report one); it's simply omitted where the car doesn't provide it. Contributed by **[@cagdasbas](https://github.com/cagdasbas)**.
+- **DiLink-5: backups list correctly** — saved backups no longer appear as **0-byte / 1970-dated** entries. Each now shows its real **size and modification date**, and when the same backup exists twice the **newer/larger copy** is the one offered to restore. Contributed by **[@cagdasbas](https://github.com/cagdasbas)**.
+- **DiLink-3: instant live speed & power restored** — on setups using the fast (privileged) telemetry path, live **speed and power** had dropped from instant to about once a second after a head-unit firmware change tightened a security check; the fast path works again. Vehicles without that path are unaffected — they already update roughly once a second.
+
+---
+
 ## [2.13.0] - 2026-Jul-22
 
 > **What's new in a nutshell**
@@ -12,6 +36,13 @@
 - **Currency now defaults to your device locale** — on a fresh install, the electricity-tariff currency is pre-selected from the head unit's system locale (e.g. RM for Malaysia, ฿ for Thailand, $ for the US) instead of always starting at €. Existing users with a saved currency are unaffected.
 - **Restore a backup from a file** — Settings → Backup → *Restore from file…* opens a built-in file browser to pick any `.db` backup, so you can restore one the app's list can't show (a backup from another folder, another device, or one copied over via adb) — no third-party file manager needed.
 - **Wrong-build warning** — if a DiLink-5 head unit is running a build without DiLink-5 support, the app now warns you to install the correct build (telemetry won't work otherwise).
+
+### Hotfixes
+
+Two post-release hotfixes were issued for 2.13.0, both **DiLink-5 only** (DiLink-3 was never affected) and both rebuilt under the same `2.13.0` version name:
+
+- **2026-Jul-25 · revision 1 — head-unit boot loop from an app self-restart.** On DiLink-5, several in-app actions that **kill and auto-relaunch the app** — *Trim database* (its disk-reclaim / VACUUM step) and *Restore backup* / *Wipe data* / *Reset app* — could relaunch while the DiLink-5 SDK was still initialising, wedging the car's OEM data service and sending the **head unit into a boot loop** (warning lights, ADAS unavailable), recoverable only by a **full car power-off**. Resolved by no longer auto-relaunching on DiLink-5: *Trim* skips the VACUUM + restart step there, and the other actions simply close the app (you reopen it yourself). DiLink-3 keeps the original behaviour.
+- **2026-Jul-25 · revision 2 — head-unit boot loop from the compatibility probe.** With the compatibility probe enabled on DiLink-5, one diagnostic step **invoked every no-argument method** the car's devices expose — which on DiLink-5 includes destructive ones (e.g. reset / clear-all) — again wedging the OEM service into a **boot loop**. Resolved by disabling that indiscriminate method sweep on DiLink-5; the curated, safe probe reads are kept.
 
 ---
 
