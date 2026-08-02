@@ -14,6 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.byd.tripstats.R
+import com.byd.tripstats.data.analysis.PhevTripAnalysis
 import com.byd.tripstats.data.analysis.calculateTripEnergyBreakdown
 import com.byd.tripstats.data.config.CarConfig
 import com.byd.tripstats.data.local.entity.ChargingSessionEntity
@@ -22,6 +23,7 @@ import com.byd.tripstats.data.local.entity.TripEntity
 import com.byd.tripstats.data.local.entity.TripStatsEntity
 import com.byd.tripstats.data.preferences.SocSource
 import com.byd.tripstats.data.preferences.UnitSystem
+import com.byd.tripstats.data.preferences.consumptionUnit
 import com.byd.tripstats.data.preferences.convertDistance
 import com.byd.tripstats.data.preferences.convertEfficiency
 import com.byd.tripstats.data.preferences.distanceUnit
@@ -52,6 +54,11 @@ fun TripOverviewTab(
             carConfig = selectedCarConfig,
             totalEnergyConsumedKwh = trip.energyConsumed
         )
+    }
+    val phevBreakdown = remember(dataPoints, selectedCarConfig, trip.energyConsumed) {
+        if (selectedCarConfig?.isPhev == true) {
+            PhevTripAnalysis.analyze(dataPoints, trip.energyConsumed)
+        } else null
     }
     val tripEnd = trip.endTime ?: System.currentTimeMillis()
     val overlappingChargingSessions = remember(trip, tripEnd, chargingSessions) {
@@ -246,6 +253,96 @@ fun TripOverviewTab(
 
                 DetailRow(stringResource(R.string.battery_temp_range_label), tripBatteryTempRangeLabel(trip))
                 DetailRow(stringResource(R.string.avg_battery_temp_label), tripBatteryAvgTempLabel(trip))
+            }
+        }
+
+        // Hybrid breakdown — PHEV cars only, and only when the trip's points carry
+        // the fuel/ICE counters (older PHEV history predates their recording).
+        phevBreakdown?.let { phev ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+                        shape = MaterialTheme.shapes.medium
+                    ),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.phev_breakdown_section),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = stringResource(R.string.phev_breakdown_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 4.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                    )
+
+                    DetailRow(
+                        stringResource(R.string.phev_ev_share_label),
+                        String.format("%.0f%%", phev.evSharePct)
+                    )
+                    LinearProgressIndicator(
+                        progress = { (phev.evSharePct / 100.0).toFloat().coerceIn(0f, 1f) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        color = RegenGreen,
+                        trackColor = AccelerationOrange.copy(alpha = 0.45f),
+                    )
+                    DetailRow(
+                        stringResource(R.string.phev_ev_distance_label),
+                        "${String.format("%.1f", unitSystem.convertDistance(phev.evKm))} ${unitSystem.distanceUnit}"
+                    )
+                    DetailRow(
+                        stringResource(R.string.phev_ice_distance_label),
+                        "${String.format("%.1f", unitSystem.convertDistance(phev.iceKm))} ${unitSystem.distanceUnit}"
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 2.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)
+                    )
+
+                    DetailRow(
+                        stringResource(R.string.phev_fuel_used_label),
+                        String.format("%.2f L", phev.fuelLiters)
+                    )
+                    DetailRow(
+                        stringResource(R.string.phev_fuel_consumption_ice_label),
+                        phev.fuelLPer100IceKm?.let {
+                            // convertEfficiency is pure per-100-distance-unit scaling, so it
+                            // applies to a fuel rate exactly as it does to a kWh rate.
+                            "${String.format("%.1f", unitSystem.convertEfficiency(it))} L/100${unitSystem.distanceUnit}"
+                        } ?: "-"
+                    )
+                    DetailRow(
+                        stringResource(R.string.phev_fuel_consumption_combined_label),
+                        phev.fuelLPer100TotalKm?.let {
+                            "${String.format("%.1f", unitSystem.convertEfficiency(it))} L/100${unitSystem.distanceUnit}"
+                        } ?: "-"
+                    )
+                    DetailRow(
+                        stringResource(R.string.phev_ev_consumption_label),
+                        phev.evKwhPer100EvKm?.let {
+                            "${String.format("%.2f", unitSystem.convertEfficiency(it))} ${unitSystem.consumptionUnit}"
+                        } ?: "-"
+                    )
+                }
             }
         }
 

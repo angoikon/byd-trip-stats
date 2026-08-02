@@ -337,6 +337,17 @@ fun EnergyFlowDiagram(
                         unit = distanceUnit,
                         color = MaterialTheme.extendedColors.range
                     )
+                    // PHEV: petrol range as its own metric next to the EV range.
+                    val selectedCarForFuel by appPrefs.selectedCarConfig
+                        .collectAsState(initial = appPrefs.getCachedSelectedCarConfig())
+                    phevFuelRangeKm(telemetry, selectedCarForFuel)?.let { fuelKm ->
+                        PowerMetric(
+                            label = stringResource(R.string.stat_fuel_range),
+                            value = "${unitSystem.convertDistance(fuelKm.toDouble()).toInt()}",
+                            unit = distanceUnit,
+                            color = AccelerationOrange
+                        )
+                    }
                     PowerMetric(
                         label = stringResource(R.string.stat_distance),
                         value = formatDistanceDisplay(unitSystem.convertDistance(sessionDistanceKm), unitSystem.convertDistance(tripDistanceKm), isFullScreen),

@@ -147,6 +147,18 @@ fun DashboardScreen(
                                 modifier = Modifier.size(28.dp)
                             )
                         }
+                        // Dev tool: replay Download/BydTripStats/replay.json through the
+                        // real telemetry pipeline (records a trip!). English-only on
+                        // purpose — never visible with the flag off.
+                        val isReplayActive by viewModel.isReplayActive.collectAsState()
+                        IconButton(onClick = { viewModel.startTripReplay() }) {
+                            Icon(
+                                imageVector = if (isReplayActive) Icons.Filled.Stop else Icons.Filled.Refresh,
+                                contentDescription = if (isReplayActive) "Stop Trip Replay" else "Replay Trip JSON",
+                                tint = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
                     }
 
                     // The battery + consumption shortcuts normally live inside the

@@ -55,6 +55,11 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import android.content.SharedPreferences
 import java.io.File
 import java.text.SimpleDateFormat
@@ -93,8 +98,14 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     private val _mockVehicleSnapshot = MutableStateFlow<VehicleTelemetrySnapshot?>(null)
     private val _isMockModeActive = MutableStateFlow(false)
     val isMockModeActive: StateFlow<Boolean> = _isMockModeActive.asStateFlow()
+    private val _isReplayActive = MutableStateFlow(false)
+    val isReplayActive: StateFlow<Boolean> = _isReplayActive.asStateFlow()
+    private val _replayStatus = MutableStateFlow<String?>(null)
+    /** Dev-only replay progress/error line surfaced next to the replay button. */
+    val replayStatus: StateFlow<String?> = _replayStatus.asStateFlow()
     private var telemetryService: VehicleTelemetryService? = null
     private var mockDriveJob: Job? = null
+    private var replayJob: Job? = null
     private var serviceObserverJob: Job? = null
     private var restoreTripJob: Job? = null
     private val updateCheckStarted = AtomicBoolean(false)
@@ -587,6 +598,13 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         // stranding. 0.65 ⇒ at most ~1.5× your average range. Raising it toward 1.0 makes the
         // curve steadier (this is the knob a future "projection stability" setting would drive).
         const val OPTIMISM_CAP              = 0.65
+        // PHEV consumption-floor fraction. With the rate accumulators now gated on the
+        // ICE predicate (see MD/PHEV_ICE_Aware_Projection.md), the measured EV Wh/km is
+        // no longer ICE-diluted, so the old hard floor at 1.0 × baseline — which hid all
+        // genuine below-rated EV efficiency — is softened: a PHEV may now demonstrate up
+        // to ~30 % better than catalog before the floor bites. Kept > 0 as a transitional
+        // safety net for pre-gating history and firmware that doesn't report fuel signals.
+        const val PHEV_BASELINE_FLOOR_FRACTION = 0.7
         // Per-sample energy-delta ceiling (Wh per km travelled) when building the rolling
         // window's cumulative-energy series from per-sample deltas. Clips the kWh-scale steps a
         // mid-trip discharge-anchor rebase or a power↔BMS source switch would otherwise inject
@@ -663,13 +681,15 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
          * multiples of reality — e.g. 87 km projected at 19 % SoC against a BMS
          * reading of 10 km, the bug this guards against.
          *
-         * No PHEV sustains an EV consumption meaningfully below its rated figure,
-         * so for PHEVs we floor [whPerKm] at the catalog reference rate
-         * ([baselineWhPerKm]) before dividing. The floor only bites in the
-         * ICE-diluted regime; in genuine EV driving the measured rate sits at or
-         * above reference and passes through untouched, and an inefficient driver
-         * can still project *below* the SoC-scaled WLTP range (the useful "you're
-         * burning EV charge faster than rated" signal is preserved).
+         * The rate accumulators are gated on the ICE predicate upstream (see
+         * MD/PHEV_ICE_Aware_Projection.md), so [whPerKm] reflects electric
+         * driving only. The PHEV floor is therefore *soft* — [baselineWhPerKm] ×
+         * [PHEV_BASELINE_FLOOR_FRACTION] — a transitional safety net for history
+         * recorded before the fuel signals were persisted (and firmware that
+         * never reports them), while letting genuine hypermiling project up to
+         * ~30 % better than catalog. An inefficient driver still projects
+         * *below* the SoC-scaled WLTP range (the useful "you're burning EV
+         * charge faster than rated" signal is preserved).
          *
          * BEVs are unaffected: every kilometre is an EV kilometre, so the measured
          * rate is already honest and the chart's WLTP result-cap handles any
@@ -682,7 +702,13 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             isPhev: Boolean,
             referenceWhPerKm: Double? = null
         ): Double {
-            val phevFloored = if (isPhev) maxOf(whPerKm, baselineWhPerKm) else whPerKm
+            // Softened floor (PHEV_BASELINE_FLOOR_FRACTION × baseline): the rate inputs are
+            // ICE-gated upstream, so a genuinely-below-rated EV rate is real and may project
+            // above the SoC-scaled catalog figure; the fractional floor only catches the
+            // residual dilution on trips/firmware without fuel signals.
+            val phevFloored =
+                if (isPhev) maxOf(whPerKm, baselineWhPerKm * PHEV_BASELINE_FLOOR_FRACTION)
+                else whPerKm
             // A non-positive rate is a "no valid data" signal (callers never pass one in
             // practice — the live/restore tiers all resolve to a positive rate) → return 0
             // rather than NaN/Infinity.
@@ -975,6 +1001,14 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     private var smoothedWhPerKm:     Double?  = null  // Level 1 EMA state
     private val energySamples      = mutableListOf<EnergySample>()
     private val liveSpeedBins      = mutableMapOf<String, BinAccumulator>()
+    // PHEV ICE gating (MD/PHEV_ICE_Aware_Projection.md): distance covered while the
+    // ICE propels the car must not feed the EV consumption rate, or the rate deflates
+    // and the EV projection balloons. These EV-only distance axes replace the trip
+    // axes in the rate accumulators on PHEVs; on BEVs every km is an EV km, so the
+    // EV axes track the trip axes exactly and nothing changes.
+    private var evTripDistanceKm    = 0.0            // EV-only analogue of the trip distance
+    private var evWindowDistanceKm  = 0.0            // EV-only x-axis of the rolling window
+    private var lastSampleTripDistKm: Double? = null // trip distance at the previous window sample
     private var lastTelemetryWasCarOn: Boolean? = null
     // Wall-clock time (telemetry ms) when the car first appeared off during the
     // active live drive session. Used to gate the segment-reset-on-engine-on so
@@ -1008,6 +1042,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     // re-restore on every inTrip && !wasInTrip edge during the same engine-on cycle.
     private var sessionRestoredFromDb: Boolean = false
 
+    private val rawPointJson = Json { ignoreUnknownKeys = true }
+
     /** Mirror of TripRepository.speedBin — kept in sync manually. */
     private fun speedBin(speed: Double) = when {
         speed <  20 -> "0-20"
@@ -1020,6 +1056,33 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     private fun effectiveSpeed(telemetry: VehicleTelemetry): Double =
         maxOf(telemetry.speed, telemetry.locationGpsSpeed ?: 0.0)
+
+    /**
+     * ICE-propulsion predicate for one tick / stored point (PHEV only; both signals
+     * are absent/0 on BEVs). True when fuel is visibly flowing or the powertrain
+     * reports an ICE-propelled energy mode (3 = HEV, 4 = Fuel). Series-hybrid
+     * nuance: a tick where the ICE only generates while the pack still discharges
+     * is excluded from the *distance* axes but its energy is kept, so the rate can
+     * only err short — range is never over-stated (see MD/PHEV_ICE_Aware_Projection.md).
+     */
+    private fun isIceActive(instantFuelConsumption: Double?, energyMode: Int): Boolean =
+        (instantFuelConsumption ?: 0.0) > 0.0 || energyMode == 3 || energyMode == 4
+
+    /**
+     * Restore-path analogue of [isIceActive] for a stored data point: reads the
+     * fuel/energy-mode signals from the point's rawJson blob (persisted per point
+     * since the PHEV fields were added to toSchemaJson). Points recorded before
+     * that — or with no PHEV signals — read as electric, which reproduces the
+     * pre-gating behaviour for old history.
+     */
+    private fun pointIceActive(rawJson: String): Boolean {
+        if (rawJson.isBlank() || rawJson == "{}") return false
+        val obj = runCatching { rawPointJson.parseToJsonElement(rawJson).jsonObject }
+            .getOrNull() ?: return false
+        val instantFuel = obj["instant_fuel_consumption"]?.jsonPrimitive?.doubleOrNull
+        val energyMode = obj["energy_mode"]?.jsonPrimitive?.intOrNull ?: 0
+        return isIceActive(instantFuel, energyMode)
+    }
 
     private fun journeyDistanceKm(telemetry: VehicleTelemetry): Double? =
         if (suppressJourneyDistance) null
@@ -1091,6 +1154,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             optimismCapBiting = false
             energySamples.clear()
             liveSpeedBins.clear()
+            evTripDistanceKm = 0.0
+            evWindowDistanceKm = 0.0
+            lastSampleTripDistKm = null
             // Back-date the session start to match the back-anchored odometer so
             // avgSpeed = journeyKm / journeyTime rather than journeyKm / a-few-seconds
             // (which produces 400+ km/h for the first minute after the app opens mid-drive).
@@ -1169,6 +1235,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         optimismCapBiting = false
         energySamples.clear()
         liveSpeedBins.clear()
+        evTripDistanceKm = 0.0
+        evWindowDistanceKm = 0.0
+        lastSampleTripDistKm = null
         _liveDistanceKm.value = 0.0
         _liveSegmentDistanceKm.value = 0.0
         _liveSessionStartMs.value = null
@@ -1367,6 +1436,11 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
                     val prevMs = lastTelemetryTimeMs
                     val effectiveSpeed = effectiveSpeed(telemetry)
+                    // ICE gating (PHEV): ticks where the ICE propels the car are kept in
+                    // the trip totals but excluded from the EV-rate distance axes below.
+                    val isPhevCarTick = currentCarConfig()?.isPhev == true
+                    val iceTick = isPhevCarTick &&
+                        isIceActive(telemetry.instantFuelConsumption, telemetry.energyMode)
                     var deltaEnergyWh = 0.0
                     if (prevMs != null) {
                         val deltaSeconds = (telemetryMs - prevMs) / 1000.0
@@ -1440,7 +1514,14 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         )
                         val bin = speedBin(effectiveSpeed)
                         val acc = liveSpeedBins.getOrPut(bin) { BinAccumulator() }
-                        acc.distanceKm += binDistKm
+                        // ICE-propelled distance is excluded from the rate axes (the energy
+                        // is kept: on a series hybrid the pack still discharges while the
+                        // ICE generates, and dropping distance but keeping energy can only
+                        // err the rate HIGH — range is never over-stated).
+                        if (!iceTick) {
+                            acc.distanceKm += binDistKm
+                            evTripDistanceKm += binDistKm
+                        }
                         if (deltaEnergyWh > 0.0) {
                             acc.energyWh += deltaEnergyWh
                         }
@@ -1537,13 +1618,26 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     // restore rebuild, which already sums clamped per-pair deltas.
                     val rawNowWh = liveEnergyKwh * 1000.0
                     val prevSample = energySamples.lastOrNull()
-                    val dDistKm = (distKm - (prevSample?.distanceKm ?: distKm)).coerceAtLeast(SAMPLE_INTERVAL_KM)
+                    // PHEV: the window's x-axis is EV-only distance — an interval driven on
+                    // the ICE doesn't advance it, so ICE stretches can't dilute the slope
+                    // (during a long pure-ICE stretch the axis freezes, the slope goes
+                    // indeterminate, and the EMA simply holds the last electric rate).
+                    // On BEVs the EV axis advances with every interval, so the sample
+                    // series is identical to the previous distKm-based one.
+                    val prevTripSampleKm = lastSampleTripDistKm
+                    lastSampleTripDistKm = distKm
+                    if (!iceTick) {
+                        evWindowDistanceKm += (distKm - (prevTripSampleKm ?: distKm)).coerceAtLeast(0.0)
+                    }
+                    val sampleAxisKm = if (isPhevCarTick) evWindowDistanceKm else distKm
+                    val dDistKm = (sampleAxisKm - (prevSample?.distanceKm ?: sampleAxisKm))
+                        .coerceAtLeast(SAMPLE_INTERVAL_KM)
                     val deltaWh = lastSampleRawEnergyWh
                         ?.let { (rawNowWh - it).coerceIn(0.0, MAX_SAMPLE_WH_PER_KM * dDistKm) }
                         ?: 0.0
-                    energySamples.add(EnergySample(distKm, (prevSample?.cumulativeEnergyWh ?: 0.0) + deltaWh))
+                    energySamples.add(EnergySample(sampleAxisKm, (prevSample?.cumulativeEnergyWh ?: 0.0) + deltaWh))
                     lastSampleRawEnergyWh = rawNowWh
-                    val windowFloor = distKm - ROLLING_WINDOW_KM
+                    val windowFloor = sampleAxisKm - ROLLING_WINDOW_KM
                     while (energySamples.size > 1 && energySamples[0].distanceKm < windowFloor) {
                         energySamples.removeAt(0)
                     }
@@ -1583,9 +1677,12 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     // exact telemetry ticks the rolling-window / speed-bin accumulators
                     // happen to sample, which is what could still leave those two empty
                     // and pin the projection in BASELINE on a sparse-update firmware.
+                    // PHEV: divide by EV-only distance so ICE kilometres can't deflate the
+                    // EV rate (the numerator is battery energy either way). BEVs keep distKm.
+                    val rateDistKm = if (isPhevCarTick) evTripDistanceKm else distKm
                     val tripWhPerKm: Double? =
-                        if (distKm >= BIN_MIN_DIST_KM && liveEnergyKwh > 0.0)
-                            (liveEnergyKwh * 1000.0) / distKm
+                        if (rateDistKm >= BIN_MIN_DIST_KM && liveEnergyKwh > 0.0)
+                            (liveEnergyKwh * 1000.0) / rateDistKm
                         else null
                     // Trip-cumulative rate preferred: it's derived from the clean
                     // liveEnergyKwh, whereas the speed-bin energy is summed from the same
@@ -1598,7 +1695,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     // prefers the trip-cumulative the same way.
                     val nonBaselineWhPerKm: Double? = tripWhPerKm ?: binWhPerKm
 
-                    val isStabilised = distKm >= STABILISATION_KM
+                    // Stabilisation is judged on the rate's own distance axis: a PHEV that
+                    // spent most of the trip on the ICE hasn't demonstrated an EV rate yet.
+                    val isStabilised = rateDistKm >= STABILISATION_KM
                     val car = currentCarConfig()
                     // PHEVs: use the usable EV-only battery capacity for the EV range leg;
                     // fall back to gross batteryKwh if phevUsableBatteryKwh is not defined.
@@ -1634,7 +1733,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     // anchor, so the cap can never fight the shrink.
                     val smoothed = smoothedWhPerKm?.takeIf { it > 0.0 }
                     val stablePrior = lifetimeWhPerKm.value ?: baselineWhPerKm
-                    val tripConfidence = (distKm / STABILISATION_KM).coerceIn(0.0, 1.0)
+                    val tripConfidence = (rateDistKm / STABILISATION_KM).coerceIn(0.0, 1.0)
                     val demonstratedRate: Double? = nonBaselineWhPerKm?.let {
                         tripConfidence * it + (1.0 - tripConfidence) * stablePrior
                     }
@@ -1644,7 +1743,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     // (shrunk) trip rate can differ by 10-20% there.
                     val (rate, model) = when {
                         smoothed != null && demonstratedRate != null && isStabilised -> {
-                            val liveBlend = ((distKm - STABILISATION_KM) / STABILISATION_KM).coerceIn(0.0, 1.0)
+                            val liveBlend = ((rateDistKm - STABILISATION_KM) / STABILISATION_KM).coerceIn(0.0, 1.0)
                             val blended = liveBlend * smoothed + (1.0 - liveBlend) * demonstratedRate
                             blended to if (liveBlend >= 0.5) RangeModel.LIVE_TRIP else RangeModel.TRIP_AVERAGE
                         }
@@ -1970,9 +2069,21 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 val restoreMaxGapSeconds = 60.0
                 energySamples.clear()
                 var cumEnergyWh = 0.0
+                // Mirror of the live path's ICE gating: pairs led by an ICE-propelled
+                // point don't advance the EV-only distance axis the window rate is
+                // computed on. Pre-gating history has no fuel signals in rawJson, so
+                // every pair reads electric and the rebuild matches old behaviour.
+                val isPhevRestore = currentCarConfig()?.isPhev == true
+                val pointIce = if (isPhevRestore)
+                    BooleanArray(dataPoints.size) { pointIceActive(dataPoints[it].rawJson) }
+                else BooleanArray(dataPoints.size)
+                var evAxisKm = 0.0
                 dataPoints.forEachIndexed { i, dp ->
                     if (i > 0) {
                         val prev = dataPoints[i - 1]
+                        if (!pointIce[i - 1]) {
+                            evAxisKm += (dp.odometer - prev.odometer).coerceAtLeast(0.0)
+                        }
                         val dt = (dp.timestamp - prev.timestamp).coerceAtLeast(0L) / 1000.0
                         if (dt in 0.0..restoreMaxGapSeconds) {
                             val bmsDeltaWh = (dp.totalDischarge - prev.totalDischarge) * 1000.0
@@ -1987,9 +2098,14 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         }
                     }
                     val dKm = (dp.odometer - trip.startOdometer).coerceAtLeast(0.0)
-                    energySamples.add(EnergySample(dKm, cumEnergyWh))
+                    energySamples.add(EnergySample(if (isPhevRestore) evAxisKm else dKm, cumEnergyWh))
                 }
                 accumulatedEnergyWh = cumEnergyWh
+                // Seed the live EV axes so the first post-resume tick continues the
+                // restored series without a step.
+                evWindowDistanceKm = evAxisKm
+                evTripDistanceKm = evAxisKm
+                lastSampleTripDistKm = liveDistanceKm
                 _liveAccumulatedKwh.value = (cumEnergyWh / 1000.0).coerceAtLeast(0.0)
                 // Seed the live per-sample delta tracker so the first post-resume live sample
                 // diffs against the restored cumulative energy (≈ trip energy) rather than
@@ -2008,13 +2124,17 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 // the speed actually driven, not the speed at the start of the interval.
                 liveSpeedBins.clear()
                 if (dataPoints.size >= 2) {
-                    dataPoints.zipWithNext { a, b ->
+                    for (i in 1 until dataPoints.size) {
+                        val a = dataPoints[i - 1]
+                        val b = dataPoints[i]
                         val bin = speedBin((a.speed + b.speed) / 2.0)
                         val dist = (b.odometer - a.odometer).coerceAtLeast(0.0)
                         val energy = (b.totalDischarge - a.totalDischarge).coerceAtLeast(0.0) * 1000.0
                         val acc = liveSpeedBins.getOrPut(bin) { BinAccumulator() }
-                        acc.distanceKm += dist
-                        acc.energyWh   += energy
+                        // Same ICE gating as the live bins: ICE-propelled distance is
+                        // excluded from the rate axis, its energy is kept.
+                        if (!pointIce[i - 1]) acc.distanceKm += dist
+                        acc.energyWh += energy
                     }
                 }
 
@@ -2061,8 +2181,10 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     // restored trip whose stored per-pair deltas didn't land in any
                     // bin still leaves the catalog baseline.
                     ?: run {
-                        if (liveDistanceKm >= BIN_MIN_DIST_KM && cumEnergyWh > 0.0)
-                            cumEnergyWh / liveDistanceKm
+                        // EV-only denominator on PHEVs — mirrors the live tripWhPerKm.
+                        val restoreRateDistKm = if (isPhevRestore) evAxisKm else liveDistanceKm
+                        if (restoreRateDistKm >= BIN_MIN_DIST_KM && cumEnergyWh > 0.0)
+                            cumEnergyWh / restoreRateDistKm
                         else null
                     }
                 // EV-only projection (matches the live path) — fuel range is excluded because it
@@ -2079,10 +2201,13 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     // Progressive trip-cumulative rate (energy so far ÷ distance so far) —
                     // the restore analogue of the live tripWhPerKm tier; available from
                     // ~BIN_MIN_DIST_KM so the line still reaches back toward the origin.
+                    // The sample's own distance axis is used: on PHEVs that's the EV-only
+                    // distance (matching the live rateDistKm), on BEVs it equals dKm.
                     val cumEnergyHere = energySamples.getOrNull(i)?.cumulativeEnergyWh ?: 0.0
-                    val ppTrip = if (dKm >= BIN_MIN_DIST_KM && cumEnergyHere > 0.0)
-                        cumEnergyHere / dKm else null
-                    val pastStabilisation = dKm >= STABILISATION_KM
+                    val ppRateDistKm = energySamples.getOrNull(i)?.distanceKm ?: dKm
+                    val ppTrip = if (ppRateDistKm >= BIN_MIN_DIST_KM && cumEnergyHere > 0.0)
+                        cumEnergyHere / ppRateDistKm else null
+                    val pastStabilisation = ppRateDistKm >= STABILISATION_KM
                     // A point is stabilised if past the distance threshold OR a non-baseline
                     // rate exists — matches the live `isStabilised || model != BASELINE`.
                     val stabilised = pastStabilisation || ppTrip != null
@@ -2100,7 +2225,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     // rebuilt curve doesn't spike at trip start where ppTrip = energy ÷ tiny distance
                     // is numerically wild.
                     val ppStablePrior = lifetimeWhPerKm.value ?: baselineWhPerKm
-                    val ppConfidence = (dKm / STABILISATION_KM).coerceIn(0.0, 1.0)
+                    val ppConfidence = (ppRateDistKm / STABILISATION_KM).coerceIn(0.0, 1.0)
                     val ppDemonstrated: Double? = ppTrip?.let {
                         ppConfidence * it + (1.0 - ppConfidence) * ppStablePrior
                     }
@@ -2108,7 +2233,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     // so the rebuilt line keeps the live curve's shape (no step at STABILISATION_KM).
                     val ppRate: Double = when {
                         ppSmoothed != null && ppDemonstrated != null && pastStabilisation -> {
-                            val liveBlend = ((dKm - STABILISATION_KM) / STABILISATION_KM).coerceIn(0.0, 1.0)
+                            val liveBlend = ((ppRateDistKm - STABILISATION_KM) / STABILISATION_KM).coerceIn(0.0, 1.0)
                             liveBlend * ppSmoothed + (1.0 - liveBlend) * ppDemonstrated
                         }
                         pastStabilisation && ppSmoothed != null -> ppSmoothed
@@ -2177,7 +2302,18 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         mockDriveJob?.cancel()
         _isMockModeActive.value = true
         mockDriveJob = viewModelScope.launch {
-            val mockGenerator = com.byd.tripstats.mock.MockDataGenerator()
+            // The mock drive follows the selected car: picking a PHEV in the car
+            // picker produces a DM-i style mock (EV → HEV charge-sustain → EV)
+            // with all fuel/ICE fields populated, so PHEV UI can be exercised
+            // without a real PHEV.
+            val car = currentCarConfig()
+            val mockGenerator = com.byd.tripstats.mock.MockDataGenerator(
+                phev = car?.isPhev == true,
+                batteryKwh = car?.let {
+                    if (it.isPhev) it.phevUsableBatteryKwh ?: it.batteryKwh
+                    else it.batteryKwh
+                } ?: 82.5,
+            )
             mockGenerator.generateMockDrive().collect { telemetry ->
                 _mockTelemetry.value = telemetry
                 _mockVehicleSnapshot.value = telemetry.toMockVehicleSnapshot()
@@ -2192,6 +2328,66 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         _mockTelemetry.value = null
         _mockVehicleSnapshot.value = null
         _isMockModeActive.value = false
+    }
+
+    // ── Trip replay (dev tool, behind the same flag as the mock button) ───────
+
+    /**
+     * Replays an exported trip JSON from Download/BydTripStats/replay.json through
+     * TripRepository.processTelemetry — the full production pipeline (auto trip
+     * detection, projection, DB writes) runs against a real recorded drive, e.g.
+     * one a PHEV owner shared. Dev tool: the replayed trip IS recorded into the
+     * database of the device it runs on.
+     */
+    fun startTripReplay(speedMultiplier: Double = 10.0) {
+        if (_isReplayActive.value) {
+            stopTripReplay()
+            return
+        }
+        replayJob?.cancel()
+        _isReplayActive.value = true
+        _replayStatus.value = "Replay: loading…"
+        replayJob = viewModelScope.launch {
+            try {
+                val file = java.io.File(
+                    android.os.Environment.getExternalStoragePublicDirectory(
+                        android.os.Environment.DIRECTORY_DOWNLOADS
+                    ),
+                    "BydTripStats/replay.json"
+                )
+                if (!file.exists()) {
+                    _replayStatus.value = "Replay: ${file.path} not found"
+                    return@launch
+                }
+                val points = withContext(Dispatchers.IO) {
+                    com.byd.tripstats.mock.TripReplayEngine.parse(file.readText())
+                }
+                var fed = 0
+                com.byd.tripstats.mock.TripReplayEngine
+                    .replayFlow(points, speedMultiplier)
+                    .collect { telemetry ->
+                        tripRepository.processTelemetry(telemetry)
+                        fed++
+                        if (fed % 25 == 0) {
+                            _replayStatus.value = "Replay: $fed/${points.size}"
+                        }
+                    }
+                _replayStatus.value = "Replay: done (${points.size} points)"
+            } catch (e: Exception) {
+                Log.e(TAG, "Trip replay failed", e)
+                _replayStatus.value = "Replay failed: ${e.message}"
+            } finally {
+                _isReplayActive.value = false
+                replayJob = null
+            }
+        }
+    }
+
+    fun stopTripReplay() {
+        replayJob?.cancel()
+        replayJob = null
+        _isReplayActive.value = false
+        _replayStatus.value = "Replay: stopped"
     }
 
     private fun VehicleTelemetry.toMockVehicleSnapshot(): VehicleTelemetrySnapshot {
@@ -2228,6 +2424,15 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             turnSignalFlashState = turnSignalFlashState,
             turnSignalLeft = turnSignalLeft,
             turnSignalRight = turnSignalRight,
+            energyMode = energyMode,
+            statisticFuelPercentageValue = fuelPercentage.takeIf { it > 0 },
+            statisticFuelDrivingRangeValue = fuelDrivingRangeKm.takeIf { it > 0 },
+            statisticAvgFuelConsumption = avgFuelConsumption,
+            statisticInstantFuelCon = instantFuelConsumption,
+            statisticTotalFuelConValue = totalFuelConsumption,
+            statisticEvMileageValue = evMileageKm,
+            statisticHevMileageValue = iceMileageKm,
+            statisticWaterTemperature = engineCoolantTemp,
         )
     }
 

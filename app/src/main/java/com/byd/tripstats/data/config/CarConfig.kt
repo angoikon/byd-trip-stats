@@ -34,6 +34,13 @@ data class CarConfig(
      * On PHEVs, batteryKwh is the gross pack size; this is the usable EV-only portion.
      */
     val phevUsableBatteryKwh: Double? = null,
+    /**
+     * Petrol tank capacity in litres (PHEV only). Used to estimate fuel range from
+     * fuel % × tank ÷ learned L/100km when the car's own fuel-range reading is
+     * unavailable. Null on BEVs and on PHEVs whose tank size isn't confirmed —
+     * the fuel-range display then relies on the car-reported figure alone.
+     */
+    val fuelTankLiters: Double? = null,
 )
 
 // The reference consumption (kWh/100km) is taken via ev-database.org
@@ -377,7 +384,8 @@ object CarCatalog {
         cellCount = 96,         // 18.3 kWh @ ~307V → 96S LFP
         cdA = 0.925,            // Cd 0.34 × A 2.72 m²
         isPhev = true,
-        phevUsableBatteryKwh = 15.2
+        phevUsableBatteryKwh = 15.2,
+        fuelTankLiters = 60.0   // confirmed EU spec sheet
     )
 
     val BYD_SEAL_U_DM_I_COMFORT = CarConfig(
@@ -394,7 +402,8 @@ object CarCatalog {
         cellCount = 144,        // 27.3 kWh @ ~461V → 144S LFP (estimate)
         cdA = 0.925,            // Cd 0.34 × A 2.72 m² (same body as DM-i FWD)
         isPhev = true,
-        phevUsableBatteryKwh = 26.6
+        phevUsableBatteryKwh = 26.6,
+        fuelTankLiters = 60.0   // confirmed EU spec sheet (shared body/tank)
     )
 
     val BYD_SEAL_U_DM_I_DESIGN_AWD = CarConfig(
@@ -412,7 +421,8 @@ object CarCatalog {
         cellCount = 96,         // 18.3 kWh @ ~307V → 96S LFP (same pack as FWD)
         cdA = 0.870,            // Cd 0.32 × A 2.72 m²
         isPhev = true,
-        phevUsableBatteryKwh = 15.2
+        phevUsableBatteryKwh = 15.2,
+        fuelTankLiters = 60.0   // confirmed EU spec sheet (shared body/tank)
     )
 
     val BYD_SONG_PLUS_DM_I = CarConfig(
@@ -428,7 +438,8 @@ object CarCatalog {
         cellCount = 144,        // 18.3 kWh Blade pack — might be 144S configuration
         cdA = 0.774,            // Cd 0.29 × A 2.67 m²
         isPhev = true,
-        phevUsableBatteryKwh = 15.2
+        phevUsableBatteryKwh = 15.2,
+        fuelTankLiters = 60.0   // shared Sealion 6 platform tank
     )
 
     val BYD_HAN_EV = CarConfig(
@@ -514,7 +525,8 @@ object CarCatalog {
         cellCount = 144,        // 18.3 kWh Blade pack — might be 144S configuration
         cdA = 0.774,            // Cd 0.29 × A 2.67 m² (shared Song Plus body)
         isPhev = true,
-        phevUsableBatteryKwh = 15.2
+        phevUsableBatteryKwh = 15.2,
+        fuelTankLiters = 60.0   // confirmed AU spec sheet
     )
 
     val BYD_SEALION_6_DMI_PERFORMANCE = CarConfig(
@@ -532,7 +544,8 @@ object CarCatalog {
         cellCount = 144,        // 18.3 kWh Blade pack — might be 144S configuration (shared with FWD)
         cdA = 0.774,            // Cd 0.29 × A 2.67 m²
         isPhev = true,
-        phevUsableBatteryKwh = 15.2
+        phevUsableBatteryKwh = 15.2,
+        fuelTankLiters = 60.0   // confirmed AU spec sheet
     )
 
     val BYD_SEALION_6_EV_STANDARD = CarConfig(
@@ -655,6 +668,27 @@ object CarCatalog {
         phevUsableBatteryKwh = 18.3
     )
 
+    // BYD Shark 6 — DM-O (Dual Mode Off-road) plug-in hybrid pickup. Dual-motor AWD
+    // (front + rear) with a 1.5T petrol engine. Only sold as an AWD variant.
+    val BYD_SHARK_6_AWD = CarConfig(
+        id = "BYD_SHARK_6_AWD",
+        displayName = "Shark 6 AWD",
+        drivetrain = Drivetrain.AWD,        // dual-motor DM-O (front + rear)
+        batteryKwh = 29.58,                 // Blade LFP gross pack (confirmed)
+        estimatedKerbMassKg = 2710.0,       // ~2710 kg kerb (confirmed ballpark)
+        wltpKm = 85,                        // EV-only; CLTC ~100 km → ~85 km WLTP estimate — verify
+        referenceConsumptionKwhPer100km = 28.0, // heavy ute EV-mode estimate — verify
+        frontTyrePressureBar = 2.8,         // estimate (265/65 R18) — verify against door placard
+        rearTyrePressureBar = 2.8,          // estimate — verify against door placard
+        frontMotorRatedKw = 170,            // confirmed
+        rearMotorRatedKw = 150,             // confirmed (combined 320 kW system)
+        cellCount = 140,                    // 29.58 kWh Blade — ~140S estimate
+        cdA = 1.45,                         // Cd ~0.42 × A ~3.45 m² — pickup estimate
+        isPhev = true,
+        phevUsableBatteryKwh = 26.0,        // usable EV portion — estimate (~88% of gross)
+        fuelTankLiters = 60.0               // confirmed
+    )
+
     val allCars: List<CarConfig> = listOf(
         BYD_SEAL_DYNAMIC_RWD,
         BYD_SEAL_PREMIUM_RWD,
@@ -690,6 +724,7 @@ object CarCatalog {
         BYD_SEALION_5_DMI_DESIGN,
         BYD_SEALION_6_DMI_PREMIUM,
         BYD_SEALION_6_DMI_PERFORMANCE,
+        BYD_SHARK_6_AWD,
         BYD_SEALION_6_EV_STANDARD,
         BYD_SEALION_6_EV_EXTENDED,
         BYD_SEALION_7,
@@ -728,5 +763,6 @@ object CarCatalog {
         "BYD Tang DM-i" to listOf(BYD_TANG_DM_I),
         "BYD Seal 5 / Sealion 5 DM-i" to listOf(BYD_SEALION_5_DMI_COMFORT, BYD_SEALION_5_DMI_DESIGN),
         "BYD Sealion 6 DM-i" to listOf(BYD_SEALION_6_DMI_PREMIUM, BYD_SEALION_6_DMI_PERFORMANCE),
+        "BYD Shark 6" to listOf(BYD_SHARK_6_AWD),
     )
 }

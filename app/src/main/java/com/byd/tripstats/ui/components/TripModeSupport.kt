@@ -22,7 +22,9 @@ private val tripModeJson = Json { ignoreUnknownKeys = true }
 
 data class TripPointModes(
     val driveMode: Int,
-    val regenMode: Int
+    val regenMode: Int,
+    /** PHEV energy/powertrain source mode (1=EV, 2=Force EV, 3=HEV, 4=Fuel, 5=Keep); 0 on BEVs. */
+    val energyMode: Int = 0
 )
 
 enum class DriveModeFilter(val modeValue: Int?, val label: String) {
@@ -47,7 +49,8 @@ fun TripDataPointEntity.extractTripModes(): TripPointModes {
     val json = rawJson.toTripModeJsonObjectOrNull()
     return TripPointModes(
         driveMode = json.intOrZero("drive_mode"),
-        regenMode = json.intOrZero("regen_mode")
+        regenMode = json.intOrZero("regen_mode"),
+        energyMode = json.intOrZero("energy_mode")
     )
 }
 
@@ -79,6 +82,29 @@ fun regenModeColor(mode: Int): Color = when (mode) {
     2 -> AccelerationOrange
     else -> Color.Gray.copy(alpha = 0.45f)
 }
+
+// ── PHEV energy/powertrain source mode (product terms, untranslated) ──────────
+
+fun energyModeLabel(mode: Int): String = when (mode) {
+    1 -> "EV"
+    2 -> "Force EV"
+    3 -> "HEV"
+    4 -> "Fuel"
+    5 -> "Keep"
+    else -> "Unknown"
+}
+
+fun energyModeColor(mode: Int): Color = when (mode) {
+    1 -> RegenGreen                 // pure electric
+    2 -> BatteryBlue                // forced electric
+    3 -> AccelerationOrange         // hybrid — ICE assisting
+    4 -> BydErrorRed                // pure combustion
+    5 -> ChargingYellow             // hold/keep SoC
+    else -> Color.Gray.copy(alpha = 0.45f)
+}
+
+fun hasEnergyModeData(dataPoints: List<TripDataPointEntity>): Boolean =
+    dataPoints.any { it.extractTripModes().energyMode != 0 }
 
 fun filterTripPointsByModes(
     dataPoints: List<TripDataPointEntity>,

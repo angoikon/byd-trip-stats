@@ -36,6 +36,7 @@ fun ModeTimelineChart(
     dataPoints: List<TripDataPointEntity>,
     showDriveModes: Boolean,
     showRegenModes: Boolean,
+    showEnergyModes: Boolean = true,
     compact: Boolean = false,
     modifier: Modifier = Modifier
 ) {
@@ -44,6 +45,8 @@ fun ModeTimelineChart(
     }
     val hasAnyDriveMode = remember(pointsWithModes) { pointsWithModes.any { (_, m) -> m.driveMode != 0 } }
     val hasAnyRegenMode = remember(pointsWithModes) { pointsWithModes.any { (_, m) -> m.regenMode != 0 } }
+    // PHEV only — BEVs always report 0, so the lane simply never appears for them.
+    val hasAnyEnergyMode = remember(pointsWithModes) { pointsWithModes.any { (_, m) -> m.energyMode != 0 } }
     val outlineColor = MaterialTheme.colorScheme.outlineVariant
     val verticalSpacing = if (compact) 8.dp else 12.dp
     val laneSpacing = if (compact) 10.dp else 14.dp
@@ -67,6 +70,7 @@ fun ModeTimelineChart(
         ModeTimelineLegend(
             showDriveModes = showDriveModes && hasAnyDriveMode,
             showRegenModes = showRegenModes && hasAnyRegenMode,
+            showEnergyModes = showEnergyModes && hasAnyEnergyMode,
             compact = compact
         )
 
@@ -101,6 +105,15 @@ fun ModeTimelineChart(
                         outlineColor = outlineColor,
                         laneHeight = laneHeight,
                         colorFor = { regenModeColor(it.regenMode) }
+                    )
+                }
+                if (showEnergyModes && hasAnyEnergyMode) {
+                    ModeTimelineLane(
+                        title = stringResource(R.string.mode_energy_lane_title),
+                        pointsWithModes = pointsWithModes,
+                        outlineColor = outlineColor,
+                        laneHeight = laneHeight,
+                        colorFor = { energyModeColor(it.energyMode) }
                     )
                 }
             }
@@ -150,6 +163,7 @@ private fun ModeTimelineLane(
 private fun ModeTimelineLegend(
     showDriveModes: Boolean,
     showRegenModes: Boolean,
+    showEnergyModes: Boolean = false,
     compact: Boolean
 ) {
     val sectionSpacing = if (compact) 6.dp else 10.dp
@@ -193,6 +207,27 @@ private fun ModeTimelineLegend(
                     LegendSwatch(regenModeColor(1), "Standard")
                     LegendSwatch(regenModeColor(2), "High")
                     Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
+        if (showEnergyModes) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = stringResource(R.string.mode_energy_modes_label),
+                    style = labelStyle,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(chipSpacing)
+                ) {
+                    // Product terms — untranslated across all locales by convention
+                    LegendSwatch(energyModeColor(1), "EV")
+                    LegendSwatch(energyModeColor(2), "Force EV")
+                    LegendSwatch(energyModeColor(3), "HEV")
+                    LegendSwatch(energyModeColor(4), "Fuel")
+                    LegendSwatch(energyModeColor(5), "Keep")
                 }
             }
         }

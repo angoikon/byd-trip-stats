@@ -260,6 +260,17 @@ data class VehicleTelemetry(
             if (isPhev && fuelPercentage != 0) add(""""fuel_percentage":$fuelPercentage""")
             if (isPhev && fuelDrivingRangeKm != 0)
                     add(""""fuel_driving_range_km":$fuelDrivingRangeKm""")
+            // PHEV fuel/ICE counters — persisted per point so trip analysis can split
+            // EV vs ICE distance and fuel burn (and the restore path can re-gate the
+            // EV projection). Null on BEVs, so this costs BEV rows nothing.
+            if (isPhev) {
+                avgFuelConsumption?.let { add(""""avg_fuel_consumption":$it""") }
+                instantFuelConsumption?.let { add(""""instant_fuel_consumption":$it""") }
+                totalFuelConsumption?.let { add(""""total_fuel_consumption":$it""") }
+                evMileageKm?.let { add(""""ev_mileage_km":$it""") }
+                iceMileageKm?.let { add(""""ice_mileage_km":$it""") }
+                engineCoolantTemp?.let { add(""""engine_coolant_temp":$it""") }
+            }
             batteryRemainPowerEV?.let { add(""""battery_remain_power_ev":$it""") }
             speedAccelerateDeepness?.let { add(""""speed_accelerate_deepness":$it""") }
             speedBrakeDeepness?.let { add(""""speed_brake_deepness":$it""") }
@@ -352,6 +363,14 @@ data class VehicleTelemetry(
             add(""""any_door_opened":$anyDoorOpened""")
             if (isPhev) add(""""fuel_percentage":$fuelPercentage""")
             if (isPhev) add(""""fuel_driving_range_km":$fuelDrivingRangeKm""")
+            if (isPhev) {
+                avgFuelConsumption?.let { add(""""avg_fuel_consumption":$it""") }
+                instantFuelConsumption?.let { add(""""instant_fuel_consumption":$it""") }
+                totalFuelConsumption?.let { add(""""total_fuel_consumption":$it""") }
+                evMileageKm?.let { add(""""ev_mileage_km":$it""") }
+                iceMileageKm?.let { add(""""ice_mileage_km":$it""") }
+                engineCoolantTemp?.let { add(""""engine_coolant_temp":$it""") }
+            }
             batteryRemainPowerEV?.let { add(""""battery_remain_power_ev":$it""") }
             speedAccelerateDeepness?.let { add(""""speed_accelerate_deepness":$it""") }
             speedBrakeDeepness?.let { add(""""speed_brake_deepness":$it""") }

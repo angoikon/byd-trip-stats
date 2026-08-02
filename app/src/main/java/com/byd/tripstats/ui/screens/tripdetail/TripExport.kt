@@ -193,6 +193,27 @@ fun saveTripAsJSON(
     }
 }
 
+/**
+ * Uploads the trip's JSON export to litterbox (temporary public host) and returns the
+ * public download URL. Mirrors the vehicle-compatibility-probe QR share: the head unit
+ * has no mail app and no easy file transfer, so a tester can hand a full trip back to
+ * the developer by scanning a QR that opens a pre-filled email carrying this link. The
+ * file self-deletes after [retention] (default 72h — more slack than the probe's 12h
+ * since a tester may not act immediately).
+ *
+ * Blocking network call — invoke from a background dispatcher. Throws on any failure so
+ * the caller can surface a message.
+ */
+fun uploadTripJson(
+    trip: TripEntity,
+    dataPoints: List<TripDataPointEntity>,
+    retention: String = "72h",
+): String = com.byd.tripstats.util.LitterboxUploader.upload(
+    fileName = "trip_${trip.id}.json",
+    content = buildTripJson(trip, dataPoints),
+    retention = retention,
+)
+
 fun buildTripEmbeddedHtml(
     context: android.content.Context,
     trip: TripEntity,

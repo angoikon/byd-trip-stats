@@ -20,16 +20,44 @@ import kotlin.random.Random
  *
  * All VehicleTelemetry fields are populated, including v2 fields
  * (tyrePressures, tyreTempLF/RF/LR/RR, socPanel, carOn, etc.).
+ *
+ * With [phev] = true the same cycle is generated as a DM-i style plug-in hybrid
+ * drive (small pack via [batteryKwh]): the trip starts electric (energyMode=EV),
+ * the middle of the cruise runs charge-sustaining on petrol (energyMode=HEV —
+ * fuel burns, iceMileageKm accrues, coolant heats to ~90 °C, SoC holds roughly
+ * flat), and deceleration/stop return to EV. All PHEV telemetry fields
+ * (fuelPercentage, fuelDrivingRangeKm, instant/avg/totalFuelConsumption,
+ * evMileageKm, iceMileageKm, engineCoolantTemp, energyMode) are populated so
+ * PHEV features can be developed without access to a real PHEV.
  */
-class MockDataGenerator {
+class MockDataGenerator(
+    private val phev: Boolean = false,
+    private val batteryKwh: Double = 82.5,
+) {
+
+    private companion object {
+        const val PHEV_TANK_LITERS       = 60.0   // Seal U DM-i style tank
+        const val PHEV_ICE_L_PER_100KM   = 5.8    // charge-sustain cruise burn
+        const val AMBIENT_TEMP_C         = 22
+        const val COOLANT_OPERATING_C    = 90
+    }
 
     // Starting state — realistic values for a Seal Excellence mid-trip
+    // (PHEV profile starts at a typical part-charged pack instead of near-full)
     private var currentOdometer      = 23_366.3
     private var currentTotalDischarge = 4_762.6
-    private var currentSoc           = 97.6
+    private var currentSoc           = if (phev) 44.0 else 97.6
     private var currentSpeed         = 0.0
     private var currentPower         = 0.0
-    private var currentSocPanel      = 97   // instrument cluster SoC (integer %)
+    private var currentSocPanel      = if (phev) 44 else 97   // instrument cluster SoC (integer %)
+
+    // PHEV state — lifetime-style counters like the real statistic device reports
+    private var currentFuelPct       = 62.0
+    private var currentTotalFuelL    = 823.4   // lifetime litres burned
+    private var currentIceKm         = 5_210.0 // lifetime km propelled by ICE
+    private var currentEvKm          = 18_100.0
+    private var currentCoolantC      = AMBIENT_TEMP_C.toDouble()
+    private var currentEnergyMode    = 1       // 1=EV, 3=HEV
 
     // ── Public API ────────────────────────────────────────────────────────────
 
@@ -83,7 +111,7 @@ class MockDataGenerator {
         speed                = 0.0,
         wifiSsid             = "",
         batteryTotalVoltage  = 573,
-        electricDrivingRangeKm = (currentSoc * 5.2).toInt(),
+        electricDrivingRangeKm = mockElectricRangeKm(),
         totalDischarge       = currentTotalDischarge,
         carOn                = 0,
         tyrePressureLF       = 38.5,
@@ -96,7 +124,13 @@ class MockDataGenerator {
         tyreTempRR           = 22,
         socPanel             = currentSocPanel,
         carLocked            = 1,
-        anyDoorOpened        = 0
+        anyDoorOpened        = 0,
+        fuelPercentage       = if (phev) currentFuelPct.toInt() else 0,
+        fuelDrivingRangeKm   = if (phev) mockFuelRangeKm() else 0,
+        totalFuelConsumption = if (phev) currentTotalFuelL else null,
+        evMileageKm          = if (phev) currentEvKm.toInt() else null,
+        iceMileageKm         = if (phev) currentIceKm.toInt() else null,
+        engineCoolantTemp    = if (phev) AMBIENT_TEMP_C else null,
     )
 
     /** Generates a charging telemetry packet (AC, ~7 kW). */
@@ -127,10 +161,16 @@ class MockDataGenerator {
     fun reset() {
         currentOdometer       = 23_366.3
         currentTotalDischarge = 4_762.6
-        currentSoc            = 97.6
+        currentSoc            = if (phev) 44.0 else 97.6
         currentSpeed          = 0.0
         currentPower          = 0.0
-        currentSocPanel       = 97
+        currentSocPanel       = if (phev) 44 else 97
+        currentFuelPct        = 62.0
+        currentTotalFuelL     = 823.4
+        currentIceKm          = 5_210.0
+        currentEvKm           = 18_100.0
+        currentCoolantC       = AMBIENT_TEMP_C.toDouble()
+        currentEnergyMode     = 1
     }
 
     // ── Internal generation ───────────────────────────────────────────────────
@@ -150,27 +190,53 @@ class MockDataGenerator {
             else           -> maxOf(0.0, 20.0 * (1.0 - (progress - 0.85f) / 0.15f))
         }
 
-        currentPower = when (phase) {
-            "acceleration" -> 30.0 + Random.nextDouble(-5.0, 10.0)
-            "cruising"     -> 15.0 + Random.nextDouble(-3.0,  3.0)
-            "deceleration" -> -25.0 + Random.nextDouble(-10.0, 5.0)
-            else           -> -15.0 + Random.nextDouble(-5.0,  2.0)
+        // PHEV: the middle of the cruise runs charge-sustaining on petrol (HEV);
+        // everything else is electric. BEV: never.
+        val iceActive = phev && progress >= 0.40f && progress < 0.70f
+        currentEnergyMode = if (iceActive) 3 else 1
+
+        currentPower = when {
+            // Charge-sustain: the ICE propels, the pack sees only a small +/- trickle.
+            iceActive              -> 1.0 + Random.nextDouble(-3.0, 3.0)
+            phase == "acceleration" -> 30.0 + Random.nextDouble(-5.0, 10.0)
+            phase == "cruising"     -> 15.0 + Random.nextDouble(-3.0,  3.0)
+            phase == "deceleration" -> -25.0 + Random.nextDouble(-10.0, 5.0)
+            else                    -> -15.0 + Random.nextDouble(-5.0,  2.0)
         }
 
         // Odometer — km per second at current speed
-        currentOdometer += currentSpeed / 3_600.0
+        val tickDistanceKm = currentSpeed / 3_600.0
+        currentOdometer += tickDistanceKm
 
         // SoC — discharge or recover (regen)
         if (currentPower > 0) {
             val energyKwh = currentPower / 3_600.0
             currentTotalDischarge += energyKwh
-            currentSoc -= energyKwh / 82.5 * 100.0
+            currentSoc -= energyKwh / batteryKwh * 100.0
         } else {
             val recovered = -currentPower * 0.7 / 3_600.0
-            currentSoc   += recovered / 82.5 * 100.0
+            currentSoc   += recovered / batteryKwh * 100.0
         }
         currentSoc = currentSoc.coerceIn(0.0, 100.0)
         currentSocPanel = currentSoc.toInt()  // simplified — usually ±1 of soc
+
+        // PHEV counters: fuel burn + ICE/EV mileage split + coolant thermal model
+        var instantFuelLPer100 = 0.0
+        if (phev) {
+            if (iceActive) {
+                instantFuelLPer100 = PHEV_ICE_L_PER_100KM + Random.nextDouble(-1.2, 1.8)
+                currentTotalFuelL += instantFuelLPer100 * tickDistanceKm / 100.0
+                currentFuelPct -= instantFuelLPer100 * tickDistanceKm / 100.0 / PHEV_TANK_LITERS * 100.0
+                currentIceKm += tickDistanceKm
+                // Warm-up ramp toward operating temperature while burning fuel
+                currentCoolantC = minOf(COOLANT_OPERATING_C.toDouble(), currentCoolantC + 2.5)
+            } else {
+                currentEvKm += tickDistanceKm
+                // Slow cool-down toward ambient with the ICE off
+                currentCoolantC = maxOf(AMBIENT_TEMP_C.toDouble(), currentCoolantC - 0.3)
+            }
+            currentFuelPct = currentFuelPct.coerceIn(0.0, 100.0)
+        }
 
         val gear  = if (progress > 0.95f) "P" else "D"
         val carOn = if (progress > 0.97f) 0 else 2
@@ -202,7 +268,7 @@ class MockDataGenerator {
             speed                 = currentSpeed,
             wifiSsid              = "",
             batteryTotalVoltage   = (560 + currentSoc * 0.15).toInt(),
-            electricDrivingRangeKm = (currentSoc * 5.2).toInt(),
+            electricDrivingRangeKm = mockElectricRangeKm(),
             totalDischarge        = currentTotalDischarge,
             carOn                 = carOn,
             tyrePressureLF        = tyrePressureBase + Random.nextDouble(-0.3, 0.3),
@@ -215,7 +281,29 @@ class MockDataGenerator {
             tyreTempRR            = 21 + (progress * 14).toInt(),
             socPanel              = currentSocPanel,
             carLocked             = 0,
-            anyDoorOpened         = 0
+            anyDoorOpened         = 0,
+            fuelPercentage        = if (phev) currentFuelPct.toInt() else 0,
+            fuelDrivingRangeKm    = if (phev) mockFuelRangeKm() else 0,
+            avgFuelConsumption    = if (phev) PHEV_ICE_L_PER_100KM - 0.2 else null,
+            instantFuelConsumption = if (phev) instantFuelLPer100 else null,
+            totalFuelConsumption  = if (phev) currentTotalFuelL else null,
+            evMileageKm           = if (phev) currentEvKm.toInt() else null,
+            iceMileageKm          = if (phev) currentIceKm.toInt() else null,
+            engineCoolantTemp     = if (phev) currentCoolantC.toInt() else null,
+            energyMode            = if (phev) currentEnergyMode else 0,
         )
     }
+
+    /**
+     * Projected electric range for the current SoC. Assumes ~16 kWh/100km, which
+     * reproduces the historical `soc * 5.2` figure for the default 82.5 kWh pack
+     * and scales honestly for the small PHEV pack.
+     */
+    private fun mockElectricRangeKm(): Int =
+        if (phev) (currentSoc / 100.0 * batteryKwh / 0.16).toInt()
+        else (currentSoc * 5.2).toInt()
+
+    /** Fuel range like the cluster reports it: remaining litres / cruise burn rate. */
+    private fun mockFuelRangeKm(): Int =
+        (currentFuelPct / 100.0 * PHEV_TANK_LITERS / PHEV_ICE_L_PER_100KM * 100.0).toInt()
 }

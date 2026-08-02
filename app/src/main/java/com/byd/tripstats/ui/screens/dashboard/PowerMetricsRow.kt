@@ -118,6 +118,20 @@ fun PowerMetricsRow(
         scope.launch { prefs.saveDashboardShowRemainingKwh(!showRemainingKwh) }
     }
 
+    // PHEV: the tile keeps the EV projection as its headline figure, and the
+    // subtitle carries the petrol + combined range instead of the generic hint.
+    val selectedCar by prefs.selectedCarConfig.collectAsState(initial = prefs.getCachedSelectedCarConfig())
+    val fuelRangeKm = phevFuelRangeKm(telemetry, selectedCar)
+    val rangeSubtitle = if (fuelRangeKm != null) {
+        stringResource(
+            R.string.range_subtitle_phev,
+            "${unitSystem.convertDistance(fuelRangeKm.toDouble()).toInt()}",
+            "${unitSystem.convertDistance(rangeKm + fuelRangeKm).toInt()}"
+        )
+    } else {
+        stringResource(R.string.range_subtitle_projection)
+    }
+
     val tiles: Map<PowerMetricId, PowerTileData> = mapOf(
         PowerMetricId.POWER to PowerTileData(
             label = stringResource(R.string.tab_power),
@@ -143,7 +157,7 @@ fun PowerMetricsRow(
         PowerMetricId.RANGE to PowerTileData(
             label = stringResource(R.string.stat_range),
             value = "${unitSystem.convertDistance(rangeKm).toInt()}", unit = distanceUnit,
-            subtitle = stringResource(R.string.range_subtitle_projection),
+            subtitle = rangeSubtitle,
             accent = MaterialTheme.extendedColors.range, onClick = onRangeClick
         ),
         PowerMetricId.DISTANCE to PowerTileData(
