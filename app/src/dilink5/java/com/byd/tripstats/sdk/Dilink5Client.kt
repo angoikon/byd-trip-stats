@@ -15,6 +15,7 @@ import android.hardware.bydauto.sensor.AbsBYDAutoSensorListener
 import android.hardware.bydauto.pm2p5.AbsBYDAutoPM2p5Listener
 import android.hardware.bydauto.energy.AbsBYDAutoEnergyListener
 import android.hardware.bydauto.ac.AbsBYDAutoAcListener
+import android.hardware.bydauto.BYDAutoEventValue
 
 /**
  * DiLink-5 (Sealion 7) telemetry client — present ONLY in the `dilink5` flavor; loaded reflectively
@@ -256,14 +257,18 @@ class Dilink5Client {
         }
         reflGetInt(healthDev, "getBatteryHealthStatus")?.takeIf { it in 50..110 }
             ?.let { ds.applyDilink5Telemetry(sohPct = it.toDouble()) }
-        // per-wheel tyre PRESSURE via getTyrePressureValueByType(area) — area LF=1/RF=2/
-        // LR=3/RR=4, tenths of psi (respects area). Slow tick. TEMPERATURE is NOT polled: the getter
-        // returns an index-0 sentinel (uniform/wrong) — real per-wheel temp comes from the tyre
-        // listener (registerTyre → applyDilink5TyreTemp).
+        // Per-wheel tyre PRESSURE VALUE is NOT polled here — getTyrePressureValueByType(area)
+        // re-scales its raw output to whatever pressure unit the dash cluster currently has
+        // selected (confirmed on-car: raw ~27 in Bar mode, ~277 in kPa mode, ~401 in PSI mode, same
+        // physical tyre). The event onTyrePressureValueByTypeChanged carries the same ambiguity but
+        // reliably covers all 4 wheels, and BydVehicleDataSource's tyre listener decodes it using the
+        // live unit state from applyDilink5PressureUnit (instrument fid=4208, see
+        // registerInstrumentListener) — see BydVehicleDataSource.onTyrePressureValueByTypeChanged.
+        // STATE is unit-independent (a 0/1/2 enum, not a physical value) so it's still safe to poll.
+        // TEMPERATURE is NOT polled: the getter returns an index-0 sentinel (uniform/wrong) — real
+        // per-wheel temp comes from the tyre listener (registerTyre → applyDilink5TyreTemp).
         tyreDev?.let { t ->
-            ds.applyDilink5Tyre(
-                reflGetIntArg(t, "getTyrePressureValueByType", 1), reflGetIntArg(t, "getTyrePressureValueByType", 2),
-                reflGetIntArg(t, "getTyrePressureValueByType", 3), reflGetIntArg(t, "getTyrePressureValueByType", 4),
+            ds.applyDilink5TyreState(
                 reflGetIntArg(t, "getTyrePressureState", 1), reflGetIntArg(t, "getTyrePressureState", 2),
                 reflGetIntArg(t, "getTyrePressureState", 3), reflGetIntArg(t, "getTyrePressureState", 4),
             )
@@ -407,7 +412,14 @@ class Dilink5Client {
     // Instrument typed listener — drive mode + ambient temp via EVENTS (instant, matches the D3
     // gearbox-listener approach; no 30 s poll lag). getSportModeState raw == app canonical; ambient
     // is plain °C.
+    //
+    // Also carries the tyre-pressure display unit: fid=4208 (INSTRUMENT_UNIT_PRESSURE, no dedicated
+    // getter/callback — only reachable through the generic onDataEventChanged catch-all). Confirmed
+    // on-car: int value 1=Bar, 2=PSI, 3=kPa, matching the dash cluster's currently selected unit —
+    // the tyre pressure getter/event re-scales its raw output to match this same setting, so it's
+    // undecodable without it. Poll once for the initial value, then listen for changes.
     private fun registerInstrumentListener(dev: Any, ds: BydVehicleDataSource) {
+        reflGetPressureUnit(dev)?.let { ds.applyDilink5PressureUnit(it) }
         try {
             val l = object : AbsBYDAutoInstrumentListener() {
                 override fun onSportModeStateChanged(state: Int) {
@@ -418,8 +430,16 @@ class Dilink5Client {
                     VehicleCompatibilityProbe.recordTypedEvent("instrument", "onOutCarTemperatureChanged", tempC)
                     ds.applyDilink5AmbientTemp(tempC)
                 }
+                override fun onDataEventChanged(fid: Int, value: BYDAutoEventValue) {
+                    if (fid == 4208) {
+                        VehicleCompatibilityProbe.recordTypedEvent("instrument", "onDataEventChanged(4208=pressureUnit)", value.intValue)
+                        ds.applyDilink5PressureUnit(value.intValue)
+                    }
+                }
             }
             dev.javaClass.getMethod("registerListener", AbsBYDAutoInstrumentListener::class.java).invoke(dev, l)
+            dev.javaClass.getMethod("registerListener", AbsBYDAutoInstrumentListener::class.java, IntArray::class.java)
+                .invoke(dev, l, intArrayOf(4208, 4209, 4210))
             instrumentListener = l
             Log.i(tag, "instrument listener registered")
         } catch (t: Throwable) {
@@ -571,5 +591,13 @@ class Dilink5Client {
     }
     private fun reflGetIntArray(dev: Any?, getter: String): IntArray? = dev?.let {
         runCatching { it.javaClass.getMethod(getter).invoke(it) as? IntArray }.getOrNull()
+    }
+    // One-shot poll of the tyre-pressure-unit feature (fid=4208) — see registerInstrumentListener.
+    private fun reflGetPressureUnit(dev: Any?): Int? = dev?.let {
+        runCatching {
+            val value = it.javaClass.getMethod("get", IntArray::class.java, Class::class.java)
+                .invoke(it, intArrayOf(4208), BYDAutoEventValue::class.java) as? BYDAutoEventValue
+            value?.intValue
+        }.getOrNull()
     }
 }
