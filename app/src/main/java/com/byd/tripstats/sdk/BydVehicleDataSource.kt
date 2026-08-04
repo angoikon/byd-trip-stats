@@ -1307,6 +1307,28 @@ class BydVehicleDataSource(context: Context) {
                     "rr=${_tyrePressureRR.value}(s=${_tyrePressureRRState.value})"
             )
         }
+        /**
+         * DiLink-5: reliable, all-4-wheel pressure source (unlike onTyrePressureValueChanged above,
+         * whose wheel attribution is shared with temp/airLeak/signal/battery via a single rotating
+         * getTyreArea() pointer and, on the dev car, never fired for LF/RR at all). Confirmed on-car:
+         * fires immediately on a dash unit change too. Raw value is unit-ambiguous — decoded via
+         * decodeDilink5PressureByTypeBar() using the live state from applyDilink5PressureUnit(); a
+         * no-op (and harmless) on D3, where that unit is never set. Same wheel numbering as above
+         * (LF=1/RF=2/LR=3/RR=4).
+         */
+        override fun onTyrePressureValueByTypeChanged(wheel: Int, value: Float) {
+            val bar = decodeDilink5PressureByTypeBar(value) ?: return
+            val psi = barToPsi(bar)
+            when (wheel) {
+                1 -> { _tyrePressureLFBar.value = bar; _tyrePressureLF.value = psi }
+                2 -> { _tyrePressureRFBar.value = bar; _tyrePressureRF.value = psi }
+                3 -> { _tyrePressureLRBar.value = bar; _tyrePressureLR.value = psi }
+                4 -> { _tyrePressureRRBar.value = bar; _tyrePressureRR.value = psi }
+                else -> return
+            }
+            publishSnapshot()
+            Log.d(TAG, "🛞 tyrePressureByType wheel=$wheel raw=$value unit=$dilink5PressureUnit bar=$bar psi=$psi")
+        }
         override fun onTyrePressureStateChanged(wheel: Int, state: Int) {
             Log.d(TAG, "🛞 tyrePressureStateRaw wheel=$wheel state=$state")
             if (wheel == 0) return  // slot 0 is dummy
@@ -5162,37 +5184,51 @@ class BydVehicleDataSource(context: Context) {
     }
 
     /**
-     * DiLink-5 tyre data. Source: BYDAutoTyreDevice.getTyrePressureValueByType(area)
-     * for area LF=1/RF=2/LR=3/RR=4. Confirmed on-car: that getter returns the per-wheel pressure in
-     * TENTHS OF PSI (e.g. 401 → 40.1 psi → 2.77 bar; rear > front, matching the Sealion 7 spec). The
-     * plain getTyrePressureValue ignores the area arg, so we use ByType. Temps are direct °C; state
-     * is 0=normal/1=over/2=under. Raw psi×10 guarded to a sane 10–90 psi to reject garbage.
+     * DiLink-5 tyre pressure STATE only (0=normal/1=over/2=under) — a discrete enum, unit-independent,
+     * safe to poll via getTyrePressureState(area). The pressure VALUE is deliberately NOT polled here
+     * anymore: getTyrePressureValueByType(area) re-scales its raw output to whatever pressure unit the
+     * dash cluster currently has selected (confirmed on-car: raw ~27 in Bar mode, ~277 in kPa mode,
+     * ~401 in PSI mode, same physical tyre — this is why the old "raw is always kPa" fix still showed
+     * wrong numbers in Bar/PSI mode). The value now arrives only via the tyre listener's
+     * onTyrePressureValueByTypeChanged event, decoded using the live unit state from
+     * applyDilink5PressureUnit — see that function and onTyrePressureValueByTypeChanged below.
      */
-    fun applyDilink5Tyre(
-        lfRaw: Int?, rfRaw: Int?, lrRaw: Int?, rrRaw: Int?,
+    fun applyDilink5TyreState(
         lfState: Int?, rfState: Int?, lrState: Int?, rrState: Int?,
     ) {
-        fun psi(raw: Int?): Double? = raw?.takeIf { it in 100..900 }?.let { it / 10.0 }
         fun state(s: Int?): Int? = s?.takeIf { it in 0..3 }
-        val psiToBar = 0.0689476
-        val lfP = psi(lfRaw); val rfP = psi(rfRaw); val lrP = psi(lrRaw); val rrP = psi(rrRaw)
-        if (lfP == null && rfP == null && lrP == null && rrP == null) return  // nothing usable
-        // IMPORTANT: write the _tyrePressure* StateFlows, NOT the snapshot fields directly.
-        // publishSnapshot() rebuilds the snapshot from these StateFlows, so a direct snapshot.copy()
-        // here is immediately clobbered (that's why RR — whose D3 StateFlow stayed 0 — showed grey
-        // NO_DATA while the others happened to carry values).
-        // Pressure = getTyrePressureValueByType(1..4) via poll (respects area, confirmed correct).
-        // Temperature is NOT set here — the getter returns the index-0 sentinel (uniform/wrong); real
-        // per-wheel temp arrives via the tyre listener → applyDilink5TyreTemp().
-        lfP?.let { _tyrePressureLF.value = it; _tyrePressureLFBar.value = it * psiToBar }
-        rfP?.let { _tyrePressureRF.value = it; _tyrePressureRFBar.value = it * psiToBar }
-        lrP?.let { _tyrePressureLR.value = it; _tyrePressureLRBar.value = it * psiToBar }
-        rrP?.let { _tyrePressureRR.value = it; _tyrePressureRRBar.value = it * psiToBar }
         state(lfState)?.let { _tyrePressureLFState.value = it }
         state(rfState)?.let { _tyrePressureRFState.value = it }
         state(lrState)?.let { _tyrePressureLRState.value = it }
         state(rrState)?.let { _tyrePressureRRState.value = it }
         publishSnapshot()
+    }
+
+    // Current tyre-pressure display unit (1=Bar, 2=PSI, 3=kPa), from instrument fid=4208
+    // (INSTRUMENT_UNIT_PRESSURE). Null until the first poll/event arrives — decode is skipped rather
+    // than guessed while unknown. See registerInstrumentListener (Dilink5Client) for how this is set.
+    @Volatile private var dilink5PressureUnit: Int? = null
+
+    fun applyDilink5PressureUnit(unit: Int) {
+        if (unit !in 1..3) return
+        dilink5PressureUnit = unit
+    }
+
+    /**
+     * Decodes a raw DiLink-5 tyre-pressure-ByType value into bar, using the live unit state from
+     * [applyDilink5PressureUnit]. Returns null while the unit is still unknown (never guesses).
+     *   1 (Bar): raw/10 = bar        (confirmed on-car: raw ~27 → 2.7 bar)
+     *   2 (PSI): raw/10 = psi        (confirmed on-car: raw ~401 → 40.1 psi → 2.76 bar)
+     *   3 (kPa): raw/100 = bar       (confirmed on-car: raw ~277 → 2.77 bar)
+     */
+    private fun decodeDilink5PressureByTypeBar(raw: Float): Double? {
+        val v = raw.toDouble()
+        return when (dilink5PressureUnit) {
+            1 -> v / 10.0
+            2 -> (v / 10.0) * 0.0689476
+            3 -> v / 100.0
+            else -> null
+        }?.takeIf { it in 1.0..5.0 }  // sane tyre-pressure range guard
     }
 
     /**
