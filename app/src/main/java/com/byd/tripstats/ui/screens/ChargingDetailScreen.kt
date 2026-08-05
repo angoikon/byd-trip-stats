@@ -39,6 +39,10 @@ fun ChargingDetailScreen(
     val dataPoints by viewModel.selectedSessionDataPoints.collectAsState()
     val liveTelemetry by viewModel.displayTelemetry.collectAsState()
     val socSource by viewModel.socSource.collectAsState()
+    val chargingDistances by viewModel.chargingDistances.collectAsState()
+    val electricityPrice by viewModel.electricityPricePerKwh.collectAsState()
+    val currencySymbol by viewModel.currencySymbol.collectAsState()
+    val unitSystem by viewModel.unitSystem.collectAsState()
 
     var baseChartPoints by remember { mutableStateOf<List<ChargingChartPoint>>(emptyList()) }
     LaunchedEffect(dataPoints) {
@@ -138,7 +142,17 @@ fun ChargingDetailScreen(
             val isSynthetic = session!!.peakKw == 0.0 && session!!.avgKw == 0.0
 
             when (selectedTab) {
-                0 -> ChargingOverviewTab(session!!, chartPoints, powerSummary, socSource)
+                0 -> ChargingOverviewTab(
+                    session = session!!,
+                    dataPoints = chartPoints,
+                    powerSummary = powerSummary,
+                    socSource = socSource,
+                    distanceSinceLastCharge = chargingDistances[session!!.id],
+                    defaultTariff = electricityPrice,
+                    currencySymbol = currencySymbol,
+                    unitSystem = unitSystem,
+                    onSavePrice = { rate -> viewModel.saveChargingSessionPrice(session!!.id, rate) }
+                )
                 1 -> if (session!!.isActive && chartPoints.size < 2) {
                     ActiveChargingPowerTab(
                         latestKw = liveTelemetry?.chargingPower?.takeIf { it > 0.1 }

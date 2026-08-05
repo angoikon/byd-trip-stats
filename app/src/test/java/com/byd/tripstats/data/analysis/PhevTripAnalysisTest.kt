@@ -36,6 +36,32 @@ class PhevTripAnalysisTest {
         assertEquals(15.0, b.evKwhPer100EvKm!!, 0.001)
     }
 
+    /**
+     * Both lifetime counters step in whole km, so on a real drive they can sum to
+     * more than the odometer delta — a recorded Shark 6 trip reported EV 42 km +
+     * ICE 22 km = 64 km across a 63.1 km drive. The card shows both figures side by
+     * side, so they are normalised onto the odometer distance and must add up.
+     */
+    @Test
+    fun wholeKmCounterOvershootIsNormalisedOntoTheOdometer() {
+        val points = listOf(
+            point(ts = 0L, odo = 6555.9, raw = phevRaw(fuelL = 348.4, iceKm = 3038, evKm = 3517, mode = 1)),
+            point(ts = 1_500_000L, odo = 6590.0, raw = phevRaw(fuelL = 349.5, iceKm = 3049, evKm = 3538, mode = 3)),
+            point(ts = 2_970_000L, odo = 6619.0, raw = phevRaw(fuelL = 350.5, iceKm = 3060, evKm = 3559, mode = 3)),
+        )
+
+        val b = PhevTripAnalysis.analyze(points, tripEnergyKwh = 13.9)
+
+        assertNotNull(b)
+        b!!
+        assertEquals(63.1, b.totalKm, 0.001)
+        // Raw counters say 22 + 42 = 64.0; scaled by 63.1/64.0 they reconcile.
+        assertEquals(21.69, b.iceKm, 0.02)
+        assertEquals(41.41, b.evKm, 0.02)
+        assertEquals(b.totalKm, b.iceKm + b.evKm, 0.001)
+        assertEquals(42.0 / 64.0 * 100.0, b.evSharePct, 0.1)
+    }
+
     /** Pure-EV PHEV trip: 100 % EV share, no fuel figures. */
     @Test
     fun pureEvTripIsFullyElectric() {
@@ -74,6 +100,46 @@ class PhevTripAnalysisTest {
         assertEquals(0.8, b.iceKm, 0.001)
         assertEquals(0.03, b.fuelLiters, 0.0001)
         assertNull(b.evKwhPer100EvKm)
+    }
+
+    /**
+     * A point with a missing/corrupt rawJson blob (SDK wedge, partial write) must not
+     * swallow the counter movement across it — deltas are taken against the last
+     * point that carried the counter, not strictly the adjacent one.
+     */
+    @Test
+    fun corruptMidTripPointDoesNotDropCounterDeltas() {
+        val points = listOf(
+            point(ts = 0L, odo = 1000.0, raw = phevRaw(fuelL = 100.0, iceKm = 5000, evKm = 8000, mode = 1)),
+            point(ts = 60_000L, odo = 1005.0, raw = "{}"),               // blob lost on this point
+            point(ts = 120_000L, odo = 1010.0, raw = phevRaw(fuelL = 100.5, iceKm = 5004, evKm = 8006, mode = 3)),
+        )
+
+        val b = PhevTripAnalysis.analyze(points, tripEnergyKwh = null)
+
+        assertNotNull(b)
+        b!!
+        // Adjacent-pair deltas would all be null here (every pair touches the gap);
+        // carry-forward recovers fuel 0.5 L and the 4 + 6 km counter movement.
+        assertEquals(0.5, b.fuelLiters, 0.0001)
+        assertEquals(4.0 / 10.0 * b.totalKm, b.iceKm, 0.001)
+        assertEquals(6.0 / 10.0 * b.totalKm, b.evKm, 0.001)
+    }
+
+    /** Keep mode (5, SOC hold) runs the engine — the odometer fallback must count it. */
+    @Test
+    fun keepModeCountsAsIceInTheOdometerFallback() {
+        val points = listOf(
+            point(ts = 0L, odo = 100.0, raw = phevRaw(fuelL = 10.0, iceKm = 500, evKm = 900, mode = 5)),
+            point(ts = 60_000L, odo = 100.4, raw = phevRaw(fuelL = 10.02, iceKm = 500, evKm = 900, mode = 5)),
+            point(ts = 120_000L, odo = 100.8, raw = phevRaw(fuelL = 10.03, iceKm = 500, evKm = 900, mode = 1)),
+        )
+
+        val b = PhevTripAnalysis.analyze(points, tripEnergyKwh = null)
+
+        assertNotNull(b)
+        // Both pairs led by mode-5 points → same 0.8 km as the HEV-mode fallback test.
+        assertEquals(0.8, b!!.iceKm, 0.001)
     }
 
     /** A counter reset mid-trip is clamped away instead of corrupting the totals. */

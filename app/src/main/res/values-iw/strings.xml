@@ -247,6 +247,15 @@
     <string name="breakdown_aux_desc">מערכת 12V, מיזוג ושארית המודל. מוצג כיתרה אחרי גלגול, אווירודינמיקה ושיפוע. הפסדי מנוע/ממיר כלולים בערכים למעלה</string>
     <string name="vehicle_mass_label">מסת הרכב</string>
     <string name="cda_drag_area_label">CdA (שטח גרר)</string>
+    <string name="phev_breakdown_section">פירוט היברידי</string>
+    <string name="phev_ev_share_label">חלק חשמלי</string>
+    <string name="phev_ev_distance_label">מרחק חשמלי</string>
+    <string name="phev_ice_distance_label">מרחק מנוע</string>
+    <string name="phev_fuel_used_label">דלק שנצרך</string>
+    <string name="phev_fuel_consumption_ice_label">צריכת דלק (ק״מ מנוע)</string>
+    <string name="phev_fuel_consumption_combined_label">צריכת דלק (כל הנסיעה)</string>
+    <string name="phev_ev_consumption_label">צריכת חשמל (ק״מ EV)</string>
+    <string name="phev_breakdown_hint">מחולק לפי מוני הק״מ של ה-EV/מנוע ומוני הדלק של הרכב עצמו שנרשמו במהלך הנסיעה</string>
 
     <!-- Export dialog -->
     <string name="export_title">ייצוא נתוני נסיעה</string>
@@ -261,6 +270,14 @@
     <string name="export_send_csv">שלח CSV ל-Telegram</string>
     <string name="export_send_json">שלח JSON ל-Telegram</string>
     <string name="export_send_html">שלח מציג HTML ל-Telegram</string>
+    <string name="export_share_link">שיתוף כקישור (קוד QR)</string>
+    <string name="export_uploading">מעלה…</string>
+    <string name="export_upload_failed">ההעלאה נכשלה: %1$s</string>
+    <string name="export_qr_dialog_title">סרוק כדי לשתף נסיעה זו</string>
+    <string name="export_qr_dialog_desc">הנסיעה (כולל מסלול ה-GPS שלה) מועלית לשרת ציבורי זמני והקישור פג תוקף בתוך 72 שעות. סרוק עם הטלפון כדי לשלוח את הקישור בדוא״ל אל %1$s.</string>
+    <string name="export_qr_no_render">לא ניתן היה להציג את קוד ה-QR. שלח את קישור הנסיעה שלמטה אל %1$s ידנית בדוא״ל.</string>
+    <string name="export_qr_content_desc">קוד QR ששולח בדוא״ל את קישור ההורדה של הנסיעה</string>
+    <string name="export_qr_copy_link">העתק קישור</string>
 
     <!-- Trip cost -->
     <string name="trip_cost_fixed_label">עלות נסיעה @ תעריף קבוע</string>
@@ -274,6 +291,23 @@
     <string name="custom_dc_dialog_title">עלות טעינת DC מותאמת</string>
     <string name="dc_charging_explanation">הזינו את הסכום הכולל ששילמתם על טעינת DC בנסיעה זו. האפליקציה תנכה את אנרגיית הטעינה החופפת מההערכה לפי התעריף הביתי הקבוע ותוסיף במקומה את העלות הזו.</string>
     <string name="total_dc_cost_label">עלות טעינת DC כוללת</string>
+    <string name="energy_rate_label">תעריף אנרגיה</string>
+    <string name="section_cost">עלות</string>
+    <string name="charge_price_label">מחיר</string>
+    <string name="charge_cost_label">עלות הטעינה</string>
+    <string name="free_label">חינם</string>
+    <string name="using_tariff_rate">תעריף (%1$s / kWh)</string>
+    <string name="set_price_action">הגדר מחיר</string>
+    <string name="charge_price_estimate_hint">מוערך לפי התעריף הגלובלי. הגדר מחיר כדי לתעד כמה שילמת בפועל (0 = חינם).</string>
+    <string name="charge_price_dialog_title">מחיר הטעינה</string>
+    <string name="charge_price_explanation">תעד כמה עלתה טעינה זו. הזן מחיר לכל kWh, או את הסכום הכולל ששילמת והאפליקציה תחשב את התעריף. הזן 0 לטעינה חינם.</string>
+    <string name="charge_price_free_hint">טיפ: הזן 0 לטעינה חינם.</string>
+    <string name="price_mode_rate">לכל kWh</string>
+    <string name="price_mode_total">סך הכל ששולם</string>
+    <string name="price_total_label">סך הכל ששולם</string>
+    <string name="distance_since_last_charge_label">מאז הטעינה האחרונה</string>
+    <string name="since_last_charge_chip">%1$s מאז הטעינה האחרונה</string>
+    <string name="cost_history_total">סה״כ %1$s · ממוצע %2$s/חודש</string>
 
     <!-- Charging History -->
     <string name="charging_history_title">היסטוריית טעינה</string>
@@ -464,6 +498,9 @@
     <string name="restore_database_title">לשחזר מסד נתונים?</string>
     <string name="restore_database_msg">פעולה זו תחליף לצמיתות את כל נתוני הנסיעות הנוכחיים ב-%1$s.\n\nהאפליקציה תיסגר ותיפתח מחדש אוטומטית לאחר השחזור.</string>
     <string name="delete_backup_confirm">\"%1$s\" יימחק לצמיתות.</string>
+    <string name="delete_backup_title">למחוק את הגיבוי?</string>
+    <string name="delete_telegram_backup_confirm">\"%1$s\" יוסר מרשימה זו, ויימחק מצ\'אט ה-Telegram שלך אם נשלח לפני פחות מ-48 שעות (Telegram אינו מאפשר לבוטים למחוק הודעות ישנות יותר).</string>
+    <string name="delete_backup_action">מחק גיבוי</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">גיבוי Telegram</string>
@@ -553,6 +590,8 @@
     <string name="mode_regen_lane_title">מצב ריקופרציה</string>
     <string name="mode_drive_modes_label">מצבי נהיגה</string>
     <string name="mode_regen_modes_label">מצבי ריקופרציה</string>
+    <string name="mode_energy_lane_title">מצב אנרגיה (EV / HEV)</string>
+    <string name="mode_energy_modes_label">מצבי אנרגיה</string>
     <string name="chart_speed_detailed">פרופיל מהירות (מפורט)</string>
     <string name="chart_rpm_detailed">סל"ד מנוע (מפורט)</string>
     <string name="chart_power_detailed">פרופיל הספק (מפורט)</string>
@@ -1128,6 +1167,8 @@
     <string name="speed_state_driving">בנסיעה</string>
     <string name="soc_subtitle_usable">טעינה זמינה</string>
     <string name="range_subtitle_projection">תחזית דינמית</string>
+    <string name="range_subtitle_phev">דלק %1$s · סה״כ %2$s</string>
+    <string name="stat_fuel_range">דלק</string>
     <string name="distance_subtitle_session">מפגש זה</string>
     <string name="odometer_subtitle_lifetime">מרחק כולל</string>
     <string name="discharge_subtitle_lifetime">סך האנרגיה שנפרקה</string>

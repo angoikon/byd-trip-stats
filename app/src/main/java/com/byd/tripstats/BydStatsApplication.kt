@@ -32,6 +32,9 @@ class BydStatsApplication : Application(), Configuration.Provider {
 
     companion object {
         private const val TAG = "BydStatsApp"
+        /** Stack frames persisted per crash — enough to identify the site, short enough
+         *  that a crash loop can't flood the 2.5 MB diag.log. */
+        private const val CRASH_LOG_FRAMES = 8
     }
 
     override val workManagerConfiguration: Configuration
@@ -124,6 +127,24 @@ class BydStatsApplication : Application(), Configuration.Provider {
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             Log.e(TAG, "Uncaught exception — scheduling restart in 5s", throwable)
+            // Persist the reason too. Log.e only reaches logcat, whose 256 KiB ring is
+            // shredded within ~7 min on DiLink, so in a release build a crash loop shows
+            // up in diag.log as nothing but unexplained repeated process starts — the
+            // symptom is recorded and the cause is not. Runs first (the process is about
+            // to die), stays bounded, and must never throw from inside a crash handler.
+            try {
+                val chain = generateSequence(throwable) { it.cause }
+                    .take(3)
+                    .joinToString(" <- ") { "${it.javaClass.name}: ${it.message}" }
+                val frames = throwable.stackTrace.take(CRASH_LOG_FRAMES)
+                    .joinToString(" | ") { "${it.className}.${it.methodName}:${it.lineNumber}" }
+                DiagLog.event(
+                    applicationContext, TAG,
+                    "CRASH thread=${thread.name} $chain @ $frames",
+                )
+            } catch (e: Throwable) {
+                Log.e(TAG, "Failed to persist crash to diag log", e)
+            }
             try {
                 com.byd.tripstats.receiver.ServiceRestartReceiver.schedule(
                     applicationContext, delayMs = 5_000L, reason = "crash-restart"

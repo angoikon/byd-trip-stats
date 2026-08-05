@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.byd.tripstats.data.local.BydStatsDatabase
 import com.byd.tripstats.data.local.dao.TripSohSummary
+import com.byd.tripstats.data.analysis.CostAttribution
 import com.byd.tripstats.data.analysis.RouteGroup
 import com.byd.tripstats.data.analysis.RouteGrouping
 import com.byd.tripstats.data.analysis.RouteTripInput
@@ -248,13 +249,11 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     private val _selectedSessionId = MutableStateFlow<Long?>(null)
 
-    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    // Derived from the Room-backed session list so it reflects row edits (favourite,
+    // per-charge price) immediately — not just data-point changes during active charging.
     val selectedSession: StateFlow<ChargingSessionEntity?> =
-        _selectedSessionId.flatMapLatest { id ->
-            if (id == null) flowOf(null)
-            else chargingRepository.getDataPointsForSession(id).map { _ ->
-                chargingRepository.getSessionById(id)
-            }
+        combine(_selectedSessionId, allChargingSessions) { id, sessions ->
+            id?.let { sid -> sessions.firstOrNull { it.id == sid } }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
@@ -271,6 +270,31 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     val allTrips: StateFlow<List<TripEntity>> = tripRepository.getAllTrips()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    // ── Cost attribution & distance-between-charges ────────────────────────────
+
+    /**
+     * Physical blended electricity rate (currency/kWh) per completed trip — the FIFO
+     * "battery cost-basis" ledger ([CostAttribution.blendedTripRates]). The per-trip override is
+     * layered on top by the consumers (it's display-only and doesn't change the physical energy).
+     * Exposed so the trip-detail screen can show/edit a trip's rate without re-deriving the ledger.
+     */
+    val tripBlendedRates: StateFlow<Map<Long, Double?>> =
+        combine(allTrips, allChargingSessions, electricityPricePerKwh) { trips, sessions, tariff ->
+            CostAttribution.blendedTripRates(trips, sessions, tariff)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
+
+    /**
+     * Distance (km) driven since the previous charge, keyed by completed charging-session id.
+     * Anchored on each charge's odometer at plug-in ([ChargingSessionEntity.startOdometer]);
+     * legacy rows without it fall back to the odometer of the last trip that ended before the
+     * charge. A session's value is the delta from the immediately preceding charge's anchor —
+     * null when either anchor is missing or the delta is negative (odometer glitch / reset).
+     */
+    val chargingDistances: StateFlow<Map<Long, Double?>> =
+        combine(allChargingSessions, allTrips) { sessions, trips ->
+            CostAttribution.distancesSincePreviousCharge(sessions, trips)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     // Level 3 prior (LIFETIME_AVERAGE): the driver's own lifetime Wh/km, recomputed only
     // when the trip list changes. Eagerly so the projection/telemetry loop can read .value
@@ -445,8 +469,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     )
 
     val tripDisplayMetrics: StateFlow<Map<Long, TripDisplayMetrics>> =
-        combine(allTrips, allTripStats, electricityPricePerKwh) { trips, stats, pricePerKwh ->
+        combine(allTrips, allTripStats, allChargingSessions, electricityPricePerKwh) { trips, stats, sessions, pricePerKwh ->
             val statsById = stats.associateBy { it.tripId }
+            val blendedRates = CostAttribution.blendedTripRates(trips, sessions, pricePerKwh)
             trips.associate { trip ->
                 val dist = trip.distance
                 val dur  = trip.duration
@@ -516,8 +541,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     (regen / (trip.energyConsumed!! + regen)) * 100.0
                 } else null
 
-                val tripCost = if (pricePerKwh > 0.0 && trip.energyConsumed != null)
-                    trip.energyConsumed!! * pricePerKwh else null
+                val rate = blendedRates[trip.id]
+                val tripCost = if (rate != null && trip.energyConsumed != null)
+                    trip.energyConsumed!! * rate else null
 
                 trip.id to TripDisplayMetrics(avgSpeed, score, regenPct, tripCost)
             }
@@ -648,6 +674,37 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         // lifetime-average rate is trusted as a cold-start prior. Below this the history
         // is too thin to beat the catalog baseline, so we stay on BASELINE.
         const val LIFETIME_MIN_KM       = 50.0
+        // PHEV: largest believable jump of the lifetime ICE-km counter between two
+        // consecutive ticks. Anything above this is a counter reset, not driving —
+        // mirrors PhevTripAnalysis.MAX_PAIR_MILEAGE_KM.
+        const val MAX_ICE_COUNTER_STEP_KM = 50.0
+
+        /** EV-only remainder of a distance step, and the ICE debt still owed after it. */
+        data class IceWithholding(val evKm: Double, val debtKm: Double)
+
+        /** Believable forward step of the lifetime ICE-km counter, else 0. */
+        fun iceCounterStepKm(previous: Int?, current: Int?): Double {
+            if (previous == null || current == null) return 0.0
+            val step = (current - previous).toDouble()
+            return if (step > 0.0 && step <= MAX_ICE_COUNTER_STEP_KM) step else 0.0
+        }
+
+        /**
+         * Withholds outstanding ICE-counter debt from one distance step.
+         *
+         * The lifetime ICE-km counter steps in whole kilometres, so the tick where it
+         * ticks can owe more distance than that tick actually drove. The surplus stays
+         * on the books and is paid off by the ticks that follow, which makes the total
+         * distance withheld across a trip equal the counter's own delta — not the far
+         * larger stretch that merely had HEV mode selected.
+         */
+        fun withholdIceDebt(distKm: Double, debtKm: Double): IceWithholding {
+            val owed = debtKm.coerceAtLeast(0.0)
+            if (distKm <= 0.0) return IceWithholding(0.0, owed)
+            if (owed <= 0.0) return IceWithholding(distKm, 0.0)
+            val withheld = minOf(distKm, owed)
+            return IceWithholding(distKm - withheld, owed - withheld)
+        }
         private val SOUTHERN_HEMISPHERE_COUNTRY_CODES = setOf(
             "AU", "NZ", "ZA", "AR", "CL", "UY", "PY",
             "BW", "LS", "NA", "SZ", "ZW", "MZ", "MG"
@@ -1009,6 +1066,12 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     private var evTripDistanceKm    = 0.0            // EV-only analogue of the trip distance
     private var evWindowDistanceKm  = 0.0            // EV-only x-axis of the rolling window
     private var lastSampleTripDistKm: Double? = null // trip distance at the previous window sample
+    private var lastIceMileageKm: Int? = null        // previous tick's lifetime ICE-km counter
+    // ICE kilometres reported by the counter but not yet withheld from the EV axes.
+    // Two independent pools because the trip/bin axis and the rolling-window axis
+    // consume different distance measures on the same tick (see evShareOf*Distance).
+    private var iceDebtTripKm   = 0.0
+    private var iceDebtWindowKm = 0.0
     private var lastTelemetryWasCarOn: Boolean? = null
     // Wall-clock time (telemetry ms) when the car first appeared off during the
     // active live drive session. Used to gate the segment-reset-on-engine-on so
@@ -1058,15 +1121,22 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         maxOf(telemetry.speed, telemetry.locationGpsSpeed ?: 0.0)
 
     /**
-     * ICE-propulsion predicate for one tick / stored point (PHEV only; both signals
-     * are absent/0 on BEVs). True when fuel is visibly flowing or the powertrain
-     * reports an ICE-propelled energy mode (3 = HEV, 4 = Fuel). Series-hybrid
-     * nuance: a tick where the ICE only generates while the pack still discharges
-     * is excluded from the *distance* axes but its energy is kept, so the rate can
-     * only err short — range is never over-stated (see MD/PHEV_ICE_Aware_Projection.md).
+     * Coarse ICE-propulsion predicate for one tick / stored point — the **fallback**
+     * used only when the car doesn't expose the lifetime ICE-km counter at all.
+     *
+     * It reads energy_mode 3 (HEV) / 4 (Fuel) / 5 (Keep, SOC hold) as fully ICE-propelled, which is a
+     * substantial over-estimate on a series hybrid: measured against a recorded
+     * Shark 6 drive, HEV mode covered 47 km of which the car's own counters
+     * attribute only 22 km to the ICE — the pack propelled the rest. On firmwares
+     * where instant_fuel_consumption is alive it disambiguates; where it reads a
+     * constant 0 (Shark 6 DM-O) the mode flag is all that's left. Over-excluding
+     * distance while keeping the energy errs the rate HIGH, so range is never
+     * over-stated — but prefer [iceCounterStepKm] whenever the counter exists
+     * (see MD/PHEV_ICE_Aware_Projection.md).
      */
     private fun isIceActive(instantFuelConsumption: Double?, energyMode: Int): Boolean =
-        (instantFuelConsumption ?: 0.0) > 0.0 || energyMode == 3 || energyMode == 4
+        (instantFuelConsumption ?: 0.0) > 0.0 ||
+            energyMode == 3 || energyMode == 4 || energyMode == 5
 
     /**
      * Restore-path analogue of [isIceActive] for a stored data point: reads the
@@ -1082,6 +1152,31 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         val instantFuel = obj["instant_fuel_consumption"]?.jsonPrimitive?.doubleOrNull
         val energyMode = obj["energy_mode"]?.jsonPrimitive?.intOrNull ?: 0
         return isIceActive(instantFuel, energyMode)
+    }
+
+    /** Restore-path reader for a stored point's lifetime ICE-km counter. */
+    private fun pointIceMileageKm(rawJson: String): Int? {
+        if (rawJson.isBlank() || rawJson == "{}") return null
+        val obj = runCatching { rawPointJson.parseToJsonElement(rawJson).jsonObject }
+            .getOrNull() ?: return null
+        return obj["ice_mileage_km"]?.jsonPrimitive?.intOrNull
+    }
+
+    /**
+     * Withholds outstanding ICE-counter debt from [distKm], returning the EV-only
+     * remainder that may advance the trip/bin rate axis and updating the debt pool.
+     */
+    private fun evShareOfTripDistance(distKm: Double): Double {
+        val (evKm, debtKm) = withholdIceDebt(distKm, iceDebtTripKm)
+        iceDebtTripKm = debtKm
+        return evKm
+    }
+
+    /** [evShareOfTripDistance] for the rolling-window axis, which keeps its own debt pool. */
+    private fun evShareOfWindowDistance(distKm: Double): Double {
+        val (evKm, debtKm) = withholdIceDebt(distKm, iceDebtWindowKm)
+        iceDebtWindowKm = debtKm
+        return evKm
     }
 
     private fun journeyDistanceKm(telemetry: VehicleTelemetry): Double? =
@@ -1157,6 +1252,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             evTripDistanceKm = 0.0
             evWindowDistanceKm = 0.0
             lastSampleTripDistKm = null
+            lastIceMileageKm = null
+            iceDebtTripKm = 0.0
+            iceDebtWindowKm = 0.0
             // Back-date the session start to match the back-anchored odometer so
             // avgSpeed = journeyKm / journeyTime rather than journeyKm / a-few-seconds
             // (which produces 400+ km/h for the first minute after the app opens mid-drive).
@@ -1238,6 +1336,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         evTripDistanceKm = 0.0
         evWindowDistanceKm = 0.0
         lastSampleTripDistKm = null
+        lastIceMileageKm = null
+        iceDebtTripKm = 0.0
+        iceDebtWindowKm = 0.0
         _liveDistanceKm.value = 0.0
         _liveSegmentDistanceKm.value = 0.0
         _liveSessionStartMs.value = null
@@ -1436,10 +1537,22 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
                     val prevMs = lastTelemetryTimeMs
                     val effectiveSpeed = effectiveSpeed(telemetry)
-                    // ICE gating (PHEV): ticks where the ICE propels the car are kept in
-                    // the trip totals but excluded from the EV-rate distance axes below.
+                    // ICE gating (PHEV): ICE-propelled distance stays in the trip totals
+                    // but is withheld from the EV-rate distance axes below. The authority
+                    // is the car's own lifetime ICE-km counter, carried as a debt because
+                    // it steps in whole kilometres — energy_mode alone counts all of HEV
+                    // mode as ICE even though the pack propels roughly half of it, which
+                    // shrank the EV axis ~2.5× and quartered the projected range.
                     val isPhevCarTick = currentCarConfig()?.isPhev == true
-                    val iceTick = isPhevCarTick &&
+                    val iceCounterKm = telemetry.iceMileageKm?.takeIf { isPhevCarTick }
+                    if (iceCounterKm != null) {
+                        val stepKm = iceCounterStepKm(lastIceMileageKm, iceCounterKm)
+                        iceDebtTripKm += stepKm
+                        iceDebtWindowKm += stepKm
+                        lastIceMileageKm = iceCounterKm
+                    }
+                    // Coarse per-tick fallback, only for firmwares with no ICE counter.
+                    val iceTick = isPhevCarTick && iceCounterKm == null &&
                         isIceActive(telemetry.instantFuelConsumption, telemetry.energyMode)
                     var deltaEnergyWh = 0.0
                     if (prevMs != null) {
@@ -1519,8 +1632,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         // ICE generates, and dropping distance but keeping energy can only
                         // err the rate HIGH — range is never over-stated).
                         if (!iceTick) {
-                            acc.distanceKm += binDistKm
-                            evTripDistanceKm += binDistKm
+                            val evBinDistKm = evShareOfTripDistance(binDistKm)
+                            acc.distanceKm += evBinDistKm
+                            evTripDistanceKm += evBinDistKm
                         }
                         if (deltaEnergyWh > 0.0) {
                             acc.energyWh += deltaEnergyWh
@@ -1627,7 +1741,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     val prevTripSampleKm = lastSampleTripDistKm
                     lastSampleTripDistKm = distKm
                     if (!iceTick) {
-                        evWindowDistanceKm += (distKm - (prevTripSampleKm ?: distKm)).coerceAtLeast(0.0)
+                        val sampleStepKm = (distKm - (prevTripSampleKm ?: distKm)).coerceAtLeast(0.0)
+                        evWindowDistanceKm += evShareOfWindowDistance(sampleStepKm)
                     }
                     val sampleAxisKm = if (isPhevCarTick) evWindowDistanceKm else distKm
                     val dDistKm = (sampleAxisKm - (prevSample?.distanceKm ?: sampleAxisKm))
@@ -2069,20 +2184,32 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 val restoreMaxGapSeconds = 60.0
                 energySamples.clear()
                 var cumEnergyWh = 0.0
-                // Mirror of the live path's ICE gating: pairs led by an ICE-propelled
-                // point don't advance the EV-only distance axis the window rate is
-                // computed on. Pre-gating history has no fuel signals in rawJson, so
-                // every pair reads electric and the rebuild matches old behaviour.
+                // Mirror of the live path's ICE gating: ICE-propelled kilometres don't
+                // advance the EV-only distance axis the window rate is computed on. Same
+                // authority as live — the lifetime ICE-km counter carried as a debt, with
+                // the coarse energy_mode predicate only when no point carries the counter.
+                // Pre-gating history has no fuel signals in rawJson, so every pair reads
+                // electric and the rebuild matches old behaviour.
                 val isPhevRestore = currentCarConfig()?.isPhev == true
-                val pointIce = if (isPhevRestore)
+                val iceCounters = arrayOfNulls<Int>(dataPoints.size)
+                if (isPhevRestore) {
+                    dataPoints.forEachIndexed { i, dp -> iceCounters[i] = pointIceMileageKm(dp.rawJson) }
+                }
+                val hasIceCounter = iceCounters.any { it != null }
+                val pointIce = if (isPhevRestore && !hasIceCounter)
                     BooleanArray(dataPoints.size) { pointIceActive(dataPoints[it].rawJson) }
                 else BooleanArray(dataPoints.size)
                 var evAxisKm = 0.0
+                var restoreIceDebtKm = 0.0
                 dataPoints.forEachIndexed { i, dp ->
                     if (i > 0) {
                         val prev = dataPoints[i - 1]
+                        restoreIceDebtKm += iceCounterStepKm(iceCounters[i - 1], iceCounters[i])
                         if (!pointIce[i - 1]) {
-                            evAxisKm += (dp.odometer - prev.odometer).coerceAtLeast(0.0)
+                            val pairKm = (dp.odometer - prev.odometer).coerceAtLeast(0.0)
+                            val withheld = withholdIceDebt(pairKm, restoreIceDebtKm)
+                            restoreIceDebtKm = withheld.debtKm
+                            evAxisKm += withheld.evKm
                         }
                         val dt = (dp.timestamp - prev.timestamp).coerceAtLeast(0L) / 1000.0
                         if (dt in 0.0..restoreMaxGapSeconds) {
@@ -2106,6 +2233,12 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 evWindowDistanceKm = evAxisKm
                 evTripDistanceKm = evAxisKm
                 lastSampleTripDistKm = liveDistanceKm
+                // Carry the unpaid ICE debt and the counter anchor across the resume so
+                // the first live tick continues the same withholding rather than
+                // re-counting the restored kilometres.
+                iceDebtTripKm = restoreIceDebtKm
+                iceDebtWindowKm = restoreIceDebtKm
+                lastIceMileageKm = iceCounters.lastOrNull { it != null }
                 _liveAccumulatedKwh.value = (cumEnergyWh / 1000.0).coerceAtLeast(0.0)
                 // Seed the live per-sample delta tracker so the first post-resume live sample
                 // diffs against the restored cumulative energy (≈ trip energy) rather than
@@ -2124,6 +2257,11 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 // the speed actually driven, not the speed at the start of the interval.
                 liveSpeedBins.clear()
                 if (dataPoints.size >= 2) {
+                    // Same ICE gating as the live bins: ICE-propelled distance is excluded
+                    // from the rate axis, its energy is kept. This walk keeps its own debt
+                    // pool because it consumes the pair distances independently of the
+                    // window axis rebuilt above.
+                    var binIceDebtKm = 0.0
                     for (i in 1 until dataPoints.size) {
                         val a = dataPoints[i - 1]
                         val b = dataPoints[i]
@@ -2131,9 +2269,12 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         val dist = (b.odometer - a.odometer).coerceAtLeast(0.0)
                         val energy = (b.totalDischarge - a.totalDischarge).coerceAtLeast(0.0) * 1000.0
                         val acc = liveSpeedBins.getOrPut(bin) { BinAccumulator() }
-                        // Same ICE gating as the live bins: ICE-propelled distance is
-                        // excluded from the rate axis, its energy is kept.
-                        if (!pointIce[i - 1]) acc.distanceKm += dist
+                        binIceDebtKm += iceCounterStepKm(iceCounters[i - 1], iceCounters[i])
+                        if (!pointIce[i - 1]) {
+                            val withheld = withholdIceDebt(dist, binIceDebtKm)
+                            binIceDebtKm = withheld.debtKm
+                            acc.distanceKm += withheld.evKm
+                        }
                         acc.energyWh += energy
                     }
                 }
@@ -2544,10 +2685,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         getApplication<Application>().getSharedPreferences("trip_history_prefs", 0)
     }
 
-    private val tripCostPrefs: SharedPreferences by lazy {
-        getApplication<Application>().getSharedPreferences("trip_cost_overrides", 0)
-    }
-
     private fun SharedPreferences.getFloatOrNull(key: String): Float? =
         if (contains(key)) getFloat(key, 0f) else null
 
@@ -2585,36 +2722,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     private val _filterState = MutableStateFlow(loadFilterState())
     val filterState: StateFlow<TripFilterState> = _filterState.asStateFlow()
-
-    private fun loadTripAdditionalChargingCosts(): Map<Long, Double> =
-        tripCostPrefs.all.mapNotNull { (key, value) ->
-            key.removePrefix("trip_dc_cost_").toLongOrNull()?.let { tripId ->
-                val amount = when (value) {
-                    is Float -> value.toDouble()
-                    is Int -> value.toDouble()
-                    is Long -> value.toDouble()
-                    is String -> value.toDoubleOrNull()
-                    else -> value as? Double
-                }
-                amount?.takeIf { it >= 0.0 }?.let { tripId to it }
-            }
-        }.toMap()
-
-    private val _tripAdditionalChargingCosts = MutableStateFlow(loadTripAdditionalChargingCosts())
-    val tripAdditionalChargingCosts: StateFlow<Map<Long, Double>> =
-        _tripAdditionalChargingCosts.asStateFlow()
-
-    fun saveTripAdditionalChargingCost(tripId: Long, amount: Double?) {
-        val key = "trip_dc_cost_$tripId"
-        tripCostPrefs.edit().apply {
-            if (amount != null && amount > 0.0) {
-                putString(key, amount.toString())
-            } else {
-                remove(key)
-            }
-        }.apply()
-        _tripAdditionalChargingCosts.value = loadTripAdditionalChargingCosts()
-    }
 
     fun setSortField(field: TripSortField) {
         _sortField.value = field
@@ -2659,6 +2766,12 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun setChargingFavourite(sessionId: Long, favourite: Boolean) {
         viewModelScope.launch { chargingRepository.setFavourite(sessionId, favourite) }
+    }
+
+    /** Sets/clears the per-charge electricity price (currency/kWh). null reverts to the global
+     *  tariff; 0.0 marks the charge as free. Propagates to derived trip costs via the interval link. */
+    fun saveChargingSessionPrice(sessionId: Long, price: Double?) {
+        viewModelScope.launch { chargingRepository.setSessionPrice(sessionId, price) }
     }
 
     // Folded so sortedFilteredTrips stays within combine's 5-flow arity while still
@@ -2796,35 +2909,57 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         val label     : String,  // e.g. "Mar 2026"
         val costAmount: Double,  // total cost for the month
         val kwhTotal  : Double,  // total kWh for the month
-        val tripCount : Int
+        val tripCount : Int,
+        val cumulativeCost: Double = 0.0  // running total across the shown window (oldest→this month)
     )
 
+    // Per-trip cost now resolves each trip's effective rate (override → supplying charge →
+    // global tariff) instead of applying one flat tariff, so free/priced charges and per-trip
+    // overrides are reflected. No longer gated on the global tariff being > 0: a user who only
+    // sets per-charge prices still gets a cost history.
     val monthlyCosts: StateFlow<List<MonthlyCost>> =
-        combine(allTrips, electricityPricePerKwh) { trips, pricePerKwh ->
-            if (pricePerKwh <= 0.0) return@combine emptyList()
+        combine(allTrips, allChargingSessions, electricityPricePerKwh) { trips, sessions, pricePerKwh ->
+            val blendedRates = CostAttribution.blendedTripRates(trips, sessions, pricePerKwh)
             val fmt = java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.getDefault())
             val cal = java.util.Calendar.getInstance()
-            trips
+            fun monthStart(t: Long): Long {
+                cal.timeInMillis = t
+                cal.set(java.util.Calendar.DAY_OF_MONTH, 1)
+                cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+                cal.set(java.util.Calendar.MINUTE, 0)
+                cal.set(java.util.Calendar.SECOND, 0)
+                cal.set(java.util.Calendar.MILLISECOND, 0)
+                return cal.timeInMillis
+            }
+            // (monthStart, kwh, cost) for every completed trip that has a resolvable rate.
+            val priced = trips
                 .filter { !it.isActive && it.energyConsumed != null && it.energyConsumed!! > 0 }
-                .groupBy { trip ->
-                    cal.timeInMillis = trip.startTime
-                    cal.set(java.util.Calendar.DAY_OF_MONTH, 1)
-                    cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
-                    cal.set(java.util.Calendar.MINUTE, 0)
-                    cal.set(java.util.Calendar.SECOND, 0)
-                    cal.set(java.util.Calendar.MILLISECOND, 0)
-                    cal.timeInMillis
+                .mapNotNull { trip ->
+                    val rate = blendedRates[trip.id]
+                        ?: return@mapNotNull null
+                    val kwh = trip.energyConsumed!!
+                    Triple(monthStart(trip.startTime), kwh, kwh * rate)
                 }
-                .entries
+            if (priced.isEmpty()) return@combine emptyList()
+
+            val byMonth = priced.groupBy { it.first }
+            // Running cumulative computed oldest→newest, then presented newest-first (12 months).
+            var running = 0.0
+            val cumulativeByMonth = HashMap<Long, Double>()
+            byMonth.keys.sorted().forEach { epoch ->
+                running += byMonth.getValue(epoch).sumOf { it.third }
+                cumulativeByMonth[epoch] = running
+            }
+            byMonth.entries
                 .sortedByDescending { it.key }
-                .take(12)
-                .map { (epochMs, monthTrips) ->
-                    val kwhTotal = monthTrips.sumOf { it.energyConsumed ?: 0.0 }
+                .take(13)   // 13 months so the current month lines up with the same month last year
+                .map { (epochMs, rows) ->
                     MonthlyCost(
-                        label      = fmt.format(java.util.Date(epochMs)),
-                        costAmount = kwhTotal * pricePerKwh,
-                        kwhTotal   = kwhTotal,
-                        tripCount  = monthTrips.size
+                        label          = fmt.format(java.util.Date(epochMs)),
+                        costAmount     = rows.sumOf { it.third },
+                        kwhTotal       = rows.sumOf { it.second },
+                        tripCount      = rows.size,
+                        cumulativeCost = cumulativeByMonth[epochMs] ?: 0.0
                     )
                 }
         }

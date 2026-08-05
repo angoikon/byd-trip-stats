@@ -250,6 +250,15 @@
     <string name="breakdown_aux_desc">12V sistemi, HVAC ve model artığı. Yuvarlanma, aerodinamik ve eğim sonrasındaki kalan olarak gösterilir. Motor/inverter kayıpları yukarıdaki rakamlara dahildir</string>
     <string name="vehicle_mass_label">Araç kütlesi</string>
     <string name="cda_drag_area_label">CdA (sürükleme alanı)</string>
+    <string name="phev_breakdown_section">Hibrit dökümü</string>
+    <string name="phev_ev_share_label">Elektrikli payı</string>
+    <string name="phev_ev_distance_label">Elektrikli mesafe</string>
+    <string name="phev_ice_distance_label">Motor mesafesi</string>
+    <string name="phev_fuel_used_label">Kullanılan yakıt</string>
+    <string name="phev_fuel_consumption_ice_label">Yakıt tüketimi (motor km)</string>
+    <string name="phev_fuel_consumption_combined_label">Yakıt tüketimi (tüm yolculuk)</string>
+    <string name="phev_ev_consumption_label">Elektrik tüketimi (EV km)</string>
+    <string name="phev_breakdown_hint">Yolculuk sırasında kaydedilen aracın kendi EV/motor kilometre ve yakıt sayaçlarına göre ayrılır</string>
 
     <!-- Export dialog -->
     <string name="export_title">Seyahat Verilerini Dışa Aktar</string>
@@ -264,6 +273,14 @@
     <string name="export_send_csv">CSV\'yi Telegram\'a gönder</string>
     <string name="export_send_json">JSON\'u Telegram\'a gönder</string>
     <string name="export_send_html">HTML görüntüleyiciyi Telegram\'a gönder</string>
+    <string name="export_share_link">Bağlantı olarak paylaş (QR kodu)</string>
+    <string name="export_uploading">Yükleniyor…</string>
+    <string name="export_upload_failed">Yükleme başarısız: %1$s</string>
+    <string name="export_qr_dialog_title">Bu yolculuğu paylaşmak için tarayın</string>
+    <string name="export_qr_dialog_desc">Yolculuk (GPS rotası dahil) geçici bir genel sunucuya yüklenir ve bağlantının süresi 72 saat içinde dolar. Bu bağlantıyı %1$s adresine e-postayla göndermek için telefonunuzla tarayın.</string>
+    <string name="export_qr_no_render">QR kodu görüntülenemedi. Aşağıdaki yolculuk bağlantısını %1$s adresine manuel olarak e-postayla gönderin.</string>
+    <string name="export_qr_content_desc">Yolculuk indirme bağlantısını e-postayla gönderen QR kodu</string>
+    <string name="export_qr_copy_link">Bağlantıyı kopyala</string>
 
     <!-- Trip cost -->
     <string name="trip_cost_fixed_label">Sabit tarifeli seyahat maliyeti</string>
@@ -277,6 +294,23 @@
     <string name="custom_dc_dialog_title">Özel DC şarj maliyeti</string>
     <string name="dc_charging_explanation">Bu seyahat sırasında DC şarj için ödediğiniz toplam tutarı girin. Uygulama, sabit ev tarifesi tahmininden örtüşen şarj enerjisini düşecek ve bunun yerine bu özel maliyeti ekleyecektir.</string>
     <string name="total_dc_cost_label">Toplam DC şarj maliyeti</string>
+    <string name="energy_rate_label">Enerji tarifesi</string>
+    <string name="section_cost">Maliyet</string>
+    <string name="charge_price_label">Fiyat</string>
+    <string name="charge_cost_label">Şarj maliyeti</string>
+    <string name="free_label">Ücretsiz</string>
+    <string name="using_tariff_rate">Tarife (%1$s / kWh)</string>
+    <string name="set_price_action">Fiyat ayarla</string>
+    <string name="charge_price_estimate_hint">Genel tarifeye göre tahmin edilir. Gerçekte ne kadar ödediğinizi kaydetmek için bir fiyat ayarlayın (0 = ücretsiz).</string>
+    <string name="charge_price_dialog_title">Şarj fiyatı</string>
+    <string name="charge_price_explanation">Bu şarjın maliyetini kaydedin. kWh başına bir fiyat ya da ödediğiniz toplam tutarı girin; uygulama tarifeyi hesaplar. Ücretsiz şarj için 0 girin.</string>
+    <string name="charge_price_free_hint">İpucu: ücretsiz şarj için 0 girin.</string>
+    <string name="price_mode_rate">kWh başına</string>
+    <string name="price_mode_total">Ödenen toplam</string>
+    <string name="price_total_label">Ödenen toplam</string>
+    <string name="distance_since_last_charge_label">Son şarjdan beri</string>
+    <string name="since_last_charge_chip">Son şarjdan beri %1$s</string>
+    <string name="cost_history_total">Toplam %1$s · ort. %2$s/ay</string>
 
     <!-- Charging History -->
     <string name="charging_history_title">Şarj Geçmişi</string>
@@ -467,6 +501,9 @@
     <string name="restore_database_title">Veritabanı Geri Yüklensin mi?</string>
     <string name="restore_database_msg">Bu işlem mevcut tüm seyahat verilerinin yerini %1$s ile kalıcı olarak değiştirecek.\n\nGeri yükleme sonrasında uygulama otomatik olarak kapanıp yeniden açılacak.</string>
     <string name="delete_backup_confirm">"%1$s" kalıcı olarak silinecek.</string>
+    <string name="delete_backup_title">Yedek silinsin mi?</string>
+    <string name="delete_telegram_backup_confirm">\"%1$s\" bu listeden kaldırılacak ve 48 saatten kısa süre önce gönderildiyse Telegram sohbetinizden silinecek (Telegram, botların daha eski mesajları silmesine izin vermez).</string>
+    <string name="delete_backup_action">Yedeği sil</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram Yedekleme</string>
@@ -556,6 +593,8 @@
     <string name="mode_regen_lane_title">Rejenerasyon modu</string>
     <string name="mode_drive_modes_label">Sürüş modları</string>
     <string name="mode_regen_modes_label">Rejenerasyon modları</string>
+    <string name="mode_energy_lane_title">Enerji modu (EV / HEV)</string>
+    <string name="mode_energy_modes_label">Enerji modları</string>
     <string name="chart_speed_detailed">Hız Profili (Ayrıntılı)</string>
     <string name="chart_rpm_detailed">Motor Devri (Ayrıntılı)</string>
     <string name="chart_power_detailed">Güç Profili (Ayrıntılı)</string>
@@ -1132,6 +1171,8 @@
     <string name="speed_state_driving">Sürüyor</string>
     <string name="soc_subtitle_usable">Kullanılabilir şarj</string>
     <string name="range_subtitle_projection">Dinamik tahmin</string>
+    <string name="range_subtitle_phev">Yakıt %1$s · Toplam %2$s</string>
+    <string name="stat_fuel_range">Yakıt</string>
     <string name="distance_subtitle_session">Bu oturum</string>
     <string name="odometer_subtitle_lifetime">Toplam mesafe</string>
     <string name="discharge_subtitle_lifetime">Toplam verilen enerji</string>

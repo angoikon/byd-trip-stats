@@ -250,6 +250,15 @@
     <string name="breakdown_aux_desc">12V-systeem, HVAC en modelresidu. Weergegeven als rest na rolweerstand, aerodynamica en helling. Motor-/omrichterverlies is verwerkt in de bovenstaande cijfers</string>
     <string name="vehicle_mass_label">Voertuigmassa</string>
     <string name="cda_drag_area_label">CdA (weerstandsoppervlak)</string>
+    <string name="phev_breakdown_section">Hybride-uitsplitsing</string>
+    <string name="phev_ev_share_label">Elektrisch aandeel</string>
+    <string name="phev_ev_distance_label">Elektrische afstand</string>
+    <string name="phev_ice_distance_label">Motorafstand</string>
+    <string name="phev_fuel_used_label">Verbruikte brandstof</string>
+    <string name="phev_fuel_consumption_ice_label">Brandstofverbruik (motor-km)</string>
+    <string name="phev_fuel_consumption_combined_label">Brandstofverbruik (hele rit)</string>
+    <string name="phev_ev_consumption_label">Elektrisch verbruik (EV-km)</string>
+    <string name="phev_breakdown_hint">Verdeeld op basis van de eigen EV-/motorkilometer- en brandstoftellers van de auto die tijdens de rit zijn geregistreerd</string>
 
     <!-- Export dialog -->
     <string name="export_title">Ritgegevens exporteren</string>
@@ -264,6 +273,14 @@
     <string name="export_send_csv">CSV naar Telegram sturen</string>
     <string name="export_send_json">JSON naar Telegram sturen</string>
     <string name="export_send_html">HTML-viewer naar Telegram sturen</string>
+    <string name="export_share_link">Delen als link (QR-code)</string>
+    <string name="export_uploading">Uploaden…</string>
+    <string name="export_upload_failed">Uploaden mislukt: %1$s</string>
+    <string name="export_qr_dialog_title">Scan om deze rit te delen</string>
+    <string name="export_qr_dialog_desc">De rit (inclusief de GPS-route) wordt geüpload naar een tijdelijke openbare host en de link verloopt na 72 uur. Scan met je telefoon om die link te e-mailen naar %1$s.</string>
+    <string name="export_qr_no_render">Kan de QR-code niet weergeven. E-mail de onderstaande ritlink handmatig naar %1$s.</string>
+    <string name="export_qr_content_desc">QR-code die de downloadlink van de rit e-mailt</string>
+    <string name="export_qr_copy_link">Link kopiëren</string>
 
     <!-- Trip cost -->
     <string name="trip_cost_fixed_label">Ritkosten @ vast tarief</string>
@@ -277,6 +294,23 @@
     <string name="custom_dc_dialog_title">Aangepaste DC-laadkosten</string>
     <string name="dc_charging_explanation">Voer het totale bedrag in dat je hebt betaald voor DC-laden tijdens deze rit. De app trekt de overlappende laadenergie af van de vaste thuistarief-schatting en voegt deze aangepaste kosten toe.</string>
     <string name="total_dc_cost_label">Totale DC-laadkosten</string>
+    <string name="energy_rate_label">Energietarief</string>
+    <string name="section_cost">Kosten</string>
+    <string name="charge_price_label">Prijs</string>
+    <string name="charge_cost_label">Laadkosten</string>
+    <string name="free_label">Gratis</string>
+    <string name="using_tariff_rate">Tarief (%1$s / kWh)</string>
+    <string name="set_price_action">Prijs instellen</string>
+    <string name="charge_price_estimate_hint">Geschat op basis van het algemene tarief. Stel een prijs in om vast te leggen wat je daadwerkelijk hebt betaald (0 = gratis).</string>
+    <string name="charge_price_dialog_title">Laadprijs</string>
+    <string name="charge_price_explanation">Leg vast wat deze laadbeurt heeft gekost. Voer een prijs per kWh in, of het totaal dat je hebt betaald en de app leidt het tarief af. Voer 0 in voor een gratis laadbeurt.</string>
+    <string name="charge_price_free_hint">Tip: voer 0 in voor een gratis laadbeurt.</string>
+    <string name="price_mode_rate">Per kWh</string>
+    <string name="price_mode_total">Totaal betaald</string>
+    <string name="price_total_label">Totaal betaald</string>
+    <string name="distance_since_last_charge_label">Sinds laatste laadbeurt</string>
+    <string name="since_last_charge_chip">%1$s sinds laatste laadbeurt</string>
+    <string name="cost_history_total">Totaal %1$s · gem. %2$s/mnd</string>
 
     <!-- Charging History -->
     <string name="charging_history_title">Laadgeschiedenis</string>
@@ -467,6 +501,9 @@
     <string name="restore_database_title">Database herstellen?</string>
     <string name="restore_database_msg">Dit vervangt ALLE huidige ritgegevens permanent door %1$s.\n\nDe app sluit en heropent automatisch na het herstellen.</string>
     <string name="delete_backup_confirm">\"%1$s\" wordt permanent verwijderd.</string>
+    <string name="delete_backup_title">Back-up verwijderen?</string>
+    <string name="delete_telegram_backup_confirm">\"%1$s\" wordt uit deze lijst verwijderd en uit je Telegram-chat verwijderd als het minder dan 48 uur geleden is verzonden (Telegram laat bots geen oudere berichten verwijderen).</string>
+    <string name="delete_backup_action">Back-up verwijderen</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram-back-up</string>
@@ -556,6 +593,8 @@
     <string name="mode_regen_lane_title">Regeneratiemodus</string>
     <string name="mode_drive_modes_label">Rijmodi</string>
     <string name="mode_regen_modes_label">Regeneratiemodi</string>
+    <string name="mode_energy_lane_title">Energiemodus (EV / HEV)</string>
+    <string name="mode_energy_modes_label">Energiemodi</string>
     <string name="chart_speed_detailed">Snelheidsprofiel (gedetailleerd)</string>
     <string name="chart_rpm_detailed">Motor-TPM (gedetailleerd)</string>
     <string name="chart_power_detailed">Vermogensprofiel (gedetailleerd)</string>
@@ -1132,6 +1171,8 @@
     <string name="speed_state_driving">Rijden</string>
     <string name="soc_subtitle_usable">Bruikbare lading</string>
     <string name="range_subtitle_projection">Dynamische projectie</string>
+    <string name="range_subtitle_phev">Brandstof %1$s · Totaal %2$s</string>
+    <string name="stat_fuel_range">Brandstof</string>
     <string name="distance_subtitle_session">Deze sessie</string>
     <string name="odometer_subtitle_lifetime">Totale afstand</string>
     <string name="discharge_subtitle_lifetime">Totale afgegeven energie</string>

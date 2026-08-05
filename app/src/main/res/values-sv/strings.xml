@@ -250,6 +250,15 @@
     <string name="breakdown_aux_desc">12V-system, HVAC och modellrest. Visas som rest efter rullning, aero och gradient. Motor-/omriktarförluster är inräknade i siffrorna ovan</string>
     <string name="vehicle_mass_label">Fordonsvikt</string>
     <string name="cda_drag_area_label">CdA (luftmotståndsy­ta)</string>
+    <string name="phev_breakdown_section">Hybriduppdelning</string>
+    <string name="phev_ev_share_label">Elektrisk andel</string>
+    <string name="phev_ev_distance_label">Elektrisk sträcka</string>
+    <string name="phev_ice_distance_label">Motorsträcka</string>
+    <string name="phev_fuel_used_label">Förbrukat bränsle</string>
+    <string name="phev_fuel_consumption_ice_label">Bränsleförbrukning (motor-km)</string>
+    <string name="phev_fuel_consumption_combined_label">Bränsleförbrukning (hela resan)</string>
+    <string name="phev_ev_consumption_label">Elförbrukning (EV-km)</string>
+    <string name="phev_breakdown_hint">Uppdelat utifrån bilens egna EV-/motormätare och bränslemätare som registrerats under resan</string>
 
     <!-- Export dialog -->
     <string name="export_title">Exportera resedata</string>
@@ -264,6 +273,14 @@
     <string name="export_send_csv">Skicka CSV till Telegram</string>
     <string name="export_send_json">Skicka JSON till Telegram</string>
     <string name="export_send_html">Skicka HTML-visare till Telegram</string>
+    <string name="export_share_link">Dela som länk (QR-kod)</string>
+    <string name="export_uploading">Laddar upp…</string>
+    <string name="export_upload_failed">Uppladdningen misslyckades: %1$s</string>
+    <string name="export_qr_dialog_title">Skanna för att dela den här resan</string>
+    <string name="export_qr_dialog_desc">Resan (inklusive dess GPS-rutt) laddas upp till en tillfällig offentlig värd och länken upphör att gälla om 72 timmar. Skanna med telefonen för att mejla länken till %1$s.</string>
+    <string name="export_qr_no_render">Det gick inte att visa QR-koden. Mejla reslänken nedan manuellt till %1$s.</string>
+    <string name="export_qr_content_desc">QR-kod som mejlar nedladdningslänken för resan</string>
+    <string name="export_qr_copy_link">Kopiera länk</string>
 
     <!-- Trip cost -->
     <string name="trip_cost_fixed_label">Resekostnad @ fast taxa</string>
@@ -277,6 +294,23 @@
     <string name="custom_dc_dialog_title">Anpassad DC-laddningskostnad</string>
     <string name="dc_charging_explanation">Ange det totala belopp du betalade för DC-laddning under den här resan. Appen drar av den överlappande laddningsenergin från den fasta hushållstaxauppskattningen och lägger till den anpassade kostnaden i stället.</string>
     <string name="total_dc_cost_label">Total DC-laddningskostnad</string>
+    <string name="energy_rate_label">Energipris</string>
+    <string name="section_cost">Kostnad</string>
+    <string name="charge_price_label">Pris</string>
+    <string name="charge_cost_label">Laddningskostnad</string>
+    <string name="free_label">Gratis</string>
+    <string name="using_tariff_rate">Tariff (%1$s / kWh)</string>
+    <string name="set_price_action">Ange pris</string>
+    <string name="charge_price_estimate_hint">Uppskattat enligt det globala priset. Ange ett pris för att registrera vad du faktiskt betalade (0 = gratis).</string>
+    <string name="charge_price_dialog_title">Laddningspris</string>
+    <string name="charge_price_explanation">Registrera vad den här laddningen kostade. Ange ett pris per kWh, eller totalsumman du betalade, så räknar appen ut priset. Ange 0 för en gratis laddning.</string>
+    <string name="charge_price_free_hint">Tips: ange 0 för en gratis laddning.</string>
+    <string name="price_mode_rate">Per kWh</string>
+    <string name="price_mode_total">Totalt betalt</string>
+    <string name="price_total_label">Totalt betalt</string>
+    <string name="distance_since_last_charge_label">Sedan senaste laddning</string>
+    <string name="since_last_charge_chip">%1$s sedan senaste laddning</string>
+    <string name="cost_history_total">Totalt %1$s · snitt %2$s/mån</string>
 
     <!-- Charging History -->
     <string name="charging_history_title">Laddningshistorik</string>
@@ -467,6 +501,9 @@
     <string name="restore_database_title">Återställ databas?</string>
     <string name="restore_database_msg">Detta ersätter permanent ALL aktuell resedata med %1$s.\n\nAppen stängs och öppnas automatiskt igen efter återställning.</string>
     <string name="delete_backup_confirm">\"%1$s\" tas permanent bort.</string>
+    <string name="delete_backup_title">Ta bort säkerhetskopia?</string>
+    <string name="delete_telegram_backup_confirm">\"%1$s\" tas bort från den här listan och raderas från din Telegram-chatt om det skickades för mindre än 48 timmar sedan (Telegram tillåter inte att bottar raderar äldre meddelanden).</string>
+    <string name="delete_backup_action">Ta bort säkerhetskopia</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram-säkerhetskopiering</string>
@@ -556,6 +593,8 @@
     <string name="mode_regen_lane_title">Regenläge</string>
     <string name="mode_drive_modes_label">Körlägen</string>
     <string name="mode_regen_modes_label">Regenlägen</string>
+    <string name="mode_energy_lane_title">Energiläge (EV / HEV)</string>
+    <string name="mode_energy_modes_label">Energilägen</string>
     <string name="chart_speed_detailed">Hastighetsprofil (Detaljerad)</string>
     <string name="chart_rpm_detailed">Motor-RPM (Detaljerad)</string>
     <string name="chart_power_detailed">Effektprofil (Detaljerad)</string>
@@ -1132,6 +1171,8 @@
     <string name="speed_state_driving">Kör</string>
     <string name="soc_subtitle_usable">Användbar laddning</string>
     <string name="range_subtitle_projection">Dynamisk projektion</string>
+    <string name="range_subtitle_phev">Bränsle %1$s · Totalt %2$s</string>
+    <string name="stat_fuel_range">Bränsle</string>
     <string name="distance_subtitle_session">Denna session</string>
     <string name="odometer_subtitle_lifetime">Total sträcka</string>
     <string name="discharge_subtitle_lifetime">Total uttagen energi</string>

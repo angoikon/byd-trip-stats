@@ -244,19 +244,46 @@ class Dilink5Client {
         // is the primary, instant source.
         reflGetDouble(chargingDev, "getChargingPower")?.takeIf { it in 0.0..250.0 }
             ?.let { ds.applyDilink5Telemetry(chargingPowerKw = it) }
+        // FAST: PHEV energy mode (1=EV/2=ForceEV/3=HEV/4=Fuel/5=Keep). Read every driving tick because
+        // it gates each ~100 m projection sample as EV vs ICE distance (see the ICE-aware projection).
+        // Returns 0/absent on BEVs → filtered out in applyDilink5Phev, so this is a no-op there.
+        reflGetInt(energyDev, "getEnergyMode")?.let { ds.applyDilink5Phev(energyMode = it) }
         if (!slowTick) return
         // SLOW (~30s): the statistic LISTENER already pushes soc/mileage/range live, so these getters
         // are only a missed-callback backstop; SOH barely changes. No need to read them every tick.
+        // Each getter is isolated (safeGet) rather than sharing one try/catch: on some firmwares an
+        // individual statistic getter throws, and a shared catch silently took the rest of the block
+        // down with it — SOC, odometer, range and usable-battery all going dark together on one bad
+        // call. Same per-call isolation the reflGet* helpers already have.
         statDevice?.let { d ->
-            try {
-                val soc = d.getElecPercentageValue();        if (soc in 1.0..100.0) ds.applyDilink5Telemetry(socPanelPct = kotlin.math.round(soc).toInt())
-                val mil = d.getTotalMileageValue().toDouble(); if (mil > 1.0)        ds.applyDilink5Telemetry(totalMileageKm = mil)
-                val rng = d.getElecDrivingRangeValue();        if (rng in 1..2000)   ds.applyDilink5Telemetry(elecRangeKm = rng)
-                val usb = d.getEVRemainingBatteryPower().toDouble(); if (usb in 0.5..200.0) onUsable(usb, ds)
-            } catch (_: Throwable) {}
+            safeGet { d.getElecPercentageValue() }?.takeIf { it in 1.0..100.0 }
+                ?.let { ds.applyDilink5Telemetry(socPanelPct = kotlin.math.round(it).toInt()) }
+            safeGet { d.getTotalMileageValue().toDouble() }?.takeIf { it > 1.0 }
+                ?.let { ds.applyDilink5Telemetry(totalMileageKm = it) }
+            safeGet { d.getElecDrivingRangeValue() }?.takeIf { it in 1..2000 }
+                ?.let { ds.applyDilink5Telemetry(elecRangeKm = it) }
+            safeGet { d.getEVRemainingBatteryPower().toDouble() }?.takeIf { it in 0.5..200.0 }
+                ?.let { onUsable(it, ds) }
         }
         reflGetInt(healthDev, "getBatteryHealthStatus")?.takeIf { it in 50..110 }
             ?.let { ds.applyDilink5Telemetry(sohPct = it.toDouble()) }
+        // SLOW: PHEV fuel + cumulative EV/ICE mileage from the statistic device (confirmed readable via
+        // the compat-probe phev-sweep). These are lifetime counters / slow-moving state, so 30 s is
+        // ample. Range-guarded + change-gated in applyDilink5Phev; all null/0/absent on a BEV.
+        //  - Fuel % and fuel range → dashboard Fuel/Total range.
+        //  - Total fuel litres + EV/ICE mileage → Hybrid Breakdown card.
+        //  - Water temp → engine-coolant (cold-start insight).
+        statDevice?.let { d ->
+            ds.applyDilink5Phev(
+                fuelPercentage       = reflGetInt(d, "getFuelPercentageValue"),
+                fuelDrivingRangeKm   = reflGetInt(d, "getFuelDrivingRangeValue"),
+                totalFuelConsumption = reflGetDouble(d, "getTotalFuelConValue"),
+                avgFuelConsumption   = reflGetDouble(d, "getTotalFuelConPHMValue"),
+                evMileageKm          = reflGetInt(d, "getEVMileageValue"),
+                iceMileageKm         = reflGetInt(d, "getHEVMileageValue"),
+                engineCoolantTempC   = reflGetInt(d, "getWaterTemperature"),
+            )
+        }
         // Per-wheel tyre PRESSURE VALUE is NOT polled here — getTyrePressureValueByType(area)
         // re-scales its raw output to whatever pressure unit the dash cluster currently has
         // selected (confirmed on-car: raw ~27 in Bar mode, ~277 in kPa mode, ~401 in PSI mode, same
@@ -586,6 +613,12 @@ class Dilink5Client {
     private fun reflGetInt(dev: Any?, getter: String): Int? = dev?.let {
         runCatching { (it.javaClass.getMethod(getter).invoke(it) as? Number)?.toInt() }.getOrNull()
     }
+    /**
+     * Typed analogue of the reflGet* helpers: isolates ONE getter so a throwing call can't take
+     * its neighbours down with it. Use for the statistic-device getters that exist on the compile-
+     * time stub signature (no reflection needed) but can still throw on a given firmware.
+     */
+    private inline fun <T> safeGet(read: () -> T): T? = runCatching(read).getOrNull()
     private fun reflGetString(dev: Any?, getter: String): String? = dev?.let {
         runCatching { (it.javaClass.getMethod(getter).invoke(it) as? String)?.takeIf { s -> s.isNotBlank() } }.getOrNull()
     }

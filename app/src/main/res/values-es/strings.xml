@@ -250,6 +250,15 @@
     <string name="breakdown_aux_desc">Sistema de 12 V, climatización y residuo del modelo. Se muestra como resto tras rodadura, aero y gradiente. Las pérdidas del motor/inversor están incluidas en las cifras anteriores</string>
     <string name="vehicle_mass_label">Masa del vehículo</string>
     <string name="cda_drag_area_label">CdA (área de resistencia)</string>
+    <string name="phev_breakdown_section">Desglose híbrido</string>
+    <string name="phev_ev_share_label">Proporción eléctrica</string>
+    <string name="phev_ev_distance_label">Distancia eléctrica</string>
+    <string name="phev_ice_distance_label">Distancia con motor</string>
+    <string name="phev_fuel_used_label">Combustible usado</string>
+    <string name="phev_fuel_consumption_ice_label">Consumo de combustible (km con motor)</string>
+    <string name="phev_fuel_consumption_combined_label">Consumo de combustible (todo el viaje)</string>
+    <string name="phev_ev_consumption_label">Consumo eléctrico (km EV)</string>
+    <string name="phev_breakdown_hint">Calculado a partir de los propios contadores de kilometraje EV/motor y de combustible del coche registrados durante el viaje</string>
 
     <!-- Export dialog -->
     <string name="export_title">Exportar datos del viaje</string>
@@ -264,6 +273,14 @@
     <string name="export_send_csv">Enviar CSV a Telegram</string>
     <string name="export_send_json">Enviar JSON a Telegram</string>
     <string name="export_send_html">Enviar visor HTML a Telegram</string>
+    <string name="export_share_link">Compartir como enlace (código QR)</string>
+    <string name="export_uploading">Subiendo…</string>
+    <string name="export_upload_failed">Error al subir: %1$s</string>
+    <string name="export_qr_dialog_title">Escanea para compartir este viaje</string>
+    <string name="export_qr_dialog_desc">El viaje (incluida su ruta GPS) se sube a un servidor público temporal y el enlace caduca en 72 horas. Escanea con tu teléfono para enviar ese enlace por correo a %1$s.</string>
+    <string name="export_qr_no_render">No se pudo mostrar el código QR. Envía el enlace del viaje de abajo por correo a %1$s manualmente.</string>
+    <string name="export_qr_content_desc">Código QR que envía por correo el enlace de descarga del viaje</string>
+    <string name="export_qr_copy_link">Copiar enlace</string>
 
     <!-- Trip cost -->
     <string name="trip_cost_fixed_label">Coste del viaje @ tarifa fija</string>
@@ -277,6 +294,23 @@
     <string name="custom_dc_dialog_title">Coste personalizado de carga DC</string>
     <string name="dc_charging_explanation">Introduce el importe total pagado por la carga DC durante este viaje. La app deducirá la energía de carga solapada de la estimación de tarifa doméstica fija y añadirá este coste personalizado.</string>
     <string name="total_dc_cost_label">Coste total de carga DC</string>
+    <string name="energy_rate_label">Tarifa de energía</string>
+    <string name="section_cost">Coste</string>
+    <string name="charge_price_label">Precio</string>
+    <string name="charge_cost_label">Coste de la carga</string>
+    <string name="free_label">Gratis</string>
+    <string name="using_tariff_rate">Tarifa (%1$s / kWh)</string>
+    <string name="set_price_action">Establecer precio</string>
+    <string name="charge_price_estimate_hint">Estimado con la tarifa global. Establece un precio para registrar lo que realmente pagaste (0 = gratis).</string>
+    <string name="charge_price_dialog_title">Precio de la carga</string>
+    <string name="charge_price_explanation">Registra cuánto costó esta carga. Introduce un precio por kWh, o el total que pagaste y la app calcula la tarifa. Introduce 0 para una carga gratuita.</string>
+    <string name="charge_price_free_hint">Consejo: introduce 0 para una carga gratuita.</string>
+    <string name="price_mode_rate">Por kWh</string>
+    <string name="price_mode_total">Total pagado</string>
+    <string name="price_total_label">Total pagado</string>
+    <string name="distance_since_last_charge_label">Desde la última carga</string>
+    <string name="since_last_charge_chip">%1$s desde la última carga</string>
+    <string name="cost_history_total">Total %1$s · media %2$s/mes</string>
 
     <!-- Charging History -->
     <string name="charging_history_title">Historial de carga</string>
@@ -467,6 +501,9 @@
     <string name="restore_database_title">¿Restaurar base de datos?</string>
     <string name="restore_database_msg">Esto reemplazará permanentemente TODOS los datos de viaje actuales con %1$s.\n\nLa app se cerrará y reabrirá automáticamente tras la restauración.</string>
     <string name="delete_backup_confirm">\"%1$s\" se eliminará permanentemente.</string>
+    <string name="delete_backup_title">¿Eliminar copia de seguridad?</string>
+    <string name="delete_telegram_backup_confirm">\"%1$s\" se quitará de esta lista y se eliminará de tu chat de Telegram si se envió hace menos de 48 horas (Telegram no permite que los bots eliminen mensajes más antiguos).</string>
+    <string name="delete_backup_action">Eliminar copia de seguridad</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Copia de seguridad en Telegram</string>
@@ -556,6 +593,8 @@
     <string name="mode_regen_lane_title">Modo de regeneración</string>
     <string name="mode_drive_modes_label">Modos de conducción</string>
     <string name="mode_regen_modes_label">Modos de regeneración</string>
+    <string name="mode_energy_lane_title">Modo de energía (EV / HEV)</string>
+    <string name="mode_energy_modes_label">Modos de energía</string>
     <string name="chart_speed_detailed">Perfil de velocidad (detallado)</string>
     <string name="chart_rpm_detailed">RPM del motor (detallado)</string>
     <string name="chart_power_detailed">Perfil de potencia (detallado)</string>
@@ -1132,6 +1171,8 @@
     <string name="speed_state_driving">Conduciendo</string>
     <string name="soc_subtitle_usable">Carga utilizable</string>
     <string name="range_subtitle_projection">Proyección dinámica</string>
+    <string name="range_subtitle_phev">Combustible %1$s · Total %2$s</string>
+    <string name="stat_fuel_range">Combustible</string>
     <string name="distance_subtitle_session">Esta sesión</string>
     <string name="odometer_subtitle_lifetime">Distancia total</string>
     <string name="discharge_subtitle_lifetime">Energía total entregada</string>

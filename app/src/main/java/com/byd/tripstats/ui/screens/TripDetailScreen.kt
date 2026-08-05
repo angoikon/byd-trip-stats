@@ -42,12 +42,10 @@ fun TripDetailScreen(
     val stats by remember(tripId) { viewModel.getTripStats(tripId) }.collectAsState()
     val tripMetrics by viewModel.tripDisplayMetrics.collectAsState()
     val regenEfficiencyPct = tripMetrics[tripId]?.regenEfficiencyPct
-    val electricityPrice by viewModel.electricityPricePerKwh.collectAsState()
+    val tripBlendedRates by viewModel.tripBlendedRates.collectAsState()
     val currencySymbol   by viewModel.currencySymbol.collectAsState()
     val unitSystem       by viewModel.unitSystem.collectAsState()
     val socSource        by viewModel.socSource.collectAsState()
-    val chargingSessions by viewModel.allChargingSessions.collectAsState()
-    val tripAdditionalChargingCosts by viewModel.tripAdditionalChargingCosts.collectAsState()
     val selectedCarConfig by viewModel.selectedCarConfig.collectAsState(initial = null)
     val tripTags by remember(tripId) { viewModel.tagsForTrip(tripId) }.collectAsState(initial = emptyList())
     val allTags by viewModel.allTags.collectAsState()
@@ -170,15 +168,10 @@ fun TripDetailScreen(
                             dataPoints = dataPoints,
                             selectedCarConfig = selectedCarConfig,
                             regenEfficiencyPct = regenEfficiencyPct,
-                            electricityPrice = electricityPrice,
                             currencySymbol = currencySymbol,
                             unitSystem = unitSystem,
                             socSource = socSource,
-                            chargingSessions = chargingSessions,
-                            additionalChargingCost = tripAdditionalChargingCosts[tripId] ?: 0.0,
-                            onSaveAdditionalChargingCost = { amount ->
-                                viewModel.saveTripAdditionalChargingCost(tripId, amount)
-                            }
+                            blendedRate = tripBlendedRates[tripId]
                         )
                         1 -> TripChartsTab(dataPoints = dataPoints, useImperial = unitSystem.isImperial)
                         2 -> TripHeatmapsTab(dataPoints = dataPoints)

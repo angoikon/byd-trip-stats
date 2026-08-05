@@ -34,9 +34,14 @@ class DashboardViewModelProjectionTest {
             isPhev = true
         )
 
-        // Floored at the reference rate → 2888 / 190 ≈ 15.2 km, in the same
-        // ballpark as the BMS's 10 km rather than 87 km.
-        assertEquals(15.2, projected, 0.2)
+        // Softened floor: max(measured, PHEV_BASELINE_FLOOR_FRACTION × baseline). The ICE-diluted
+        // 33 Wh/km is lifted to 0.7 × 190 = 133 Wh/km → 2888 / 133 ≈ 21.7 km. Still physical (not
+        // the 87 km balloon), just less aggressive than a full-baseline floor. Derived from the
+        // constant so a retune of the fraction keeps the test honest.
+        val flooredRate = phevBaselineWhPerKm * DashboardViewModel.PHEV_BASELINE_FLOOR_FRACTION
+        assertEquals(remainingWh / flooredRate, projected, 0.2)
+        assertTrue("floor must keep the projection physical, far below the raw balloon",
+            projected < rawDivision / 2.0)
     }
 
     @Test
@@ -308,5 +313,86 @@ class DashboardViewModelProjectionTest {
         assertEquals(null, DashboardViewModel.windowSlopeWhPerKm(listOf(1.0 to 100.0)))
         assertEquals(null, DashboardViewModel.windowSlopeWhPerKm(listOf(0.0 to 50.0, 1.0 to 50.0)))
         assertEquals(null, DashboardViewModel.windowSlopeWhPerKm(listOf(0.0 to 100.0, 1.0 to 0.0)))
+    }
+
+    // ---- PHEV ICE gating: the EV-only distance axis --------------------------------
+
+    @Test
+    fun `ICE counter step ignores stalls, rollbacks and resets`() {
+        assertEquals(1.0, DashboardViewModel.iceCounterStepKm(3038, 3039), 0.0)
+        assertEquals(0.0, DashboardViewModel.iceCounterStepKm(3038, 3038), 0.0)
+        assertEquals(0.0, DashboardViewModel.iceCounterStepKm(3038, 3000), 0.0)
+        // Beyond MAX_ICE_COUNTER_STEP_KM this is a counter reset, not 9000 km of driving.
+        assertEquals(0.0, DashboardViewModel.iceCounterStepKm(0, 9000), 0.0)
+        assertEquals(0.0, DashboardViewModel.iceCounterStepKm(null, 3039), 0.0)
+        assertEquals(0.0, DashboardViewModel.iceCounterStepKm(3038, null), 0.0)
+    }
+
+    @Test
+    fun `debt larger than the step carries forward instead of being dropped`() {
+        // The counter ticks a whole km on a tick that only drove 300 m: the 700 m
+        // surplus must stay owed, or the EV axis silently over-counts.
+        val first = DashboardViewModel.withholdIceDebt(distKm = 0.3, debtKm = 1.0)
+        assertEquals(0.0, first.evKm, 1e-9)
+        assertEquals(0.7, first.debtKm, 1e-9)
+
+        val second = DashboardViewModel.withholdIceDebt(distKm = 0.5, debtKm = first.debtKm)
+        assertEquals(0.0, second.evKm, 1e-9)
+        assertEquals(0.2, second.debtKm, 1e-9)
+
+        // Debt cleared mid-step: the remainder of that step is genuinely electric.
+        val third = DashboardViewModel.withholdIceDebt(distKm = 0.5, debtKm = second.debtKm)
+        assertEquals(0.3, third.evKm, 1e-9)
+        assertEquals(0.0, third.debtKm, 1e-9)
+    }
+
+    @Test
+    fun `no debt passes distance through and a zero step never goes negative`() {
+        val clean = DashboardViewModel.withholdIceDebt(distKm = 1.4, debtKm = 0.0)
+        assertEquals(1.4, clean.evKm, 1e-9)
+        assertEquals(0.0, clean.debtKm, 1e-9)
+
+        val stalled = DashboardViewModel.withholdIceDebt(distKm = 0.0, debtKm = 2.0)
+        assertEquals(0.0, stalled.evKm, 1e-9)
+        assertEquals(2.0, stalled.debtKm, 1e-9)
+
+        val negative = DashboardViewModel.withholdIceDebt(distKm = -1.0, debtKm = -5.0)
+        assertEquals(0.0, negative.evKm, 1e-9)
+        assertEquals(0.0, negative.debtKm, 1e-9)
+    }
+
+    @Test
+    fun `EV axis tracks the ICE counter, not the far wider HEV-mode stretch`() {
+        // Shaped after a recorded Shark 6 DM-O drive: 63 km total, HEV mode selected
+        // for 47 km of it, but the car's own counter attributes only 22 km to the ICE
+        // (the pack propels the rest). Gating on energy_mode alone left a 16 km EV
+        // axis and quartered the projected range; the counter debt must yield ~41 km.
+        val totalKm = 63.0
+        val iceKm = 22
+        var odo = 0.0
+        var counter = 3038
+        var debt = 0.0
+        var evAxisKm = 0.0
+        // 630 ticks of 100 m; the ICE counter ticks over the middle 47 km of driving
+        // (a whole km every ~2.1 km of HEV-mode distance) for 22 km in total.
+        repeat(630) { i ->
+            val prevCounter = counter
+            if (i in 80 until 550 && (i - 80) % 21 == 0 && counter - 3038 < iceKm) counter++
+            debt += DashboardViewModel.iceCounterStepKm(prevCounter, counter)
+            odo += 0.1
+            val step = DashboardViewModel.withholdIceDebt(0.1, debt)
+            debt = step.debtKm
+            evAxisKm += step.evKm
+        }
+        assertEquals("the counter must have ticked exactly $iceKm km", iceKm, counter - 3038)
+        assertEquals(totalKm, odo, 1e-6)
+        assertEquals("EV axis should be total − ICE counter", 41.0, evAxisKm, 0.15)
+
+        // The rate the projection would use, against 13.9 kWh of battery energy.
+        val gatedWhPerKm = 13_900.0 / evAxisKm
+        assertEquals(339.0, gatedWhPerKm, 5.0)
+        // Sanity: the old energy_mode gating (47 km excluded) was 2.5× worse.
+        val oldWhPerKm = 13_900.0 / (totalKm - 47.0)
+        assertTrue("old mode gating inflated the rate (was $oldWhPerKm)", oldWhPerKm > 800.0)
     }
 }

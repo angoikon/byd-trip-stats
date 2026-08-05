@@ -238,7 +238,11 @@ class ChargingRepository private constructor(context: Context) {
             voltageStart     = telemetry.batteryTotalVoltage,
             batteryKwh       = carConfig?.batteryKwh ?: FALLBACK_BATTERY_KWH,
             carConfigId      = carConfig?.id ?: "",
-            isActive         = true
+            isActive         = true,
+            // Odometer at plug-in — anchors "distance since the previous charge".
+            // The car is stationary while charging, so this single reading is the
+            // charge's odometer. Guarded to null when the getter reads 0 (offline).
+            startOdometer    = telemetry.odometer.takeIf { it > 0.0 }
         )
         val id = sessionDao.insertSession(session)
         activeSession = session.copy(id = id)
@@ -465,7 +469,10 @@ class ChargingRepository private constructor(context: Context) {
             voltageEnd       = telemetry.batteryTotalVoltage,
             batteryKwh       = batteryKwh,
             carConfigId      = carConfig?.id ?: "",
-            isActive         = false
+            isActive         = false,
+            // The car was parked throughout an off-state charge, so the odometer
+            // never moved — the wake-up reading is the charge's odometer anchor.
+            startOdometer    = telemetry.odometer.takeIf { it > 0.0 }
         )
         val id = sessionDao.insertSession(session)
         Log.i(TAG, "✅ Synthetic session created (id=$id  " +
@@ -516,6 +523,12 @@ class ChargingRepository private constructor(context: Context) {
     /** Flags/unflags a charging session as favourite — favourites are exempt from trimming. */
     suspend fun setFavourite(sessionId: Long, favourite: Boolean) {
         sessionDao.setFavourite(sessionId, favourite)
+    }
+
+    /** Sets (or clears, when [price] is null) the per-charge electricity price in currency/kWh.
+     *  0.0 is a valid value meaning a free charge; null reverts the charge to the global tariff. */
+    suspend fun setSessionPrice(sessionId: Long, price: Double?) {
+        sessionDao.setSessionPrice(sessionId, price)
     }
 
     // ── Singleton ─────────────────────────────────────────────────────────────

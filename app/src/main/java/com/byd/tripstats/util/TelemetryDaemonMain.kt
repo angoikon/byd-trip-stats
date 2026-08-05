@@ -48,7 +48,21 @@ object TelemetryDaemonMain {
     }.getOrDefault(fallback)
 
     private val snapshot = AtomicReference(Snap())
-    private val clients = CopyOnWriteArrayList<PrintWriter>()
+
+    /**
+     * A connected consumer. The [sock] is kept alongside the writer so a dropped client's
+     * socket is actually **closed** — storing only the PrintWriter leaked the socket into
+     * CLOSE_WAIT forever, and writes to such a socket eventually block the pusher thread,
+     * which stalls instant telemetry for the live client too (observed after an app
+     * crash-loop piled up 10 connections: speed/power fell back to the 1 s poll).
+     */
+    private class Client(val sock: Socket, val writer: PrintWriter)
+
+    private val clients = CopyOnWriteArrayList<Client>()
+    /** The app is the only legitimate consumer; more than this means leaked connections. */
+    private const val MAX_CLIENTS = 4
+    /** Pusher ticks (100 ms) between liveness sweeps — see [startPusher]. */
+    private const val SWEEP_EVERY_TICKS = 50
     @Volatile private var dirty = false
     // NOTE: rear motor RPM is event-only on this firmware (no rear getter on Engine or Motor device,
     // verified 2026-06-05) and the HAL throttles the rear event to ~1/s — so rear updates ~1/s while
@@ -235,23 +249,51 @@ object TelemetryDaemonMain {
             val w = PrintWriter(sock.getOutputStream(), true)
             w.println(toJson(snapshot.get()))
             if (w.checkError()) { runCatching { sock.close() }; return }
-            clients.add(w)
+            // Reap before admitting. The app reconnects on every process start, so an app
+            // crash-loop arrives here repeatedly; without this the corpses only get noticed
+            // when the pusher next has data to send, which a parked car never produces.
+            reapDeadClients()
+            // Hard cap as a backstop: evict oldest so a leak can never grow unbounded.
+            while (clients.size >= MAX_CLIENTS) {
+                val evicted = clients.removeAt(0)
+                runCatching { evicted.sock.close() }
+                log("evicted oldest client (cap $MAX_CLIENTS)")
+            }
+            clients.add(Client(sock, w))
             log("client connected (${clients.size} total)")
         } catch (t: Throwable) { log("client accept failed: ${t.message}") }
     }
 
+    /** Drops and closes clients whose peer has gone away. Safe to call from any thread. */
+    private fun reapDeadClients() {
+        val dead = clients.filter { it.sock.isClosed || !it.sock.isConnected || it.writer.checkError() }
+        if (dead.isEmpty()) return
+        clients.removeAll(dead)
+        dead.forEach { runCatching { it.sock.close() } }
+        log("reaped ${dead.size} dead (${clients.size} left)")
+    }
+
     private fun startPusher() {
         Thread({
+            var ticksSinceSweep = 0
             while (true) {
                 try {
                     Thread.sleep(100)
+                    // Liveness sweep on a timer, independent of `dirty`. A parked car emits
+                    // no updates, so reaping only on push meant a disconnected client was
+                    // never noticed and the list grew across every app restart.
+                    if (++ticksSinceSweep >= SWEEP_EVERY_TICKS) { ticksSinceSweep = 0; reapDeadClients() }
                     if (!dirty) continue
                     dirty = false
                     if (clients.isEmpty()) continue
                     val line = toJson(snapshot.get())
-                    val dead = ArrayList<PrintWriter>()
-                    for (w in clients) { w.println(line); if (w.checkError()) dead.add(w) }
-                    if (dead.isNotEmpty()) { clients.removeAll(dead); log("dropped ${dead.size} (${clients.size} left)") }
+                    val dead = ArrayList<Client>()
+                    for (c in clients) { c.writer.println(line); if (c.writer.checkError()) dead.add(c) }
+                    if (dead.isNotEmpty()) {
+                        clients.removeAll(dead)
+                        dead.forEach { runCatching { it.sock.close() } }
+                        log("dropped ${dead.size} (${clients.size} left)")
+                    }
                 } catch (_: InterruptedException) { return@Thread } catch (t: Throwable) { log("pusher: ${t.message}") }
             }
         }, "telemetry-push").apply { isDaemon = true }.start()

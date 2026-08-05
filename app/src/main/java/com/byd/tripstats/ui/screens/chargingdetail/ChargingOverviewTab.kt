@@ -2,19 +2,29 @@ package com.byd.tripstats.ui.screens.chargingdetail
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.byd.tripstats.R
 import com.byd.tripstats.data.local.entity.ChargingDataPointEntity
 import com.byd.tripstats.data.local.entity.ChargingSessionEntity
 import com.byd.tripstats.data.preferences.SocSource
+import com.byd.tripstats.data.preferences.UnitSystem
+import com.byd.tripstats.data.preferences.convertDistance
+import com.byd.tripstats.data.preferences.distanceUnit
 import com.byd.tripstats.ui.theme.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -58,6 +68,11 @@ internal fun ChargingOverviewTab(
     dataPoints  : List<ChargingChartPoint>,
     powerSummary: ChargingPowerSummary?,
     socSource   : SocSource = SocSource.PANEL,
+    distanceSinceLastCharge: Double? = null,
+    defaultTariff: Double = 0.0,
+    currencySymbol: String = "€",
+    unitSystem   : UnitSystem = UnitSystem.METRIC,
+    onSavePrice  : (Double?) -> Unit = {},
 ) {
     val dateFmt = remember { SimpleDateFormat("dd MMM yyyy  HH:mm", Locale.getDefault()) }
     val displayPeakKw = powerSummary?.peakKw?.takeIf { it > 0.0 } ?: session.peakKw
@@ -107,8 +122,25 @@ internal fun ChargingOverviewTab(
                     OverviewRow(stringResource(R.string.kwh_added_label), "%.2f kWh".format(it), valueColor = RegenGreen)
                 }
                 OverviewRow(stringResource(R.string.battery_car_label), "%.1f kWh".format(session.batteryKwh))
+                distanceSinceLastCharge?.takeIf { it >= 0.0 }?.let { km ->
+                    OverviewRow(
+                        stringResource(R.string.distance_since_last_charge_label),
+                        "%.1f %s".format(unitSystem.convertDistance(km), unitSystem.distanceUnit),
+                        valueColor = BatteryBlue
+                    )
+                }
             }
         }
+
+        // ── Cost ───────────────────────────────────────────────────────────────
+        // Editable per-charge price (currency/kWh). Explicit price = real money paid;
+        // otherwise the global tariff is applied as an estimate. 0.00 = free charge.
+        ChargingCostCard(
+            session        = session,
+            defaultTariff  = defaultTariff,
+            currencySymbol = currencySymbol,
+            onSavePrice    = onSavePrice
+        )
 
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -159,6 +191,165 @@ internal fun ChargingOverviewTab(
             )
         }
     }
+}
+
+@Composable
+private fun ChargingCostCard(
+    session       : ChargingSessionEntity,
+    defaultTariff : Double,
+    currencySymbol: String,
+    onSavePrice   : (Double?) -> Unit,
+) {
+    var showDialog by remember { mutableStateOf(false) }
+    val kwh = session.kwhAdded ?: 0.0
+    val explicitRate = session.pricePerKwh                  // null = tariff, 0.0 = free
+    val effectiveRate = explicitRate ?: defaultTariff.takeIf { it > 0.0 }
+    val cost = effectiveRate?.let { kwh * it }
+
+    val rateText = when {
+        explicitRate != null && explicitRate <= 0.0 -> stringResource(R.string.free_label)
+        explicitRate != null -> "$currencySymbol%.3f / kWh".format(explicitRate)
+        defaultTariff > 0.0 -> stringResource(R.string.using_tariff_rate, "$currencySymbol%.3f".format(defaultTariff))
+        else -> stringResource(R.string.set_price_action)
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors   = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(stringResource(R.string.section_cost), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                IconButton(onClick = { showDialog = true }, modifier = Modifier.size(28.dp)) {
+                    Icon(Icons.Filled.Edit, stringResource(R.string.set_price_action), modifier = Modifier.size(18.dp))
+                }
+            }
+            OverviewRow(stringResource(R.string.charge_price_label), rateText)
+            if (cost != null) {
+                OverviewRow(
+                    stringResource(R.string.charge_cost_label),
+                    if (cost <= 0.0) stringResource(R.string.free_label)
+                    else "$currencySymbol%.2f".format(cost),
+                    valueColor = if (cost <= 0.0) RegenGreen else AccelerationOrange
+                )
+            }
+            if (explicitRate == null) {
+                Text(
+                    stringResource(R.string.charge_price_estimate_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+
+    if (showDialog) {
+        ChargingPriceDialog(
+            kwhAdded       = kwh,
+            currentRate    = explicitRate,
+            defaultTariff  = defaultTariff,
+            currencySymbol = currencySymbol,
+            onDismiss      = { showDialog = false },
+            onSave         = { rate -> onSavePrice(rate); showDialog = false }
+        )
+    }
+}
+
+/**
+ * Price editor for a charge. Accepts EITHER a €/kWh rate OR the total paid (converted to a
+ * rate via kWh added), whichever the user has to hand at a public charger. 0 = free.
+ */
+@Composable
+private fun ChargingPriceDialog(
+    kwhAdded      : Double,
+    currentRate   : Double?,
+    defaultTariff : Double,
+    currencySymbol: String,
+    onDismiss     : () -> Unit,
+    onSave        : (Double?) -> Unit,
+) {
+    // false = enter €/kWh rate; true = enter total paid.
+    var enterTotal by remember { mutableStateOf(false) }
+    // Prefill: the explicit price if set, otherwise the global tariff so the user sees the
+    // default that's already being applied and can accept or adjust it (rather than a blank field).
+    var input by remember {
+        mutableStateOf((currentRate ?: defaultTariff.takeIf { it > 0.0 })?.let { "%.3f".format(it) } ?: "")
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        title = { Text(stringResource(R.string.charge_price_dialog_title), fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    stringResource(R.string.charge_price_explanation),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                // Rate vs total toggle
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    FilterChip(
+                        selected = !enterTotal,
+                        onClick = { enterTotal = false },
+                        label = { Text(stringResource(R.string.price_mode_rate)) }
+                    )
+                    FilterChip(
+                        selected = enterTotal,
+                        onClick = { enterTotal = true },
+                        label = { Text(stringResource(R.string.price_mode_total)) },
+                        enabled = kwhAdded > 0.0
+                    )
+                }
+                OutlinedTextField(
+                    value = input,
+                    onValueChange = { input = it },
+                    label = {
+                        Text(
+                            if (enterTotal) stringResource(R.string.price_total_label)
+                            else stringResource(R.string.price_per_kwh_label)
+                        )
+                    },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    prefix = { Text(currencySymbol) }
+                )
+                Text(
+                    stringResource(R.string.charge_price_free_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                val parsed = input.replace(',', '.').toDoubleOrNull()
+                val rate = when {
+                    parsed == null -> null
+                    parsed < 0.0 -> null
+                    enterTotal && kwhAdded > 0.0 -> parsed / kwhAdded  // total → €/kWh
+                    enterTotal -> null
+                    else -> parsed
+                }
+                onSave(rate)
+            }) { Text(stringResource(R.string.save)) }
+        },
+        dismissButton = {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (currentRate != null) {
+                    TextButton(onClick = { onSave(null) }) { Text(stringResource(R.string.clear)) }
+                }
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+            }
+        }
+    )
 }
 
 @Composable

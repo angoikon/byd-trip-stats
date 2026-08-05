@@ -36,6 +36,10 @@ fun ChargingHistoryScreen(
     val sessions by viewModel.displayedChargingSessions.collectAsState()
     val favouritesOnly by viewModel.chargingFavouritesOnly.collectAsState()
     val socSource by viewModel.socSource.collectAsState()
+    val chargingDistances by viewModel.chargingDistances.collectAsState()
+    val currencySymbol by viewModel.currencySymbol.collectAsState()
+    val electricityPrice by viewModel.electricityPricePerKwh.collectAsState()
+    val unitSystem by viewModel.unitSystem.collectAsState()
     val completed = sessions.filter { !it.isActive }.sortedByDescending { it.startTime }
     val active = sessions.filter { it.isActive }.sortedByDescending { it.startTime }
 
@@ -212,6 +216,10 @@ fun ChargingHistoryScreen(
                         isSelected = selectedSessions.contains(session.id),
                         selectionMode = selectionMode,
                         socSource = socSource,
+                        distanceSinceLastCharge = chargingDistances[session.id],
+                        currencySymbol = currencySymbol,
+                        defaultTariff = electricityPrice,
+                        unitSystem = unitSystem,
                         onClick = {
                             if (selectionMode) {
                                 selectedSessions =

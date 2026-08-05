@@ -82,6 +82,7 @@ fun LocalBackupScreen(
     var pendingDeleteAfterPermission by remember { mutableStateOf<LocalBackupManager.BackupFile?>(null) }
     var pendingSdBackupAfterPermission by remember { mutableStateOf(false) }
     var telegramRestoreTarget by remember { mutableStateOf<TelegramManager.TelegramBackupFile?>(null) }
+    var telegramDeleteTarget  by remember { mutableStateOf<TelegramManager.TelegramBackupFile?>(null) }
 
     // WRITE_EXTERNAL_STORAGE is needed for direct-file writes to shared storage: deleting a
     // filesystem backup, and writing an SD-card backup. On a fresh install it isn't granted (and
@@ -712,13 +713,20 @@ fun LocalBackupScreen(
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.error
                     )
-                    // Reuse telegram state banner for download progress/errors
+                    // Reuse telegram state banner for download/delete progress and results
                     when (val s = telegramState) {
                         is TelegramManager.TelegramState.InProgress -> StatusBanner(
                             text    = s.message,
                             color   = MaterialTheme.colorScheme.primaryContainer,
                             icon    = Icons.Filled.HourglassTop,
                             loading = true
+                        )
+                        is TelegramManager.TelegramState.Success -> StatusBanner(
+                            text      = s.message,
+                            color     = RegenGreen.copy(alpha = 0.15f),
+                            icon      = Icons.Filled.CheckCircle,
+                            iconTint  = RegenGreen,
+                            onDismiss = { telegramManager.resetState() }
                         )
                         is TelegramManager.TelegramState.Error -> StatusBanner(
                             text      = s.message,
@@ -774,7 +782,8 @@ fun LocalBackupScreen(
                                 TelegramBackupListItem(
                                     backup    = backup,
                                     enabled   = !isBusy && !telegramBusy,
-                                    onRestore = { telegramRestoreTarget = backup }
+                                    onRestore = { telegramRestoreTarget = backup },
+                                    onDelete  = { telegramDeleteTarget  = backup }
                                 )
                             }
                         }
@@ -877,6 +886,27 @@ fun LocalBackupScreen(
                 scope.launch { manager.restoreFromTelegram(b) }
             },
             onDismiss = { telegramRestoreTarget = null }
+        )
+    }
+
+    // ── Telegram delete confirm dialog ────────────────────────────────────────
+    telegramDeleteTarget?.let { backup ->
+        AlertDialog(
+            onDismissRequest = { telegramDeleteTarget = null },
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            title = { Text(stringResource(R.string.delete_backup_title)) },
+            text  = { Text(stringResource(R.string.delete_telegram_backup_confirm, backup.fileName)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    val b = backup
+                    telegramDeleteTarget = null
+                    telegramManager.resetState()
+                    scope.launch { telegramManager.deleteBackup(b) }
+                }) { Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { telegramDeleteTarget = null }) { Text(stringResource(R.string.cancel)) }
+            }
         )
     }
 
@@ -1086,7 +1116,8 @@ private fun BackupListItem(
 private fun TelegramBackupListItem(
     backup: TelegramManager.TelegramBackupFile,
     enabled: Boolean,
-    onRestore: () -> Unit
+    onRestore: () -> Unit,
+    onDelete: () -> Unit
 ) {
     val dateFmt = remember { SimpleDateFormat("dd MMM yyyy  HH:mm", Locale.getDefault()) }
     val sizeMb  = if (backup.fileSize < 1_048_576L)
@@ -1118,6 +1149,13 @@ private fun TelegramBackupListItem(
             )
         }
         TextButton(onClick = onRestore, enabled = enabled) { Text(stringResource(R.string.restore_section_label)) }
+        IconButton(onClick = onDelete, enabled = enabled) {
+            Icon(
+                Icons.Filled.DeleteOutline, stringResource(R.string.delete_backup_action),
+                modifier = Modifier.size(20.dp),
+                tint     = MaterialTheme.colorScheme.error
+            )
+        }
     }
 }
 

@@ -247,6 +247,15 @@
     <string name="breakdown_aux_desc">Sistem 12 V, AC, dan sisa model. Ditampilkan sebagai sisa setelah gulir, aerodinamika, dan kemiringan. Kerugian motor/inverter sudah termasuk dalam angka di atas</string>
     <string name="vehicle_mass_label">Massa kendaraan</string>
     <string name="cda_drag_area_label">CdA (area hambatan)</string>
+    <string name="phev_breakdown_section">Rincian hibrida</string>
+    <string name="phev_ev_share_label">Porsi listrik</string>
+    <string name="phev_ev_distance_label">Jarak listrik</string>
+    <string name="phev_ice_distance_label">Jarak mesin</string>
+    <string name="phev_fuel_used_label">Bahan bakar terpakai</string>
+    <string name="phev_fuel_consumption_ice_label">Konsumsi bahan bakar (km mesin)</string>
+    <string name="phev_fuel_consumption_combined_label">Konsumsi bahan bakar (seluruh perjalanan)</string>
+    <string name="phev_ev_consumption_label">Konsumsi listrik (km EV)</string>
+    <string name="phev_breakdown_hint">Dipisahkan dari penghitung jarak EV/mesin dan bahan bakar milik mobil yang dicatat selama perjalanan</string>
 
     <!-- Export dialog -->
     <string name="export_title">Ekspor Data Perjalanan</string>
@@ -261,6 +270,14 @@
     <string name="export_send_csv">Kirim CSV ke Telegram</string>
     <string name="export_send_json">Kirim JSON ke Telegram</string>
     <string name="export_send_html">Kirim penampil HTML ke Telegram</string>
+    <string name="export_share_link">Bagikan sebagai tautan (kode QR)</string>
+    <string name="export_uploading">Mengunggah…</string>
+    <string name="export_upload_failed">Unggahan gagal: %1$s</string>
+    <string name="export_qr_dialog_title">Pindai untuk membagikan perjalanan ini</string>
+    <string name="export_qr_dialog_desc">Perjalanan (termasuk rute GPS-nya) diunggah ke host publik sementara dan tautan kedaluwarsa dalam 72 jam. Pindai dengan ponsel Anda untuk mengirim tautan itu melalui email ke %1$s.</string>
+    <string name="export_qr_no_render">Tidak dapat menampilkan kode QR. Kirim tautan perjalanan di bawah ini ke %1$s melalui email secara manual.</string>
+    <string name="export_qr_content_desc">Kode QR yang mengirim tautan unduhan perjalanan melalui email</string>
+    <string name="export_qr_copy_link">Salin tautan</string>
 
     <!-- Trip cost -->
     <string name="trip_cost_fixed_label">Biaya perjalanan @ tarif tetap</string>
@@ -274,6 +291,23 @@
     <string name="custom_dc_dialog_title">Biaya pengisian DC khusus</string>
     <string name="dc_charging_explanation">Masukkan total jumlah yang Anda bayar untuk pengisian DC selama perjalanan ini. Aplikasi akan mengurangi energi pengisian yang tumpang tindih dari perkiraan tarif rumah tetap dan menambahkan biaya khusus ini sebagai gantinya.</string>
     <string name="total_dc_cost_label">Total biaya pengisian DC</string>
+    <string name="energy_rate_label">Tarif energi</string>
+    <string name="section_cost">Biaya</string>
+    <string name="charge_price_label">Harga</string>
+    <string name="charge_cost_label">Biaya pengisian daya</string>
+    <string name="free_label">Gratis</string>
+    <string name="using_tariff_rate">Tarif (%1$s / kWh)</string>
+    <string name="set_price_action">Atur harga</string>
+    <string name="charge_price_estimate_hint">Diperkirakan dengan tarif global. Atur harga untuk mencatat jumlah yang benar-benar Anda bayar (0 = gratis).</string>
+    <string name="charge_price_dialog_title">Harga pengisian daya</string>
+    <string name="charge_price_explanation">Catat berapa biaya pengisian daya ini. Masukkan harga per kWh, atau total yang Anda bayar dan aplikasi akan menghitung tarifnya. Masukkan 0 untuk pengisian daya gratis.</string>
+    <string name="charge_price_free_hint">Tip: masukkan 0 untuk pengisian daya gratis.</string>
+    <string name="price_mode_rate">Per kWh</string>
+    <string name="price_mode_total">Total dibayar</string>
+    <string name="price_total_label">Total dibayar</string>
+    <string name="distance_since_last_charge_label">Sejak pengisian terakhir</string>
+    <string name="since_last_charge_chip">%1$s sejak pengisian terakhir</string>
+    <string name="cost_history_total">Total %1$s · rata-rata %2$s/bln</string>
 
     <!-- Charging History -->
     <string name="charging_history_title">Riwayat Pengisian</string>
@@ -464,6 +498,9 @@
     <string name="restore_database_title">Pulihkan Basis Data?</string>
     <string name="restore_database_msg">Ini akan mengganti permanen SEMUA data perjalanan saat ini dengan %1$s.\n\nAplikasi akan menutup dan membuka kembali secara otomatis setelah pemulihan.</string>
     <string name="delete_backup_confirm">\"%1$s\" akan dihapus permanen.</string>
+    <string name="delete_backup_title">Hapus cadangan?</string>
+    <string name="delete_telegram_backup_confirm">\"%1$s\" akan dihapus dari daftar ini, dan dihapus dari chat Telegram Anda jika dikirim kurang dari 48 jam yang lalu (Telegram tidak mengizinkan bot menghapus pesan yang lebih lama).</string>
+    <string name="delete_backup_action">Hapus cadangan</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Cadangan Telegram</string>
@@ -553,6 +590,8 @@
     <string name="mode_regen_lane_title">Mode regen</string>
     <string name="mode_drive_modes_label">Mode berkendara</string>
     <string name="mode_regen_modes_label">Mode regen</string>
+    <string name="mode_energy_lane_title">Mode energi (EV / HEV)</string>
+    <string name="mode_energy_modes_label">Mode energi</string>
     <string name="chart_speed_detailed">Profil Kecepatan (Detail)</string>
     <string name="chart_rpm_detailed">RPM Motor (Detail)</string>
     <string name="chart_power_detailed">Profil Daya (Detail)</string>
@@ -1128,6 +1167,8 @@
     <string name="speed_state_driving">Berkendara</string>
     <string name="soc_subtitle_usable">Daya yang dapat digunakan</string>
     <string name="range_subtitle_projection">Proyeksi dinamis</string>
+    <string name="range_subtitle_phev">Bahan bakar %1$s · Total %2$s</string>
+    <string name="stat_fuel_range">Bahan bakar</string>
     <string name="distance_subtitle_session">Sesi ini</string>
     <string name="odometer_subtitle_lifetime">Jarak total</string>
     <string name="discharge_subtitle_lifetime">Total energi keluar</string>

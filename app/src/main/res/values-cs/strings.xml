@@ -247,6 +247,15 @@
     <string name="breakdown_aux_desc">Soustava 12 V, klimatizace a zbytek modelu. Zobrazeno jako zůstatek po odečtení valivého odporu, aerodynamiky a sklonu. Ztráty motoru/měniče jsou započteny ve výše uvedených hodnotách</string>
     <string name="vehicle_mass_label">Hmotnost vozidla</string>
     <string name="cda_drag_area_label">CdA (odporová plocha)</string>
+    <string name="phev_breakdown_section">Rozklad hybridu</string>
+    <string name="phev_ev_share_label">Podíl elektřiny</string>
+    <string name="phev_ev_distance_label">Vzdálenost na elektřinu</string>
+    <string name="phev_ice_distance_label">Vzdálenost na motor</string>
+    <string name="phev_fuel_used_label">Spotřebované palivo</string>
+    <string name="phev_fuel_consumption_ice_label">Spotřeba paliva (km na motor)</string>
+    <string name="phev_fuel_consumption_combined_label">Spotřeba paliva (celá jízda)</string>
+    <string name="phev_ev_consumption_label">Spotřeba elektřiny (km EV)</string>
+    <string name="phev_breakdown_hint">Rozděleno podle vlastních počítadel kilometrů EV/motoru a paliva vozu zaznamenaných během jízdy</string>
 
     <!-- Export dialog -->
     <string name="export_title">Export dat jízdy</string>
@@ -261,6 +270,14 @@
     <string name="export_send_csv">Odeslat CSV na Telegram</string>
     <string name="export_send_json">Odeslat JSON na Telegram</string>
     <string name="export_send_html">Odeslat HTML prohlížeč na Telegram</string>
+    <string name="export_share_link">Sdílet jako odkaz (QR kód)</string>
+    <string name="export_uploading">Nahrávání…</string>
+    <string name="export_upload_failed">Nahrávání se nezdařilo: %1$s</string>
+    <string name="export_qr_dialog_title">Naskenováním sdílejte tuto jízdu</string>
+    <string name="export_qr_dialog_desc">Jízda (včetně její trasy GPS) se nahraje na dočasný veřejný server a odkaz vyprší za 72 hodin. Naskenujte telefonem a odešlete tento odkaz e-mailem na %1$s.</string>
+    <string name="export_qr_no_render">QR kód se nepodařilo zobrazit. Odešlete níže uvedený odkaz na jízdu e-mailem na %1$s ručně.</string>
+    <string name="export_qr_content_desc">QR kód, který e-mailem odešle odkaz ke stažení jízdy</string>
+    <string name="export_qr_copy_link">Kopírovat odkaz</string>
 
     <!-- Trip cost -->
     <string name="trip_cost_fixed_label">Cena jízdy @ pevný tarif</string>
@@ -274,6 +291,23 @@
     <string name="custom_dc_dialog_title">Vlastní cena DC nabíjení</string>
     <string name="dc_charging_explanation">Zadejte celkovou částku zaplacenou za DC nabíjení během této jízdy. Aplikace odečte překrývající se energii nabíjení od odhadu podle pevného domácího tarifu a místo toho přičte tuto vlastní cenu.</string>
     <string name="total_dc_cost_label">Celková cena DC nabíjení</string>
+    <string name="energy_rate_label">Sazba za energii</string>
+    <string name="section_cost">Náklady</string>
+    <string name="charge_price_label">Cena</string>
+    <string name="charge_cost_label">Náklady na nabíjení</string>
+    <string name="free_label">Zdarma</string>
+    <string name="using_tariff_rate">Tarif (%1$s / kWh)</string>
+    <string name="set_price_action">Nastavit cenu</string>
+    <string name="charge_price_estimate_hint">Odhadnuto podle globálního tarifu. Nastavte cenu, abyste zaznamenali, kolik jste skutečně zaplatili (0 = zdarma).</string>
+    <string name="charge_price_dialog_title">Cena nabíjení</string>
+    <string name="charge_price_explanation">Zaznamenejte, kolik toto nabíjení stálo. Zadejte cenu za kWh nebo celkovou zaplacenou částku a aplikace odvodí sazbu. Zadejte 0 pro nabíjení zdarma.</string>
+    <string name="charge_price_free_hint">Tip: zadejte 0 pro nabíjení zdarma.</string>
+    <string name="price_mode_rate">Za kWh</string>
+    <string name="price_mode_total">Zaplaceno celkem</string>
+    <string name="price_total_label">Zaplaceno celkem</string>
+    <string name="distance_since_last_charge_label">Od posledního nabíjení</string>
+    <string name="since_last_charge_chip">%1$s od posledního nabíjení</string>
+    <string name="cost_history_total">Celkem %1$s · prům. %2$s/měs.</string>
 
     <!-- Charging History -->
     <string name="charging_history_title">Historie nabíjení</string>
@@ -464,6 +498,9 @@
     <string name="restore_database_title">Obnovit databázi?</string>
     <string name="restore_database_msg">VŠECHNA aktuální data jízd budou trvale nahrazena %1$s.\n\nPo obnovení se aplikace automaticky zavře a znovu otevře.</string>
     <string name="delete_backup_confirm">\"%1$s\" bude trvale smazána.</string>
+    <string name="delete_backup_title">Odstranit zálohu?</string>
+    <string name="delete_telegram_backup_confirm">\"%1$s\" bude odstraněn z tohoto seznamu a smazán z vašeho chatu Telegram, pokud byl odeslán před méně než 48 hodinami (Telegram neumožňuje botům mazat starší zprávy).</string>
+    <string name="delete_backup_action">Odstranit zálohu</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Záloha na Telegram</string>
@@ -553,6 +590,8 @@
     <string name="mode_regen_lane_title">Rekuperační režim</string>
     <string name="mode_drive_modes_label">Jízdní režimy</string>
     <string name="mode_regen_modes_label">Rekuperační režimy</string>
+    <string name="mode_energy_lane_title">Režim energie (EV / HEV)</string>
+    <string name="mode_energy_modes_label">Režimy energie</string>
     <string name="chart_speed_detailed">Profil rychlosti (detailní)</string>
     <string name="chart_rpm_detailed">Otáčky motoru (detailní)</string>
     <string name="chart_power_detailed">Profil výkonu (detailní)</string>
@@ -1128,6 +1167,8 @@
     <string name="speed_state_driving">Jízda</string>
     <string name="soc_subtitle_usable">Využitelná kapacita</string>
     <string name="range_subtitle_projection">Dynamická projekce</string>
+    <string name="range_subtitle_phev">Palivo %1$s · Celkem %2$s</string>
+    <string name="stat_fuel_range">Palivo</string>
     <string name="distance_subtitle_session">Tato relace</string>
     <string name="odometer_subtitle_lifetime">Celková vzdálenost</string>
     <string name="discharge_subtitle_lifetime">Celková vydaná energie</string>

@@ -102,11 +102,11 @@ class PreferencesManager(private val context: Context) {
     // ── Animations ────────────────────────────────────────────────────────────
 
     val dashboardAnimationsEnabled: Flow<Boolean> = context.dataStore.data
-        .map { it[DASHBOARD_ANIMATIONS_ENABLED] ?: true }
+        .map { it[DASHBOARD_ANIMATIONS_ENABLED] ?: false }   // off by default; users opt in
         .onEach { cache.edit().putBoolean("animations_enabled", it).apply() }
 
     /** Synchronous read — safe to use as collectAsState initial value. */
-    fun getCachedAnimationsEnabled(): Boolean = cache.getBoolean("animations_enabled", true)
+    fun getCachedAnimationsEnabled(): Boolean = cache.getBoolean("animations_enabled", false)
 
     suspend fun saveDashboardAnimationsEnabled(enabled: Boolean) {
         context.dataStore.edit { it[DASHBOARD_ANIMATIONS_ENABLED] = enabled }

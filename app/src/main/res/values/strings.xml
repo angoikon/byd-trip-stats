@@ -251,6 +251,17 @@
     <string name="vehicle_mass_label">Vehicle mass</string>
     <string name="cda_drag_area_label">CdA (drag area)</string>
 
+    <!-- PHEV hybrid trip breakdown -->
+    <string name="phev_breakdown_section">Hybrid Breakdown</string>
+    <string name="phev_ev_share_label">Electric share</string>
+    <string name="phev_ev_distance_label">Electric distance</string>
+    <string name="phev_ice_distance_label">Engine distance</string>
+    <string name="phev_fuel_used_label">Fuel used</string>
+    <string name="phev_fuel_consumption_ice_label">Fuel consumption (engine km)</string>
+    <string name="phev_fuel_consumption_combined_label">Fuel consumption (whole trip)</string>
+    <string name="phev_ev_consumption_label">Electric consumption (EV km)</string>
+    <string name="phev_breakdown_hint">Split from the car\'s own EV/engine mileage and fuel counters recorded during the trip</string>
+
     <!-- Export dialog -->
     <string name="export_title">Export Trip Data</string>
     <string name="export_copy_summary">Copy Summary to Clipboard</string>
@@ -264,6 +275,15 @@
     <string name="export_send_csv">Send CSV to Telegram</string>
     <string name="export_send_json">Send JSON to Telegram</string>
     <string name="export_send_html">Send HTML viewer to Telegram</string>
+    <!-- Share as link (QR) -->
+    <string name="export_share_link">Share as link (QR code)</string>
+    <string name="export_uploading">Uploading…</string>
+    <string name="export_upload_failed">Upload failed: %1$s</string>
+    <string name="export_qr_dialog_title">Scan to share this trip</string>
+    <string name="export_qr_dialog_desc">The trip (including its GPS route) is uploaded to a temporary public host and the link expires in 72 hours. Scan with your phone to email that link to %1$s.</string>
+    <string name="export_qr_no_render">Couldn\'t render the QR code. Email the trip link below to %1$s manually.</string>
+    <string name="export_qr_content_desc">QR code that emails the trip download link</string>
+    <string name="export_qr_copy_link">Copy link</string>
 
     <!-- Trip cost -->
     <string name="trip_cost_fixed_label">Trip cost @ fixed tariff</string>
@@ -277,6 +297,29 @@
     <string name="custom_dc_dialog_title">Custom DC charging cost</string>
     <string name="dc_charging_explanation">Enter the total amount you paid for DC charging during this trip. The app will deduct the overlapping charging energy from the fixed home-tariff estimate and add this custom cost instead.</string>
     <string name="total_dc_cost_label">Total DC charging cost</string>
+
+    <!-- Trip energy rate (read-only, derived from charges + tariff) -->
+    <string name="energy_rate_label">Energy rate</string>
+
+    <!-- Per-charge price &amp; distance between charges -->
+    <string name="section_cost">Cost</string>
+    <string name="charge_price_label">Price</string>
+    <string name="charge_cost_label">Charge cost</string>
+    <string name="free_label">Free</string>
+    <string name="using_tariff_rate">Tariff (%1$s / kWh)</string>
+    <string name="set_price_action">Set price</string>
+    <string name="charge_price_estimate_hint">Estimated at the global tariff. Set a price to record what you actually paid (0 = free).</string>
+    <string name="charge_price_dialog_title">Charging price</string>
+    <string name="charge_price_explanation">Record what this charge cost. Enter a price per kWh, or the total you paid and the app derives the rate. Enter 0 for a free charge.</string>
+    <string name="charge_price_free_hint">Tip: enter 0 for a free charge.</string>
+    <string name="price_mode_rate">Per kWh</string>
+    <string name="price_mode_total">Total paid</string>
+    <string name="price_total_label">Total paid</string>
+    <string name="distance_since_last_charge_label">Since last charge</string>
+    <string name="since_last_charge_chip">%1$s since last charge</string>
+
+    <!-- Cost history / monthly cost summary -->
+    <string name="cost_history_total">Total %1$s · avg %2$s/mo</string>
 
     <!-- Charging History -->
     <string name="charging_history_title">Charging History</string>
@@ -467,6 +510,9 @@
     <string name="restore_database_title">Restore Database?</string>
     <string name="restore_database_msg">This will permanently replace ALL current trip data with %1$s.\n\nThe app will close and reopen automatically after restore.</string>
     <string name="delete_backup_confirm">\"%1$s\" will be permanently deleted.</string>
+    <string name="delete_backup_title">Delete Backup?</string>
+    <string name="delete_telegram_backup_confirm">\"%1$s\" will be removed from this list, and deleted from your Telegram chat if it was sent less than 48 hours ago (Telegram does not let bots delete older messages).</string>
+    <string name="delete_backup_action">Delete backup</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram Backup</string>
@@ -556,6 +602,8 @@
     <string name="mode_regen_lane_title">Regen mode</string>
     <string name="mode_drive_modes_label">Drive modes</string>
     <string name="mode_regen_modes_label">Regen modes</string>
+    <string name="mode_energy_lane_title">Energy mode (EV / HEV)</string>
+    <string name="mode_energy_modes_label">Energy modes</string>
     <string name="chart_speed_detailed">Speed Profile (Detailed)</string>
     <string name="chart_rpm_detailed">Motor RPM (Detailed)</string>
     <string name="chart_power_detailed">Power Profile (Detailed)</string>
@@ -1132,6 +1180,8 @@
     <string name="speed_state_driving">Driving</string>
     <string name="soc_subtitle_usable">Usable charge</string>
     <string name="range_subtitle_projection">Dynamic projection</string>
+    <string name="range_subtitle_phev">Fuel %1$s · Total %2$s</string>
+    <string name="stat_fuel_range">Fuel</string>
     <string name="distance_subtitle_session">This session</string>
     <string name="odometer_subtitle_lifetime">Lifetime distance</string>
     <string name="discharge_subtitle_lifetime">Lifetime energy out</string>

@@ -53,6 +53,11 @@ interface ChargingSessionDao {
     @Query("UPDATE charging_sessions SET isFavourite = :favourite WHERE id = :sessionId")
     suspend fun setFavourite(sessionId: Long, favourite: Boolean)
 
+    /** Sets/clears the per-charge electricity price (currency/kWh). null reverts to tariff,
+     *  0.0 marks the charge as free. */
+    @Query("UPDATE charging_sessions SET pricePerKwh = :price WHERE id = :sessionId")
+    suspend fun setSessionPrice(sessionId: Long, price: Double?)
+
     // ── Data points ───────────────────────────────────────────────────────────
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

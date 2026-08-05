@@ -55,7 +55,25 @@ data class ChargingSessionEntity(
      * DatabaseTrimmer (their charging data points and rawJson are preserved).
      * Defaults to false.
      */
-    val isFavourite: Boolean = false
+    val isFavourite: Boolean = false,
+
+    /**
+     * Odometer (km) captured when charging started — the anchor for
+     * "distance driven since the previous charge". Null on legacy rows
+     * (pre-v11) and when the reading was unavailable; the UI then derives
+     * the value from the nearest trip's odometer instead.
+     */
+    val startOdometer: Double? = null,
+
+    /**
+     * User-set electricity price for THIS charge, in currency/kWh.
+     *   null → use the global tariff (the charge cost is an estimate).
+     *   0.0  → free charging (explicitly free, a valid value).
+     *   >0.0 → the real price paid, entered directly or derived from a total.
+     * Drives the real per-charge cost and, via the charge→trip interval link,
+     * the derived cost of the trips that drew their energy from this charge.
+     */
+    val pricePerKwh: Double? = null
 ) {
     val durationSeconds: Long?
         get() = endTime?.let { (it - startTime) / 1000L }
@@ -65,6 +83,14 @@ data class ChargingSessionEntity(
 
     val socPanelDelta: Double?
         get() = socEndPanel?.let { it - socStartPanel }
+
+    /**
+     * Explicit cost of this charge when a per-charge price is set (including 0.0
+     * for a free charge); null when the price is unset, so callers fall back to
+     * the global tariff at display time.
+     */
+    val explicitCost: Double?
+        get() = pricePerKwh?.let { rate -> (kwhAdded ?: 0.0) * rate }
 }
 
 /**

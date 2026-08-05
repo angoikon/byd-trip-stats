@@ -330,7 +330,7 @@ object CarCatalog {
     val BYD_SEAL_6_PREMIUM_95KW = CarConfig(
         id = "BYD_SEAL_6_PREMIUM_95KW",
         displayName = "Seal 6 Premium 95kW",
-        drivetrain = Drivetrain.FWD,
+        drivetrain = Drivetrain.RWD,
         batteryKwh = 56.64,
         estimatedKerbMassKg = 1750.0,
         wltpKm = 425,               // WLTC figure; WLTP not published

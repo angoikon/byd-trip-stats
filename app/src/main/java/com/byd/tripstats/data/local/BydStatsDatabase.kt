@@ -38,8 +38,10 @@ import java.io.IOException
         TagEntity::class,
         TripTagCrossRef::class
     ],
-    version = 10,
-    exportSchema = false
+    version = 13,
+    // Schemas are exported to app/schemas/ and committed — see the ksp { } block in
+    // app/build.gradle.kts for why.
+    exportSchema = true
 )
 @TypeConverters(Converters::class)
 abstract class BydStatsDatabase : RoomDatabase() {
@@ -77,7 +79,11 @@ abstract class BydStatsDatabase : RoomDatabase() {
                 )
                     // .fallbackToDestructiveMigration()
                     // .fallbackToDestructiveMigrationOnDowngrade()
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
+                    .addMigrations(
+                        MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
+                        MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
+                        MIGRATION_11_12, MIGRATION_12_13
+                    )
                     .build()
                 INSTANCE = instance
                 instance
@@ -260,6 +266,110 @@ abstract class BydStatsDatabase : RoomDatabase() {
         val MIGRATION_9_10 = object : Migration(9, 10) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE trip_data_points ADD COLUMN batteryRemainPowerEV REAL")
+            }
+        }
+
+        // v11: cost & distance-between-charges.
+        //   • charging_sessions.startOdometer — odometer (km) at plug-in, the anchor for
+        //     "distance driven since the previous charge". Nullable; legacy rows stay NULL
+        //     and the UI derives the value from the nearest trip's odometer.
+        //   • charging_sessions.pricePerKwh — user-set price for that charge (currency/kWh);
+        //     NULL = use the global tariff, 0.0 = free.
+        // Both nullable — no DEFAULT — so existing rows transparently fall back to the tariff.
+        val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE charging_sessions ADD COLUMN startOdometer REAL")
+                db.execSQL("ALTER TABLE charging_sessions ADD COLUMN pricePerKwh REAL")
+            }
+        }
+
+        // v12: drops trips.pricePerKwhOverride, which existed only on pre-release v11
+        // dev databases (trip rates derive purely from charges + tariff now — see
+        // CostAttribution). The version bump is what actually matters: removing an
+        // entity field changes Room's schema identity hash, and without a bump Room
+        // finds version 11 == 11, runs no migration, and fails the identity check with
+        // "Room cannot verify the data integrity" on any pre-existing v11 database.
+        //
+        // Conditional because pre-release v11 DBs exist in both shapes (some were
+        // hand-patched with ALTER TABLE DROP COLUMN before this migration was written).
+        // Rebuild rather than DROP COLUMN: the head units run Android 10 / SQLite 3.22,
+        // and DROP COLUMN needs 3.35+. `trips` holds one row per trip — the bulk of the
+        // DB is trip_data_points — so the copy is cheap even on a 600 MB database.
+        val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                val hasColumn = db.query("PRAGMA table_info(`trips`)").use { c ->
+                    val nameIdx = c.getColumnIndex("name")
+                    generateSequence { if (c.moveToNext()) c.getString(nameIdx) else null }
+                        .any { it == "pricePerKwhOverride" }
+                }
+                if (!hasColumn) return
+
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `trips_new` (" +
+                        "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`startTime` INTEGER NOT NULL, `endTime` INTEGER, " +
+                        "`startOdometer` REAL NOT NULL, `endOdometer` REAL, " +
+                        "`startSoc` REAL NOT NULL, `endSoc` REAL, " +
+                        "`startSocPanel` REAL NOT NULL, `endSocPanel` REAL, " +
+                        "`startTotalDischarge` REAL NOT NULL, `endTotalDischarge` REAL, " +
+                        "`isActive` INTEGER NOT NULL, `isManual` INTEGER NOT NULL, " +
+                        "`maxSpeed` REAL NOT NULL, `maxPower` REAL NOT NULL, " +
+                        "`maxRegenPower` REAL NOT NULL, `avgBatteryTemp` REAL NOT NULL, " +
+                        "`minSoc` REAL NOT NULL, `maxBatteryCellTemp` INTEGER NOT NULL, " +
+                        "`minBatteryCellTemp` INTEGER NOT NULL, " +
+                        "`offStateDurationMs` INTEGER NOT NULL, `isFavourite` INTEGER NOT NULL)"
+                )
+                db.execSQL(
+                    "INSERT INTO `trips_new` SELECT `id`, `startTime`, `endTime`, " +
+                        "`startOdometer`, `endOdometer`, `startSoc`, `endSoc`, " +
+                        "`startSocPanel`, `endSocPanel`, `startTotalDischarge`, " +
+                        "`endTotalDischarge`, `isActive`, `isManual`, `maxSpeed`, " +
+                        "`maxPower`, `maxRegenPower`, `avgBatteryTemp`, `minSoc`, " +
+                        "`maxBatteryCellTemp`, `minBatteryCellTemp`, " +
+                        "`offStateDurationMs`, `isFavourite` FROM `trips`"
+                )
+                db.execSQL("DROP TABLE `trips`")
+                db.execSQL("ALTER TABLE `trips_new` RENAME TO `trips`")
+            }
+        }
+
+        /** Column names of [table], for migrations that must tolerate divergent schemas. */
+        private fun SupportSQLiteDatabase.columnsOf(table: String): Set<String> =
+            query("PRAGMA table_info(`$table`)").use { c ->
+                val nameIdx = c.getColumnIndex("name")
+                generateSequence { if (c.moveToNext()) c.getString(nameIdx) else null }.toSet()
+            }
+
+        // v13: reconciles pre-release v12 databases that are missing charging_sessions
+        // columns. `startOdometer` and `pricePerKwh` were both added to MIGRATION_10_11
+        // in place, during the 2.15.0 beta — so a device that ran 10→11 on an earlier
+        // beta got only the columns that existed at the time, then 11→12 (which only
+        // touches `trips`, and early-returns) left it on version 12 with an incomplete
+        // charging_sessions. Room then sees 12 == 12, runs no migration, and every
+        // ChargingSessionDao query dies with "Room cannot verify the data integrity"
+        // — an unrecoverable crash loop, since nothing re-runs for the same version.
+        //
+        // The bump to 13 is what makes this reachable at all. Adding the columns to
+        // MIGRATION_10_11 (again) or correcting v12 in place cannot help a database
+        // that already reports version 12.
+        //
+        // Entities are unchanged, so 13's identity hash equals 12's: databases already
+        // on a correct v12 migrate as a no-op, divergent ones converge. Column-by-column
+        // rather than blanket ALTERs because a correct v12 must not fail on "duplicate
+        // column name" — and unlike DROP COLUMN, ADD COLUMN works on SQLite 3.22.
+        val MIGRATION_12_13 = object : Migration(12, 13) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                val existing = db.columnsOf("charging_sessions")
+                // REAL/nullable matches the entity: `startOdometer: Double?`, `pricePerKwh: Double?`.
+                mapOf(
+                    "startOdometer" to "REAL",
+                    "pricePerKwh" to "REAL",
+                ).forEach { (column, type) ->
+                    if (column !in existing) {
+                        db.execSQL("ALTER TABLE `charging_sessions` ADD COLUMN `$column` $type")
+                        Log.i(TAG, "MIGRATION_12_13: added missing charging_sessions.$column")
+                    }
+                }
             }
         }
 

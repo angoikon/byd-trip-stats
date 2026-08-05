@@ -27,6 +27,9 @@ internal fun MonthlyCostSummaryCard(
     var expanded by rememberSaveable { mutableStateOf(false) }
     val shown = if (expanded) months else months.take(1)
     val hiddenCount = (months.size - 1).coerceAtLeast(0)
+    // Newest month carries the running cumulative for the whole shown window.
+    val total = months.firstOrNull()?.cumulativeCost ?: months.sumOf { it.costAmount }
+    val avg = if (months.isNotEmpty()) total / months.size else 0.0
 
     Card(
         modifier = Modifier
@@ -52,8 +55,21 @@ internal fun MonthlyCostSummaryCard(
                 ) {
                     Icon(Icons.Filled.AttachMoney, null,
                         tint = AccelerationOrange, modifier = Modifier.size(20.dp))
-                    Text(stringResource(R.string.monthly_cost_label), style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold)
+                    Column {
+                        Text(stringResource(R.string.monthly_cost_label), style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold)
+                        if (months.size > 1) {
+                            Text(
+                                stringResource(
+                                    R.string.cost_history_total,
+                                    "$currencySymbol${"%.2f".format(total)}",
+                                    "$currencySymbol${"%.2f".format(avg)}"
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
                 if (months.size > 1) {
                     TextButton(onClick = { expanded = !expanded }) {
@@ -68,6 +84,12 @@ internal fun MonthlyCostSummaryCard(
                     }
                 }
             }
+
+            if (expanded) {
+                // Visual trend (the "cost history" chart); the numeric rows below are the drill-down.
+                CostHistoryBars(months = months, currencySymbol = currencySymbol)
+            }
+
             shown.forEach { month ->
                 Row(
                     Modifier.fillMaxWidth(),

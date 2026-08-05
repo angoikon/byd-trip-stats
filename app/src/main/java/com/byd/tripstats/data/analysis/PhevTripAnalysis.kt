@@ -50,8 +50,12 @@ object PhevTripAnalysis {
     private const val MAX_PAIR_FUEL_LITERS = 2.0
     private const val MAX_PAIR_MILEAGE_KM = 50.0
 
-    /** Energy modes in which the ICE is (co-)propelling: 3 = HEV, 4 = Fuel. */
-    private fun isIceMode(energyMode: Int) = energyMode == 3 || energyMode == 4
+    /**
+     * Energy modes in which the ICE may be (co-)propelling / burning fuel:
+     * 3 = HEV, 4 = Fuel, 5 = Keep (SOC hold — the engine runs to sustain charge).
+     */
+    private fun isIceMode(energyMode: Int) =
+        energyMode == 3 || energyMode == 4 || energyMode == 5
 
     private data class PointSignals(
         val odometer: Double,
@@ -105,18 +109,38 @@ object PhevTripAnalysis {
         var sawIceCounter = false
         var sawEvCounter = false
 
+        // Lifetime-counter deltas are taken against the *last point that carried the
+        // counter*, not strictly the adjacent point — a point with a missing/corrupt
+        // rawJson blob (SDK wedge, partial write) drops nothing, because the jump
+        // across it is captured on the next carrying point. The per-pair clamps
+        // still bound every accepted jump.
+        var lastFuelL: Double? = null
+        var lastIceCounter: Double? = null
+        var lastEvCounter: Double? = null
+        signals.forEach { s ->
+            s.totalFuelL?.let { cur ->
+                pairDelta(lastFuelL, cur, MAX_PAIR_FUEL_LITERS)?.let { fuelLiters += it }
+                lastFuelL = cur
+            }
+            s.iceKm?.toDouble()?.let { cur ->
+                pairDelta(lastIceCounter, cur, MAX_PAIR_MILEAGE_KM)?.let {
+                    iceCounterKm += it
+                    sawIceCounter = true
+                }
+                lastIceCounter = cur
+            }
+            s.evKm?.toDouble()?.let { cur ->
+                pairDelta(lastEvCounter, cur, MAX_PAIR_MILEAGE_KM)?.let {
+                    evCounterKm += it
+                    sawEvCounter = true
+                }
+                lastEvCounter = cur
+            }
+        }
+        // Odometer distance accrued while the powertrain reported the ICE active —
+        // the fallback ICE distance for trips shorter than the counter's 1 km step.
+        // Stays pairwise-adjacent: the odometer is a first-class column, never null.
         signals.zipWithNext { a, b ->
-            pairDelta(a.totalFuelL, b.totalFuelL, MAX_PAIR_FUEL_LITERS)?.let { fuelLiters += it }
-            pairDelta(a.iceKm?.toDouble(), b.iceKm?.toDouble(), MAX_PAIR_MILEAGE_KM)?.let {
-                iceCounterKm += it
-                sawIceCounter = true
-            }
-            pairDelta(a.evKm?.toDouble(), b.evKm?.toDouble(), MAX_PAIR_MILEAGE_KM)?.let {
-                evCounterKm += it
-                sawEvCounter = true
-            }
-            // Odometer distance accrued while the powertrain reported the ICE active —
-            // the fallback ICE distance for trips shorter than the counter's 1 km step.
             val iceActive = isIceMode(a.energyMode) || (a.instantFuel ?: 0.0) > 0.0
             if (iceActive) {
                 pairDelta(a.odometer, b.odometer, MAX_PAIR_MILEAGE_KM)?.let { iceModeOdoKm += it }
@@ -128,10 +152,18 @@ object PhevTripAnalysis {
 
         // The lifetime ICE counter only ticks in whole km; prefer it once it has
         // actually moved, otherwise fall back to the mode-gated odometer integral.
-        val iceKm = (if (sawIceCounter && iceCounterKm > 0.0) iceCounterKm else iceModeOdoKm)
-            .coerceIn(0.0, totalKm)
-        val evKm = (if (sawEvCounter && evCounterKm > 0.0) evCounterKm else totalKm - iceKm)
-            .coerceIn(0.0, totalKm)
+        val iceRawKm = if (sawIceCounter && iceCounterKm > 0.0) iceCounterKm else iceModeOdoKm
+        val evRawKm = if (sawEvCounter && evCounterKm > 0.0) evCounterKm else totalKm - iceRawKm
+        // Both counters step in whole km, so independently they can sum to more (or
+        // less) than the odometer delta — 42 + 22 = 64 km on a 63.1 km drive. Their
+        // *ratio* is the meaningful part, so normalise the pair onto the odometer
+        // distance; the two figures then always add up to the trip the card shows.
+        // When only one counter moved the other is already the remainder, the sum is
+        // exactly totalKm, and this scales by 1.0.
+        val rawSum = iceRawKm + evRawKm
+        val scale = if (rawSum > 0.0) totalKm / rawSum else 0.0
+        val iceKm = (iceRawKm * scale).coerceIn(0.0, totalKm)
+        val evKm = (totalKm - iceKm).coerceIn(0.0, totalKm)
 
         return PhevTripBreakdown(
             totalKm = totalKm,

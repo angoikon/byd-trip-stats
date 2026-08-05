@@ -250,6 +250,15 @@
     <string name="breakdown_aux_desc">12V-system, HVAC og modelrest. Vist som rest efter rulling, aero og gradient. Motor-/invertertab er indregnet i tallene ovenfor</string>
     <string name="vehicle_mass_label">Køretøjsvægt</string>
     <string name="cda_drag_area_label">CdA (luftmodstandsareal)</string>
+    <string name="phev_breakdown_section">Hybridopdeling</string>
+    <string name="phev_ev_share_label">Elektrisk andel</string>
+    <string name="phev_ev_distance_label">Elektrisk distance</string>
+    <string name="phev_ice_distance_label">Motordistance</string>
+    <string name="phev_fuel_used_label">Brugt brændstof</string>
+    <string name="phev_fuel_consumption_ice_label">Brændstofforbrug (motor-km)</string>
+    <string name="phev_fuel_consumption_combined_label">Brændstofforbrug (hele turen)</string>
+    <string name="phev_ev_consumption_label">Strømforbrug (EV-km)</string>
+    <string name="phev_breakdown_hint">Opdelt ud fra bilens egne EV-/motorkilometer- og brændstoftællere, der er registreret under turen</string>
 
     <!-- Export dialog -->
     <string name="export_title">Eksportér turdata</string>
@@ -264,6 +273,14 @@
     <string name="export_send_csv">Send CSV til Telegram</string>
     <string name="export_send_json">Send JSON til Telegram</string>
     <string name="export_send_html">Send HTML-visning til Telegram</string>
+    <string name="export_share_link">Del som link (QR-kode)</string>
+    <string name="export_uploading">Uploader…</string>
+    <string name="export_upload_failed">Upload mislykkedes: %1$s</string>
+    <string name="export_qr_dialog_title">Scan for at dele denne tur</string>
+    <string name="export_qr_dialog_desc">Turen (inklusive dens GPS-rute) uploades til en midlertidig offentlig vært, og linket udløber om 72 timer. Scan med din telefon for at sende linket via e-mail til %1$s.</string>
+    <string name="export_qr_no_render">QR-koden kunne ikke vises. Send turlinket nedenfor manuelt via e-mail til %1$s.</string>
+    <string name="export_qr_content_desc">QR-kode, der sender turens downloadlink via e-mail</string>
+    <string name="export_qr_copy_link">Kopiér link</string>
 
     <!-- Trip cost -->
     <string name="trip_cost_fixed_label">Turomkostning @ fast takst</string>
@@ -277,6 +294,23 @@
     <string name="custom_dc_dialog_title">Brugerdefineret DC-opladningsomkostning</string>
     <string name="dc_charging_explanation">Indtast det samlede beløb, du betalte for DC-opladning under denne tur. Appen vil fratrække den overlappende opladningsenergi fra den faste hjemtakstestimering og tilføje denne brugerdefinerede pris i stedet.</string>
     <string name="total_dc_cost_label">Samlet DC-opladningsomkostning</string>
+    <string name="energy_rate_label">Energipris</string>
+    <string name="section_cost">Omkostning</string>
+    <string name="charge_price_label">Pris</string>
+    <string name="charge_cost_label">Opladningsomkostning</string>
+    <string name="free_label">Gratis</string>
+    <string name="using_tariff_rate">Takst (%1$s / kWh)</string>
+    <string name="set_price_action">Angiv pris</string>
+    <string name="charge_price_estimate_hint">Anslået ud fra den globale takst. Angiv en pris for at registrere, hvad du faktisk betalte (0 = gratis).</string>
+    <string name="charge_price_dialog_title">Opladningspris</string>
+    <string name="charge_price_explanation">Registrer, hvad denne opladning kostede. Indtast en pris pr. kWh, eller det samlede beløb du betalte, så udleder appen taksten. Indtast 0 for en gratis opladning.</string>
+    <string name="charge_price_free_hint">Tip: indtast 0 for en gratis opladning.</string>
+    <string name="price_mode_rate">Pr. kWh</string>
+    <string name="price_mode_total">Betalt i alt</string>
+    <string name="price_total_label">Betalt i alt</string>
+    <string name="distance_since_last_charge_label">Siden sidste opladning</string>
+    <string name="since_last_charge_chip">%1$s siden sidste opladning</string>
+    <string name="cost_history_total">I alt %1$s · gns. %2$s/md.</string>
 
     <!-- Charging History -->
     <string name="charging_history_title">Opladningshistorik</string>
@@ -467,6 +501,9 @@
     <string name="restore_database_title">Gendan database?</string>
     <string name="restore_database_msg">Dette vil permanent erstatte ALLE aktuelle turdata med %1$s.\n\nAppen lukkes og åbnes automatisk igen efter gendannelse.</string>
     <string name="delete_backup_confirm">\"%1$s\" slettes permanent.</string>
+    <string name="delete_backup_title">Slet sikkerhedskopi?</string>
+    <string name="delete_telegram_backup_confirm">\"%1$s\" fjernes fra denne liste og slettes fra din Telegram-chat, hvis den blev sendt for mindre end 48 timer siden (Telegram tillader ikke, at bots sletter ældre beskeder).</string>
+    <string name="delete_backup_action">Slet sikkerhedskopi</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram-sikkerhedskopi</string>
@@ -556,6 +593,8 @@
     <string name="mode_regen_lane_title">Regenereringstilstand</string>
     <string name="mode_drive_modes_label">Kørselstilstande</string>
     <string name="mode_regen_modes_label">Regenereringstilstande</string>
+    <string name="mode_energy_lane_title">Energitilstand (EV / HEV)</string>
+    <string name="mode_energy_modes_label">Energitilstande</string>
     <string name="chart_speed_detailed">Hastighedsprofil (Detaljeret)</string>
     <string name="chart_rpm_detailed">Motor-RPM (Detaljeret)</string>
     <string name="chart_power_detailed">Effektprofil (Detaljeret)</string>
@@ -1132,6 +1171,8 @@
     <string name="speed_state_driving">Kører</string>
     <string name="soc_subtitle_usable">Brugbar opladning</string>
     <string name="range_subtitle_projection">Dynamisk projektion</string>
+    <string name="range_subtitle_phev">Brændstof %1$s · I alt %2$s</string>
+    <string name="stat_fuel_range">Brændstof</string>
     <string name="distance_subtitle_session">Denne session</string>
     <string name="odometer_subtitle_lifetime">Samlet distance</string>
     <string name="discharge_subtitle_lifetime">Samlet afgivet energi</string>

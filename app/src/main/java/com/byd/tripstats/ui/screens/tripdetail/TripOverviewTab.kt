@@ -3,7 +3,6 @@ package com.byd.tripstats.ui.screens.tripdetail
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -17,7 +16,6 @@ import com.byd.tripstats.R
 import com.byd.tripstats.data.analysis.PhevTripAnalysis
 import com.byd.tripstats.data.analysis.calculateTripEnergyBreakdown
 import com.byd.tripstats.data.config.CarConfig
-import com.byd.tripstats.data.local.entity.ChargingSessionEntity
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
 import com.byd.tripstats.data.local.entity.TripEntity
 import com.byd.tripstats.data.local.entity.TripStatsEntity
@@ -29,7 +27,6 @@ import com.byd.tripstats.data.preferences.convertEfficiency
 import com.byd.tripstats.data.preferences.distanceUnit
 import com.byd.tripstats.data.preferences.speedUnit
 import com.byd.tripstats.ui.screens.DetailRow
-import com.byd.tripstats.ui.screens.EditableDetailRow
 import com.byd.tripstats.ui.theme.*
 import kotlin.math.abs
 
@@ -40,13 +37,12 @@ fun TripOverviewTab(
     dataPoints: List<TripDataPointEntity>,
     selectedCarConfig: CarConfig?,
     regenEfficiencyPct: Double?,
-    electricityPrice: Double = 0.0,
     currencySymbol: String = "€",
     unitSystem: UnitSystem = UnitSystem.METRIC,
     socSource: SocSource = SocSource.PANEL,
-    chargingSessions: List<ChargingSessionEntity> = emptyList(),
-    additionalChargingCost: Double = 0.0,
-    onSaveAdditionalChargingCost: (Double?) -> Unit = {}
+    /** FIFO "battery cost-basis" rate for this trip (currency/kWh), from
+     *  DashboardViewModel.tripBlendedRates. null when no rate is resolvable. */
+    blendedRate: Double? = null
 ) {
     val energyBreakdown = remember(dataPoints, selectedCarConfig, trip.energyConsumed) {
         calculateTripEnergyBreakdown(
@@ -60,31 +56,15 @@ fun TripOverviewTab(
             PhevTripAnalysis.analyze(dataPoints, trip.energyConsumed)
         } else null
     }
-    val tripEnd = trip.endTime ?: System.currentTimeMillis()
-    val overlappingChargingSessions = remember(trip, tripEnd, chargingSessions) {
-        chargingSessions.filter { session ->
-            val sessionEnd = session.endTime ?: session.startTime
-            session.startTime <= tripEnd && sessionEnd >= trip.startTime
-        }
-    }
-    val overlappingChargingKwh = remember(overlappingChargingSessions) {
-        overlappingChargingSessions.sumOf { it.kwhAdded ?: 0.0 }
-    }
-    val tariffTripCost = remember(trip, electricityPrice) {
-        trip.energyConsumed?.takeIf { electricityPrice > 0.0 }?.let { it * electricityPrice }
-    }
-    val tariffDeductionKwh = remember(trip, overlappingChargingKwh) {
-        minOf(overlappingChargingKwh, trip.energyConsumed ?: 0.0)
-    }
-    val tariffDeductionCost = remember(tariffDeductionKwh, electricityPrice) {
-        tariffDeductionKwh * electricityPrice
-    }
-    val adjustedTripCost = remember(tariffTripCost, tariffDeductionCost, additionalChargingCost) {
-        tariffTripCost?.minus(tariffDeductionCost)?.plus(additionalChargingCost)
-    }
-    var showChargingCostDialog by remember { mutableStateOf(false) }
-    var chargingCostInput by remember(additionalChargingCost) {
-        mutableStateOf(if (additionalChargingCost > 0.0) "%.2f".format(additionalChargingCost) else "")
+    // Electricity rate for this trip: the FIFO "battery cost-basis" rate for the energy this
+    // trip drew (computed once in the ViewModel and passed in), so the detail matches the
+    // history list exactly. It already folds in any charge that happened during the trip.
+    // Read-only by design — prices are edited on charging sessions and the global tariff,
+    // and flow through to trips (single source of truth).
+    val effectiveRate = blendedRate
+
+    val tripCost = remember(trip, effectiveRate) {
+        effectiveRate?.let { rate -> trip.energyConsumed?.let { it * rate } }
     }
 
     Column(
@@ -217,34 +197,23 @@ fun TripOverviewTab(
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = (MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)))
 
                 DetailRow(stringResource(R.string.stat_energy_consumed), trip.energyConsumed?.let { String.format("%.2f kWh", it) } ?: "-")
-                if (electricityPrice > 0.0) {
-                    if (overlappingChargingKwh > 0.01) {
-                        DetailRow(
-                            stringResource(R.string.trip_cost_fixed_label),
-                            tariffTripCost?.let { "${currencySymbol}${String.format("%.2f", it)}" } ?: "-"
-                        )
-                        DetailRow(stringResource(R.string.en_route_charging_label), String.format("%.2f kWh", overlappingChargingKwh))
-                        DetailRow(stringResource(R.string.tariff_deduction_label), "-${currencySymbol}${String.format("%.2f", tariffDeductionCost)}")
-                        EditableDetailRow(
-                            label = stringResource(R.string.custom_dc_label),
-                            value = if (additionalChargingCost > 0.0) {
-                                "${currencySymbol}${String.format("%.2f", additionalChargingCost)}"
-                            } else {
-                                stringResource(R.string.set_cost_action)
-                            },
-                            onEdit = { showChargingCostDialog = true }
-                        )
-                        DetailRow(
-                            stringResource(R.string.adjusted_trip_cost_label),
-                            if (additionalChargingCost > 0.0 && adjustedTripCost != null) {
-                                "${currencySymbol}${String.format("%.2f", adjustedTripCost)}"
-                            } else {
-                                stringResource(R.string.set_dc_cost_action)
-                            }
-                        )
-                    } else {
-                        DetailRow(stringResource(R.string.trip_cost_label), tariffTripCost?.let { "${currencySymbol}${String.format("%.2f", it)}" } ?: "-")
-                    }
+
+                // Read-only per-trip electricity rate: the FIFO cost-basis rate of the energy
+                // this trip drew (already folds in any mid-trip charge). Edit prices on the
+                // charging sessions / global tariff — they flow through to trips.
+                if (effectiveRate != null) {
+                    DetailRow(
+                        stringResource(R.string.energy_rate_label),
+                        if (effectiveRate <= 0.0) stringResource(R.string.free_label)
+                        else "${currencySymbol}${String.format("%.3f", effectiveRate)}/kWh"
+                    )
+                    DetailRow(
+                        stringResource(R.string.trip_cost_label),
+                        tripCost?.let {
+                            if (it <= 0.0) stringResource(R.string.free_label)
+                            else "${currencySymbol}${String.format("%.2f", it)}"
+                        } ?: "-"
+                    )
                 }
                 DetailRow(stringResource(R.string.energy_regenerated_label), stats?.totalRegenEnergy?.let { String.format("%.2f kWh", it) } ?: "-")
                 DetailRow(stringResource(R.string.gross_energy_consumed_label), String.format("%.2f kWh", (trip.energyConsumed ?: 0.0) + (stats?.totalRegenEnergy ?: 0.0)))
@@ -473,51 +442,6 @@ fun TripOverviewTab(
         }
     }
 
-    if (showChargingCostDialog) {
-        AlertDialog(
-            onDismissRequest = { showChargingCostDialog = false },
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            title = { Text(stringResource(R.string.custom_dc_dialog_title), fontWeight = FontWeight.Bold) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(
-                        stringResource(R.string.dc_charging_explanation),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    OutlinedTextField(
-                        value = chargingCostInput,
-                        onValueChange = { chargingCostInput = it },
-                        label = { Text(stringResource(R.string.total_dc_cost_label)) },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal
-                        ),
-                        prefix = { Text(currencySymbol) }
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    val parsed = chargingCostInput.replace(',', '.').toDoubleOrNull()
-                    onSaveAdditionalChargingCost(parsed?.takeIf { it > 0.0 })
-                    showChargingCostDialog = false
-                }) { Text(stringResource(R.string.save)) }
-            },
-            dismissButton = {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (additionalChargingCost > 0.0) {
-                        TextButton(onClick = {
-                            chargingCostInput = ""
-                            onSaveAdditionalChargingCost(null)
-                            showChargingCostDialog = false
-                        }) { Text(stringResource(R.string.clear)) }
-                    }
-                    TextButton(onClick = { showChargingCostDialog = false }) { Text(stringResource(R.string.cancel)) }
-                }
-            }
-        )
-    }
 }
 
 private fun tripBatteryTempRangeLabel(trip: TripEntity): String {

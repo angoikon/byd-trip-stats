@@ -250,6 +250,15 @@
     <string name="breakdown_aux_desc">12Vシステム、HVAC、モデル残差。転がり・空気・勾配の後の残余として表示。モーター/インバーター損失は上記の数値に含まれます</string>
     <string name="vehicle_mass_label">車両重量</string>
     <string name="cda_drag_area_label">CdA（空気抵抗面積）</string>
+    <string name="phev_breakdown_section">ハイブリッド内訳</string>
+    <string name="phev_ev_share_label">EV走行比率</string>
+    <string name="phev_ev_distance_label">EV走行距離</string>
+    <string name="phev_ice_distance_label">エンジン走行距離</string>
+    <string name="phev_fuel_used_label">燃料使用量</string>
+    <string name="phev_fuel_consumption_ice_label">燃料消費（エンジン走行km）</string>
+    <string name="phev_fuel_consumption_combined_label">燃料消費（トリップ全体）</string>
+    <string name="phev_ev_consumption_label">電力消費（EV走行km）</string>
+    <string name="phev_breakdown_hint">走行中に記録された車両自身のEV/エンジン走行距離と燃料カウンターから按分しています</string>
 
     <!-- Export dialog -->
     <string name="export_title">走行データのエクスポート</string>
@@ -264,6 +273,14 @@
     <string name="export_send_csv">CSVをTelegramに送信</string>
     <string name="export_send_json">JSONをTelegramに送信</string>
     <string name="export_send_html">HTMLビューアーをTelegramに送信</string>
+    <string name="export_share_link">リンクで共有（QRコード）</string>
+    <string name="export_uploading">アップロード中…</string>
+    <string name="export_upload_failed">アップロードに失敗しました: %1$s</string>
+    <string name="export_qr_dialog_title">スキャンしてこのトリップを共有</string>
+    <string name="export_qr_dialog_desc">トリップ（GPSルートを含む）は一時的な公開ホストにアップロードされ、リンクは72時間で失効します。スマートフォンでスキャンして、そのリンクを %1$s にメールで送信してください。</string>
+    <string name="export_qr_no_render">QRコードを表示できませんでした。下のトリップリンクを手動で %1$s にメール送信してください。</string>
+    <string name="export_qr_content_desc">トリップのダウンロードリンクをメール送信するQRコード</string>
+    <string name="export_qr_copy_link">リンクをコピー</string>
 
     <!-- Trip cost -->
     <string name="trip_cost_fixed_label">走行コスト（固定料金）</string>
@@ -277,6 +294,23 @@
     <string name="custom_dc_dialog_title">カスタムDC充電コスト</string>
     <string name="dc_charging_explanation">この走行中に支払ったDC充電の総額を入力してください。アプリは固定家庭料金の見積もりから重複する充電エネルギーを差し引き、代わりにこのカスタムコストを追加します。</string>
     <string name="total_dc_cost_label">DC充電総コスト</string>
+    <string name="energy_rate_label">電力単価</string>
+    <string name="section_cost">コスト</string>
+    <string name="charge_price_label">料金</string>
+    <string name="charge_cost_label">充電コスト</string>
+    <string name="free_label">無料</string>
+    <string name="using_tariff_rate">料金 (%1$s / kWh)</string>
+    <string name="set_price_action">料金を設定</string>
+    <string name="charge_price_estimate_hint">グローバル料金で概算しています。実際に支払った金額を記録するには料金を設定してください（0 = 無料）。</string>
+    <string name="charge_price_dialog_title">充電料金</string>
+    <string name="charge_price_explanation">この充電の費用を記録します。kWh あたりの料金、または支払った合計額を入力すると、アプリが単価を算出します。無料充電の場合は 0 を入力してください。</string>
+    <string name="charge_price_free_hint">ヒント: 無料充電の場合は 0 を入力してください。</string>
+    <string name="price_mode_rate">kWh あたり</string>
+    <string name="price_mode_total">支払合計</string>
+    <string name="price_total_label">支払合計</string>
+    <string name="distance_since_last_charge_label">前回の充電から</string>
+    <string name="since_last_charge_chip">前回の充電から %1$s</string>
+    <string name="cost_history_total">合計 %1$s · 平均 %2$s/月</string>
 
     <!-- Charging History -->
     <string name="charging_history_title">充電履歴</string>
@@ -467,6 +501,9 @@
     <string name="restore_database_title">データベースを復元しますか？</string>
     <string name="restore_database_msg">現在のすべての走行データが %1$s に完全に置き換えられます。\n\n復元後、アプリは自動的に終了して再起動します。</string>
     <string name="delete_backup_confirm">「%1$s」は完全に削除されます。</string>
+    <string name="delete_backup_title">バックアップを削除しますか？</string>
+    <string name="delete_telegram_backup_confirm">\"%1$s\" はこのリストから削除され、送信から48時間未満の場合は Telegram チャットからも削除されます（Telegram はボットによる古いメッセージの削除を許可していません）。</string>
+    <string name="delete_backup_action">バックアップを削除</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegramバックアップ</string>
@@ -556,6 +593,8 @@
     <string name="mode_regen_lane_title">回生モード</string>
     <string name="mode_drive_modes_label">ドライブモード</string>
     <string name="mode_regen_modes_label">回生モード</string>
+    <string name="mode_energy_lane_title">エネルギーモード（EV / HEV）</string>
+    <string name="mode_energy_modes_label">エネルギーモード</string>
     <string name="chart_speed_detailed">速度プロファイル（詳細）</string>
     <string name="chart_rpm_detailed">モーターRPM（詳細）</string>
     <string name="chart_power_detailed">電力プロファイル（詳細）</string>
@@ -1132,6 +1171,8 @@
     <string name="speed_state_driving">走行中</string>
     <string name="soc_subtitle_usable">使用可能な充電量</string>
     <string name="range_subtitle_projection">動的予測</string>
+    <string name="range_subtitle_phev">燃料 %1$s · 合計 %2$s</string>
+    <string name="stat_fuel_range">燃料</string>
     <string name="distance_subtitle_session">このセッション</string>
     <string name="odometer_subtitle_lifetime">総走行距離</string>
     <string name="discharge_subtitle_lifetime">総放電エネルギー</string>

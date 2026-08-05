@@ -247,6 +247,15 @@
     <string name="breakdown_aux_desc">Hệ thống 12 V, điều hòa và phần dư của mô hình. Hiển thị dưới dạng phần còn lại sau lực cản lăn, khí động và độ dốc. Tổn thất mô-tơ/biến tần đã được tính vào các số liệu trên</string>
     <string name="vehicle_mass_label">Khối lượng xe</string>
     <string name="cda_drag_area_label">CdA (diện tích cản)</string>
+    <string name="phev_breakdown_section">Phân tích hybrid</string>
+    <string name="phev_ev_share_label">Tỷ lệ điện</string>
+    <string name="phev_ev_distance_label">Quãng đường điện</string>
+    <string name="phev_ice_distance_label">Quãng đường động cơ</string>
+    <string name="phev_fuel_used_label">Nhiên liệu đã dùng</string>
+    <string name="phev_fuel_consumption_ice_label">Mức tiêu thụ nhiên liệu (km động cơ)</string>
+    <string name="phev_fuel_consumption_combined_label">Mức tiêu thụ nhiên liệu (cả chuyến)</string>
+    <string name="phev_ev_consumption_label">Mức tiêu thụ điện (km EV)</string>
+    <string name="phev_breakdown_hint">Được tách từ các bộ đếm quãng đường EV/động cơ và nhiên liệu của chính xe được ghi lại trong chuyến đi</string>
 
     <!-- Export dialog -->
     <string name="export_title">Xuất Dữ liệu Chuyến đi</string>
@@ -261,6 +270,14 @@
     <string name="export_send_csv">Gửi CSV tới Telegram</string>
     <string name="export_send_json">Gửi JSON tới Telegram</string>
     <string name="export_send_html">Gửi trình xem HTML tới Telegram</string>
+    <string name="export_share_link">Chia sẻ dưới dạng liên kết (mã QR)</string>
+    <string name="export_uploading">Đang tải lên…</string>
+    <string name="export_upload_failed">Tải lên thất bại: %1$s</string>
+    <string name="export_qr_dialog_title">Quét để chia sẻ chuyến đi này</string>
+    <string name="export_qr_dialog_desc">Chuyến đi (bao gồm cả lộ trình GPS) được tải lên một máy chủ công cộng tạm thời và liên kết hết hạn sau 72 giờ. Quét bằng điện thoại của bạn để gửi liên kết đó qua email tới %1$s.</string>
+    <string name="export_qr_no_render">Không thể hiển thị mã QR. Gửi liên kết chuyến đi bên dưới qua email tới %1$s theo cách thủ công.</string>
+    <string name="export_qr_content_desc">Mã QR gửi liên kết tải xuống chuyến đi qua email</string>
+    <string name="export_qr_copy_link">Sao chép liên kết</string>
 
     <!-- Trip cost -->
     <string name="trip_cost_fixed_label">Chi phí chuyến đi @ biểu giá cố định</string>
@@ -274,6 +291,23 @@
     <string name="custom_dc_dialog_title">Chi phí sạc DC tùy chỉnh</string>
     <string name="dc_charging_explanation">Nhập tổng số tiền bạn đã trả cho sạc DC trong chuyến đi này. Ứng dụng sẽ trừ năng lượng sạc chồng lấn khỏi ước tính theo biểu giá cố định tại nhà và thay vào đó thêm chi phí tùy chỉnh này.</string>
     <string name="total_dc_cost_label">Tổng chi phí sạc DC</string>
+    <string name="energy_rate_label">Giá năng lượng</string>
+    <string name="section_cost">Chi phí</string>
+    <string name="charge_price_label">Giá</string>
+    <string name="charge_cost_label">Chi phí sạc</string>
+    <string name="free_label">Miễn phí</string>
+    <string name="using_tariff_rate">Biểu giá (%1$s / kWh)</string>
+    <string name="set_price_action">Đặt giá</string>
+    <string name="charge_price_estimate_hint">Ước tính theo biểu giá chung. Đặt giá để ghi lại số tiền bạn thực sự đã trả (0 = miễn phí).</string>
+    <string name="charge_price_dialog_title">Giá sạc</string>
+    <string name="charge_price_explanation">Ghi lại chi phí của lần sạc này. Nhập giá mỗi kWh, hoặc tổng số tiền bạn đã trả và ứng dụng sẽ tính ra đơn giá. Nhập 0 cho lần sạc miễn phí.</string>
+    <string name="charge_price_free_hint">Mẹo: nhập 0 cho lần sạc miễn phí.</string>
+    <string name="price_mode_rate">Mỗi kWh</string>
+    <string name="price_mode_total">Tổng đã trả</string>
+    <string name="price_total_label">Tổng đã trả</string>
+    <string name="distance_since_last_charge_label">Kể từ lần sạc gần nhất</string>
+    <string name="since_last_charge_chip">%1$s kể từ lần sạc gần nhất</string>
+    <string name="cost_history_total">Tổng %1$s · TB %2$s/tháng</string>
 
     <!-- Charging History -->
     <string name="charging_history_title">Lịch sử Sạc</string>
@@ -464,6 +498,9 @@
     <string name="restore_database_title">Khôi phục Cơ sở dữ liệu?</string>
     <string name="restore_database_msg">Thao tác này sẽ thay thế vĩnh viễn TẤT CẢ dữ liệu chuyến đi hiện tại bằng %1$s.\n\nỨng dụng sẽ tự động đóng và mở lại sau khi khôi phục.</string>
     <string name="delete_backup_confirm">\"%1$s\" sẽ bị xóa vĩnh viễn.</string>
+    <string name="delete_backup_title">Xóa bản sao lưu?</string>
+    <string name="delete_telegram_backup_confirm">\"%1$s\" sẽ bị xóa khỏi danh sách này và bị xóa khỏi cuộc trò chuyện Telegram của bạn nếu được gửi cách đây chưa đến 48 giờ (Telegram không cho phép bot xóa tin nhắn cũ hơn).</string>
+    <string name="delete_backup_action">Xóa bản sao lưu</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Sao lưu Telegram</string>
@@ -553,6 +590,8 @@
     <string name="mode_regen_lane_title">Chế độ tái tạo</string>
     <string name="mode_drive_modes_label">Chế độ lái</string>
     <string name="mode_regen_modes_label">Chế độ tái tạo</string>
+    <string name="mode_energy_lane_title">Chế độ năng lượng (EV / HEV)</string>
+    <string name="mode_energy_modes_label">Chế độ năng lượng</string>
     <string name="chart_speed_detailed">Biểu đồ Tốc độ (Chi tiết)</string>
     <string name="chart_rpm_detailed">RPM Mô-tơ (Chi tiết)</string>
     <string name="chart_power_detailed">Biểu đồ Công suất (Chi tiết)</string>
@@ -1128,6 +1167,8 @@
     <string name="speed_state_driving">Đang lái</string>
     <string name="soc_subtitle_usable">Điện tích khả dụng</string>
     <string name="range_subtitle_projection">Dự báo động</string>
+    <string name="range_subtitle_phev">Nhiên liệu %1$s · Tổng %2$s</string>
+    <string name="stat_fuel_range">Nhiên liệu</string>
     <string name="distance_subtitle_session">Phiên này</string>
     <string name="odometer_subtitle_lifetime">Tổng quãng đường</string>
     <string name="discharge_subtitle_lifetime">Tổng năng lượng xả</string>

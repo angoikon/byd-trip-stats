@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import com.byd.tripstats.R
+import com.byd.tripstats.util.BackupNaming
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.DataOutputStream
@@ -94,10 +95,14 @@ class TelegramManager private constructor(private val context: Context) {
     }
 
     data class TelegramBackupFile(
-        val fileId:   String,
-        val fileName: String,
-        val fileSize: Long,
-        val date:     Long    // unix timestamp × 1000 → ms
+        val fileId:    String,
+        val fileName:  String,
+        val fileSize:  Long,
+        val date:      Long,      // unix timestamp × 1000 → ms
+        // Telegram message that carries the document. Needed by deleteMessage;
+        // 0 for entries recorded before we started tracking it — those can only
+        // be dropped from the local list, not removed from the chat.
+        val messageId: Long = 0L
     )
 
     data class TelegramConfig(
@@ -344,14 +349,19 @@ class TelegramManager private constructor(private val context: Context) {
             val json = JSONObject(responseBody)
             if (json.getBoolean("ok")) {
                 // Extract and persist the file_id so listTelegramBackups() can find it
-                // without needing getUpdates (which only shows incoming messages)
-                try {
-                    val doc = json.getJSONObject("result").getJSONObject("document")
+                // without needing getUpdates (which only shows incoming messages).
+                // Only database snapshots go in the registry — the same bot chat also
+                // receives diag logs, probe reports and exported trips through sendFile(),
+                // and none of those are restorable.
+                if (isBackupFile(file.name)) try {
+                    val result = json.getJSONObject("result")
+                    val doc    = result.getJSONObject("document")
                     saveSentFile(TelegramBackupFile(
-                        fileId   = doc.getString("file_id"),
-                        fileName = doc.optString("file_name", file.name),
-                        fileSize = doc.optLong("file_size", file.length()),
-                        date     = System.currentTimeMillis()
+                        fileId    = doc.getString("file_id"),
+                        fileName  = doc.optString("file_name", file.name),
+                        fileSize  = doc.optLong("file_size", file.length()),
+                        date      = System.currentTimeMillis(),
+                        messageId = result.optLong("message_id", 0L)
                     ))
                 } catch (e: Exception) {
                     Log.w(TAG, "Could not extract file_id from response: ${e.message}")
@@ -373,6 +383,15 @@ class TelegramManager private constructor(private val context: Context) {
 
     // ── Local sent-file registry ──────────────────────────────────────────────
 
+    /**
+     * True for files that belong in the restore list. sendFile() is shared with the
+     * diagnostics log, the compatibility probe report and trip exports, so the chat —
+     * and any registry written before this filter existed — holds plenty of documents
+     * that are not restorable databases.
+     */
+    private fun isBackupFile(fileName: String): Boolean =
+        fileName.endsWith(BackupNaming.EXTENSION, ignoreCase = true)
+
     /** Persists metadata for every successfully sent backup so listTelegramBackups()
      *  can reconstruct the list without relying on getUpdates (which only shows
      *  messages the bot *received*, not messages it *sent*). */
@@ -393,10 +412,11 @@ class TelegramManager private constructor(private val context: Context) {
         val arr = org.json.JSONArray()
         backups.forEach { b ->
             arr.put(org.json.JSONObject().apply {
-                put("fileId",   b.fileId)
-                put("fileName", b.fileName)
-                put("fileSize", b.fileSize)
-                put("date",     b.date)
+                put("fileId",    b.fileId)
+                put("fileName",  b.fileName)
+                put("fileSize",  b.fileSize)
+                put("date",      b.date)
+                put("messageId", b.messageId)
             })
         }
         return arr.toString()
@@ -497,10 +517,11 @@ class TelegramManager private constructor(private val context: Context) {
         return (0 until arr.length()).map { i ->
             val o = arr.getJSONObject(i)
             TelegramBackupFile(
-                fileId   = o.getString("fileId"),
-                fileName = o.getString("fileName"),
-                fileSize = o.getLong("fileSize"),
-                date     = o.getLong("date")
+                fileId    = o.getString("fileId"),
+                fileName  = o.getString("fileName"),
+                fileSize  = o.getLong("fileSize"),
+                date      = o.getLong("date"),
+                messageId = o.optLong("messageId", 0L)
             )
         }
     }
@@ -517,16 +538,36 @@ class TelegramManager private constructor(private val context: Context) {
         val fromExternal = readExternalRegistry()
 
         // Merge, deduplicate by fileId, sort newest first
-        val merged = (fromPrefs + fromExternal)
+        val all = (fromPrefs + fromExternal)
             .distinctBy { it.fileId }
             .sortedByDescending { it.date }
 
-        // If external had entries that prefs didn't, persist back to prefs
-        if (fromExternal.isNotEmpty() && merged.size > fromPrefs.size) {
+        // Drop everything that isn't a database. Registries written before the
+        // send-side filter existed also recorded diag logs, probe reports and trip
+        // exports; rewrite both stores so they don't come back on the next load.
+        val merged  = all.filter { isBackupFile(it.fileName) }
+        val dropped = all.size - merged.size
+        if (dropped > 0) {
+            val jsonStr = buildRegistryJson(merged)
+            prefs.edit().putString(KEY_SENT_FILES, jsonStr).apply()
+            writeExternalRegistry(jsonStr)
+            Log.i(TAG, "Purged $dropped non-backup entries from the Telegram registry")
+        } else if (fromExternal.isNotEmpty() && merged.size > fromPrefs.size) {
+            // External had entries that prefs didn't — persist back to prefs
             prefs.edit().putString(KEY_SENT_FILES, buildRegistryJson(merged)).apply()
             Log.i(TAG, "Restored ${merged.size - fromPrefs.size} backup(s) from external registry")
         }
         return merged
+    }
+
+    /** Drops [fileId] from both registry stores and the exposed list. */
+    private fun removeSentFile(fileId: String) {
+        val remaining = loadSentFiles().filterNot { it.fileId == fileId }
+        val jsonStr = buildRegistryJson(remaining)
+        prefs.edit().putString(KEY_SENT_FILES, jsonStr).apply()
+        writeExternalRegistry(jsonStr)
+        _telegramBackups.value = remaining
+        Log.i(TAG, "Backup removed from registry: $fileId")
     }
 
     // ── Restore from Telegram ─────────────────────────────────────────────────
@@ -594,6 +635,45 @@ class TelegramManager private constructor(private val context: Context) {
                 null
             }
         }
+
+    /**
+     * Removes [backup] from the restore list and, when Telegram still permits it,
+     * deletes the document message from the chat.
+     *
+     * The Bot API only lets a bot delete its own messages for 48 hours, and entries
+     * recorded before we tracked `message_id` have nothing to delete against. Either
+     * way the local registry entry goes — the list is the thing the user is managing —
+     * and the result says whether the chat copy survived.
+     */
+    suspend fun deleteBackup(backup: TelegramBackupFile) = withContext(Dispatchers.IO) {
+        val cfg = _config.value
+        _state.value = TelegramState.InProgress("Deleting ${backup.fileName}…")
+
+        val chatDeleted = if (cfg == null || backup.messageId == 0L) false else try {
+            getRequest(
+                "$BASE_URL${cfg.token}/deleteMessage" +
+                    "?chat_id=${cfg.chatId}&message_id=${backup.messageId}"
+            ).optBoolean("ok", false)
+        } catch (e: Exception) {
+            // Telegram answers 400 (→ IOException on getInputStream) for a message
+            // that is too old, already gone, or not the bot's to delete.
+            Log.w(TAG, "deleteMessage failed for ${backup.fileName}: ${e.message}")
+            false
+        }
+
+        removeSentFile(backup.fileId)
+
+        _state.value = TelegramState.Success(
+            if (chatDeleted) {
+                "Deleted ✓\n${backup.fileName}"
+            } else {
+                "Removed from the list ✓\n${backup.fileName}\n" +
+                    "The Telegram message is still in your chat — bots can only delete " +
+                    "their own messages for 48 hours, so remove it there yourself."
+            }
+        )
+        Log.i(TAG, "Deleted backup ${backup.fileName} (chat message deleted=$chatDeleted)")
+    }
 
     fun clearTelegramBackups() {
         _telegramBackups.value = emptyList()

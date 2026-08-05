@@ -10,6 +10,8 @@ import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ElectricalServices
+import androidx.compose.material.icons.filled.Payments
+import androidx.compose.material.icons.filled.Route
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.icons.filled.Timer
@@ -23,6 +25,9 @@ import androidx.compose.ui.unit.dp
 import com.byd.tripstats.R
 import com.byd.tripstats.data.local.entity.ChargingSessionEntity
 import com.byd.tripstats.data.preferences.SocSource
+import com.byd.tripstats.data.preferences.UnitSystem
+import com.byd.tripstats.data.preferences.convertDistance
+import com.byd.tripstats.data.preferences.distanceUnit
 import com.byd.tripstats.ui.theme.AccelerationOrange
 import com.byd.tripstats.ui.theme.BatteryBlue
 import com.byd.tripstats.ui.theme.ChargingYellow
@@ -40,6 +45,10 @@ internal fun ChargingSessionCard(
     isSelected   : Boolean = false,
     selectionMode: Boolean = false,
     socSource    : SocSource = SocSource.PANEL,
+    distanceSinceLastCharge: Double? = null,
+    currencySymbol: String = "€",
+    defaultTariff: Double = 0.0,
+    unitSystem   : UnitSystem = UnitSystem.METRIC,
     onClick      : () -> Unit,
     onLongClick  : () -> Unit = {},
     onToggleFavourite: () -> Unit = {},
@@ -235,6 +244,47 @@ internal fun ChargingSessionCard(
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = androidx.compose.ui.Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                        )
+                    }
+                }
+            }
+
+            // Distance-since-last-charge + cost. Cost is the real price when set, otherwise the
+            // global-tariff estimate (shown with a "~" and muted). Only rendered when known.
+            val explicitCost = session.explicitCost
+            val estimatedCost = if (explicitCost == null && defaultTariff > 0.0)
+                (session.kwhAdded ?: 0.0) * defaultTariff else null
+            val displayCost = explicitCost ?: estimatedCost
+            val isEstimated = explicitCost == null && estimatedCost != null
+            if (!isActive && (distanceSinceLastCharge != null || displayCost != null)) {
+                Spacer(Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    distanceSinceLastCharge?.takeIf { it >= 0.0 }?.let { km ->
+                        SessionMetricChip(
+                            icon  = Icons.Filled.Route,
+                            label = stringResource(
+                                R.string.since_last_charge_chip,
+                                "%.0f %s".format(unitSystem.convertDistance(km), unitSystem.distanceUnit)
+                            ),
+                            tint  = BatteryBlue
+                        )
+                    }
+                    displayCost?.let { cost ->
+                        SessionMetricChip(
+                            icon  = Icons.Filled.Payments,
+                            label = when {
+                                cost <= 0.0 -> stringResource(R.string.free_label)
+                                isEstimated -> "~$currencySymbol%.2f".format(cost)
+                                else        -> "$currencySymbol%.2f".format(cost)
+                            },
+                            tint  = when {
+                                cost <= 0.0 -> RegenGreen
+                                isEstimated -> MaterialTheme.colorScheme.onSurfaceVariant
+                                else        -> AccelerationOrange
+                            }
                         )
                     }
                 }

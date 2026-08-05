@@ -250,6 +250,15 @@
     <string name="breakdown_aux_desc">12V-system, HVAC og modellrest. Vises som rest etter rull, aero og gradient. Motor-/invertertap er innbakt i tallene over</string>
     <string name="vehicle_mass_label">Kjøretøymasse</string>
     <string name="cda_drag_area_label">CdA (motstandsareal)</string>
+    <string name="phev_breakdown_section">Hybridfordeling</string>
+    <string name="phev_ev_share_label">Elektrisk andel</string>
+    <string name="phev_ev_distance_label">Elektrisk distanse</string>
+    <string name="phev_ice_distance_label">Motordistanse</string>
+    <string name="phev_fuel_used_label">Brukt drivstoff</string>
+    <string name="phev_fuel_consumption_ice_label">Drivstofforbruk (motor-km)</string>
+    <string name="phev_fuel_consumption_combined_label">Drivstofforbruk (hele turen)</string>
+    <string name="phev_ev_consumption_label">Strømforbruk (EV-km)</string>
+    <string name="phev_breakdown_hint">Fordelt basert på bilens egne EV-/motorkilometer- og drivstofftellere som ble registrert under turen</string>
 
     <!-- Export dialog -->
     <string name="export_title">Eksporter turdata</string>
@@ -264,6 +273,14 @@
     <string name="export_send_csv">Send CSV til Telegram</string>
     <string name="export_send_json">Send JSON til Telegram</string>
     <string name="export_send_html">Send HTML-visning til Telegram</string>
+    <string name="export_share_link">Del som lenke (QR-kode)</string>
+    <string name="export_uploading">Laster opp…</string>
+    <string name="export_upload_failed">Opplasting mislyktes: %1$s</string>
+    <string name="export_qr_dialog_title">Skann for å dele denne turen</string>
+    <string name="export_qr_dialog_desc">Turen (inkludert GPS-ruten) lastes opp til en midlertidig offentlig vert, og lenken utløper om 72 timer. Skann med telefonen for å sende lenken på e-post til %1$s.</string>
+    <string name="export_qr_no_render">Kunne ikke vise QR-koden. Send turlenken nedenfor manuelt på e-post til %1$s.</string>
+    <string name="export_qr_content_desc">QR-kode som sender turens nedlastingslenke på e-post</string>
+    <string name="export_qr_copy_link">Kopier lenke</string>
 
     <!-- Trip cost -->
     <string name="trip_cost_fixed_label">Turkostnad @ fast tariff</string>
@@ -277,6 +294,23 @@
     <string name="custom_dc_dialog_title">Tilpasset DC-ladekostnad</string>
     <string name="dc_charging_explanation">Skriv inn det totale beløpet du betalte for DC-lading under denne turen. Appen trekker fra overlappende ladeenergi fra den faste hjemmetariffestimatet og legger til denne tilpassede kostnaden i stedet.</string>
     <string name="total_dc_cost_label">Total DC-ladekostnad</string>
+    <string name="energy_rate_label">Energipris</string>
+    <string name="section_cost">Kostnad</string>
+    <string name="charge_price_label">Pris</string>
+    <string name="charge_cost_label">Ladekostnad</string>
+    <string name="free_label">Gratis</string>
+    <string name="using_tariff_rate">Takst (%1$s / kWh)</string>
+    <string name="set_price_action">Angi pris</string>
+    <string name="charge_price_estimate_hint">Beregnet ut fra den globale taksten. Angi en pris for å registrere hva du faktisk betalte (0 = gratis).</string>
+    <string name="charge_price_dialog_title">Ladepris</string>
+    <string name="charge_price_explanation">Registrer hva denne ladingen kostet. Angi en pris per kWh, eller totalbeløpet du betalte, så beregner appen taksten. Skriv inn 0 for en gratis lading.</string>
+    <string name="charge_price_free_hint">Tips: skriv inn 0 for en gratis lading.</string>
+    <string name="price_mode_rate">Per kWh</string>
+    <string name="price_mode_total">Betalt totalt</string>
+    <string name="price_total_label">Betalt totalt</string>
+    <string name="distance_since_last_charge_label">Siden siste lading</string>
+    <string name="since_last_charge_chip">%1$s siden siste lading</string>
+    <string name="cost_history_total">Totalt %1$s · gj.sn. %2$s/mnd</string>
 
     <!-- Charging History -->
     <string name="charging_history_title">Ladehistorikk</string>
@@ -467,6 +501,9 @@
     <string name="restore_database_title">Gjenopprette database?</string>
     <string name="restore_database_msg">Dette vil permanent erstatte ALLE gjeldende turdata med %1$s.\n\nAppen vil lukke og åpne automatisk etter gjenoppretting.</string>
     <string name="delete_backup_confirm">\"%1$s\" vil bli permanent slettet.</string>
+    <string name="delete_backup_title">Slette sikkerhetskopi?</string>
+    <string name="delete_telegram_backup_confirm">\"%1$s\" fjernes fra denne listen og slettes fra Telegram-chatten din hvis den ble sendt for mindre enn 48 timer siden (Telegram lar ikke roboter slette eldre meldinger).</string>
+    <string name="delete_backup_action">Slett sikkerhetskopi</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram-sikkerhetskopiering</string>
@@ -556,6 +593,8 @@
     <string name="mode_regen_lane_title">Regenereringsmodus</string>
     <string name="mode_drive_modes_label">Kjøremodi</string>
     <string name="mode_regen_modes_label">Regenereringsmodi</string>
+    <string name="mode_energy_lane_title">Energimodus (EV / HEV)</string>
+    <string name="mode_energy_modes_label">Energimoduser</string>
     <string name="chart_speed_detailed">Hastighetsprofil (detaljert)</string>
     <string name="chart_rpm_detailed">Motor-RPM (detaljert)</string>
     <string name="chart_power_detailed">Effektprofil (detaljert)</string>
@@ -1132,6 +1171,8 @@
     <string name="speed_state_driving">Kjører</string>
     <string name="soc_subtitle_usable">Brukbar lading</string>
     <string name="range_subtitle_projection">Dynamisk projeksjon</string>
+    <string name="range_subtitle_phev">Drivstoff %1$s · Totalt %2$s</string>
+    <string name="stat_fuel_range">Drivstoff</string>
     <string name="distance_subtitle_session">Denne sesjonen</string>
     <string name="odometer_subtitle_lifetime">Total distanse</string>
     <string name="discharge_subtitle_lifetime">Total avgitt energi</string>

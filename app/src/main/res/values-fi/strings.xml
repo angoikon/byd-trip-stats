@@ -250,6 +250,15 @@
     <string name="breakdown_aux_desc">12 V -järjestelmä, ilmastointi ja mallin jäännös. Näytetään jäännöksenä vierintä-, aero- ja kaltevuusosuuden jälkeen. Moottori-/invertterihäviöt sisältyvät yllä oleviin lukuihin</string>
     <string name="vehicle_mass_label">Ajoneuvon massa</string>
     <string name="cda_drag_area_label">CdA (ilmanvastusala)</string>
+    <string name="phev_breakdown_section">Hybridierittely</string>
+    <string name="phev_ev_share_label">Sähköinen osuus</string>
+    <string name="phev_ev_distance_label">Sähköinen matka</string>
+    <string name="phev_ice_distance_label">Moottorimatka</string>
+    <string name="phev_fuel_used_label">Käytetty polttoaine</string>
+    <string name="phev_fuel_consumption_ice_label">Polttoaineenkulutus (moottori-km)</string>
+    <string name="phev_fuel_consumption_combined_label">Polttoaineenkulutus (koko matka)</string>
+    <string name="phev_ev_consumption_label">Sähkönkulutus (EV-km)</string>
+    <string name="phev_breakdown_hint">Jaettu auton omien EV-/moottorikilometri- ja polttoainelaskurien perusteella, jotka on tallennettu matkan aikana</string>
 
     <!-- Export dialog -->
     <string name="export_title">Vie matkatiedot</string>
@@ -264,6 +273,14 @@
     <string name="export_send_csv">Lähetä CSV Telegramiin</string>
     <string name="export_send_json">Lähetä JSON Telegramiin</string>
     <string name="export_send_html">Lähetä HTML-katselin Telegramiin</string>
+    <string name="export_share_link">Jaa linkkinä (QR-koodi)</string>
+    <string name="export_uploading">Ladataan…</string>
+    <string name="export_upload_failed">Lataus epäonnistui: %1$s</string>
+    <string name="export_qr_dialog_title">Skannaa jakaaksesi tämän matkan</string>
+    <string name="export_qr_dialog_desc">Matka (mukaan lukien sen GPS-reitti) ladataan väliaikaiselle julkiselle palvelimelle ja linkki vanhenee 72 tunnin kuluttua. Skannaa puhelimellasi lähettääksesi linkin sähköpostitse osoitteeseen %1$s.</string>
+    <string name="export_qr_no_render">QR-koodia ei voitu näyttää. Lähetä alla oleva matkalinkki manuaalisesti sähköpostitse osoitteeseen %1$s.</string>
+    <string name="export_qr_content_desc">QR-koodi, joka lähettää matkan latauslinkin sähköpostitse</string>
+    <string name="export_qr_copy_link">Kopioi linkki</string>
 
     <!-- Trip cost -->
     <string name="trip_cost_fixed_label">Matkan kustannus @ kiinteä tariffi</string>
@@ -277,6 +294,23 @@
     <string name="custom_dc_dialog_title">Mukautettu DC-latauksen kustannus</string>
     <string name="dc_charging_explanation">Syötä tämän matkan DC-latauksesta maksamasi kokonaissumma. Sovellus vähentää päällekkäisen latausenergian kiinteän kotihinnan arviosta ja lisää tämän mukautetun kustannuksen tilalle.</string>
     <string name="total_dc_cost_label">DC-latauksen kokonaiskustannus</string>
+    <string name="energy_rate_label">Energian hinta</string>
+    <string name="section_cost">Kustannus</string>
+    <string name="charge_price_label">Hinta</string>
+    <string name="charge_cost_label">Latauskustannus</string>
+    <string name="free_label">Ilmainen</string>
+    <string name="using_tariff_rate">Tariffi (%1$s / kWh)</string>
+    <string name="set_price_action">Aseta hinta</string>
+    <string name="charge_price_estimate_hint">Arvioitu yleisen tariffin mukaan. Aseta hinta tallentaaksesi, mitä todella maksoit (0 = ilmainen).</string>
+    <string name="charge_price_dialog_title">Latauksen hinta</string>
+    <string name="charge_price_explanation">Tallenna, mitä tämä lataus maksoi. Anna hinta per kWh tai maksamasi kokonaissumma, niin sovellus laskee hinnan. Anna 0 ilmaiselle lataukselle.</string>
+    <string name="charge_price_free_hint">Vinkki: anna 0 ilmaiselle lataukselle.</string>
+    <string name="price_mode_rate">Per kWh</string>
+    <string name="price_mode_total">Maksettu yhteensä</string>
+    <string name="price_total_label">Maksettu yhteensä</string>
+    <string name="distance_since_last_charge_label">Viime latauksesta</string>
+    <string name="since_last_charge_chip">%1$s viime latauksesta</string>
+    <string name="cost_history_total">Yhteensä %1$s · ka. %2$s/kk</string>
 
     <!-- Charging History -->
     <string name="charging_history_title">Lataushistoria</string>
@@ -467,6 +501,9 @@
     <string name="restore_database_title">Palautetaanko tietokanta?</string>
     <string name="restore_database_msg">Tämä korvaa pysyvästi KAIKKI nykyiset matkatiedot kohteella %1$s.\n\nSovellus sulkeutuu ja avautuu automaattisesti uudelleen palautuksen jälkeen.</string>
     <string name="delete_backup_confirm">\"%1$s\" poistetaan pysyvästi.</string>
+    <string name="delete_backup_title">Poistetaanko varmuuskopio?</string>
+    <string name="delete_telegram_backup_confirm">\"%1$s\" poistetaan tästä luettelosta ja Telegram-keskustelustasi, jos se lähetettiin alle 48 tuntia sitten (Telegram ei anna bottien poistaa vanhempia viestejä).</string>
+    <string name="delete_backup_action">Poista varmuuskopio</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram-varmuuskopio</string>
@@ -556,6 +593,8 @@
     <string name="mode_regen_lane_title">Regenerointitila</string>
     <string name="mode_drive_modes_label">Ajotilat</string>
     <string name="mode_regen_modes_label">Regenerointitilat</string>
+    <string name="mode_energy_lane_title">Energiatila (EV / HEV)</string>
+    <string name="mode_energy_modes_label">Energiatilat</string>
     <string name="chart_speed_detailed">Nopeusprofiili (yksityiskohtainen)</string>
     <string name="chart_rpm_detailed">Moottorin RPM (yksityiskohtainen)</string>
     <string name="chart_power_detailed">Tehoprofiili (yksityiskohtainen)</string>
@@ -1132,6 +1171,8 @@
     <string name="speed_state_driving">Ajaa</string>
     <string name="soc_subtitle_usable">Käytettävissä oleva varaus</string>
     <string name="range_subtitle_projection">Dynaaminen ennuste</string>
+    <string name="range_subtitle_phev">Polttoaine %1$s · Yhteensä %2$s</string>
+    <string name="stat_fuel_range">Polttoaine</string>
     <string name="distance_subtitle_session">Tämä istunto</string>
     <string name="odometer_subtitle_lifetime">Kokonaismatka</string>
     <string name="discharge_subtitle_lifetime">Kokonaisenergia ulos</string>

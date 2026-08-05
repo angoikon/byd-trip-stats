@@ -247,6 +247,15 @@
     <string name="breakdown_aux_desc">Sistemul de 12 V, climatizarea și restul modelului. Afișat ca rest după rulare, aerodinamică și pantă. Pierderile motor/invertor sunt incluse în valorile de mai sus</string>
     <string name="vehicle_mass_label">Masa vehiculului</string>
     <string name="cda_drag_area_label">CdA (aria de rezistență)</string>
+    <string name="phev_breakdown_section">Defalcare hibrid</string>
+    <string name="phev_ev_share_label">Cotă electrică</string>
+    <string name="phev_ev_distance_label">Distanță electrică</string>
+    <string name="phev_ice_distance_label">Distanță pe motor</string>
+    <string name="phev_fuel_used_label">Combustibil folosit</string>
+    <string name="phev_fuel_consumption_ice_label">Consum de combustibil (km pe motor)</string>
+    <string name="phev_fuel_consumption_combined_label">Consum de combustibil (întreaga cursă)</string>
+    <string name="phev_ev_consumption_label">Consum electric (km EV)</string>
+    <string name="phev_breakdown_hint">Împărțit pe baza propriilor contoare de kilometraj EV/motor și de combustibil ale mașinii, înregistrate în timpul cursei</string>
 
     <!-- Export dialog -->
     <string name="export_title">Export date călătorie</string>
@@ -261,6 +270,14 @@
     <string name="export_send_csv">Trimite CSV pe Telegram</string>
     <string name="export_send_json">Trimite JSON pe Telegram</string>
     <string name="export_send_html">Trimite vizualizatorul HTML pe Telegram</string>
+    <string name="export_share_link">Partajează ca link (cod QR)</string>
+    <string name="export_uploading">Se încarcă…</string>
+    <string name="export_upload_failed">Încărcarea a eșuat: %1$s</string>
+    <string name="export_qr_dialog_title">Scanează pentru a partaja această cursă</string>
+    <string name="export_qr_dialog_desc">Cursa (inclusiv traseul GPS) este încărcată pe o gazdă publică temporară, iar linkul expiră în 72 de ore. Scanează cu telefonul pentru a trimite acel link prin e-mail către %1$s.</string>
+    <string name="export_qr_no_render">Codul QR nu a putut fi afișat. Trimite manual linkul cursei de mai jos prin e-mail către %1$s.</string>
+    <string name="export_qr_content_desc">Cod QR care trimite prin e-mail linkul de descărcare a cursei</string>
+    <string name="export_qr_copy_link">Copiază linkul</string>
 
     <!-- Trip cost -->
     <string name="trip_cost_fixed_label">Cost călătorie @ tarif fix</string>
@@ -274,6 +291,23 @@
     <string name="custom_dc_dialog_title">Cost personalizat încărcare DC</string>
     <string name="dc_charging_explanation">Introduceți suma totală plătită pentru încărcarea DC în această călătorie. Aplicația va scădea energia de încărcare suprapusă din estimarea la tariful fix de acasă și va adăuga în schimb acest cost personalizat.</string>
     <string name="total_dc_cost_label">Cost total încărcare DC</string>
+    <string name="energy_rate_label">Tarif energie</string>
+    <string name="section_cost">Cost</string>
+    <string name="charge_price_label">Preț</string>
+    <string name="charge_cost_label">Cost încărcare</string>
+    <string name="free_label">Gratuit</string>
+    <string name="using_tariff_rate">Tarif (%1$s / kWh)</string>
+    <string name="set_price_action">Setează prețul</string>
+    <string name="charge_price_estimate_hint">Estimat la tariful global. Setează un preț pentru a înregistra cât ai plătit efectiv (0 = gratuit).</string>
+    <string name="charge_price_dialog_title">Preț încărcare</string>
+    <string name="charge_price_explanation">Înregistrează cât a costat această încărcare. Introdu un preț pe kWh sau totalul plătit, iar aplicația calculează tariful. Introdu 0 pentru o încărcare gratuită.</string>
+    <string name="charge_price_free_hint">Sfat: introdu 0 pentru o încărcare gratuită.</string>
+    <string name="price_mode_rate">Pe kWh</string>
+    <string name="price_mode_total">Total plătit</string>
+    <string name="price_total_label">Total plătit</string>
+    <string name="distance_since_last_charge_label">De la ultima încărcare</string>
+    <string name="since_last_charge_chip">%1$s de la ultima încărcare</string>
+    <string name="cost_history_total">Total %1$s · med. %2$s/lună</string>
 
     <!-- Charging History -->
     <string name="charging_history_title">Istoric încărcări</string>
@@ -464,6 +498,9 @@
     <string name="restore_database_title">Restaurați baza de date?</string>
     <string name="restore_database_msg">Aceasta va înlocui definitiv TOATE datele curente ale călătoriilor cu %1$s.\n\nAplicația se va închide și se va redeschide automat după restaurare.</string>
     <string name="delete_backup_confirm">\"%1$s\" va fi șters definitiv.</string>
+    <string name="delete_backup_title">Ștergi copia de rezervă?</string>
+    <string name="delete_telegram_backup_confirm">\"%1$s\" va fi eliminat din această listă și șters din chatul tău Telegram dacă a fost trimis cu mai puțin de 48 de ore în urmă (Telegram nu permite boților să șteargă mesaje mai vechi).</string>
+    <string name="delete_backup_action">Șterge copia de rezervă</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Backup Telegram</string>
@@ -553,6 +590,8 @@
     <string name="mode_regen_lane_title">Mod regenerare</string>
     <string name="mode_drive_modes_label">Moduri de condus</string>
     <string name="mode_regen_modes_label">Moduri de regenerare</string>
+    <string name="mode_energy_lane_title">Mod energie (EV / HEV)</string>
+    <string name="mode_energy_modes_label">Moduri de energie</string>
     <string name="chart_speed_detailed">Profil de viteză (detaliat)</string>
     <string name="chart_rpm_detailed">Turație motor (detaliat)</string>
     <string name="chart_power_detailed">Profil de putere (detaliat)</string>
@@ -1128,6 +1167,8 @@
     <string name="speed_state_driving">În mers</string>
     <string name="soc_subtitle_usable">Încărcare utilizabilă</string>
     <string name="range_subtitle_projection">Proiecție dinamică</string>
+    <string name="range_subtitle_phev">Combustibil %1$s · Total %2$s</string>
+    <string name="stat_fuel_range">Combustibil</string>
     <string name="distance_subtitle_session">Această sesiune</string>
     <string name="odometer_subtitle_lifetime">Distanță totală</string>
     <string name="discharge_subtitle_lifetime">Energie totală debitată</string>

@@ -247,6 +247,15 @@
     <string name="breakdown_aux_desc">Система 12 В, климат-контроль и остаток модели. Показывается как остаток после вычета качения, аэродинамики и уклона. Потери мотора/инвертора учтены в значениях выше</string>
     <string name="vehicle_mass_label">Масса автомобиля</string>
     <string name="cda_drag_area_label">CdA (площадь сопротивления)</string>
+    <string name="phev_breakdown_section">Разбивка гибрида</string>
+    <string name="phev_ev_share_label">Доля на электротяге</string>
+    <string name="phev_ev_distance_label">Пробег на электротяге</string>
+    <string name="phev_ice_distance_label">Пробег на ДВС</string>
+    <string name="phev_fuel_used_label">Израсходовано топлива</string>
+    <string name="phev_fuel_consumption_ice_label">Расход топлива (км на ДВС)</string>
+    <string name="phev_fuel_consumption_combined_label">Расход топлива (вся поездка)</string>
+    <string name="phev_ev_consumption_label">Расход электроэнергии (км EV)</string>
+    <string name="phev_breakdown_hint">Разделено на основе собственных счётчиков пробега EV/ДВС и топлива автомобиля, записанных во время поездки</string>
 
     <!-- Export dialog -->
     <string name="export_title">Экспорт данных поездки</string>
@@ -261,6 +270,14 @@
     <string name="export_send_csv">Отправить CSV в Telegram</string>
     <string name="export_send_json">Отправить JSON в Telegram</string>
     <string name="export_send_html">Отправить HTML-просмотрщик в Telegram</string>
+    <string name="export_share_link">Поделиться ссылкой (QR-код)</string>
+    <string name="export_uploading">Загрузка…</string>
+    <string name="export_upload_failed">Не удалось загрузить: %1$s</string>
+    <string name="export_qr_dialog_title">Отсканируйте, чтобы поделиться поездкой</string>
+    <string name="export_qr_dialog_desc">Поездка (включая её GPS-маршрут) загружается на временный публичный сервер, и ссылка становится недействительной через 72 часа. Отсканируйте телефоном, чтобы отправить эту ссылку по электронной почте на %1$s.</string>
+    <string name="export_qr_no_render">Не удалось отобразить QR-код. Отправьте ссылку на поездку ниже по электронной почте на %1$s вручную.</string>
+    <string name="export_qr_content_desc">QR-код, отправляющий ссылку на скачивание поездки по электронной почте</string>
+    <string name="export_qr_copy_link">Копировать ссылку</string>
 
     <!-- Trip cost -->
     <string name="trip_cost_fixed_label">Стоимость поездки @ фикс. тариф</string>
@@ -274,6 +291,23 @@
     <string name="custom_dc_dialog_title">Своя стоимость DC-зарядки</string>
     <string name="dc_charging_explanation">Введите общую сумму, уплаченную за DC-зарядку во время этой поездки. Приложение вычтет перекрывающуюся энергию зарядки из оценки по фиксированному домашнему тарифу и добавит вместо неё эту сумму.</string>
     <string name="total_dc_cost_label">Общая стоимость DC-зарядки</string>
+    <string name="energy_rate_label">Тариф на энергию</string>
+    <string name="section_cost">Стоимость</string>
+    <string name="charge_price_label">Цена</string>
+    <string name="charge_cost_label">Стоимость зарядки</string>
+    <string name="free_label">Бесплатно</string>
+    <string name="using_tariff_rate">Тариф (%1$s / кВт·ч)</string>
+    <string name="set_price_action">Задать цену</string>
+    <string name="charge_price_estimate_hint">Оценено по общему тарифу. Задайте цену, чтобы записать, сколько вы фактически заплатили (0 = бесплатно).</string>
+    <string name="charge_price_dialog_title">Цена зарядки</string>
+    <string name="charge_price_explanation">Запишите, сколько стоила эта зарядка. Введите цену за кВт·ч или общую уплаченную сумму, и приложение вычислит тариф. Введите 0 для бесплатной зарядки.</string>
+    <string name="charge_price_free_hint">Совет: введите 0 для бесплатной зарядки.</string>
+    <string name="price_mode_rate">За кВт·ч</string>
+    <string name="price_mode_total">Всего оплачено</string>
+    <string name="price_total_label">Всего оплачено</string>
+    <string name="distance_since_last_charge_label">С последней зарядки</string>
+    <string name="since_last_charge_chip">%1$s с последней зарядки</string>
+    <string name="cost_history_total">Всего %1$s · сред. %2$s/мес.</string>
 
     <!-- Charging History -->
     <string name="charging_history_title">История зарядки</string>
@@ -464,6 +498,9 @@
     <string name="restore_database_title">Восстановить базу данных?</string>
     <string name="restore_database_msg">ВСЕ текущие данные поездок будут навсегда заменены на %1$s.\n\nПосле восстановления приложение автоматически закроется и откроется снова.</string>
     <string name="delete_backup_confirm">\"%1$s\" будет удалена навсегда.</string>
+    <string name="delete_backup_title">Удалить резервную копию?</string>
+    <string name="delete_telegram_backup_confirm">\"%1$s\" будет удалён из этого списка и из вашего чата Telegram, если он был отправлен менее 48 часов назад (Telegram не позволяет ботам удалять более старые сообщения).</string>
+    <string name="delete_backup_action">Удалить резервную копию</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Резервная копия в Telegram</string>
@@ -553,6 +590,8 @@
     <string name="mode_regen_lane_title">Режим рекуперации</string>
     <string name="mode_drive_modes_label">Режимы вождения</string>
     <string name="mode_regen_modes_label">Режимы рекуперации</string>
+    <string name="mode_energy_lane_title">Режим энергии (EV / HEV)</string>
+    <string name="mode_energy_modes_label">Режимы энергии</string>
     <string name="chart_speed_detailed">Профиль скорости (подробно)</string>
     <string name="chart_rpm_detailed">Обороты мотора (подробно)</string>
     <string name="chart_power_detailed">Профиль мощности (подробно)</string>
@@ -1128,6 +1167,8 @@
     <string name="speed_state_driving">Движение</string>
     <string name="soc_subtitle_usable">Доступный заряд</string>
     <string name="range_subtitle_projection">Динамический прогноз</string>
+    <string name="range_subtitle_phev">Топливо %1$s · Всего %2$s</string>
+    <string name="stat_fuel_range">Топливо</string>
     <string name="distance_subtitle_session">Эта сессия</string>
     <string name="odometer_subtitle_lifetime">Общий пробег</string>
     <string name="discharge_subtitle_lifetime">Всего отдано энергии</string>

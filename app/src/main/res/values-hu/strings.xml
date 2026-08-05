@@ -247,6 +247,15 @@
     <string name="breakdown_aux_desc">12 V-os rendszer, klíma és a modell maradéka. A gördülés, légellenállás és lejtés levonása utáni maradékként jelenik meg. A motor/inverter veszteségei a fenti értékekben szerepelnek</string>
     <string name="vehicle_mass_label">Jármű tömege</string>
     <string name="cda_drag_area_label">CdA (ellenállási felület)</string>
+    <string name="phev_breakdown_section">Hibrid bontás</string>
+    <string name="phev_ev_share_label">Elektromos arány</string>
+    <string name="phev_ev_distance_label">Elektromos táv</string>
+    <string name="phev_ice_distance_label">Motoros táv</string>
+    <string name="phev_fuel_used_label">Elhasznált üzemanyag</string>
+    <string name="phev_fuel_consumption_ice_label">Üzemanyag-fogyasztás (motoros km)</string>
+    <string name="phev_fuel_consumption_combined_label">Üzemanyag-fogyasztás (teljes út)</string>
+    <string name="phev_ev_consumption_label">Áramfogyasztás (EV km)</string>
+    <string name="phev_breakdown_hint">Az autó saját, az út során rögzített EV/motor kilométer- és üzemanyagszámlálói alapján felosztva</string>
 
     <!-- Export dialog -->
     <string name="export_title">Útadatok exportálása</string>
@@ -261,6 +270,14 @@
     <string name="export_send_csv">CSV küldése Telegramra</string>
     <string name="export_send_json">JSON küldése Telegramra</string>
     <string name="export_send_html">HTML-megjelenítő küldése Telegramra</string>
+    <string name="export_share_link">Megosztás linkként (QR-kód)</string>
+    <string name="export_uploading">Feltöltés…</string>
+    <string name="export_upload_failed">A feltöltés sikertelen: %1$s</string>
+    <string name="export_qr_dialog_title">Olvassa be az út megosztásához</string>
+    <string name="export_qr_dialog_desc">Az utat (a GPS-útvonalával együtt) egy ideiglenes nyilvános kiszolgálóra töltjük fel, és a link 72 óra múlva lejár. Olvassa be a telefonjával, hogy e-mailben elküldje ezt a linket ide: %1$s.</string>
+    <string name="export_qr_no_render">A QR-kódot nem sikerült megjeleníteni. Küldje el az alábbi útvonal-linket kézzel e-mailben ide: %1$s.</string>
+    <string name="export_qr_content_desc">QR-kód, amely e-mailben elküldi az út letöltési linkjét</string>
+    <string name="export_qr_copy_link">Link másolása</string>
 
     <!-- Trip cost -->
     <string name="trip_cost_fixed_label">Útköltség @ fix tarifa</string>
@@ -274,6 +291,23 @@
     <string name="custom_dc_dialog_title">Egyéni DC-töltési költség</string>
     <string name="dc_charging_explanation">Adja meg az út során DC-töltésért fizetett teljes összeget. Az alkalmazás levonja az átfedő töltési energiát a fix otthoni tarifás becslésből, és helyette ezt az egyéni költséget adja hozzá.</string>
     <string name="total_dc_cost_label">Teljes DC-töltési költség</string>
+    <string name="energy_rate_label">Energiadíj</string>
+    <string name="section_cost">Költség</string>
+    <string name="charge_price_label">Ár</string>
+    <string name="charge_cost_label">Töltési költség</string>
+    <string name="free_label">Ingyenes</string>
+    <string name="using_tariff_rate">Díjszabás (%1$s / kWh)</string>
+    <string name="set_price_action">Ár beállítása</string>
+    <string name="charge_price_estimate_hint">A globális díjszabás alapján becsülve. Állítson be egy árat, hogy rögzítse, mennyit fizetett valójában (0 = ingyenes).</string>
+    <string name="charge_price_dialog_title">Töltési ár</string>
+    <string name="charge_price_explanation">Rögzítse, mennyibe került ez a töltés. Adjon meg egy kWh-nkénti árat, vagy a fizetett összeget, és az alkalmazás kiszámolja a díjat. Írjon be 0-t ingyenes töltéshez.</string>
+    <string name="charge_price_free_hint">Tipp: írjon be 0-t ingyenes töltéshez.</string>
+    <string name="price_mode_rate">kWh-nként</string>
+    <string name="price_mode_total">Fizetett összeg</string>
+    <string name="price_total_label">Fizetett összeg</string>
+    <string name="distance_since_last_charge_label">Utolsó töltés óta</string>
+    <string name="since_last_charge_chip">%1$s az utolsó töltés óta</string>
+    <string name="cost_history_total">Összesen %1$s · átl. %2$s/hó</string>
 
     <!-- Charging History -->
     <string name="charging_history_title">Töltéstörténet</string>
@@ -464,6 +498,9 @@
     <string name="restore_database_title">Visszaállítja az adatbázist?</string>
     <string name="restore_database_msg">Ez véglegesen lecseréli az ÖSSZES jelenlegi útadatot erre: %1$s.\n\nA visszaállítás után az alkalmazás automatikusan bezárul és újranyílik.</string>
     <string name="delete_backup_confirm">A(z) \"%1$s\" véglegesen törlődik.</string>
+    <string name="delete_backup_title">Törli a biztonsági mentést?</string>
+    <string name="delete_telegram_backup_confirm">A(z) \"%1$s\" eltávolításra kerül erről a listáról, és törlődik a Telegram-csevegésből, ha kevesebb mint 48 órája küldték (a Telegram nem engedi, hogy a botok régebbi üzeneteket töröljenek).</string>
+    <string name="delete_backup_action">Biztonsági mentés törlése</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram-mentés</string>
@@ -553,6 +590,8 @@
     <string name="mode_regen_lane_title">Rekuperációs mód</string>
     <string name="mode_drive_modes_label">Vezetési módok</string>
     <string name="mode_regen_modes_label">Rekuperációs módok</string>
+    <string name="mode_energy_lane_title">Energiamód (EV / HEV)</string>
+    <string name="mode_energy_modes_label">Energiamódok</string>
     <string name="chart_speed_detailed">Sebességprofil (részletes)</string>
     <string name="chart_rpm_detailed">Motorfordulat (részletes)</string>
     <string name="chart_power_detailed">Teljesítményprofil (részletes)</string>
@@ -1128,6 +1167,8 @@
     <string name="speed_state_driving">Vezetés</string>
     <string name="soc_subtitle_usable">Használható töltés</string>
     <string name="range_subtitle_projection">Dinamikus előrejelzés</string>
+    <string name="range_subtitle_phev">Üzemanyag %1$s · Összesen %2$s</string>
+    <string name="stat_fuel_range">Üzemanyag</string>
     <string name="distance_subtitle_session">Ez a munkamenet</string>
     <string name="odometer_subtitle_lifetime">Teljes távolság</string>
     <string name="discharge_subtitle_lifetime">Teljes leadott energia</string>

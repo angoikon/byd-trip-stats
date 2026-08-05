@@ -250,6 +250,15 @@
     <string name="breakdown_aux_desc">12V 系统、空调及模型残差。显示为滚动阻力、空气阻力和坡度之后的余量。电机/逆变器损耗已计入上述数值中</string>
     <string name="vehicle_mass_label">车辆质量</string>
     <string name="cda_drag_area_label">CdA（风阻面积）</string>
+    <string name="phev_breakdown_section">混动明细</string>
+    <string name="phev_ev_share_label">纯电占比</string>
+    <string name="phev_ev_distance_label">纯电里程</string>
+    <string name="phev_ice_distance_label">发动机里程</string>
+    <string name="phev_fuel_used_label">已用燃油</string>
+    <string name="phev_fuel_consumption_ice_label">燃油消耗（发动机公里）</string>
+    <string name="phev_fuel_consumption_combined_label">燃油消耗（整趟行程）</string>
+    <string name="phev_ev_consumption_label">电耗（纯电公里）</string>
+    <string name="phev_breakdown_hint">根据行程中记录的车辆自身 EV/发动机里程和燃油计数器拆分</string>
 
     <!-- Export dialog -->
     <string name="export_title">导出行程数据</string>
@@ -264,6 +273,14 @@
     <string name="export_send_csv">通过 Telegram 发送 CSV</string>
     <string name="export_send_json">通过 Telegram 发送 JSON</string>
     <string name="export_send_html">通过 Telegram 发送 HTML 查看器</string>
+    <string name="export_share_link">以链接分享（二维码）</string>
+    <string name="export_uploading">上传中…</string>
+    <string name="export_upload_failed">上传失败：%1$s</string>
+    <string name="export_qr_dialog_title">扫码分享此行程</string>
+    <string name="export_qr_dialog_desc">行程（包括其 GPS 路线）会上传到临时公共主机，链接将在 72 小时后失效。用手机扫码即可将该链接通过电子邮件发送至 %1$s。</string>
+    <string name="export_qr_no_render">无法显示二维码。请手动将下方的行程链接通过电子邮件发送至 %1$s。</string>
+    <string name="export_qr_content_desc">用于通过电子邮件发送行程下载链接的二维码</string>
+    <string name="export_qr_copy_link">复制链接</string>
 
     <!-- Trip cost -->
     <string name="trip_cost_fixed_label">行程费用（固定电价）</string>
@@ -277,6 +294,23 @@
     <string name="custom_dc_dialog_title">自定义直流充电费用</string>
     <string name="dc_charging_explanation">输入本次行程中直流充电的总费用。应用将从固定家用电价估算中扣除重叠充电能量，并以此自定义费用替代。</string>
     <string name="total_dc_cost_label">直流充电总费用</string>
+    <string name="energy_rate_label">能源费率</string>
+    <string name="section_cost">费用</string>
+    <string name="charge_price_label">价格</string>
+    <string name="charge_cost_label">充电费用</string>
+    <string name="free_label">免费</string>
+    <string name="using_tariff_rate">费率（%1$s / kWh）</string>
+    <string name="set_price_action">设置价格</string>
+    <string name="charge_price_estimate_hint">按全局费率估算。设置价格以记录你实际支付的金额（0 = 免费）。</string>
+    <string name="charge_price_dialog_title">充电价格</string>
+    <string name="charge_price_explanation">记录此次充电的费用。输入每 kWh 价格，或你支付的总额，应用会算出费率。免费充电请输入 0。</string>
+    <string name="charge_price_free_hint">提示：免费充电请输入 0。</string>
+    <string name="price_mode_rate">每 kWh</string>
+    <string name="price_mode_total">支付总额</string>
+    <string name="price_total_label">支付总额</string>
+    <string name="distance_since_last_charge_label">自上次充电以来</string>
+    <string name="since_last_charge_chip">自上次充电以来 %1$s</string>
+    <string name="cost_history_total">总计 %1$s · 平均 %2$s/月</string>
 
     <!-- Charging History -->
     <string name="charging_history_title">充电历史</string>
@@ -467,6 +501,9 @@
     <string name="restore_database_title">恢复数据库？</string>
     <string name="restore_database_msg">这将使用 %1$s 永久替换所有当前行程数据。\n\n恢复后应用将自动关闭并重新启动。</string>
     <string name="delete_backup_confirm">"%1$s" 将被永久删除。</string>
+    <string name="delete_backup_title">删除备份？</string>
+    <string name="delete_telegram_backup_confirm">\"%1$s\" 将从此列表中移除；如果它是在 48 小时内发送的，还会从你的 Telegram 聊天中删除（Telegram 不允许机器人删除更早的消息）。</string>
+    <string name="delete_backup_action">删除备份</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram 备份</string>
@@ -556,6 +593,8 @@
     <string name="mode_regen_lane_title">回收模式</string>
     <string name="mode_drive_modes_label">驾驶模式</string>
     <string name="mode_regen_modes_label">回收模式</string>
+    <string name="mode_energy_lane_title">能量模式（EV / HEV）</string>
+    <string name="mode_energy_modes_label">能量模式</string>
     <string name="chart_speed_detailed">速度曲线（详细）</string>
     <string name="chart_rpm_detailed">电机转速（详细）</string>
     <string name="chart_power_detailed">功率曲线（详细）</string>
@@ -1132,6 +1171,8 @@
     <string name="speed_state_driving">行驶中</string>
     <string name="soc_subtitle_usable">可用电量</string>
     <string name="range_subtitle_projection">动态预测</string>
+    <string name="range_subtitle_phev">燃油 %1$s · 总计 %2$s</string>
+    <string name="stat_fuel_range">燃油</string>
     <string name="distance_subtitle_session">本次记录</string>
     <string name="odometer_subtitle_lifetime">总里程</string>
     <string name="discharge_subtitle_lifetime">总输出电量</string>

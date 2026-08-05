@@ -12,6 +12,8 @@ import android.hardware.bydauto.gearbox.BYDAutoGearboxDevice
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
 import android.os.Looper
 import android.os.SystemClock
@@ -552,8 +554,16 @@ class BydVehicleDataSource(context: Context) {
     private val appContext = context.applicationContext
 
     // Connected Wi-Fi SSID, read at most once per TTL (the telemetry build is a hot path).
-    // Reading the SSID needs ACCESS_FINE_LOCATION (granted) — without it, or with location
-    // off, the system returns "<unknown ssid>", which we normalise to blank.
+    // WiFi status field. Reading the actual SSID needs ACCESS_FINE_LOCATION + location on; without
+    // that the system returns "<unknown ssid>". On the head unit location is effectively never on, so
+    // the SSID alone was ALWAYS blank — and a blank value was indistinguishable from "WiFi is down",
+    // which repeatedly caused parked-telemetry misdiagnosis (a blank SSID was read as a WiFi cut when
+    // WiFi was actually up). So the field's meaning is now WiFi connectivity, not the SSID string:
+    //   - "" when no WiFi transport is connected (WiFi genuinely down / not the interface in use),
+    //   - the real SSID when location makes it readable,
+    //   - "connected" when WiFi IS up but the SSID isn't readable (the common case here).
+    // Connectivity comes from ConnectivityManager (ACCESS_NETWORK_STATE, already granted), which needs
+    // no location permission — so a non-blank value now reliably means "WiFi link is up".
     @Volatile private var cachedWifiSsid: String = ""
     @Volatile private var lastWifiSsidReadMs: Long = 0L
 
@@ -562,10 +572,19 @@ class BydVehicleDataSource(context: Context) {
         if (lastWifiSsidReadMs != 0L && now - lastWifiSsidReadMs < WIFI_SSID_TTL_MS) return cachedWifiSsid
         lastWifiSsidReadMs = now
         cachedWifiSsid = try {
-            val wm = appContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
-            @Suppress("DEPRECATION")
-            val raw = wm?.connectionInfo?.ssid?.trim('"').orEmpty()
-            if (raw.isBlank() || raw.equals("<unknown ssid>", ignoreCase = true)) "" else raw
+            val cm = appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+            // Any connected network with a WiFi transport counts as "WiFi up" — even one without a
+            // validated internet route (LAN-only), which is exactly the parked case we care about.
+            val onWifi = cm?.allNetworks?.any { net ->
+                cm.getNetworkCapabilities(net)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
+            } ?: false
+            if (!onWifi) "" else {
+                @Suppress("DEPRECATION")
+                val wm = appContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+                @Suppress("DEPRECATION")
+                val raw = wm?.connectionInfo?.ssid?.trim('"').orEmpty()
+                if (raw.isBlank() || raw.equals("<unknown ssid>", ignoreCase = true)) "connected" else raw
+            }
         } catch (e: Exception) {
             ""
         }
@@ -5181,6 +5200,59 @@ class BydVehicleDataSource(context: Context) {
             _chargingPowerKw.value = chargingPowerKw; _chargingPowerRaw.value = chargingPowerKw; changed = true
         }
         if (changed) publishSnapshot()
+    }
+
+    /**
+     * DiLink-5 PHEV telemetry. On a DiLink-5 PHEV (e.g. Shark 6 DM-O) the statistic/energy
+     * getters that carry the fuel + energy-mode data are read reflectively in the dilink5 client
+     * and routed here into the same snapshot fields the DiLink-3 statistic path populates, so
+     * toTelemetry() maps them onto the shared VehicleTelemetry PHEV fields and every PHEV feature
+     * (ICE-aware range projection gating, Hybrid Breakdown, energy-mode timeline, dashboard
+     * fuel/combined range) gets its inputs. All args nullable + range-guarded; each is written only
+     * when it actually changes, so the fast-tick energyMode poll doesn't publish every second.
+     * On BEVs these getters return 0/absent and are filtered out, so this is a no-op there.
+     *
+     * energyMode: 1=EV, 2=Force EV, 3=HEV, 4=Fuel, 5=Keep (BYDAutoEnergyDevice.getEnergyMode).
+     */
+    fun applyDilink5Phev(
+        energyMode: Int? = null,
+        fuelPercentage: Int? = null,
+        fuelDrivingRangeKm: Int? = null,
+        totalFuelConsumption: Double? = null,
+        avgFuelConsumption: Double? = null,
+        evMileageKm: Int? = null,
+        iceMileageKm: Int? = null,
+        engineCoolantTempC: Int? = null,
+    ) {
+        var changed = false
+        var snap = _vehicleSnapshot.value
+        if (energyMode != null && energyMode in 1..5 && energyMode != snap.energyMode) {
+            snap = snap.copy(energyMode = energyMode); changed = true
+        }
+        if (fuelPercentage != null && fuelPercentage in 0..100 && fuelPercentage != snap.statisticFuelPercentageValue) {
+            snap = snap.copy(statisticFuelPercentageValue = fuelPercentage); changed = true
+        }
+        if (fuelDrivingRangeKm != null && fuelDrivingRangeKm in 0..2000 && fuelDrivingRangeKm != snap.statisticFuelDrivingRangeValue) {
+            snap = snap.copy(statisticFuelDrivingRangeValue = fuelDrivingRangeKm); changed = true
+        }
+        // Lifetime litres; > 10000 L is the 104857.5 sentinel (matches the D3 filter).
+        if (totalFuelConsumption != null && totalFuelConsumption in 0.0..10_000.0 && totalFuelConsumption != snap.statisticTotalFuelConValue) {
+            snap = snap.copy(statisticTotalFuelConValue = totalFuelConsumption); changed = true
+        }
+        if (avgFuelConsumption != null && avgFuelConsumption in 0.0..51.0 && avgFuelConsumption != snap.statisticAvgFuelConsumption) {
+            snap = snap.copy(statisticAvgFuelConsumption = avgFuelConsumption); changed = true
+        }
+        if (evMileageKm != null && evMileageKm in 0..2_000_000 && evMileageKm != snap.statisticEvMileageValue) {
+            snap = snap.copy(statisticEvMileageValue = evMileageKm); changed = true
+        }
+        if (iceMileageKm != null && iceMileageKm in 0..2_000_000 && iceMileageKm != snap.statisticHevMileageValue) {
+            snap = snap.copy(statisticHevMileageValue = iceMileageKm); changed = true
+        }
+        // 0 / 255 are the "cold / not reporting" sentinels on D5 (statistic water-temp range 0..255).
+        if (engineCoolantTempC != null && engineCoolantTempC in 1..200 && engineCoolantTempC != snap.statisticWaterTemperature) {
+            snap = snap.copy(statisticWaterTemperature = engineCoolantTempC); changed = true
+        }
+        if (changed) { _vehicleSnapshot.value = snap; publishSnapshot() }
     }
 
     /**

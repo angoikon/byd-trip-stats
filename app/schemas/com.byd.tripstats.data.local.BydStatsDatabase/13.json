@@ -1,0 +1,937 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 13,
+    "identityHash": "83e14d57a3d099ce50a6a1bf08e86c2b",
+    "entities": [
+      {
+        "tableName": "trips",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `startTime` INTEGER NOT NULL, `endTime` INTEGER, `startOdometer` REAL NOT NULL, `endOdometer` REAL, `startSoc` REAL NOT NULL, `endSoc` REAL, `startSocPanel` REAL NOT NULL, `endSocPanel` REAL, `startTotalDischarge` REAL NOT NULL, `endTotalDischarge` REAL, `isActive` INTEGER NOT NULL, `isManual` INTEGER NOT NULL, `maxSpeed` REAL NOT NULL, `maxPower` REAL NOT NULL, `maxRegenPower` REAL NOT NULL, `avgBatteryTemp` REAL NOT NULL, `minSoc` REAL NOT NULL, `maxBatteryCellTemp` INTEGER NOT NULL, `minBatteryCellTemp` INTEGER NOT NULL, `offStateDurationMs` INTEGER NOT NULL, `isFavourite` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startTime",
+            "columnName": "startTime",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endTime",
+            "columnName": "endTime",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "startOdometer",
+            "columnName": "startOdometer",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endOdometer",
+            "columnName": "endOdometer",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "startSoc",
+            "columnName": "startSoc",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endSoc",
+            "columnName": "endSoc",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "startSocPanel",
+            "columnName": "startSocPanel",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endSocPanel",
+            "columnName": "endSocPanel",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "startTotalDischarge",
+            "columnName": "startTotalDischarge",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endTotalDischarge",
+            "columnName": "endTotalDischarge",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "isActive",
+            "columnName": "isActive",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isManual",
+            "columnName": "isManual",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxSpeed",
+            "columnName": "maxSpeed",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxPower",
+            "columnName": "maxPower",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxRegenPower",
+            "columnName": "maxRegenPower",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "avgBatteryTemp",
+            "columnName": "avgBatteryTemp",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minSoc",
+            "columnName": "minSoc",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxBatteryCellTemp",
+            "columnName": "maxBatteryCellTemp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minBatteryCellTemp",
+            "columnName": "minBatteryCellTemp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "offStateDurationMs",
+            "columnName": "offStateDurationMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isFavourite",
+            "columnName": "isFavourite",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "trip_data_points",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `tripId` INTEGER NOT NULL, `timestamp` INTEGER NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `altitude` REAL NOT NULL, `speed` REAL NOT NULL, `power` REAL NOT NULL, `soc` REAL NOT NULL, `odometer` REAL NOT NULL, `batteryTemp` REAL NOT NULL, `totalDischarge` REAL NOT NULL, `gear` TEXT NOT NULL, `isRegenerating` INTEGER NOT NULL, `engineSpeedFront` INTEGER NOT NULL, `engineSpeedRear` INTEGER NOT NULL, `electricDrivingRangeKm` INTEGER NOT NULL, `tyrePressureLF` REAL NOT NULL, `tyrePressureRF` REAL NOT NULL, `tyrePressureLR` REAL NOT NULL, `tyrePressureRR` REAL NOT NULL, `soh` INTEGER NOT NULL, `sohPrecise` REAL NOT NULL, `batteryTotalVoltage` INTEGER NOT NULL, `battery12vVoltage` REAL NOT NULL, `batteryCellVoltageMax` REAL NOT NULL, `batteryCellVoltageMin` REAL NOT NULL, `socPanel` INTEGER NOT NULL, `tyreTempLF` INTEGER NOT NULL, `tyreTempRF` INTEGER NOT NULL, `tyreTempLR` INTEGER NOT NULL, `tyreTempRR` INTEGER NOT NULL, `batteryRemainPowerEV` REAL, `rawJson` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tripId",
+            "columnName": "tripId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "latitude",
+            "columnName": "latitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "longitude",
+            "columnName": "longitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "altitude",
+            "columnName": "altitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "speed",
+            "columnName": "speed",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "power",
+            "columnName": "power",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "soc",
+            "columnName": "soc",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "odometer",
+            "columnName": "odometer",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "batteryTemp",
+            "columnName": "batteryTemp",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalDischarge",
+            "columnName": "totalDischarge",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gear",
+            "columnName": "gear",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isRegenerating",
+            "columnName": "isRegenerating",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "engineSpeedFront",
+            "columnName": "engineSpeedFront",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "engineSpeedRear",
+            "columnName": "engineSpeedRear",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "electricDrivingRangeKm",
+            "columnName": "electricDrivingRangeKm",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tyrePressureLF",
+            "columnName": "tyrePressureLF",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tyrePressureRF",
+            "columnName": "tyrePressureRF",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tyrePressureLR",
+            "columnName": "tyrePressureLR",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tyrePressureRR",
+            "columnName": "tyrePressureRR",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "soh",
+            "columnName": "soh",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sohPrecise",
+            "columnName": "sohPrecise",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "batteryTotalVoltage",
+            "columnName": "batteryTotalVoltage",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "battery12vVoltage",
+            "columnName": "battery12vVoltage",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "batteryCellVoltageMax",
+            "columnName": "batteryCellVoltageMax",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "batteryCellVoltageMin",
+            "columnName": "batteryCellVoltageMin",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "socPanel",
+            "columnName": "socPanel",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tyreTempLF",
+            "columnName": "tyreTempLF",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tyreTempRF",
+            "columnName": "tyreTempRF",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tyreTempLR",
+            "columnName": "tyreTempLR",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tyreTempRR",
+            "columnName": "tyreTempRR",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "batteryRemainPowerEV",
+            "columnName": "batteryRemainPowerEV",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "rawJson",
+            "columnName": "rawJson",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "trip_stats",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`tripId` INTEGER NOT NULL, `totalDistance` REAL NOT NULL, `totalDuration` INTEGER NOT NULL, `totalEnergyConsumed` REAL NOT NULL, `totalRegenEnergy` REAL NOT NULL, `avgSpeed` REAL NOT NULL, `avgEfficiency` REAL NOT NULL, `maxSpeed` REAL NOT NULL, `maxPower` REAL NOT NULL, `maxRegenPower` REAL NOT NULL, `powerDistribution` TEXT NOT NULL, `speedDistribution` TEXT NOT NULL, `startLatitude` REAL NOT NULL, `startLongitude` REAL NOT NULL, `endLatitude` REAL NOT NULL, `endLongitude` REAL NOT NULL, `matrixDistribution` TEXT NOT NULL, `energyConsumptionBySpeed` TEXT NOT NULL, `regenEnergy` REAL NOT NULL, `mechanicalEnergy` REAL NOT NULL, `compressedRoute` TEXT NOT NULL, PRIMARY KEY(`tripId`))",
+        "fields": [
+          {
+            "fieldPath": "tripId",
+            "columnName": "tripId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalDistance",
+            "columnName": "totalDistance",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalDuration",
+            "columnName": "totalDuration",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalEnergyConsumed",
+            "columnName": "totalEnergyConsumed",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalRegenEnergy",
+            "columnName": "totalRegenEnergy",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "avgSpeed",
+            "columnName": "avgSpeed",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "avgEfficiency",
+            "columnName": "avgEfficiency",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxSpeed",
+            "columnName": "maxSpeed",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxPower",
+            "columnName": "maxPower",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxRegenPower",
+            "columnName": "maxRegenPower",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "powerDistribution",
+            "columnName": "powerDistribution",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "speedDistribution",
+            "columnName": "speedDistribution",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startLatitude",
+            "columnName": "startLatitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startLongitude",
+            "columnName": "startLongitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endLatitude",
+            "columnName": "endLatitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endLongitude",
+            "columnName": "endLongitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "matrixDistribution",
+            "columnName": "matrixDistribution",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "energyConsumptionBySpeed",
+            "columnName": "energyConsumptionBySpeed",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "regenEnergy",
+            "columnName": "regenEnergy",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mechanicalEnergy",
+            "columnName": "mechanicalEnergy",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "compressedRoute",
+            "columnName": "compressedRoute",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "tripId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "trip_segments",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `tripId` INTEGER NOT NULL, `startTime` INTEGER NOT NULL, `endTime` INTEGER NOT NULL, `startLat` REAL, `startLon` REAL, `endLat` REAL, `endLon` REAL, `avgSpeed` REAL NOT NULL, `avgPower` REAL NOT NULL, `distance` REAL NOT NULL, `energyUsed` REAL NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tripId",
+            "columnName": "tripId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startTime",
+            "columnName": "startTime",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endTime",
+            "columnName": "endTime",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startLat",
+            "columnName": "startLat",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "startLon",
+            "columnName": "startLon",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "endLat",
+            "columnName": "endLat",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "endLon",
+            "columnName": "endLon",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "avgSpeed",
+            "columnName": "avgSpeed",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "avgPower",
+            "columnName": "avgPower",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "distance",
+            "columnName": "distance",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "energyUsed",
+            "columnName": "energyUsed",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "charging_sessions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `startTime` INTEGER NOT NULL, `endTime` INTEGER, `socStart` REAL NOT NULL, `socEnd` REAL, `socStartPanel` REAL NOT NULL, `socEndPanel` REAL, `kwhAdded` REAL, `peakKw` REAL NOT NULL, `avgKw` REAL NOT NULL, `batteryTempStart` REAL NOT NULL, `batteryTempEnd` REAL, `voltageStart` INTEGER NOT NULL, `voltageEnd` INTEGER, `batteryKwh` REAL NOT NULL, `carConfigId` TEXT NOT NULL, `isActive` INTEGER NOT NULL, `isFavourite` INTEGER NOT NULL, `startOdometer` REAL, `pricePerKwh` REAL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startTime",
+            "columnName": "startTime",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endTime",
+            "columnName": "endTime",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "socStart",
+            "columnName": "socStart",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "socEnd",
+            "columnName": "socEnd",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "socStartPanel",
+            "columnName": "socStartPanel",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "socEndPanel",
+            "columnName": "socEndPanel",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "kwhAdded",
+            "columnName": "kwhAdded",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "peakKw",
+            "columnName": "peakKw",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "avgKw",
+            "columnName": "avgKw",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "batteryTempStart",
+            "columnName": "batteryTempStart",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "batteryTempEnd",
+            "columnName": "batteryTempEnd",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "voltageStart",
+            "columnName": "voltageStart",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "voltageEnd",
+            "columnName": "voltageEnd",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "batteryKwh",
+            "columnName": "batteryKwh",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "carConfigId",
+            "columnName": "carConfigId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isActive",
+            "columnName": "isActive",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isFavourite",
+            "columnName": "isFavourite",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startOdometer",
+            "columnName": "startOdometer",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pricePerKwh",
+            "columnName": "pricePerKwh",
+            "affinity": "REAL",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "charging_data_points",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `sessionId` INTEGER NOT NULL, `timestamp` INTEGER NOT NULL, `soc` REAL NOT NULL, `socPanel` INTEGER NOT NULL, `chargingPower` REAL NOT NULL, `batteryTotalVoltage` INTEGER NOT NULL, `battery12vVoltage` REAL NOT NULL, `batteryTempAvg` REAL NOT NULL, `batteryCellTempMin` INTEGER NOT NULL, `batteryCellTempMax` INTEGER NOT NULL, `batteryCellVoltageMin` REAL NOT NULL, `batteryCellVoltageMax` REAL NOT NULL, `rawJson` TEXT NOT NULL, FOREIGN KEY(`sessionId`) REFERENCES `charging_sessions`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sessionId",
+            "columnName": "sessionId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "soc",
+            "columnName": "soc",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "socPanel",
+            "columnName": "socPanel",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "chargingPower",
+            "columnName": "chargingPower",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "batteryTotalVoltage",
+            "columnName": "batteryTotalVoltage",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "battery12vVoltage",
+            "columnName": "battery12vVoltage",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "batteryTempAvg",
+            "columnName": "batteryTempAvg",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "batteryCellTempMin",
+            "columnName": "batteryCellTempMin",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "batteryCellTempMax",
+            "columnName": "batteryCellTempMax",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "batteryCellVoltageMin",
+            "columnName": "batteryCellVoltageMin",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "batteryCellVoltageMax",
+            "columnName": "batteryCellVoltageMax",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rawJson",
+            "columnName": "rawJson",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_charging_data_points_sessionId",
+            "unique": false,
+            "columnNames": [
+              "sessionId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_charging_data_points_sessionId` ON `${TABLE_NAME}` (`sessionId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "charging_sessions",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "sessionId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "tags",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `colorIndex` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "colorIndex",
+            "columnName": "colorIndex",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_tags_name",
+            "unique": true,
+            "columnNames": [
+              "name"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_tags_name` ON `${TABLE_NAME}` (`name`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "trip_tags",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`tripId` INTEGER NOT NULL, `tagId` INTEGER NOT NULL, PRIMARY KEY(`tripId`, `tagId`))",
+        "fields": [
+          {
+            "fieldPath": "tripId",
+            "columnName": "tripId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tagId",
+            "columnName": "tagId",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "tripId",
+            "tagId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_trip_tags_tagId",
+            "unique": false,
+            "columnNames": [
+              "tagId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_trip_tags_tagId` ON `${TABLE_NAME}` (`tagId`)"
+          }
+        ],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '83e14d57a3d099ce50a6a1bf08e86c2b')"
+    ]
+  }
+}

@@ -265,6 +265,8 @@ fun TripHistoryScreen(
             ) {
                 if (monthlyCosts.isNotEmpty()) {
                     item(key = "monthly_cost_summary") {
+                        // Monthly Cost card now includes the cost-history bar chart as its visual,
+                        // with the per-month numeric breakdown as the expandable detail.
                         MonthlyCostSummaryCard(
                             months         = monthlyCosts,
                             currencySymbol = currencySymbol
