@@ -37,7 +37,7 @@ android {
     // A stable release always has a higher versionCode than any beta of the same
     // version, so beta testers automatically receive the stable upgrade via sideload.
     val versionMajor    = 2
-    val versionMinor    = 14
+    val versionMinor    = 15
     val versionPatch    = 0
     val versionPre      = 99 // 99 = stable; 1–98 = beta (e.g. 1 → "beta01")
     // Hotfix revision for the SAME versionName. Bumps versionCode ONLY — the in-app
@@ -181,6 +181,26 @@ android {
     testOptions {
         animationsDisabled = true
     }
+
+    // Room schema JSONs (see ksp { } below) are exported to app/schemas/ and committed.
+    // Making them androidTest assets is what lets MigrationTestHelper load an older
+    // version and replay the real migrations against it.
+    sourceSets {
+        getByName("androidTest").assets.srcDirs("$projectDir/schemas")
+    }
+}
+
+// Export the Room schema to app/schemas/<db-class>/<version>.json on every build, and COMMIT it.
+// Two reasons, both learned the hard way (2026-08):
+//   1. Reviewability — a schema change with no version bump shows up as a modification to the
+//      EXISTING version's json instead of a new file. That diff is the red flag. Without it,
+//      removing an entity field silently changes Room's identity hash and the app only dies
+//      later, on an existing install, with "Room cannot verify the data integrity".
+//   2. It's the prerequisite for MigrationTestHelper — migrations can only be tested against
+//      an exported schema. Note this starts at v12: there are no jsons for v1–v11, so the
+//      first testable migration is 12 → 13.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 // Keep app/src/main/assets/pwa/ in sync with docs/pwa/ so the embedded web server

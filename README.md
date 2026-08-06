@@ -10,7 +10,7 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-purple?style=flat-square&logo=kotlin)](https://kotlinlang.org)
 [![Architecture](https://img.shields.io/badge/Architecture-MVVM-orange?style=flat-square)](https://developer.android.com)
 [![License](https://img.shields.io/badge/license-BUSL--1.1-blue?style=flat-square)](LICENSE.md)
-[![Changelog](https://img.shields.io/badge/changelog-v2.14.0-informational?style=flat-square)](CHANGELOG.md)
+[![Changelog](https://img.shields.io/badge/changelog-v2.15.0-informational?style=flat-square)](CHANGELOG.md)
 [![Website](https://img.shields.io/badge/website-byd--trip--stats-F38020?style=flat-square&logo=cloudflare&logoColor=white)](https://byd-trip-stats.angoikon.workers.dev/)
 [![GitHub release](https://img.shields.io/github/v/release/angoikon/byd-trip-stats?style=flat-square)](https://github.com/angoikon/byd-trip-stats/releases)
 [![GitHub downloads](https://img.shields.io/github/downloads/angoikon/byd-trip-stats/total?style=flat-square)](https://github.com/angoikon/byd-trip-stats/releases)
@@ -497,7 +497,7 @@ See [Issues](https://github.com/angoikon/byd-trip-stats/issues) for full list.
 ## ❓ FAQ
 
 ### Q: Does this work with other BYD EVs?
-**A:** Potentially. Compatibility depends on how similar your car's DiLink firmware is to the tested models. Tested primarily on BYD Seal.
+**A:** Full compatibility with DiLink 3 firmware, initial support for DiLink5 firmware
 
 ### Q: Do I need Electro or an Electro subscription?
 **A:** No. The app runs standalone on supported vehicles and does not require Electro, a broker, or an MQTT topic for normal use.
