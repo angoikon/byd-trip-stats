@@ -16,6 +16,7 @@ import android.hardware.bydauto.pm2p5.AbsBYDAutoPM2p5Listener
 import android.hardware.bydauto.energy.AbsBYDAutoEnergyListener
 import android.hardware.bydauto.ac.AbsBYDAutoAcListener
 import android.hardware.bydauto.BYDAutoEventValue
+import com.byd.tripstats.util.DiagLog
 
 /**
  * DiLink-5 (Sealion 7) telemetry client — present ONLY in the `dilink5` flavor; loaded reflectively
@@ -35,6 +36,11 @@ class Dilink5Client {
     private val tag = "Dilink5Client"
     @Volatile private var running = false
     private var pollThread: Thread? = null
+    // Stored so DiagLog calls work from any function, not just start() — DiagLog persists to a
+    // file (unlike plain Log.i/w, which this class otherwise relies on exclusively and which never
+    // reaches diag.log in a release build — confirmed empirically: a full diag.log pull after an
+    // on-car test showed zero lines from this class despite the service clearly having run).
+    private var appCtx: Context? = null
     private var statDevice: BYDAutoStatisticDevice? = null
     private var statListener: AbsBYDAutoStatisticListener? = null
 
@@ -80,6 +86,7 @@ class Dilink5Client {
     fun start(ctx: Context, ds: BydVehicleDataSource) {
         if (running) return
         running = true
+        appCtx = ctx.applicationContext
         Log.i(tag, "starting DiLink-5 client")
 
         // 1) statistic typed listener (push) — primes the adapter + delivers soc/mileage/range/kWh
@@ -347,13 +354,24 @@ class Dilink5Client {
                     VehicleCompatibilityProbe.recordTypedEvent("tyre", "onTyreTemperatureValueChanged[$wheel]", value)
                     ds.applyDilink5TyreTemp(wheel, value)
                 }
+                // Routed here (not BydVehicleDataSource's own tyreListener) because THIS class's
+                // subclass of AbsBYDAutoTyreListener is the one confirmed, on-car, to actually link
+                // against the injected real SDK class — BydVehicleDataSource's own tyreListener
+                // deterministically throws NoClassDefFoundError on every DiLink-5 launch. See
+                // handleDilink5TyrePressureByType's own comment for what's been ruled out.
+                override fun onTyrePressureValueByTypeChanged(wheel: Int, value: Float) {
+                    VehicleCompatibilityProbe.recordTypedEvent("tyre", "onTyrePressureValueByTypeChanged[$wheel]", value)
+                    ds.handleDilink5TyrePressureByType(wheel, value)
+                }
             }
             dev.javaClass.getMethod("registerListener", AbsBYDAutoTyreListener::class.java).invoke(dev, l)
             tyreListener = l
             Log.i(tag, "tyre listener registered")
+            diag("tyre listener registered (Dilink5Client's own temp-only registration)")
         } catch (t: Throwable) {
             val c = (t as? java.lang.reflect.InvocationTargetException)?.cause ?: t
             Log.w(tag, "tyre listener failed: ${c.javaClass.simpleName}: ${c.message}")
+            diag("tyre listener FAILED (Dilink5Client's own): ${c.javaClass.simpleName}: ${c.message}")
         }
     }
 
@@ -376,9 +394,11 @@ class Dilink5Client {
             dev.javaClass.getMethod("registerListener", AbsBYDAutoChargingListener::class.java).invoke(dev, l)
             chargingListener = l
             Log.i(tag, "charging listener registered")
+            diag("charging listener registered (Dilink5Client's own, FIRST subclass touch of AbsBYDAutoChargingListener)")
         } catch (t: Throwable) {
             val c = (t as? java.lang.reflect.InvocationTargetException)?.cause ?: t
             Log.w(tag, "charging listener failed: ${c.javaClass.simpleName}: ${c.message}")
+            diag("charging listener FAILED (Dilink5Client's own, FIRST subclass touch): ${c.javaClass.simpleName}: ${c.message}")
         }
     }
 
@@ -446,7 +466,9 @@ class Dilink5Client {
     // the tyre pressure getter/event re-scales its raw output to match this same setting, so it's
     // undecodable without it. Poll once for the initial value, then listen for changes.
     private fun registerInstrumentListener(dev: Any, ds: BydVehicleDataSource) {
-        reflGetPressureUnit(dev)?.let { ds.applyDilink5PressureUnit(it) }
+        val polled = reflGetPressureUnit(dev)
+        diag("pressureUnit poll -> $polled")
+        polled?.let { ds.applyDilink5PressureUnit(it) }
         try {
             val l = object : AbsBYDAutoInstrumentListener() {
                 override fun onSportModeStateChanged(state: Int) {
@@ -459,6 +481,7 @@ class Dilink5Client {
                 }
                 override fun onDataEventChanged(fid: Int, value: BYDAutoEventValue) {
                     if (fid == 4208) {
+                        diag("pressureUnit event fid=4208 int=${value.intValue}")
                         VehicleCompatibilityProbe.recordTypedEvent("instrument", "onDataEventChanged(4208=pressureUnit)", value.intValue)
                         ds.applyDilink5PressureUnit(value.intValue)
                     }
@@ -469,10 +492,34 @@ class Dilink5Client {
                 .invoke(dev, l, intArrayOf(4208, 4209, 4210))
             instrumentListener = l
             Log.i(tag, "instrument listener registered")
+            diag("instrument listener registered (class ${dev.javaClass.name})")
         } catch (t: Throwable) {
             val c = (t as? java.lang.reflect.InvocationTargetException)?.cause ?: t
             Log.w(tag, "instrument listener failed: ${c.javaClass.simpleName}: ${c.message}")
+            diag("instrument listener FAILED: ${c.javaClass.simpleName}: ${c.message}")
         }
+    }
+
+    // Re-registers ONLY the instrument listener (drive mode / ambient temp / pressure unit). Called
+    // from BydVehicleDataSource.recoverEventDelivery() on an SDK event-delivery wedge — that function
+    // re-arms its own D3-shared device listeners (gearbox/charging/tyre) but has no reference to this
+    // class's separate instrumentDev/instrumentListener, so without this hook a wedge that hits the
+    // instrument device would silently freeze drive mode, ambient temp, AND the pressure-unit
+    // tracking forever (the tyre pressure VALUE event keeps flowing via the D3-shared listener, so it
+    // would look like a partial, confusing failure rather than an obvious one).
+    fun recoverInstrumentListener(ds: BydVehicleDataSource) {
+        val dev = instrumentDev ?: return
+        diag("recoverInstrumentListener: re-registering")
+        runCatching {
+            instrumentListener?.let { l ->
+                dev.javaClass.getMethod("unregisterListener", AbsBYDAutoInstrumentListener::class.java).invoke(dev, l)
+            }
+        }
+        registerInstrumentListener(dev, ds)
+    }
+
+    private fun diag(msg: String) {
+        appCtx?.let { DiagLog.event(it, tag, msg) }
     }
 
     // Regen mode: poll once for the initial value (no repeated polling — the setter is a manual,

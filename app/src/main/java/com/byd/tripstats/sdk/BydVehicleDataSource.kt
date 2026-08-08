@@ -1336,17 +1336,7 @@ class BydVehicleDataSource(context: Context) {
          * (LF=1/RF=2/LR=3/RR=4).
          */
         override fun onTyrePressureValueByTypeChanged(wheel: Int, value: Float) {
-            val bar = decodeDilink5PressureByTypeBar(value) ?: return
-            val psi = barToPsi(bar)
-            when (wheel) {
-                1 -> { _tyrePressureLFBar.value = bar; _tyrePressureLF.value = psi }
-                2 -> { _tyrePressureRFBar.value = bar; _tyrePressureRF.value = psi }
-                3 -> { _tyrePressureLRBar.value = bar; _tyrePressureLR.value = psi }
-                4 -> { _tyrePressureRRBar.value = bar; _tyrePressureRR.value = psi }
-                else -> return
-            }
-            publishSnapshot()
-            Log.d(TAG, "🛞 tyrePressureByType wheel=$wheel raw=$value unit=$dilink5PressureUnit bar=$bar psi=$psi")
+            handleDilink5TyrePressureByType(wheel, value)
         }
         override fun onTyrePressureStateChanged(wheel: Int, state: Int) {
             Log.d(TAG, "🛞 tyrePressureStateRaw wheel=$wheel state=$state")
@@ -1407,14 +1397,7 @@ class BydVehicleDataSource(context: Context) {
         // touches those types (chargingListener/gearboxListener/tyreListener are lazy; the tryDevice{}
         // blocks below already tolerate the classes being unavailable). Reflective + no-op if the
         // class isn't present (dilink3 build, or dilink5-sdk.jar already bundled) or injection fails.
-        if (DiLink5Platform.isDiLink5) {
-            runCatching {
-                val inj = Class.forName("com.byd.tripstats.sdk.Dilink5SdkInjector")
-                val instance = inj.getField("INSTANCE").get(null)
-                val ok = inj.getMethod("ensure", Context::class.java).invoke(instance, ctx) as? Boolean
-                Log.i(TAG, "DiLink-5 SDK injector: bydauto available=$ok")
-            }.onFailure { Log.w(TAG, "DiLink-5 SDK injector failed: ${it.message}") }
-        }
+        ensureDilink5SdkInjected("start")
         try {
             appContext.contentResolver.delete(
                 android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI,
@@ -1437,6 +1420,7 @@ class BydVehicleDataSource(context: Context) {
             startReadLogsMonitor()
         }
 
+        ensureDilink5SdkInjected("pre-Charging")
         tryDevice("Charging") {
             chargingDevice = BYDAutoChargingDevice.getInstance(ctx)?.also {
                 it.registerListener(chargingListener)
@@ -1456,6 +1440,7 @@ class BydVehicleDataSource(context: Context) {
             }
         }
 
+        ensureDilink5SdkInjected("pre-Tyre")
         tryDevice("Tyre") {
             tyreDevice = BYDAutoTyreDevice.getInstance(ctx)?.also {
                 it.registerListener(tyreListener)
@@ -1524,6 +1509,15 @@ class BydVehicleDataSource(context: Context) {
                                 }
                                 override fun onTyrePressureValueChanged(wheel: Int, value: Int) {
                                     Log.i(TAG, "🛞 int[] onTyrePressureValueChanged wheel=$wheel value=$value")
+                                }
+                                // DiLink-5: if the real SDK treats registerListener as single-slot
+                                // (replace, not append), THIS object — not tyreListener above — ends
+                                // up being the one that actually receives callbacks. Without this
+                                // override, tyre pressure would silently freeze at whatever value was
+                                // last restored from the persisted cache (confirmed on-car: exactly
+                                // this symptom, traced to this gap).
+                                override fun onTyrePressureValueByTypeChanged(wheel: Int, value: Float) {
+                                    handleDilink5TyrePressureByType(wheel, value)
                                 }
                                 override fun onError(code: Int, msg: String) {
                                     Log.w(TAG, "🛞 int[] onError code=$code msg=$msg")
@@ -2164,6 +2158,18 @@ class BydVehicleDataSource(context: Context) {
         currentRefreshStage = "idle"
     }
 
+    // tryDevice runs at 1 Hz per device from refreshSnapshots on both flavors — a device that
+    // throws every tick would otherwise write a DiagLog line every second and rotate away useful
+    // history well inside the 2.5 MB cap. Keyed by device name, only the LATEST message per name;
+    // same dedup shape as decodeDilink5PressureByTypeBar's null<->non-null transition logging.
+    private val lastLoggedTryDeviceError = java.util.concurrent.ConcurrentHashMap<String, String>()
+
+    private fun logTryDeviceError(name: String, message: String) {
+        if (lastLoggedTryDeviceError.put(name, message) != message) {
+            DiagLog.event(appContext, TAG, message)
+        }
+    }
+
     private fun tryDevice(name: String, block: () -> Unit) {
         // Record the stage we're entering. If a BYD getter inside [block] hangs, this
         // value is left pointing at the culprit (the next tryDevice never runs to
@@ -2173,9 +2179,13 @@ class BydVehicleDataSource(context: Context) {
         try {
             block()
         } catch (e: SecurityException) {
-            Log.w(TAG, "⚠️ $name SecurityException: ${e.message}")
+            val msg = "⚠️ $name SecurityException: ${e.message}"
+            Log.w(TAG, msg)
+            logTryDeviceError(name, msg)
         } catch (e: Exception) {
-            Log.w(TAG, "⚠️ $name failed: ${e.javaClass.simpleName}: ${e.message}")
+            val msg = "⚠️ $name failed: ${e.javaClass.simpleName}: ${e.message}"
+            Log.w(TAG, msg)
+            logTryDeviceError(name, msg)
         } catch (e: Throwable) {
             // MUST catch Throwable, not just Exception: on DiLink-5 the bundled OEM bydauto SDK
             // makes getInstance() execute real code, and a firmware/SDK version skew throws a
@@ -2183,7 +2193,20 @@ class BydVehicleDataSource(context: Context) {
             // OEM TsManagerImpl expects a ts-framework.jar API this head unit doesn't expose).
             // That is an Error, not an Exception, so without this it escaped onCreate and crashed
             // the whole service on launch. Degrade gracefully: this device just doesn't bind.
-            Log.w(TAG, "⚠️ $name link/error: ${e.javaClass.simpleName}: ${e.message}")
+            // Logged to DiagLog too (not just Log.w) — release-build R8 stripping made this
+            // invisible via logcat on a real device, which cost a full investigation cycle once.
+            // Log the FULL cause chain, not just e.message — NoClassDefFoundError's own .message is
+            // frequently just the class being linked, while the ACTUAL missing type is named only in
+            // a wrapped "Caused by: ClassNotFoundException: ..." a few frames down. Short-message-only
+            // logging previously hid this for the whole Tyre/Charging investigation.
+            var cause: Throwable? = e
+            val chain = StringBuilder("⚠️ $name link/error: ${e.javaClass.simpleName}: ${e.message}")
+            while (cause?.cause != null && cause.cause !== cause) {
+                cause = cause.cause
+                chain.append(" | caused by ${cause!!.javaClass.simpleName}: ${cause.message}")
+            }
+            Log.w(TAG, chain.toString())
+            logTryDeviceError(name, chain.toString())
         }
     }
 
@@ -5283,8 +5306,15 @@ class BydVehicleDataSource(context: Context) {
 
     fun applyDilink5PressureUnit(unit: Int) {
         if (unit !in 1..3) return
+        if (unit != dilink5PressureUnit) {
+            DiagLog.event(appContext, TAG, "🛞 pressureUnit changed: $dilink5PressureUnit -> $unit")
+        }
         dilink5PressureUnit = unit
     }
+
+    // Change-detection flag for decodeDilink5PressureByTypeBar's diagnostic logging — a raw poll of
+    // 4 wheels at ~1Hz would spam diag.log's low-call-frequency budget if every rejection were logged.
+    @Volatile private var lastPressureDecodeWasNull = false
 
     /**
      * Decodes a raw DiLink-5 tyre-pressure-ByType value into bar, using the live unit state from
@@ -5295,12 +5325,57 @@ class BydVehicleDataSource(context: Context) {
      */
     private fun decodeDilink5PressureByTypeBar(raw: Float): Double? {
         val v = raw.toDouble()
-        return when (dilink5PressureUnit) {
+        val result = when (dilink5PressureUnit) {
             1 -> v / 10.0
             2 -> (v / 10.0) * 0.0689476
             3 -> v / 100.0
             else -> null
         }?.takeIf { it in 1.0..5.0 }  // sane tyre-pressure range guard
+        val isNull = result == null
+        if (isNull != lastPressureDecodeWasNull) {
+            lastPressureDecodeWasNull = isNull
+            DiagLog.event(appContext, TAG,
+                "🛞 pressureDecode ${if (isNull) "REJECTED" else "recovered"}: raw=$raw unit=$dilink5PressureUnit -> $result")
+        }
+        return result
+    }
+
+    // Shared by every AbsBYDAutoTyreListener anonymous subclass registered on the tyre device (there
+    // are 3: tyreListener, the interface-proxy, and the int[]-overload "loggingProxy" a few hundred
+    // lines below) — the real SDK's registerListener may replace rather than append the active
+    // listener per class, so whichever one ends up "live" must still decode+write pressure correctly.
+    // Do NOT inline this back into a single listener's override; that's exactly the bug this fixes.
+    // Unconditional, log-once-ever confirmation that the raw callback itself fired — the
+    // decode-transition logging below only fires on a null<->non-null flip, so a callback that
+    // fires and immediately succeeds produces zero log lines there, indistinguishable from "this
+    // callback never reaches this code at all" (the exact ambiguity that stalled this
+    // investigation once already).
+    @Volatile private var loggedFirstTyrePressureByTypeCall = false
+
+    // internal (not private): Dilink5Client's OWN registerTyreListener also forwards into this —
+    // its subclass of AbsBYDAutoTyreListener is a separate, PROVEN-reliable touch of the injected
+    // real class (confirmed on-car), unlike this file's own tyreListener/chargingListener `by lazy`
+    // subclasses, which deterministically throw NoClassDefFoundError on every DiLink-5 launch despite
+    // identical injection state — root cause not fully isolated (ruled out: injection timing/GC
+    // pressure, Class.forName-vs-real-subclass gap, OAT/vdex reuse of the system apk's own checksum,
+    // file-vs-in-memory dex elements). Routing through the call site that's actually confirmed to
+    // work is more reliable than continuing to chase an unexplained per-compiled-class ART failure.
+    internal fun handleDilink5TyrePressureByType(wheel: Int, value: Float) {
+        if (!loggedFirstTyrePressureByTypeCall) {
+            loggedFirstTyrePressureByTypeCall = true
+            DiagLog.event(appContext, TAG, "🛞 onTyrePressureValueByTypeChanged FIRST CALL: wheel=$wheel value=$value")
+        }
+        val bar = decodeDilink5PressureByTypeBar(value) ?: return
+        val psi = barToPsi(bar)
+        when (wheel) {
+            1 -> { _tyrePressureLFBar.value = bar; _tyrePressureLF.value = psi }
+            2 -> { _tyrePressureRFBar.value = bar; _tyrePressureRF.value = psi }
+            3 -> { _tyrePressureLRBar.value = bar; _tyrePressureLR.value = psi }
+            4 -> { _tyrePressureRRBar.value = bar; _tyrePressureRR.value = psi }
+            else -> return
+        }
+        publishSnapshot()
+        Log.d(TAG, "🛞 tyrePressureByType wheel=$wheel raw=$value unit=$dilink5PressureUnit bar=$bar psi=$psi")
     }
 
     /**
@@ -5408,6 +5483,25 @@ class BydVehicleDataSource(context: Context) {
         publishSnapshot()
     }
 
+    // Re-runs Dilink5SdkInjector.ensure() right before touching a listener class. Confirmed on-car
+    // (debug build): the dex-injection mutation on the app's classloader does NOT hold — the FIRST
+    // call at start() succeeds (probe classes resolve immediately after), but ~225ms later, on the
+    // SAME classloader instance (verified via identity hash), the mutation is gone and Charging/Tyre
+    // throw NoClassDefFoundError. Cheap/idempotent if already injected, so calling it again right
+    // before each listener-subclassing site closes that window instead of relying on the one call
+    // at start() to still hold several lines and one full device bind later.
+    private fun ensureDilink5SdkInjected(label: String) {
+        if (!DiLink5Platform.isDiLink5) return
+        runCatching {
+            val inj = Class.forName("com.byd.tripstats.sdk.Dilink5SdkInjector")
+            val instance = inj.getField("INSTANCE").get(null)
+            val ok = inj.getMethod("ensure", Context::class.java).invoke(instance, ctx) as? Boolean
+            DiagLog.event(appContext, TAG, "DiLink-5 SDK injector ($label): bydauto available=$ok")
+        }.onFailure {
+            DiagLog.event(appContext, TAG, "DiLink-5 SDK injector ($label) failed: ${it.message}")
+        }
+    }
+
     // DiLink-5 client (dilink5 flavor only) — loaded reflectively so src/main stays flavor-agnostic.
     private var dilink5Client: Any? = null
     private fun startDilink5Client() {
@@ -5449,6 +5543,14 @@ class BydVehicleDataSource(context: Context) {
         runCatching { chargingDevice?.registerListener(chargingListener) }
         runCatching { tyreDevice?.unregisterListener(tyreListener) }
         runCatching { tyreDevice?.registerListener(tyreListener) }
+        // DiLink-5 only: Dilink5Client's instrument listener (drive mode / ambient temp / tyre
+        // pressure unit) is a separate registration this function otherwise has no reference to —
+        // without this it would silently freeze forever on a wedge that hits the instrument device.
+        runCatching {
+            dilink5Client?.let { c ->
+                c.javaClass.getMethod("recoverInstrumentListener", BydVehicleDataSource::class.java).invoke(c, this)
+            }
+        }
         // Generic mirror listeners: drop the stale proxy, register a fresh one (registerEventMirrorListener
         // de-dupes its own tracking by device).
         for (reg in mirrorRegs.toList()) {
