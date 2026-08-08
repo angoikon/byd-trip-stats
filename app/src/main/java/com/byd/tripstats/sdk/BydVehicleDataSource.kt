@@ -5414,9 +5414,9 @@ class BydVehicleDataSource(context: Context) {
      * positive = discharge, negative = regen/charging. Written to the snapshot directly (publishSnapshot
      * preserves unlisted snapshot fields).
      */
-    fun applyDilink5HvCurrent(amps: Int) {
-        if (amps !in -2000..2000) return
-        _vehicleSnapshot.value = _vehicleSnapshot.value.copy(batteryTotalCurrent = amps.toDouble())
+    fun applyDilink5HvCurrent(amps: Double) {
+        if (amps !in -2000.0..2000.0) return
+        _vehicleSnapshot.value = _vehicleSnapshot.value.copy(batteryTotalCurrent = amps)
         publishSnapshot()
     }
 

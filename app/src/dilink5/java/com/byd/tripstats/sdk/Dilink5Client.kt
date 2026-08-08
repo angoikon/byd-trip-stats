@@ -17,6 +17,7 @@ import android.hardware.bydauto.energy.AbsBYDAutoEnergyListener
 import android.hardware.bydauto.ac.AbsBYDAutoAcListener
 import android.hardware.bydauto.BYDAutoEventValue
 import com.byd.tripstats.util.DiagLog
+import kotlin.math.roundToInt
 
 /**
  * DiLink-5 (Sealion 7) telemetry client — present ONLY in the `dilink5` flavor; loaded reflectively
@@ -39,7 +40,9 @@ class Dilink5Client {
     // Stored so DiagLog calls work from any function, not just start() — DiagLog persists to a
     // file (unlike plain Log.i/w, which this class otherwise relies on exclusively and which never
     // reaches diag.log in a release build — confirmed empirically: a full diag.log pull after an
-    // on-car test showed zero lines from this class despite the service clearly having run).
+    // on-car test showed zero lines from this class despite the service clearly having run. Also
+    // used by registerCollectData to read the per-model decode overrides (CarConfig.motorRpmOffsetFront
+    // etc.) without threading ctx through every callback.
     private var appCtx: Context? = null
     private var statDevice: BYDAutoStatisticDevice? = null
     private var statListener: AbsBYDAutoStatisticListener? = null
@@ -74,9 +77,19 @@ class Dilink5Client {
     private var acListener: Any? = null   // battery-temp event only; acDev already bound for ambient temp
     private var collectDataDev: Any? = null
     private var collectDataListener: Any? = null
-    // Latest HV bus readings from collectdata events → real power = V·I.
+    // Latest HV bus readings from collectdata events → real power = V·I. Current stays Double end
+    // to end (not rounded to Int) so a fractional-amp decode scale (e.g. Shark's 0.1 A/step) isn't
+    // thrown away before it reaches the power calc — was previously rounded on write, discarding
+    // ~0.4 kW of resolution for no reason.
     private var lastHvVolt: Int = 0
-    private var lastHvCurrent: Int? = null
+    private var lastHvCurrent: Double? = null
+
+    // Dedup keys for the two EXPERIMENTAL decoded-value probe logs below — onDriverMotorSpeed fires
+    // at ~10 Hz, so logging the decoded value on every call would double the busiest signal in a
+    // 500-entry probe ring buffer and evict the rarer signals a not-yet-calibrated car most needs
+    // captured. Only log when the decoded value actually changes (raw is still logged every call).
+    private var lastLoggedDecodedCurrent: String? = null
+    private var lastLoggedDecodedRpm: String? = null
 
     // derived-power state
     private var lastUsableKwh: Double = Double.NaN
@@ -421,12 +434,25 @@ class Dilink5Client {
         }
     }
 
+    // EXPERIMENTAL per-model decode (see CarConfig.motorRpmOffsetFront etc.) — cheap to call per
+    // event (SharedPreferences-backed cache, no disk I/O), and Sealion 7 gets the all-zero/scale-1
+    // default so this is a no-op there. Not cached in a field: the user can switch the selected
+    // car without restarting the telemetry service, and this is called at most a few times/sec.
+    private fun collectDataCarConfig(): com.byd.tripstats.data.config.CarConfig? =
+        appCtx?.let { com.byd.tripstats.data.preferences.PreferencesManager(it).getCachedSelectedCarConfig() }
+
     // collectdata typed listener — HV bus V/I + motor RPM (event-only; getters dead). Decompiled
     // CollectDataManagerImpl.collectData() confirms (a, b) = (front, rear) for onDriverMotorSpeed —
     // separate HAL IDs/packet fields per side, not a tag. On RWD "a" reads a constant 50535 (outside
     // the RPM guard below, so it's naturally suppressed); on AWD it should carry real front RPM.
     // Volt/current stay rear-only (untested whether "a" is meaningful there too, and both callbacks
     // are @Deprecated in the real listener).
+    //
+    // RAW values are logged unconditionally via VehicleCompatibilityProbe (both before AND after
+    // the per-model decode) so a compat probe from a not-yet-calibrated DiLink-5 car always carries
+    // enough evidence to derive its own offset/scale — this is exactly how the Shark 6 DM-o AWD
+    // values here were themselves inferred, and the framework needs the same raw evidence from
+    // every other model to get confirmed.
     private fun registerCollectData(dev: Any, ds: BydVehicleDataSource) {
         try {
             val l = object : AbsBYDAutoCollectDataListener() {
@@ -436,12 +462,36 @@ class Dilink5Client {
                 }
                 override fun onMotorMCUGeneratrixCurrent(a: Int, b: Int) {
                     VehicleCompatibilityProbe.recordTypedEvent("collectdata", "onMotorMCUGeneratrixCurrent", "a=$a b=$b")
-                    if (b in -2000..2000) { lastHvCurrent = b; ds.applyDilink5HvCurrent(b); pushPower(ds) }  // signed A (regen negative)
+                    val cfg = collectDataCarConfig()
+                    val decoded = (b - (cfg?.hvCurrentOffset ?: 0)) * (cfg?.hvCurrentScale ?: 1.0)
+                    val decodedStr = decoded.toString()
+                    if (lastLoggedDecodedCurrent != decodedStr) {
+                        lastLoggedDecodedCurrent = decodedStr
+                        VehicleCompatibilityProbe.recordTypedEvent("collectdata", "onMotorMCUGeneratrixCurrent-decoded", decoded)
+                    }
+                    // Kept as Double (not rounded to Int) end to end — a fractional scale like
+                    // Shark's 0.1 A/step is otherwise thrown away before it reaches the power calc.
+                    decoded.takeIf { it in -2000.0..2000.0 }?.let {
+                        lastHvCurrent = it; ds.applyDilink5HvCurrent(it); pushPower(ds)  // signed A (regen negative)
+                    }
                 }
                 override fun onDriverMotorSpeed(a: Int, b: Int) {
                     VehicleCompatibilityProbe.recordTypedEvent("collectdata", "onDriverMotorSpeed", "a=$a b=$b")
-                    val front = a.takeIf { it in 0..30_000 }
-                    val rear = b.takeIf { it in 0..30_000 }
+                    val cfg = collectDataCarConfig()
+                    // scale (not just offset): Shark's front channel counts DOWN as RPM rises (a
+                    // sign flip, confirmed via a 12 km/h creep sample — |a-15000| and b-30000 both
+                    // hit 0 at standstill and scale linearly with speed), so a plain offset alone
+                    // reads 0 parked and goes negative (rejected by the guard) the moment it moves.
+                    // Default scale 1.0 keeps this a no-op for every model but Shark (front = -1.0).
+                    val front = ((a - (cfg?.motorRpmOffsetFront ?: 0)) * (cfg?.motorRpmScaleFront ?: 1.0))
+                        .roundToInt().takeIf { it in 0..30_000 }
+                    val rear = ((b - (cfg?.motorRpmOffsetRear ?: 0)) * (cfg?.motorRpmScaleRear ?: 1.0))
+                        .roundToInt().takeIf { it in 0..30_000 }
+                    val decodedStr = "front=$front rear=$rear"
+                    if (lastLoggedDecodedRpm != decodedStr) {
+                        lastLoggedDecodedRpm = decodedStr
+                        VehicleCompatibilityProbe.recordTypedEvent("collectdata", "onDriverMotorSpeed-decoded", decodedStr)
+                    }
                     if (front != null || rear != null) {
                         ds.applyDaemonTelemetry(speedKmh = null, gear = null, powerKw = null, frontRpm = front, rearRpm = rear)
                     }
@@ -630,9 +680,20 @@ class Dilink5Client {
 
     // Real driving power = HV volts × amps / 1000. Sign follows the current sign (regen negative).
     // NOTE: verify sign convention on-car (drive should be positive); flip here if inverted.
+    //
+    // Voltage fallback: onMotorMCUGeneratrixVolt confirmed live on Sealion 7 (~430-475 V), but never
+    // fired ONCE in a 35-minute Shark 6 DM-o AWD capture while current fired continuously — without
+    // a fallback, power reads 0 forever on any car whose MCU firmware doesn't broadcast this signal,
+    // even though current (and therefore power) is right there. `cellCount * 3.2` is the same LFP
+    // nominal-voltage estimate already used throughout CarCatalog's own cellCount comments (e.g.
+    // "422.4/3.2 = 132S Blade LFP") — reusing it here instead of adding a redundant CarConfig field.
+    // Only used while no live voltage has arrived yet; a real onMotorMCUGeneratrixVolt reading
+    // always wins once one shows up.
     private fun pushPower(ds: BydVehicleDataSource) {
-        val v = lastHvVolt; val i = lastHvCurrent ?: return
-        if (v <= 0) return
+        val i = lastHvCurrent ?: return
+        val v = lastHvVolt.takeIf { it > 0 }?.toDouble()
+            ?: collectDataCarConfig()?.cellCount?.takeIf { it > 0 }?.let { it * 3.2 }
+            ?: return
         val kw = v * i / 1000.0
         if (kotlin.math.abs(kw) <= 500.0) ds.applyDaemonTelemetry(speedKmh = null, gear = null, powerKw = kw)
     }

@@ -41,6 +41,34 @@ data class CarConfig(
      * the fuel-range display then relies on the car-reported figure alone.
      */
     val fuelTankLiters: Double? = null,
+    /**
+     * EXPERIMENTAL — DiLink-5 collectdata decode overrides for `Dilink5Client.registerCollectData`.
+     *
+     * Confirmed on Sealion 7: `onDriverMotorSpeed(a, b)`'s (front, rear) RPM and
+     * `onMotorMCUGeneratrixCurrent`'s current are zero-based, whole-unit raw values — no offset,
+     * no scale. A Shark 6 DM-o AWD compat probe (2026-08-06) showed the SAME callbacks idling on a
+     * large per-channel baseline instead (front RPM ~15000, rear RPM ~30000, current ~10000 in
+     * 0.1 A steps) — a different DiLink-5 MCU firmware encoding, not a bug in either vehicle's
+     * telemetry. All defaults below reproduce today's SL7-tuned behavior exactly (offset 0, scale
+     * 1) for every model that doesn't set them, so adding this per-model override is a no-op for
+     * every currently-supported car.
+     *
+     * Applied as `(raw - offset) * scale`. Not announced/exposed in the UI yet — values here
+     * (beyond Sealion 7's implicit 0/1 default) are unconfirmed best-effort estimates until an
+     * owner of that model confirms them against a steady-state (not idle/creep) capture.
+     *
+     * motorRpmScaleFront/Rear exist because offset alone isn't always enough: Shark's front channel
+     * counts DOWN as RPM rises instead of up (confirmed via a 12 km/h creep sample — |a-offset| and
+     * b-offset both hit exactly 0 at standstill and scale linearly with speed) — a sign flip, not a
+     * bad offset. A plain offset there reads 0 parked and goes negative (rejected outright) the
+     * moment the car moves.
+     */
+    val motorRpmOffsetFront: Int = 0,
+    val motorRpmOffsetRear: Int = 0,
+    val motorRpmScaleFront: Double = 1.0,
+    val motorRpmScaleRear: Double = 1.0,
+    val hvCurrentOffset: Int = 0,
+    val hvCurrentScale: Double = 1.0,
 )
 
 // The reference consumption (kWh/100km) is taken via ev-database.org
@@ -686,7 +714,19 @@ object CarCatalog {
         cdA = 1.45,                         // Cd ~0.42 × A ~3.45 m² — pickup estimate
         isPhev = true,
         phevUsableBatteryKwh = 26.0,        // usable EV portion — estimate (~88% of gross)
-        fuelTankLiters = 60.0               // confirmed
+        fuelTankLiters = 60.0,              // confirmed
+        // UNCONFIRMED — inferred from a single ~35s idle/low-speed (creep, 8-12 km/h) compat-probe
+        // capture, not a proper steady-state sample. onDriverMotorSpeed idled at a≈15000/b≈30000 and
+        // moved AWAY from that baseline in opposite directions per side while creeping (front DOWN,
+        // rear UP — front scale -1.0 corrects the sign flip); onMotorMCUGeneratrixCurrent idled at
+        // ≈10000 with real samples in 10000-10150 (0.1 A steps). Needs reconfirming against a
+        // highway-speed capture before trusting the RPM scale in particular — this capture never
+        // got much past creep speed.
+        motorRpmOffsetFront = 15000,
+        motorRpmOffsetRear = 30000,
+        motorRpmScaleFront = -1.0,
+        hvCurrentOffset = 10000,
+        hvCurrentScale = 0.1,
     )
 
     val allCars: List<CarConfig> = listOf(
