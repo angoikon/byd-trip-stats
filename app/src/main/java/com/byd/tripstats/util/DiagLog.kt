@@ -24,7 +24,7 @@ import java.util.Locale
 object DiagLog {
     private const val TAG = "DiagLog"
     private const val FILE_NAME = "diag.log"
-    private const val MAX_BYTES = 2560L * 1024L  // 2.5 MB main + 2.5 MB .prev = ~5 MB total
+    private const val MAX_BYTES = 10L * 1024L * 1024L  // 10 MB main + 10 MB .prev = ~20 MB total
     private const val BACKUP_SUFFIX = ".prev"
 
     private val lock = Any()

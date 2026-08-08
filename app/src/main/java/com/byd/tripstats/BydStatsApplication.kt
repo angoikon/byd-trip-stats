@@ -33,7 +33,7 @@ class BydStatsApplication : Application(), Configuration.Provider {
     companion object {
         private const val TAG = "BydStatsApp"
         /** Stack frames persisted per crash — enough to identify the site, short enough
-         *  that a crash loop can't flood the 2.5 MB diag.log. */
+         *  that a crash loop can't flood the 10 MB diag.log. */
         private const val CRASH_LOG_FRAMES = 8
     }
 
