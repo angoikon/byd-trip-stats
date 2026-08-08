@@ -197,6 +197,24 @@ object CarCatalog {
         cdA = 0.700       // estimate for compact SUV body
     )
 
+    // The three Atto 3 packs are exact multiples of BYD's 0.48 kWh blade cell —
+    // 104S = 49.92, 126S = 60.48, 156S = 74.88 — so the cell counts below are
+    // derived, not estimated. Same body/aero across the range.
+    val BYD_ATTO_3_SR = CarConfig(
+        id = "BYD_ATTO_3_SR",
+        displayName = "Atto 3 SR",
+        drivetrain = Drivetrain.FWD,
+        batteryKwh = 49.92,
+        estimatedKerbMassKg = 1760.0,   // estimate: ~65 kg under the 60 kWh car
+        wltpKm = 345,
+        referenceConsumptionKwhPer100km = 18.3,   // same body as the 60 kWh car
+        frontTyrePressureBar = 2.5,
+        rearTyrePressureBar = 2.5,
+        frontMotorRatedKw = 150,
+        cellCount = 104,  // 49.92 kWh = 104 × 0.48 kWh blade cell
+        cdA = 0.694       // Cd 0.272 × A 2.55 m²
+    )
+
     val BYD_ATTO_3 = CarConfig(
         id = "BYD_ATTO_3",
         displayName = "Atto 3",
@@ -208,6 +226,22 @@ object CarCatalog {
         frontTyrePressureBar = 2.5,
         rearTyrePressureBar = 2.5,
         cellCount = 126,  // 60.4 kWh @ ~403V → 126S LFP
+        cdA = 0.694       // Cd 0.272 × A 2.55 m²
+    )
+
+    // Ships with DiLink 5
+    val BYD_ATTO_3_PREMIUM = CarConfig(
+        id = "BYD_ATTO_3_PREMIUM",
+        displayName = "Atto 3 Premium",
+        drivetrain = Drivetrain.FWD,
+        batteryKwh = 74.88,
+        estimatedKerbMassKg = 1915.0,   // estimate: ~90 kg over the 60 kWh car
+        wltpKm = 520,                   // estimate: scaled from the 60 kWh car at equal efficiency
+        referenceConsumptionKwhPer100km = 18.3,
+        frontTyrePressureBar = 2.5,
+        rearTyrePressureBar = 2.5,
+        frontMotorRatedKw = 150,
+        cellCount = 156,  // 74.88 kWh = 156 × 0.48 kWh blade cell
         cdA = 0.694       // Cd 0.272 × A 2.55 m²
     )
 
@@ -698,7 +732,9 @@ object CarCatalog {
         BYD_ATTO_2_ACTIVE,
         BYD_ATTO_2_BOOST,
         BYD_ATTO_2_COMFORT,
+        BYD_ATTO_3_SR,
         BYD_ATTO_3,
+        BYD_ATTO_3_PREMIUM,
         BYD_SEAL_U_COMFORT,
         BYD_SEAL_U_DESIGN,
         BYD_SEAGULL_ACTIVE,
@@ -745,7 +781,7 @@ object CarCatalog {
         "BYD Seal" to listOf(BYD_SEAL_DYNAMIC_RWD, BYD_SEAL_PREMIUM_RWD, BYD_SEAL_EXCELLENCE),
         "BYD Dolphin" to listOf(BYD_DOLPHIN_STANDARD, BYD_DOLPHIN_EXTENDED),
         "BYD Atto 2" to listOf(BYD_ATTO_2_ACTIVE, BYD_ATTO_2_BOOST, BYD_ATTO_2_COMFORT),
-        "BYD Atto 3" to listOf(BYD_ATTO_3),
+        "BYD Atto 3" to listOf(BYD_ATTO_3_SR, BYD_ATTO_3, BYD_ATTO_3_PREMIUM),
         "BYD Seal U" to listOf(BYD_SEAL_U_COMFORT, BYD_SEAL_U_DESIGN),
         "BYD Seagull / Dolphin Surf / Atto 1" to listOf(BYD_SEAGULL_ACTIVE, BYD_SEAGULL_FLYING, BYD_DOLPHIN_SURF_ACTIVE, BYD_DOLPHIN_SURF_BOOST, BYD_DOLPHIN_SURF_COMFORT),
         "BYD M6" to listOf(BYD_M6_STANDARD_120KW, BYD_M6_SUPERIOR_100KW, BYD_M6_SUPERIOR_150KW),

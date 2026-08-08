@@ -102,7 +102,33 @@ class CarCatalogTest {
         assertEquals(Drivetrain.FWD, CarCatalog.BYD_SEAL_U_DESIGN.drivetrain)
     }
 
-    @Test fun `catalog contains all 40 expected cars`() {
-        assertEquals(40, CarCatalog.allCars.size)
+    @Test fun `catalog contains all 42 expected cars`() {
+        assertEquals(42, CarCatalog.allCars.size)
+    }
+
+    /** Every car offered in the picker must also be in allCars (fromId resolves against it). */
+    @Test fun `grouped pickers only contain cars present in allCars`() {
+        val all = CarCatalog.allCars.toSet()
+        (CarCatalog.groupedBev.values + CarCatalog.groupedPhev.values).flatten().forEach { car ->
+            assertTrue("${car.id} is in a picker group but missing from allCars", car in all)
+        }
+    }
+
+    /** …and nothing in allCars is unreachable from the picker. */
+    @Test fun `every car in allCars is reachable from a picker group`() {
+        val grouped = (CarCatalog.groupedBev.values + CarCatalog.groupedPhev.values).flatten().toSet()
+        CarCatalog.allCars.forEach { car ->
+            assertTrue("${car.id} is in allCars but not in any picker group", car in grouped)
+        }
+    }
+
+    @Test fun `Atto 3 pack sizes are exact blade-cell multiples`() {
+        // BYD's blade cell is 0.48 kWh; 104S/126S/156S give the three Atto 3 packs.
+        listOf(CarCatalog.BYD_ATTO_3_SR, CarCatalog.BYD_ATTO_3_PREMIUM).forEach { car ->
+            assertEquals(
+                "${car.id} batteryKwh should equal cellCount × 0.48",
+                car.cellCount * 0.48, car.batteryKwh, 0.001
+            )
+        }
     }
 }
