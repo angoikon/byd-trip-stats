@@ -468,7 +468,15 @@ class Dilink5Client {
     private fun registerInstrumentListener(dev: Any, ds: BydVehicleDataSource) {
         val polled = reflGetPressureUnit(dev)
         diag("pressureUnit poll -> $polled")
-        polled?.let { ds.applyDilink5PressureUnit(it) }
+        // Seed tyre pressure from a one-time poll now that the unit is known, so the dashboard
+        // shows a real value on launch instead of sitting blank until the SDK happens to fire an
+        // onTyrePressureValueByTypeChanged event (which can take a while — the on-car symptom was
+        // "empty until an event fires, either naturally or by forcing one via a dash-unit change").
+        // Only meaningful once the unit is known (nothing to decode raw against otherwise), and
+        // must run AFTER the unit poll above, not before — same ordering constraint the event path
+        // already has. registerTyreListener runs earlier in start()'s device-bind sequence, so
+        // tyreDev is already bound by the time this executes.
+        polled?.let { ds.applyDilink5PressureUnit(it); pollTyrePressureOnce(ds) }
         try {
             val l = object : AbsBYDAutoInstrumentListener() {
                 override fun onSportModeStateChanged(state: Int) {
@@ -656,6 +664,22 @@ class Dilink5Client {
         runCatching {
             (it.javaClass.getMethod(getter, Int::class.javaPrimitiveType).invoke(it, arg) as? Number)?.toInt()
         }.getOrNull()
+    }
+    // Float-returning single-int-arg getter — getTyrePressureValueByType(area) matches the real
+    // listener's Float-typed onTyrePressureValueByTypeChanged, unlike reflGetIntArg's callers.
+    private fun reflGetFloatArg(dev: Any?, getter: String, arg: Int): Float? = dev?.let {
+        runCatching {
+            (it.javaClass.getMethod(getter, Int::class.javaPrimitiveType).invoke(it, arg) as? Number)?.toFloat()
+        }.getOrNull()
+    }
+    // One-time startup seed for tyre pressure — see registerInstrumentListener's call site for why.
+    // Feeds the SAME decode path as the event (handleDilink5TyrePressureByType), so a poll result and
+    // a later event agree exactly; the poll is just a bridge until the first real event arrives.
+    private fun pollTyrePressureOnce(ds: BydVehicleDataSource) {
+        val t = tyreDev ?: return
+        for (wheel in 1..4) {
+            reflGetFloatArg(t, "getTyrePressureValueByType", wheel)?.let { ds.handleDilink5TyrePressureByType(wheel, it) }
+        }
     }
     private fun reflGetInt(dev: Any?, getter: String): Int? = dev?.let {
         runCatching { (it.javaClass.getMethod(getter).invoke(it) as? Number)?.toInt() }.getOrNull()
