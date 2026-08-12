@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 import android.provider.Settings
 import android.os.Build
+import com.byd.tripstats.ui.components.energyModeLabel
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -306,6 +307,9 @@ class MqttConnectionManager(context: Context) {
             SensorDef("fuel_driving_range_km", "Fuel Driving Range", "km", null, "measurement"),
             SensorDef("drive_mode", "Drive Mode", null, null, null),
             SensorDef("regen_mode", "Regen Mode", null, null, null),
+            // PHEV powertrain source (EV / Force EV / HEV / Fuel / Keep). Publishes
+            // "—" on BEVs, where energyMode is always 0.
+            SensorDef("energy_mode", "Energy Mode", null, null, null),
             SensorDef("location_latitude", "Latitude", null, null, null),
             SensorDef("location_longitude", "Longitude", null, null, null),
             SensorDef("location_altitude", "Altitude", "m", null, null),
@@ -413,6 +417,10 @@ class MqttConnectionManager(context: Context) {
         payload.put("fuel_driving_range_km", telemetry.fuelDrivingRangeKm)
         payload.put("drive_mode", telemetry.driveModeName)
         payload.put("regen_mode", telemetry.regenModeName)
+        payload.put(
+            "energy_mode",
+            if (telemetry.energyMode != 0) energyModeLabel(telemetry.energyMode) else "—"
+        )
         var gpsUpdated = false
         telemetry.locationLatitude.takeIf { it != 0.0 }?.let { lastKnownLat = it; gpsUpdated = true }
         telemetry.locationLongitude.takeIf { it != 0.0 }?.let { lastKnownLon = it; gpsUpdated = true }

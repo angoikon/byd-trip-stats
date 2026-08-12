@@ -36,6 +36,7 @@ import com.byd.tripstats.data.preferences.DashboardCardId
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.data.preferences.distanceUnit
 import com.byd.tripstats.sdk.VehicleTelemetrySnapshot
+import com.byd.tripstats.ui.components.energyModeLabel
 import com.byd.tripstats.ui.theme.AccelerationOrange
 import com.byd.tripstats.ui.theme.BatteryBlue
 import com.byd.tripstats.ui.theme.BydEcoTealDim
@@ -258,6 +259,9 @@ fun DashboardStatCard(
             title = stringResource(R.string.stat_driving_dynamics),
             value = run {
                 listOfNotNull(
+                    // PHEV powertrain source — see the matching Classic-layout card in
+                    // VehicleStats.kt. Self-gating: energyMode is always 0 on BEVs.
+                    energyModeLabel(telemetry.energyMode).takeIf { telemetry.energyMode != 0 },
                     telemetry.regenModeName.takeIf { telemetry.regenMode != 0 },
                     telemetry.driveModeName.takeIf { telemetry.driveMode != 0 },
                 ).joinToString(" / ").ifEmpty { "—" }
