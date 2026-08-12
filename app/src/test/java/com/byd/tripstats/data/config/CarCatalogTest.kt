@@ -102,8 +102,16 @@ class CarCatalogTest {
         assertEquals(Drivetrain.FWD, CarCatalog.BYD_SEAL_U_DESIGN.drivetrain)
     }
 
-    @Test fun `catalog contains all 42 expected cars`() {
-        assertEquals(42, CarCatalog.allCars.size)
+    @Test fun `catalog contains all 43 expected cars`() {
+        assertEquals(43, CarCatalog.allCars.size)
+    }
+
+    @Test fun `both Sealion 7 AWD trims are dual-motor`() {
+        listOf(CarCatalog.BYD_SEALION_7_DESIGN, CarCatalog.BYD_SEALION_7_PERFORMANCE).forEach { car ->
+            assertEquals("${car.id} should be AWD", Drivetrain.AWD, car.drivetrain)
+            assertNotNull("${car.id} AWD must declare a front motor", car.frontMotorRatedKw)
+            assertNotNull("${car.id} AWD must declare a rear motor", car.rearMotorRatedKw)
+        }
     }
 
     /** Every car offered in the picker must also be in allCars (fromId resolves against it). */

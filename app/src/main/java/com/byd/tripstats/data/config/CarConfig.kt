@@ -649,6 +649,28 @@ object CarCatalog {
         cdA = 0.78                   // assumed shared — verify
     )
 
+    val BYD_SEALION_7_DESIGN = CarConfig(
+        id = "BYD_SEALION_7_DESIGN",
+        displayName = "Sealion 7 Design AWD (82.5 kWh)",
+        drivetrain = Drivetrain.AWD, // dual motor — the AWD counterpart to the 82.5 kWh RWD Standard
+        batteryKwh = 82.5,           // same pack as BYD_SEALION_7_STANDARD, driven through both axles
+        estimatedKerbMassKg = 2380.0,// interpolated: confirmed 91.3kWh AWD (2435kg) minus the ~55 kg
+                                     // pack delta (8.8 kWh) — not independently confirmed
+        wltpKm = 490,                // estimate — scaled from the 91.3 kWh AWD at equal efficiency
+                                     // (82.5/91.3 × 540 ≈ 488); AWD is less efficient than the
+                                     // 82.5 kWh RWD's 502 km, as expected. Verify.
+        referenceConsumptionKwhPer100km = 21.5, // estimate between the 82.5 RWD (20.5) and the
+                                     // confirmed 91.3 AWD (21.9), leaning AWD since the second
+                                     // motor — not the pack — drives the difference
+        frontTyrePressureBar = 2.90, // confirmed datasheet spec: 42 psi, same front/rear across the lineup
+        rearTyrePressureBar = 2.90,  // confirmed datasheet spec: 42 psi, same front/rear across the lineup
+        // Same 160/230 split as BYD_SEALION_7_PERFORMANCE — see the reasoning on that entry
+        // (390 kW combined, matching the two single-motor RWD trims' individual ratings).
+        frontMotorRatedKw = 160,
+        rearMotorRatedKw = 230,
+        cdA = 0.78                   // assumed shared — verify
+    )
+
     val BYD_SEALION_7_PERFORMANCE = CarConfig(
         id = "BYD_SEALION_7_PERFORMANCE",
         displayName = "Sealion 7 Performance AWD (91.3 kWh)",
@@ -765,6 +787,7 @@ object CarCatalog {
         BYD_SEALION_6_EV_EXTENDED,
         BYD_SEALION_7,
         BYD_SEALION_7_STANDARD,
+        BYD_SEALION_7_DESIGN,
         BYD_SEALION_7_PERFORMANCE,
     )
 
@@ -787,7 +810,7 @@ object CarCatalog {
         "BYD M6" to listOf(BYD_M6_STANDARD_120KW, BYD_M6_SUPERIOR_100KW, BYD_M6_SUPERIOR_150KW),
         "BYD Seal 6" to listOf(BYD_SEAL_6_PREMIUM_95KW, BYD_SEAL_6_PREMIUM_160KW),
         "BYD Sealion 6" to listOf(BYD_SEALION_6_EV_STANDARD, BYD_SEALION_6_EV_EXTENDED),
-        "BYD Sealion 7 (DiLink 5)" to listOf(BYD_SEALION_7, BYD_SEALION_7_STANDARD, BYD_SEALION_7_PERFORMANCE),
+        "BYD Sealion 7 (DiLink 5)" to listOf(BYD_SEALION_7, BYD_SEALION_7_STANDARD, BYD_SEALION_7_DESIGN, BYD_SEALION_7_PERFORMANCE),
         "BYD Han" to listOf(BYD_HAN_EV, BYD_HAN_EV_AWD),
         "BYD Tang" to listOf(BYD_TANG_EV),
     )
