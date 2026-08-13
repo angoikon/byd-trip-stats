@@ -9,6 +9,7 @@ import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import android.view.PixelCopy
+import android.view.Window
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -43,9 +44,17 @@ object ScreenshotUtil {
      * [onCaptured] runs on the calling (main) thread the instant the frame has been
      * grabbed, before the slower disk write — the right moment to play a screen
      * flash, since anything drawn after this point is not in the captured image.
+     *
+     * [window] defaults to the Activity's window, but a Compose `Dialog` renders in
+     * its own separate window — pass that window so the saved image is the dialog
+     * content (e.g. the HV/12V battery history) rather than the screen behind it.
      */
-    suspend fun captureAndSave(activity: Activity, onCaptured: () -> Unit = {}): String {
-        val bitmap = captureWindow(activity)
+    suspend fun captureAndSave(
+        activity: Activity,
+        window: Window = activity.window,
+        onCaptured: () -> Unit = {},
+    ): String {
+        val bitmap = captureWindow(window)
         onCaptured()
         return try {
             withContext(Dispatchers.IO) { saveToDownloads(activity.applicationContext, bitmap) }
@@ -54,10 +63,9 @@ object ScreenshotUtil {
         }
     }
 
-    /** Grabs the live composited frame of the Activity window via PixelCopy. */
-    private suspend fun captureWindow(activity: Activity): Bitmap =
+    /** Grabs the live composited frame of [window] via PixelCopy. */
+    private suspend fun captureWindow(window: Window): Bitmap =
         suspendCancellableCoroutine { cont ->
-            val window = activity.window
             val view = window.decorView
             val width = view.width
             val height = view.height

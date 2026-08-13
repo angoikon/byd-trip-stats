@@ -29,11 +29,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogWindowProvider
 import com.byd.tripstats.R
 import com.byd.tripstats.data.entitlement.EntitlementManager
 import com.byd.tripstats.util.ScreenshotFlashController
@@ -51,6 +53,10 @@ fun BrandTitle(modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
     val isPro by EntitlementManager.isPro.collectAsState()
     val logoInteractionSource = remember { MutableInteractionSource() }
+    // A Compose Dialog (e.g. the HV/12V battery history) renders in its own window.
+    // Capture that window so the screenshot is the dialog content, not the screen behind it.
+    val view = LocalView.current
+    val dialogWindow = (view.parent as? DialogWindowProvider)?.window
 
     Row(
         modifier = modifier.clickable(
@@ -64,7 +70,11 @@ fun BrandTitle(modifier: Modifier = Modifier) {
             val act = activity ?: return@clickable
             scope.launch {
                 try {
-                    ScreenshotUtil.captureAndSave(act, onCaptured = { ScreenshotFlashController.flash() })
+                    ScreenshotUtil.captureAndSave(
+                        act,
+                        window = dialogWindow ?: act.window,
+                        onCaptured = { ScreenshotFlashController.flash() },
+                    )
                 } catch (e: Exception) {
                     Toast.makeText(context, context.getString(R.string.screenshot_failed, e.message), Toast.LENGTH_SHORT).show()
                 }
