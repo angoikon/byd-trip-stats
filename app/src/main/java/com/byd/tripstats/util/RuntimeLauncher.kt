@@ -81,6 +81,8 @@ object RuntimeLauncher {
         val startFgs = s(115, 116, 97, 114, 116, 45, 102, 111, 114, 101, 103, 114, 111, 117, 110, 100, 45, 115, 101, 114, 118, 105, 99, 101)
         val startSvc = s(115, 116, 97, 114, 116, 45, 115, 101, 114, 118, 105, 99, 101)
         val broadcast = s(98, 114, 111, 97, 100, 99, 97, 115, 116)
+        val dashF = s(45, 102) // "-f"
+        val stoppedFlag = s(51, 50) // "32" = FLAG_INCLUDE_STOPPED_PACKAGES (0x00000020)
         val start = s(115, 116, 97, 114, 116)
         val user = s(45, 45, 117, 115, 101, 114) // "--user"
         val zero = s(48) // "0"
@@ -125,7 +127,14 @@ object RuntimeLauncher {
             WakeStrategy("start-fgs", arrayOf(am, startFgs, n, svc)),
             WakeStrategy("start-svc-user", arrayOf(am, startSvc, user, zero, n, svc)),
             WakeStrategy("start-svc", arrayOf(am, startSvc, n, svc)),
-            WakeStrategy("broadcast-acc-on", arrayOf(am, broadcast, user, zero, a, accOn, n, rcv)),
+            // -f 32 = FLAG_INCLUDE_STOPPED_PACKAGES. Without it Android 11 drops this broadcast for a
+            // FORCE-STOPPED package — which is exactly the DiLink-5 state after BYD's
+            // com.ts.appservice.power force-stops the app at ignition-off — so the clean background
+            // wake silently no-ops and the app only comes back via the UI-popping activity launches
+            // below (or not at all). The flag lets ACC_ON reach the BootReceiver of a stopped app and
+            // start the telemetry service in the background. Harmless on DiLink-3 (the app is never
+            // force-stopped there): it's a superset that still delivers to the running app.
+            WakeStrategy("broadcast-acc-on", arrayOf(am, broadcast, user, zero, a, accOn, dashF, stoppedFlag, n, rcv)),
             WakeStrategy("start-main", arrayOf(am, start, user, zero, n, act), postDelayMs = 1_500L),
             WakeStrategy(
                 "cmd-start-main",

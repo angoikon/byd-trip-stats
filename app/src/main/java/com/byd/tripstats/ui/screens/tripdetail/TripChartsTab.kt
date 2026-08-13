@@ -51,7 +51,14 @@ import com.byd.tripstats.ui.components.extractTripModes
 @Composable
 fun TripChartsTab(
     dataPoints: List<TripDataPointEntity>,
-    useImperial: Boolean = false
+    useImperial: Boolean = false,
+    /**
+     * Whether the selected car is a plug-in hybrid — gates the Mode Timeline's energy lane.
+     * Required because a BEV's stored energy_mode is NOT 0: the DiLink-3 poll records
+     * getEnergyMode for every car and a BEV Seal reports 1 (=EV), so the lane's own
+     * "any point with energyMode != 0" check would light up on BEV trips too.
+     */
+    isPhev: Boolean = false
 ) {
     var expandedChart by remember { mutableStateOf<ChartType?>(null) }
 
@@ -165,6 +172,7 @@ fun TripChartsTab(
                     dataPoints = dataPoints,
                     showDriveModes = showDriveModes,
                     showRegenModes = showRegenModes,
+                    showEnergyModes = isPhev,
                     compact = true,
                     modifier = Modifier.fillMaxSize()
                 )
@@ -177,6 +185,7 @@ fun TripChartsTab(
             chartType = chartType,
             dataPoints = dataPoints,
             useImperial = useImperial,
+            isPhev = isPhev,
             onDismiss = { expandedChart = null }
         )
     }
@@ -246,6 +255,8 @@ internal fun FullscreenChartDialog(
     chartType: ChartType,
     dataPoints: List<TripDataPointEntity>,
     useImperial: Boolean = false,
+    /** See [TripChartsTab] — gates the Mode Timeline's energy lane to plug-in hybrids. */
+    isPhev: Boolean = false,
     onDismiss: () -> Unit
 ) {
     val chartData = remember(chartType, dataPoints) {
@@ -357,6 +368,7 @@ internal fun FullscreenChartDialog(
                                     dataPoints = dataPoints,
                                     showDriveModes = showDriveModes,
                                     showRegenModes = showRegenModes,
+                                    showEnergyModes = isPhev,
                                     modifier = Modifier.fillMaxSize()
                                 )
                             }

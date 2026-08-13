@@ -173,7 +173,11 @@ fun TripDetailScreen(
                             socSource = socSource,
                             blendedRate = tripBlendedRates[tripId]
                         )
-                        1 -> TripChartsTab(dataPoints = dataPoints, useImperial = unitSystem.isImperial)
+                        1 -> TripChartsTab(
+                            dataPoints = dataPoints,
+                            useImperial = unitSystem.isImperial,
+                            isPhev = selectedCarConfig?.isPhev == true
+                        )
                         2 -> TripHeatmapsTab(dataPoints = dataPoints)
                         3 -> TripRouteTab(dataPoints = dataPoints, useImperial = unitSystem.isImperial)
                         4 -> RouteAnalysisTab(

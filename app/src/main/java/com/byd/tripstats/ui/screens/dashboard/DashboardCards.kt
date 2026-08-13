@@ -260,8 +260,10 @@ fun DashboardStatCard(
             value = run {
                 listOfNotNull(
                     // PHEV powertrain source — see the matching Classic-layout card in
-                    // VehicleStats.kt. Self-gating: energyMode is always 0 on BEVs.
-                    energyModeLabel(telemetry.energyMode).takeIf { telemetry.energyMode != 0 },
+                    // VehicleStats.kt. Gated on the car being a PHEV: a BEV Seal reports
+                    // energyMode 1 (=EV), so energyMode != 0 alone is NOT enough.
+                    energyModeLabel(telemetry.energyMode)
+                        .takeIf { selectedCar?.isPhev == true && telemetry.energyMode != 0 },
                     telemetry.regenModeName.takeIf { telemetry.regenMode != 0 },
                     telemetry.driveModeName.takeIf { telemetry.driveMode != 0 },
                 ).joinToString(" / ").ifEmpty { "—" }

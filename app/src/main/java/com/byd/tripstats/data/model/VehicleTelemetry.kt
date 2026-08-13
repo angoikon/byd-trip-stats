@@ -211,7 +211,10 @@ data class VehicleTelemetry(
     /**
      * Human-readable name for the PHEV energy/powertrain source mode.
      * Sourced from the Energy device (m09). Only meaningful on PHEV models.
-     * On BEVs energyMode is always 0.
+     *
+     * NOT zero on BEVs — the m09 poll stores getEnergyMode for every car with no PHEV check,
+     * and a BEV Seal reports 1 (=EV). Anything user-facing must gate on the selected car's
+     * [com.byd.tripstats.data.config.CarConfig.isPhev], never on `energyMode != 0` alone.
      */
     val energyModeName: String
         get() =

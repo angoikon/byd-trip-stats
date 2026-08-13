@@ -3,6 +3,7 @@ package com.byd.tripstats.connections
 import android.content.Context
 import android.util.Log
 import com.byd.tripstats.data.model.VehicleTelemetry
+import com.byd.tripstats.data.preferences.PreferencesManager
 import com.hivemq.client.mqtt.MqttClient
 import com.hivemq.client.mqtt.datatypes.MqttQos
 import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient
@@ -417,9 +418,13 @@ class MqttConnectionManager(context: Context) {
         payload.put("fuel_driving_range_km", telemetry.fuelDrivingRangeKm)
         payload.put("drive_mode", telemetry.driveModeName)
         payload.put("regen_mode", telemetry.regenModeName)
+        // PHEV only. Gated on the car, not on energyMode != 0: the DiLink-3 poll stores
+        // getEnergyMode for every car and a BEV Seal reports 1 (=EV), which would publish a
+        // meaningless "EV" on every BEV.
+        val isPhevCar = PreferencesManager(appContext).getCachedSelectedCarConfig()?.isPhev == true
         payload.put(
             "energy_mode",
-            if (telemetry.energyMode != 0) energyModeLabel(telemetry.energyMode) else "—"
+            if (isPhevCar && telemetry.energyMode != 0) energyModeLabel(telemetry.energyMode) else "—"
         )
         var gpsUpdated = false
         telemetry.locationLatitude.takeIf { it != 0.0 }?.let { lastKnownLat = it; gpsUpdated = true }

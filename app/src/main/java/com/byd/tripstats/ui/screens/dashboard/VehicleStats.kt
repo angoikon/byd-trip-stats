@@ -224,10 +224,14 @@ fun VehicleStats(
             value    = run {
                 listOfNotNull(
                     // PHEV powertrain source (EV / Force EV / HEV / Fuel / Keep) — the most
-                    // important of the three on a plug-in, so it leads. energyMode is always 0
-                    // on BEVs, so this is self-gating and the line is unchanged there. Uses the
-                    // same energyModeLabel() as the trip Mode Timeline's energy lane.
-                    energyModeLabel(telemetry.energyMode).takeIf { telemetry.energyMode != 0 },
+                    // important of the three on a plug-in, so it leads. Uses the same
+                    // energyModeLabel() as the trip Mode Timeline's energy lane.
+                    //
+                    // Gated on the CAR being a PHEV, not on energyMode != 0: the DiLink-3 poll
+                    // stores getEnergyMode for every car with no PHEV check, and a BEV Seal
+                    // reports 1 (=EV) — true but meaningless, and it leaked onto BEV dashboards.
+                    energyModeLabel(telemetry.energyMode)
+                        .takeIf { selectedCar?.isPhev == true && telemetry.energyMode != 0 },
                     telemetry.regenModeName.takeIf { telemetry.regenMode != 0 },
                     telemetry.driveModeName.takeIf { telemetry.driveMode != 0 },
                 ).joinToString(" / ").ifEmpty { "—" }
