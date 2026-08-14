@@ -46,6 +46,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
 import com.byd.tripstats.adb.AdbPermissionManager
+import com.byd.tripstats.util.DiagLog
 import com.byd.tripstats.util.LocaleHelper
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.data.preferences.ThemeMode
@@ -112,6 +113,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Launch-cause marker. A process start with no BootReceiver line and no line
+        // here came from a background source (JobScheduler/WorkManager kick); this line
+        // means the UI was actually launched — by the user, by BYD's autostart, or by the
+        // supervisor's activity-start fallback. Without it the diag.log can't tell them
+        // apart, which is exactly what blocked the DiLink-5 "app didn't come up" reports.
+        DiagLog.event(
+            applicationContext, TAG,
+            "MainActivity onCreate — UI launch (restored=${savedInstanceState != null} " +
+                "caller=${runCatching { referrer?.host }.getOrNull() ?: "?"})",
+        )
         requestRequiredPermissions()
         checkAndShowAutostartReminder()
         checkSetupRequired()

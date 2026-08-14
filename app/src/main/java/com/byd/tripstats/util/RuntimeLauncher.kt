@@ -22,6 +22,8 @@ object RuntimeLauncher {
     private const val COOLDOWN_MS = 60_000L
     private var lastAliveMs = 0L
     private const val ALIVE_GRACE_MS = 90_000L
+    /** Tracks the alive→down edge so the transition is logged once, not every tick. */
+    private var wasAlive = true
 
     private data class WakeStrategy(
         val label: String,
@@ -29,9 +31,30 @@ object RuntimeLauncher {
         val postDelayMs: Long = 1_000L,
     )
 
+    /**
+     * Timestamped line to **stdout**, which the supervisor redirects into its own persistent
+     * log (`/data/local/tmp/.supd.log`, survives reboots). Logcat is useless for this process:
+     * the DiLink ring buffer is shredded within minutes, and the supervisor's own logcat tail
+     * filters everything below its crash filter (`*:S`) — so every wake decision made while the
+     * car was off used to be unrecoverable after the fact. Mirrored to logcat for live debugging.
+     */
+    private fun p(msg: String) {
+        Log.d(TAG, msg)
+        try {
+            println("[w] ${stamp.get()!!.format(java.util.Date())} $msg")
+            System.out.flush()
+        } catch (_: Throwable) {
+            // stdout closed (worker started outside the supervisor) — logcat line above stands.
+        }
+    }
+
+    private val stamp = ThreadLocal.withInitial {
+        java.text.SimpleDateFormat("MM-dd HH:mm:ss", java.util.Locale.US)
+    }
+
     @JvmStatic
     fun main(@Suppress("UNUSED_PARAMETER") args: Array<String>) {
-        Log.i(TAG, "up pid=${android.os.Process.myPid()} uid=${android.os.Process.myUid()}")
+        p("up pid=${android.os.Process.myPid()} uid=${android.os.Process.myUid()}")
         var tick = 0
         while (!Thread.interrupted()) {
             val recovered = wake(tick++)
@@ -104,23 +127,30 @@ object RuntimeLauncher {
         val one = s(49) // "1"
 
         if (isTargetAlive(pkg)) {
+            if (!wasAlive) p("tick=$tick target back up")
+            wasAlive = true
             lastAliveMs = android.os.SystemClock.elapsedRealtime()
-            if (tick % 10 == 0) Log.d(TAG, "tick=$tick healthy")
+            if (tick % 10 == 0) p("tick=$tick healthy")
             return true
         }
+        // Down-transition is printed once, immediately: it timestamps the car-off kill in the
+        // persistent log, which is what pins "was the resurrector even running?" after the fact.
+        if (wasAlive) p("tick=$tick target DOWN")
+        wasAlive = false
 
         val now = android.os.SystemClock.elapsedRealtime()
         if (now - lastAliveMs < ALIVE_GRACE_MS) {
-            if (tick % 10 == 0) Log.d(TAG, "tick=$tick recently alive, skip")
+            if (tick % 10 == 0) p("tick=$tick recently alive, skip")
             return true
         }
 
         Log.d(TAG, "cooldown check: now=$now last=$lastStartAttemptMs delta=${now - lastStartAttemptMs}")
         if (now - lastStartAttemptMs < COOLDOWN_MS) {
-            if (tick % 10 == 0) Log.d(TAG, "tick=$tick cooldown skip")
+            if (tick % 10 == 0) p("tick=$tick cooldown skip")
             return false
         }
         lastStartAttemptMs = now
+        p("tick=$tick waking — target down ${(now - lastAliveMs) / 1000}s")
 
         val strategies = listOf(
             WakeStrategy("start-fgs-user", arrayOf(am, startFgs, user, zero, n, svc)),
@@ -153,17 +183,16 @@ object RuntimeLauncher {
             val normalized = out.replace('\n', ' ').trim()
             val commandOk = exit == 0 && !looksLikeCommandFailure(normalized)
             if (commandOk && waitForTargetAlive(pkg, strategy.postDelayMs)) {
-                if (tick % 10 == 0) Log.d(TAG, "tick=$tick ok[$i] ${strategy.label}")
+                p("tick=$tick ok[$i] ${strategy.label}")
+                wasAlive = true
                 return true
             }
-            if (tick == 0 || !commandOk) {
-                Log.w(
-                    TAG,
-                    "tick=$tick f[$i] ${strategy.label} e=$exit :: ${normalized.take(120)}"
-                )
-            }
+            // Every failure is printed: the attempt itself is rate-limited by COOLDOWN_MS, so this
+            // is at most one block per minute, and which strategy failed how is the whole diagnosis
+            // (e.g. a dropped broadcast looks like exit 0 + no process, unlike a permission denial).
+            p("tick=$tick f[$i] ${strategy.label} e=$exit :: ${normalized.take(120)}")
         }
-        Log.w(TAG, "tick=$tick all strategies failed")
+        p("tick=$tick all strategies failed")
         return false
     }
 
