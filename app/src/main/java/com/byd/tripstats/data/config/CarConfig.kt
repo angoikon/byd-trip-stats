@@ -476,6 +476,49 @@ object CarCatalog {
         fuelTankLiters = 60.0   // shared Sealion 6 platform tank
     )
 
+    // BYD Song Pro DM-i — the Brazilian nameplate (GL / GS trims, 2026 model year). FWD, DiLink 3.
+    // Sold elsewhere as the Sealion 5 DM-i, but kept as its own model rather than folded into
+    // BYD_SEALION_5_DMI_* : those are the earlier 15.0 / 21.5 kWh generation, while these two carry
+    // the current 13.1 / 18.3 kWh Blade packs (the 18.3 is the same pack as BYD_SONG_PLUS_DM_I, so
+    // the pack-derived figures below are mirrored from that entry).
+    val BYD_SONG_PRO_DM_I_GL = CarConfig(
+        id = "BYD_SONG_PRO_DM_I_GL",
+        displayName = "Song Pro DM-i GL (13.1 kWh)",
+        drivetrain = Drivetrain.FWD,
+        batteryKwh = 13.1,      // confirmed — owner-reported Brazilian spec
+        estimatedKerbMassKg = 1730.0, // estimate — ~50 kg under the GS for the smaller pack
+        wltpKm = 70,            // EV-only estimate: usable ÷ the reference consumption below
+        referenceConsumptionKwhPer100km = 16.0, // mirrors the Song Plus DM-i (same DM-i drivetrain)
+        frontTyrePressureBar = 2.5, // confirmed — owner-reported placard
+        rearTyrePressureBar = 2.5,  // confirmed — owner-reported placard
+        cellCount = 104,        // estimate: 13.1 kWh @ 104S ≈ 39.4 Ah/cell, matching the GS's
+                                // 18.3 kWh @ 144S ≈ 39.7 Ah — same blade cell, shorter string
+        cdA = 0.80,             // estimate — Cd ~0.30 × A ~2.65 m²; verify
+        isPhev = true,
+        phevUsableBatteryKwh = 10.9 // 83% of gross, the same ratio as the 18.3 kWh pack
+        // fuelTankLiters deliberately unset — the Brazilian tank size isn't confirmed, and the
+        // field's contract is to stay null rather than guess: fuel range then comes from the car's
+        // own reading instead of a wrong estimate. Fill in once the spec sheet is to hand.
+    )
+
+    val BYD_SONG_PRO_DM_I_GS = CarConfig(
+        id = "BYD_SONG_PRO_DM_I_GS",
+        displayName = "Song Pro DM-i GS (18.3 kWh)",
+        drivetrain = Drivetrain.FWD,
+        batteryKwh = 18.3,      // confirmed — owner-reported Brazilian spec; same Blade pack as
+                                // BYD_SONG_PLUS_DM_I and BYD_SEAL_U_DM_I_DESIGN_AWD
+        estimatedKerbMassKg = 1780.0, // estimate — Song Pro sits ~100 kg under the Song Plus
+        wltpKm = 100,           // EV-only — mirrors the Song Plus DM-i on the identical pack
+        referenceConsumptionKwhPer100km = 16.0, // mirrors the Song Plus DM-i (same pack + drivetrain)
+        frontTyrePressureBar = 2.5, // confirmed — owner-reported placard
+        rearTyrePressureBar = 2.5,  // confirmed — owner-reported placard
+        cellCount = 144,        // same 18.3 kWh Blade pack as the Song Plus DM-i → 144S
+        cdA = 0.80,             // estimate — Cd ~0.30 × A ~2.65 m²; verify
+        isPhev = true,
+        phevUsableBatteryKwh = 15.2 // same pack as the Song Plus DM-i
+        // fuelTankLiters — see the note on the GL above.
+    )
+
     val BYD_HAN_EV = CarConfig(
         id = "BYD_HAN_EV",
         displayName = "Han EV",
@@ -776,6 +819,8 @@ object CarCatalog {
         BYD_SEAL_U_DM_I_COMFORT,
         BYD_SEAL_U_DM_I_DESIGN_AWD,
         BYD_SONG_PLUS_DM_I,
+        BYD_SONG_PRO_DM_I_GL,
+        BYD_SONG_PRO_DM_I_GS,
         BYD_HAN_DM_I,
         BYD_TANG_DM_I,
         BYD_SEALION_5_DMI_COMFORT,
@@ -818,6 +863,8 @@ object CarCatalog {
     val groupedPhev: LinkedHashMap<String, List<CarConfig>> = linkedMapOf(
         "BYD Seal U DM-i" to listOf(BYD_SEAL_U_DM_I, BYD_SEAL_U_DM_I_COMFORT, BYD_SEAL_U_DM_I_DESIGN_AWD),
         "BYD Song Plus DM-i" to listOf(BYD_SONG_PLUS_DM_I),
+        // Brazilian nameplate — the Sealion 5 DM-i group below holds the earlier generation.
+        "BYD Song Pro DM-i" to listOf(BYD_SONG_PRO_DM_I_GL, BYD_SONG_PRO_DM_I_GS),
         "BYD Han DM-i" to listOf(BYD_HAN_DM_I),
         "BYD Tang DM-i" to listOf(BYD_TANG_DM_I),
         "BYD Seal 5 / Sealion 5 DM-i" to listOf(BYD_SEALION_5_DMI_COMFORT, BYD_SEALION_5_DMI_DESIGN),

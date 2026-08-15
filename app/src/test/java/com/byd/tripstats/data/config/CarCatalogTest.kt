@@ -102,8 +102,8 @@ class CarCatalogTest {
         assertEquals(Drivetrain.FWD, CarCatalog.BYD_SEAL_U_DESIGN.drivetrain)
     }
 
-    @Test fun `catalog contains all 43 expected cars`() {
-        assertEquals(43, CarCatalog.allCars.size)
+    @Test fun `catalog contains all 45 expected cars`() {
+        assertEquals(45, CarCatalog.allCars.size)
     }
 
     @Test fun `both Sealion 7 AWD trims are dual-motor`() {
