@@ -154,6 +154,8 @@ fun buildTripJson(
     appendLine("  \"startTime\": ${trip.startTime},")
     appendLine("  \"endTime\": ${trip.endTime},")
     appendLine("  \"distance\": ${trip.distance},")
+    appendLine("  \"startOdometer\": ${trip.startOdometer},")
+    appendLine("  \"endOdometer\": ${trip.endOdometer},")
     appendLine("  \"duration\": ${trip.duration},")
     appendLine("  \"consumption\": ${trip.efficiency},")
     appendLine("  \"energyConsumed\": ${trip.energyConsumed},")
