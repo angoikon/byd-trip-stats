@@ -302,6 +302,8 @@ code{background:#20242d;padding:2px 8px;border-radius:6px;font-size:13px;color:#
                     put("isFavourite",       if (trip.isFavourite) 1 else 0)
                     put("dist",   stats?.totalDistance
                         ?: trip.endOdometer?.minus(trip.startOdometer)?.coerceAtLeast(0.0))
+                    put("startOdometer",     trip.startOdometer)
+                    put("endOdometer",       trip.endOdometer)
                     put("avgSpd",  stats?.avgSpeed          ?: 0.0)
                     put("eff",     stats?.avgEfficiency     ?: 0.0)
                     put("energy",  stats?.totalEnergyConsumed ?: 0.0)
@@ -328,6 +330,8 @@ code{background:#20242d;padding:2px 8px;border-radius:6px;font-size:13px;color:#
                 put("isManual",          if (trip.isManual) 1 else 0)
                 put("isFavourite",       if (trip.isFavourite) 1 else 0)
                 put("dist",       stats?.totalDistance ?: trip.distance?.coerceAtLeast(0.0))
+                put("startOdometer",     trip.startOdometer)
+                put("endOdometer",       trip.endOdometer)
                 put("avgSpeed",   stats?.avgSpeed          ?: 0.0)
                 put("avgEfficiency",       stats?.avgEfficiency     ?: 0.0)
                 put("totalEnergyConsumed", stats?.totalEnergyConsumed ?: 0.0)
@@ -387,6 +391,7 @@ code{background:#20242d;padding:2px 8px;border-radius:6px;font-size:13px;color:#
                     put("peakKw",          s.peakKw)
                     put("avgKw",           s.avgKw)
                     put("batteryTempStart",s.batteryTempStart)
+                    put("startOdometer",   s.startOdometer)
                 })
             }.toString()
         }
@@ -410,6 +415,7 @@ code{background:#20242d;padding:2px 8px;border-radius:6px;font-size:13px;color:#
                 put("avgKw",           s.avgKw)
                 put("batteryTempStart",s.batteryTempStart)
                 put("batteryTempEnd",  s.batteryTempEnd)
+                put("startOdometer",   s.startOdometer)
             }.toString()
         }
         return serveJson(json)

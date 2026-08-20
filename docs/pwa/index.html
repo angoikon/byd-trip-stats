@@ -676,6 +676,13 @@ function fmtKmh(v) { return v != null ? Math.round(+v) + ' km/h' : '—'; }
 function fmtKwh(v) { return v != null && +v > 0 ? (+v).toFixed(2) + ' kWh' : '—'; }
 function fmtEff(v) { return v != null && +v > 0 ? (+v).toFixed(1) + ' kWh/100km' : '—'; }
 function fmtKw(v)  { return v != null && +v > 0 ? (+v).toFixed(1) + ' kW' : '—'; }
+// One decimal, matching fmtKm — the odometer pair and the distance delta derived
+// from it must not disagree through rounding.
+function fmtOdo(start, end) {
+  if (start == null || +start <= 0) return '—';
+  const one = v => (+v).toLocaleString('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  return end != null && +end > 0 ? `${one(start)} → ${one(end)}` : one(start);
+}
 function fmtSoc(start, end) {
   if (start == null || +start === 0) return '—';
   const s = Math.round(+start) + '%';
@@ -701,6 +708,7 @@ async function _renderTripList() {
                ${col('trips', 'endSocPanel', 'NULL')},
                ${col('trips', 'isFavourite')},
                t.startSoc, t.endSoc, t.isManual,
+               t.startOdometer, t.endOdometer,
                COALESCE(s.totalDistance,
                  MAX(0.0, COALESCE(CAST(t.endOdometer AS REAL), 0.0) - CAST(t.startOdometer AS REAL))
                ) AS dist,
@@ -749,6 +757,7 @@ async function _renderTripList() {
         <div class="stat"><span class="val">${fmtEff(+t.eff || null)}</span><span class="lbl">Avg Consumption</span></div>
         <div class="stat"><span class="val">${fmtKwh(t.energy)}</span><span class="lbl">Energy</span></div>
         <div class="stat"><span class="val">${soc}</span><span class="lbl">SoC</span></div>
+        <div class="stat"><span class="val">${fmtOdo(t.startOdometer, t.endOdometer)}</span><span class="lbl">Odometer (km)</span></div>
       </div>
     </div>`;
   }).join('');
@@ -787,6 +796,7 @@ async function _renderTripDetail(id) {
     ['Efficiency', fmtEff(+t.avgEfficiency || null)],
     ['Energy',     fmtKwh(t.totalEnergyConsumed)],
     ['SoC',        soc],
+    ['Odometer (km)', fmtOdo(t.startOdometer, t.endOdometer)],
   ].map(([l, v]) =>
     `<div class="stat"><span class="val">${v}</span><span class="lbl">${l}</span></div>`
   ).join('');
@@ -828,6 +838,7 @@ async function _renderChargeList() {
                ${col('charging_sessions', 'socStartPanel')},
                ${col('charging_sessions', 'socEndPanel', 'NULL')},
                ${col('charging_sessions', 'isFavourite')},
+               ${col('charging_sessions', 'startOdometer', 'NULL')},
                kwhAdded, peakKw, avgKw, batteryTempStart
         FROM charging_sessions
         WHERE isActive = 0 AND endTime IS NOT NULL
@@ -867,6 +878,7 @@ async function _renderChargeList() {
         <div class="stat"><span class="val">${fmtKw(s.avgKw)}</span><span class="lbl">Avg kW</span></div>
         <div class="stat"><span class="val">${soc}</span><span class="lbl">SoC</span></div>
         <div class="stat"><span class="val">${s.batteryTempStart ? (+s.batteryTempStart).toFixed(1)+'°C' : '—'}</span><span class="lbl">Batt Temp</span></div>
+        <div class="stat"><span class="val">${fmtOdo(s.startOdometer)}</span><span class="lbl">Odometer (km)</span></div>
       </div>
     </div>`;
   }).join('');
@@ -884,6 +896,7 @@ async function _renderChargeDetail(id) {
                ${col('charging_sessions', 'socStartPanel')},
                ${col('charging_sessions', 'socEndPanel', 'NULL')},
                ${col('charging_sessions', 'isFavourite')},
+               ${col('charging_sessions', 'startOdometer', 'NULL')},
                kwhAdded, peakKw, avgKw, batteryTempStart, batteryTempEnd
         FROM charging_sessions WHERE id = ?`, [id]);
   if (!s) { navigate('charges'); return; }
@@ -902,6 +915,7 @@ async function _renderChargeDetail(id) {
     ['Avg kW',    fmtKw(s.avgKw)],
     ['SoC',       soc],
     ['Batt Temp', s.batteryTempStart ? (+s.batteryTempStart).toFixed(1)+'°C' : '—'],
+    ['Odometer (km)', fmtOdo(s.startOdometer)],
   ].map(([l, v]) =>
     `<div class="stat"><span class="val">${v}</span><span class="lbl">${l}</span></div>`
   ).join('');

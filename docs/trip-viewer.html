@@ -338,6 +338,14 @@ function renderTrip(trip) {
   // Summary
   if (trip.tripId != null) summaryEl.appendChild(stat('Trip ID', `#${trip.tripId}`));
   if (trip.distance != null) summaryEl.appendChild(stat('Distance', trip.distance.toFixed(2), 'km'));
+  // Older exports carry no trip-level odometer — fall back to the data points.
+  const odoPoints = points.filter(p => typeof p.odometer === 'number' && p.odometer > 0);
+  const startOdo = trip.startOdometer != null ? trip.startOdometer
+    : (odoPoints.length ? odoPoints[0].odometer : null);
+  const endOdo = trip.endOdometer != null ? trip.endOdometer
+    : (odoPoints.length ? odoPoints[odoPoints.length - 1].odometer : null);
+  if (startOdo != null) summaryEl.appendChild(stat('Start odometer', startOdo.toFixed(1), 'km'));
+  if (endOdo != null) summaryEl.appendChild(stat('Finish odometer', endOdo.toFixed(1), 'km'));
   if (trip.duration != null) summaryEl.appendChild(stat('Duration', fmtDuration(trip.duration)));
   if (trip.energyConsumed != null) summaryEl.appendChild(stat('Energy', trip.energyConsumed.toFixed(2), 'kWh'));
   if (trip.consumption != null) summaryEl.appendChild(stat('Consumption', trip.consumption.toFixed(1), 'kWh/100km'));
