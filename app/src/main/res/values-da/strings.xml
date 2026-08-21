@@ -750,7 +750,7 @@
     <string name="danger_zone_title">FAREZONEN</string>
     <string name="danger_zone_desc">Sletter permanent alle ture, datapunkter og statistik. En lokal sikkerhedskopi oprettes automatisk inden nulstillingen.</string>
     <string name="send_diag_log_desc">Sender den fulde diagnoselogfil (speed-stall og \'telemetri refresh hængt\'-hændelser) direkte til din tilsluttede Telegram-bot — intet gemmes eller deles lokalt. Opret forbindelse til en bot under Backup &amp; Restore → Telegram Backup først.</string>
-    <string name="compat_privacy_notice_body">Rapporten registrerer råværdier fra alle datakilder på bilens head unit — numeriske værdier, strenge og arrays.\n\nGPS-breddegrad og -længdegrad er IKKE inkluderet.\n\nAlt andet er inkluderet: batteritilstand, motordata, gear, hastighed, køremodi, klimatilstand, ladetilstand, PHEV-specifikke værdier osv.\n\nIntet sendes automatisk. "E-mail via QR-kode" uploader rapporten til en midlertidig offentlig vært (litterbox) og viser et link, der automatisk slettes efter 12 timer; alle med linket kan læse det indtil da. De andre muligheder beholder rapporten på din enhed.</string>
+    <string name="compat_privacy_notice_body">Rapporten registrerer råværdier fra alle datakilder på bilens head unit — numeriske værdier, strenge og arrays.\n\nGPS-breddegrad og -længdegrad er IKKE inkluderet.\n\nAlt andet er inkluderet: batteritilstand, motordata, gear, hastighed, køremodi, klimatilstand, ladetilstand, PHEV-specifikke værdier osv.\n\nIntet sendes automatisk. "E-mail via QR-kode" uploader rapporten til en midlertidig offentlig vært (litterbox) og viser et link, der automatisk slettes efter 24 timer; alle med linket kan læse det indtil da. De andre muligheder beholder rapporten på din enhed.</string>
     <string name="compat_sending_label">Sender…</string>
     <string name="compat_email_qr_label">E-mail via QR-kode</string>
     <string name="compat_uploading_label">Uploader…</string>
@@ -762,7 +762,7 @@
     <string name="compat_upload_failed">Upload mislykkedes: %1$s</string>
     <string name="compat_qr_copy_link">Kopiér link</string>
     <string name="compat_qr_dialog_title">Scan for at sende rapporten via e-mail</string>
-    <string name="compat_qr_dialog_desc">Scan med din telefon — det åbner en forudfyldt e-mail til %1$s. Vælg din konto og tryk på Send. Linket udløber om 12 timer.</string>
+    <string name="compat_qr_dialog_desc">Scan med din telefon — det åbner en forudfyldt e-mail til %1$s. Vælg din konto og tryk på Send. Linket udløber om 24 timer.</string>
     <string name="compat_qr_no_render">Kunne ikke gengive QR-koden. Brug "Kopiér link" og send det via e-mail til %1$s.</string>
     <string name="compat_qr_content_desc">QR-kode der åbner en forudfyldt e-mail med probe-downloadlinket</string>
     <string name="web_access_pin_label">Adgangs-PIN</string>
@@ -1117,7 +1117,7 @@
     <string name="vehicle_compat_label">Køretøjskompatibilitet</string>
     <string name="compat_help_desc">Hjælp med at støtte din BYD-model ved at dele en rå telemetrisondering-rapport. Aktivér sondering, kør i et par minutter, eksportér derefter og del filen.</string>
     <string name="privacy_notice_label">Privatlivsmeddelelse</string>
-    <string name="privacy_desc_text">Rapporten registrerer rå værdier fra hver datakilde på din bils head-unit — numeriske værdier, strenge og arrays.\n\nGPS bredde- og længdegrad er IKKE inkluderet.\n\nAlt andet er inkluderet: batteritilstand, motordata, gear, hastighed, køretilstande, klimatilstand, opladningstilstand, PHEV-specifikke værdier osv.\n\nIntet sendes automatisk. \"E-mail via QR-kode\" uploader rapporten til en midlertidig offentlig vært og viser et link, der automatisk slettes efter 12 timer.</string>
+    <string name="privacy_desc_text">Rapporten registrerer rå værdier fra hver datakilde på din bils head-unit — numeriske værdier, strenge og arrays.\n\nGPS bredde- og længdegrad er IKKE inkluderet.\n\nAlt andet er inkluderet: batteritilstand, motordata, gear, hastighed, køretilstande, klimatilstand, opladningstilstand, PHEV-specifikke værdier osv.\n\nIntet sendes automatisk. \"E-mail via QR-kode\" uploader rapporten til en midlertidig offentlig vært og viser et link, der automatisk slettes efter 24 timer.</string>
     <string name="enable_compat_probe_label">Aktivér kompatibilitetssondering</string>
     <string name="active_probe_status">Aktiv — %1$s felter registreret%2$s</string>
     <string name="probe_off_status">Slukket — aktivér, kør kort, eksportér derefter.</string>
@@ -1130,7 +1130,7 @@
     <string name="probe_cleared_msg">Sonderingsdata ryddet.</string>
     <string name="upload_failed_msg">Upload mislykkedes: %1$s</string>
     <string name="scan_to_email_qr_label">Scan for at sende rapporten på e-mail</string>
-    <string name="email_qr_desc_text">Scan med din telefon — det åbner en forudfyldt e-mail til %1$s. Vælg bare din konto og tryk Send. Linket udløber om 12 timer.</string>
+    <string name="email_qr_desc_text">Scan med din telefon — det åbner en forudfyldt e-mail til %1$s. Vælg bare din konto og tryk Send. Linket udløber om 24 timer.</string>
     <string name="qr_failed_msg">Kunne ikke gengive QR-koden. Brug "Kopiér link" og send det på e-mail til %1$s.</string>
     <string name="compat_telegram_action">Telegram</string>
 

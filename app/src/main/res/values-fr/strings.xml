@@ -687,7 +687,7 @@
     <string name="danger_zone_title">ZONE DANGEREUSE</string>
     <string name="danger_zone_desc">Supprime définitivement tous les trajets, points de données et statistiques. Une sauvegarde locale est créée automatiquement avant la réinitialisation.</string>
     <string name="send_diag_log_desc">Envoie le journal de diagnostic complet (événements speed-stall et \'télémétrie refresh bloquée\') directement à votre bot Telegram connecté — rien n\'est sauvegardé ou partagé localement. Connectez d\'abord un bot dans Backup &amp; Restore → Sauvegarde Telegram.</string>
-    <string name="compat_privacy_notice_body">Le rapport capture les valeurs brutes de chaque source de données de l\'unité principale de votre voiture — valeurs numériques, chaînes et tableaux.\n\nLa latitude et la longitude GPS ne sont PAS incluses.\n\nTout le reste est inclus : état de la batterie, données moteur, vitesse engagée, vitesse, modes de conduite, état climatique, état de charge, valeurs PHEV, etc.\n\nRien n\'est envoyé automatiquement. "E-mail via code QR" télécharge le rapport sur un hôte public temporaire (litterbox) et affiche un lien qui se supprime automatiquement après 12 heures ; quiconque possède le lien peut le lire jusqu\'alors. Les autres options conservent le rapport sur votre appareil.</string>
+    <string name="compat_privacy_notice_body">Le rapport capture les valeurs brutes de chaque source de données de l\'unité principale de votre voiture — valeurs numériques, chaînes et tableaux.\n\nLa latitude et la longitude GPS ne sont PAS incluses.\n\nTout le reste est inclus : état de la batterie, données moteur, vitesse engagée, vitesse, modes de conduite, état climatique, état de charge, valeurs PHEV, etc.\n\nRien n\'est envoyé automatiquement. "E-mail via code QR" télécharge le rapport sur un hôte public temporaire (litterbox) et affiche un lien qui se supprime automatiquement après 24 heures ; quiconque possède le lien peut le lire jusqu\'alors. Les autres options conservent le rapport sur votre appareil.</string>
     <string name="compat_sending_label">Envoi…</string>
     <string name="compat_email_qr_label">E-mail via code QR</string>
     <string name="compat_uploading_label">Envoi…</string>
@@ -699,7 +699,7 @@
     <string name="compat_upload_failed">Échec de l\'envoi : %1$s</string>
     <string name="compat_qr_copy_link">Copier le lien</string>
     <string name="compat_qr_dialog_title">Scannez pour envoyer le rapport par e-mail</string>
-    <string name="compat_qr_dialog_desc">Scannez avec votre téléphone — ouvre un e-mail pré-rempli à %1$s. Choisissez votre compte et appuyez sur Envoyer. Le lien expire dans 12 heures.</string>
+    <string name="compat_qr_dialog_desc">Scannez avec votre téléphone — ouvre un e-mail pré-rempli à %1$s. Choisissez votre compte et appuyez sur Envoyer. Le lien expire dans 24 heures.</string>
     <string name="compat_qr_no_render">Impossible de générer le code QR. Utilisez "Copier le lien" et envoyez-le par e-mail à %1$s.</string>
     <string name="compat_qr_content_desc">Code QR qui ouvre un e-mail pré-rempli avec le lien de téléchargement du probe</string>
     <string name="web_access_pin_label">Code PIN d\'accès</string>
@@ -1007,7 +1007,7 @@
     <string name="vehicle_compat_label">Compatibilité du véhicule</string>
     <string name="compat_help_desc">Aidez à améliorer la prise en charge de votre modèle BYD en partageant un rapport de sonde de télémétrie brute.</string>
     <string name="privacy_notice_label">Avis de confidentialité</string>
-    <string name="privacy_desc_text">Le rapport capture les valeurs brutes de chaque source de données sur l\'interface de votre voiture — valeurs numériques, chaînes et tableaux.\n\nLes coordonnées GPS (latitude et longitude) ne sont PAS incluses.\n\nTout le reste est inclus: état de la batterie, données moteur, vitesse, modes de conduite, état climatique, état de charge, valeurs PHEV, etc.\n\nRien n\'est envoyé automatiquement. \"E-mail via QR code\" téléverse le rapport sur un hébergement public temporaire et affiche un lien qui s\'auto-supprime après 12 heures.</string>
+    <string name="privacy_desc_text">Le rapport capture les valeurs brutes de chaque source de données sur l\'interface de votre voiture — valeurs numériques, chaînes et tableaux.\n\nLes coordonnées GPS (latitude et longitude) ne sont PAS incluses.\n\nTout le reste est inclus: état de la batterie, données moteur, vitesse, modes de conduite, état climatique, état de charge, valeurs PHEV, etc.\n\nRien n\'est envoyé automatiquement. \"E-mail via QR code\" téléverse le rapport sur un hébergement public temporaire et affiche un lien qui s\'auto-supprime après 24 heures.</string>
     <string name="enable_compat_probe_label">Activer la sonde de compatibilité</string>
     <string name="active_probe_status">Actif — %1$s champs capturés%2$s</string>
     <string name="probe_off_status">Désactivé — activer, conduire brièvement, puis exporter.</string>
@@ -1020,7 +1020,7 @@
     <string name="probe_cleared_msg">Données de sonde effacées.</string>
     <string name="upload_failed_msg">Échec de l\'upload: %1$s</string>
     <string name="scan_to_email_qr_label">Scanner pour envoyer le rapport par email</string>
-    <string name="email_qr_desc_text">Scanner avec votre téléphone — ouvre un email pré-rempli à %1$s.</string>
+    <string name="email_qr_desc_text">Scannez avec votre téléphone — ouvre un e-mail pré-rempli à %1$s. Choisissez votre compte et appuyez sur Envoyer. Le lien expire dans 24 heures.</string>
     <string name="qr_failed_msg">Impossible de rendre le code QR. Utiliser \"Copier le lien\" et envoyer par email à %1$s.</string>
     <string name="compat_telegram_action">Telegram</string>
     <string name="autostart_dialog_title">⚠️ Action requise — Démarrage automatique</string>

@@ -3,6 +3,7 @@ package com.byd.tripstats.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.SystemClock
 import android.util.Log
 import com.byd.tripstats.service.ServiceRestarterJobService
 import com.byd.tripstats.service.VehicleTelemetryService
@@ -87,7 +88,12 @@ class BootReceiver : BroadcastReceiver() {
             return
         }
 
-        DiagLog.event(context.applicationContext, TAG, "onReceive action=$action")
+        // sinceBoot on this line too: it shows *where in the boot cycle* the wake arrived, which
+        // separates "broadcast landed during early boot, platform not ready" from a normal late one.
+        DiagLog.event(
+            context.applicationContext, TAG,
+            "onReceive action=$action sinceBoot=${SystemClock.elapsedRealtime() / 1000}s",
+        )
         try {
             val appContext = context.applicationContext
 
@@ -100,7 +106,10 @@ class BootReceiver : BroadcastReceiver() {
                         withTimeout(8_000L) {
                             RtInProcessPatches.apply(appContext)
                             RtShellPatches.apply(appContext)
-                            RtDispatch.launch(appContext)
+                            // No supervisor-log snapshot on this path — the 8 s budget above has to
+                            // cover the probe and the re-dispatch, and starving the re-dispatch to
+                            // copy a log would be the wrong trade. Application.onCreate takes it.
+                            RtDispatch.launch(appContext, snapshotSupervisor = false)
                         }
                     } catch (e: Exception) {
                         Log.w(TAG, "Whitelist injection failed/timed out on $action: ${e.message}")

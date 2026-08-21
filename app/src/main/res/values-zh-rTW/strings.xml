@@ -750,7 +750,7 @@
     <string name="danger_zone_title">危險區域</string>
     <string name="danger_zone_desc">永久刪除所有行程、資料點和統計資料。重置前會自動建立本機備份。</string>
     <string name="send_diag_log_desc">將完整診斷日誌（速度停滯和\'遙測重新整理卡死\'事件）直接傳送到已連線的 Telegram 機器人——不會在本機儲存或共用任何內容。請先在備份 &amp; 還原 → Telegram 備份中連線機器人。</string>
-    <string name="compat_privacy_notice_body">報告擷取汽車主機每個資料來源的原始值——數值、字串和陣列。\n\n不包含 GPS 經緯度。\n\n包含其他所有內容：電池狀態、電機資料、檔位、速度、駕駛模式、空調狀態、充電狀態、PHEV 專用值等。\n\n不會自動傳送任何內容。"透過 QR 碼傳送郵件"將報告上傳到臨時公開主機（litterbox）並顯示一個 12 小時後自動刪除的連結；在此之前任何有連結的人都可以讀取。其他選項將報告儲存在您的裝置上。</string>
+    <string name="compat_privacy_notice_body">報告擷取汽車主機每個資料來源的原始值——數值、字串和陣列。\n\n不包含 GPS 經緯度。\n\n包含其他所有內容：電池狀態、電機資料、檔位、速度、駕駛模式、空調狀態、充電狀態、PHEV 專用值等。\n\n不會自動傳送任何內容。"透過 QR 碼傳送郵件"將報告上傳到臨時公開主機（litterbox）並顯示一個 24 小時後自動刪除的連結；在此之前任何有連結的人都可以讀取。其他選項將報告儲存在您的裝置上。</string>
     <string name="compat_sending_label">傳送中…</string>
     <string name="compat_email_qr_label">透過 QR 碼傳送郵件</string>
     <string name="compat_uploading_label">上傳中…</string>
@@ -762,7 +762,7 @@
     <string name="compat_upload_failed">上傳失敗：%1$s</string>
     <string name="compat_qr_copy_link">複製連結</string>
     <string name="compat_qr_dialog_title">掃描以透過郵件傳送報告</string>
-    <string name="compat_qr_dialog_desc">用手機掃描 — 將開啟傳送至 %1$s 的預填郵件。選擇您的帳戶並點擊傳送。連結 12 小時後到期。</string>
+    <string name="compat_qr_dialog_desc">用手機掃描 — 將開啟傳送至 %1$s 的預填郵件。選擇您的帳戶並點擊傳送。連結 24 小時後到期。</string>
     <string name="compat_qr_no_render">無法產生 QR 碼。請使用"複製連結"並傳送郵件至 %1$s。</string>
     <string name="compat_qr_content_desc">開啟含探測下載連結的預填郵件的 QR 碼</string>
     <string name="web_access_pin_label">存取PIN</string>
@@ -1117,7 +1117,7 @@
     <string name="vehicle_compat_label">車輛相容性</string>
     <string name="compat_help_desc">透過分享原始遙測探測報告，協助改善對您比亞迪車款的支援。啟用探測，行駛幾分鐘，然後匯出並分享檔案。</string>
     <string name="privacy_notice_label">隱私聲明</string>
-    <string name="privacy_desc_text">報告擷取您車輛車機上每個資料來源的原始值 — 數值、字串和陣列。\n\nGPS 經緯度不包含在內。\n\n其他所有內容均包含：電池狀態、電機資料、排擋、速度、駕駛模式、氣候狀態、充電狀態、PHEV 專屬值等。\n\n不會自動傳送。「透過 QR 碼電子郵件傳送」會將報告上傳至臨時公開主機並顯示 12 小時後自動刪除的連結。</string>
+    <string name="privacy_desc_text">報告擷取您車輛車機上每個資料來源的原始值 — 數值、字串和陣列。\n\nGPS 經緯度不包含在內。\n\n其他所有內容均包含：電池狀態、電機資料、排擋、速度、駕駛模式、氣候狀態、充電狀態、PHEV 專屬值等。\n\n不會自動傳送。「透過 QR 碼電子郵件傳送」會將報告上傳至臨時公開主機並顯示 24 小時後自動刪除的連結。</string>
     <string name="enable_compat_probe_label">啟用相容性探測</string>
     <string name="active_probe_status">活躍 — 已擷取 %1$s 個欄位%2$s</string>
     <string name="probe_off_status">關閉 — 啟用後，短暫行駛，然後匯出。</string>
@@ -1130,7 +1130,7 @@
     <string name="probe_cleared_msg">探測資料已清除。</string>
     <string name="upload_failed_msg">上傳失敗：%1$s</string>
     <string name="scan_to_email_qr_label">掃描以電子郵件傳送報告</string>
-    <string name="email_qr_desc_text">用手機掃描 — 將開啟一封預填寫的電子郵件，傳送至 %1$s。選擇您的帳號並點擊傳送即可。連結 12 小時後過期。</string>
+    <string name="email_qr_desc_text">用手機掃描 — 將開啟一封預填寫的電子郵件，傳送至 %1$s。選擇您的帳號並點擊傳送即可。連結 24 小時後過期。</string>
     <string name="qr_failed_msg">無法呈現 QR 碼。請使用「複製連結」並透過電子郵件傳送至 %1$s。</string>
     <string name="compat_telegram_action">Telegram</string>
 

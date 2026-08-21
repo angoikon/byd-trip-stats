@@ -200,7 +200,7 @@ fun saveTripAsJSON(
  * public download URL. Mirrors the vehicle-compatibility-probe QR share: the head unit
  * has no mail app and no easy file transfer, so a tester can hand a full trip back to
  * the developer by scanning a QR that opens a pre-filled email carrying this link. The
- * file self-deletes after [retention] (default 72h — more slack than the probe's 12h
+ * file self-deletes after [retention] (default 72h — more slack than the probe's 24h
  * since a tester may not act immediately).
  *
  * Blocking network call — invoke from a background dispatcher. Throws on any failure so

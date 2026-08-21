@@ -750,7 +750,7 @@
     <string name="danger_zone_title">危险区域</string>
     <string name="danger_zone_desc">永久删除所有行程、数据点和统计信息。重置前会自动创建本地备份。</string>
     <string name="send_diag_log_desc">将完整诊断日志（速度停滞和\'遥测刷新卡死\'事件）直接发送到已连接的 Telegram 机器人——不会在本地保存或共享任何内容。请先在备份 &amp; 恢复 → Telegram 备份中连接一个机器人。</string>
-    <string name="compat_privacy_notice_body">报告捕获汽车主机每个数据源的原始值——数值、字符串和数组。\n\n不包含 GPS 经纬度。\n\n包含其他所有内容：电池状态、电机数据、档位、速度、驾驶模式、空调状态、充电状态、PHEV 专用值等。\n\n不会自动发送任何内容。"通过二维码发送邮件"将报告上传到临时公共主机（litterbox）并显示一个 12 小时后自动删除的链接；在此之前任何有链接的人都可以读取。其他选项将报告保存在您的设备上。</string>
+    <string name="compat_privacy_notice_body">报告捕获汽车主机每个数据源的原始值——数值、字符串和数组。\n\n不包含 GPS 经纬度。\n\n包含其他所有内容：电池状态、电机数据、档位、速度、驾驶模式、空调状态、充电状态、PHEV 专用值等。\n\n不会自动发送任何内容。"通过二维码发送邮件"将报告上传到临时公共主机（litterbox）并显示一个 24 小时后自动删除的链接；在此之前任何有链接的人都可以读取。其他选项将报告保存在您的设备上。</string>
     <string name="compat_sending_label">发送中…</string>
     <string name="compat_email_qr_label">通过二维码发送邮件</string>
     <string name="compat_uploading_label">上传中…</string>
@@ -762,7 +762,7 @@
     <string name="compat_upload_failed">上传失败：%1$s</string>
     <string name="compat_qr_copy_link">复制链接</string>
     <string name="compat_qr_dialog_title">扫描以通过邮件发送报告</string>
-    <string name="compat_qr_dialog_desc">用手机扫描 — 将打开发送至 %1$s 的预填邮件。选择您的账户并点击发送。链接 12 小时后过期。</string>
+    <string name="compat_qr_dialog_desc">用手机扫描 — 将打开发送至 %1$s 的预填邮件。选择您的账户并点击发送。链接 24 小时后过期。</string>
     <string name="compat_qr_no_render">无法生成二维码。请使用"复制链接"并发送邮件至 %1$s。</string>
     <string name="compat_qr_content_desc">打开含探测下载链接的预填邮件的二维码</string>
     <string name="web_access_pin_label">访问PIN</string>
@@ -1117,7 +1117,7 @@
     <string name="vehicle_compat_label">车辆兼容性</string>
     <string name="compat_help_desc">通过分享原始遥测探测报告，帮助改善对您比亚迪车型的支持。启用探测，行驶几分钟，然后导出并分享文件。</string>
     <string name="privacy_notice_label">隐私声明</string>
-    <string name="privacy_desc_text">报告捕获您车辆车机上每个数据源的原始值 — 数值、字符串和数组。\n\nGPS 经纬度不包含在内。\n\n其他所有内容均包含：电池状态、电机数据、挡位、速度、驾驶模式、气候状态、充电状态、PHEV 专属值等。\n\n不会自动发送。"通过二维码邮件发送"会将报告上传到临时公开主机并显示 12 小时后自动删除的链接。</string>
+    <string name="privacy_desc_text">报告捕获您车辆车机上每个数据源的原始值 — 数值、字符串和数组。\n\nGPS 经纬度不包含在内。\n\n其他所有内容均包含：电池状态、电机数据、挡位、速度、驾驶模式、气候状态、充电状态、PHEV 专属值等。\n\n不会自动发送。"通过二维码邮件发送"会将报告上传到临时公开主机并显示 24 小时后自动删除的链接。</string>
     <string name="enable_compat_probe_label">启用兼容性探测</string>
     <string name="active_probe_status">活跃 — 已捕获 %1$s 个字段%2$s</string>
     <string name="probe_off_status">关闭 — 启用后，短暂驾驶，然后导出。</string>
@@ -1130,7 +1130,7 @@
     <string name="probe_cleared_msg">探测数据已清除。</string>
     <string name="upload_failed_msg">上传失败：%1$s</string>
     <string name="scan_to_email_qr_label">扫描以邮件发送报告</string>
-    <string name="email_qr_desc_text">用手机扫描 — 将打开一封预填充的邮件，发送至 %1$s。选择您的账户并点击发送即可。链接 12 小时后过期。</string>
+    <string name="email_qr_desc_text">用手机扫描 — 将打开一封预填充的邮件，发送至 %1$s。选择您的账户并点击发送即可。链接 24 小时后过期。</string>
     <string name="qr_failed_msg">无法渲染二维码。请使用"复制链接"并通过邮件发送至 %1$s。</string>
     <string name="compat_telegram_action">Telegram</string>
 

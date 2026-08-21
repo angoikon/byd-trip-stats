@@ -303,6 +303,10 @@ internal fun AppDiagnosticsCard() {
     var adbCommand by rememberSaveable { mutableStateOf("dumpsys package ${context.packageName}") }
     var adbOutput by rememberSaveable { mutableStateOf("") }
     var adbRunning by remember { mutableStateOf(false) }
+    // Diagnostics-log export state (save / upload-for-QR routes; Telegram reports via toast).
+    var diagQrUrl by remember { mutableStateOf<String?>(null) }
+    var diagUploading by remember { mutableStateOf(false) }
+    var diagStatus by remember { mutableStateOf<String?>(null) }
     val diagnostics by AppDiagnosticsMonitor.snapshot.collectAsState()
     val diagnosticsEnabled by AppDiagnosticsMonitor.enabled.collectAsState()
 
@@ -386,8 +390,25 @@ internal fun AppDiagnosticsCard() {
                         else -> scope.launch {
                             try {
                                 telegram.sendFile(f, caption = "BYD Trip Stats — diagnostics log")
+                                // Ship the supervisor-log snapshot alongside it when one exists. It is
+                                // taken just before the app re-dispatches the background restarter
+                                // (which truncates the original), so it is the only post-hoc record of
+                                // whether that restarter was alive through a failed auto-start.
+                                // Best-effort: a failure here must not lose the diagnostics send above.
+                                val supd = java.io.File(
+                                    context.getExternalFilesDir(null),
+                                    com.byd.tripstats.util.RtDispatch.SNAPSHOT_FILE,
+                                )
+                                val supdSent = supd.exists() && supd.length() > 0L && runCatching {
+                                    telegram.sendFile(
+                                        supd,
+                                        caption = "BYD Trip Stats — supervisor log snapshot",
+                                    )
+                                }.isSuccess
                                 android.widget.Toast.makeText(
-                                    context, "Diagnostics log sent via Telegram ✓",
+                                    context,
+                                    if (supdSent) "Diagnostics + supervisor log sent via Telegram ✓"
+                                    else "Diagnostics log sent via Telegram ✓",
                                     android.widget.Toast.LENGTH_SHORT,
                                 ).show()
                             } catch (e: Exception) {
@@ -403,6 +424,71 @@ internal fun AppDiagnosticsCard() {
                 Icon(Icons.AutoMirrored.Filled.Send, null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.send_diag_log_action))
+            }
+
+            // Two network-independent routes alongside Telegram, mirroring the compatibility probe.
+            // Telegram alone strands a car with no working DNS — observed on a DiLink 5 head unit
+            // (2026-08-19, "Unable to resolve api.telegram.org") at exactly the moment the log was
+            // needed. Saving to Downloads needs no network at all (pull it off with a USB stick);
+            // the QR route needs only the upload, not a configured bot.
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                OutlinedButton(
+                    onClick = {
+                        scope.launch(Dispatchers.IO) {
+                            val msg = try {
+                                val dir = com.byd.tripstats.util.DiagLogExport.saveToDownloads(context)
+                                context.getString(R.string.saved_download_msg) + " (${dir.name})"
+                            } catch (e: Exception) {
+                                context.getString(R.string.compat_save_failed, e.message ?: "")
+                            }
+                            launch(Dispatchers.Main) { diagStatus = msg }
+                        }
+                    },
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Icon(Icons.Filled.Download, null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(stringResource(R.string.save_local_action))
+                }
+
+                OutlinedButton(
+                    onClick = {
+                        scope.launch(Dispatchers.IO) {
+                            launch(Dispatchers.Main) { diagUploading = true; diagStatus = null }
+                            try {
+                                val url = com.byd.tripstats.util.DiagLogExport.uploadTail(context)
+                                launch(Dispatchers.Main) { diagUploading = false; diagQrUrl = url }
+                            } catch (e: Exception) {
+                                val msg = context.getString(R.string.compat_upload_failed, e.message ?: "")
+                                launch(Dispatchers.Main) { diagUploading = false; diagStatus = msg }
+                            }
+                        }
+                    },
+                    enabled = !diagUploading,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Icon(Icons.Filled.QrCode2, null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        if (diagUploading) stringResource(R.string.compat_uploading_label)
+                        else stringResource(R.string.compat_email_qr_label)
+                    )
+                }
+            }
+
+            diagStatus?.let { msg ->
+                Text(
+                    msg,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            diagQrUrl?.let { url ->
+                ProbeEmailQrDialog(downloadUrl = url, onDismiss = { diagQrUrl = null })
             }
             Text(
                 stringResource(R.string.send_diag_log_desc),

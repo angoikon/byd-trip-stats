@@ -750,7 +750,7 @@
     <string name="danger_zone_title">VAARAVYÖHYKE</string>
     <string name="danger_zone_desc">Poistaa pysyvästi kaikki matkat, datapisteet ja tilastot. Paikallinen varmuuskopio luodaan automaattisesti ennen nollauksen suorittamista.</string>
     <string name="send_diag_log_desc">Lähettää koko diagnoosilokin (speed-stall ja \'telemetrian päivitys jumissa\'-tapahtumat) suoraan yhdistettyyn Telegram-bottiisi — mitään ei tallenneta tai jaeta paikallisesti. Yhdistä ensin botti kohdassa Backup &amp; Restore → Telegram Backup.</string>
-    <string name="compat_privacy_notice_body">Raportti tallentaa raakaarvoja jokaisesta auton head unitin tietolähteestä — numeeriset arvot, merkkijonot ja taulukot.\n\nGPS-leveyttä ja -pituutta EI sisällytetä.\n\nKaikki muu sisällytetään: akun tila, moottorin tiedot, vaihde, nopeus, ajotilat, ilmastointitila, latausastatus, PHEV-kohtaiset arvot jne.\n\nMitään ei lähetetä automaattisesti. "Sähköposti QR-koodin kautta" lataa raportin väliaikaiselle julkiselle palvelimelle (litterbox) ja näyttää linkin, joka poistetaan automaattisesti 12 tunnin jälkeen; kuka tahansa linkin saaneista voi lukea sen siihen asti. Muut vaihtoehdot pitävät raportin laitteellasi.</string>
+    <string name="compat_privacy_notice_body">Raportti tallentaa raakaarvoja jokaisesta auton head unitin tietolähteestä — numeeriset arvot, merkkijonot ja taulukot.\n\nGPS-leveyttä ja -pituutta EI sisällytetä.\n\nKaikki muu sisällytetään: akun tila, moottorin tiedot, vaihde, nopeus, ajotilat, ilmastointitila, latausastatus, PHEV-kohtaiset arvot jne.\n\nMitään ei lähetetä automaattisesti. "Sähköposti QR-koodin kautta" lataa raportin väliaikaiselle julkiselle palvelimelle (litterbox) ja näyttää linkin, joka poistetaan automaattisesti 24 tunnin jälkeen; kuka tahansa linkin saaneista voi lukea sen siihen asti. Muut vaihtoehdot pitävät raportin laitteellasi.</string>
     <string name="compat_sending_label">Lähetetään…</string>
     <string name="compat_email_qr_label">Sähköposti QR-koodilla</string>
     <string name="compat_uploading_label">Ladataan…</string>
@@ -762,7 +762,7 @@
     <string name="compat_upload_failed">Lataus epäonnistui: %1$s</string>
     <string name="compat_qr_copy_link">Kopioi linkki</string>
     <string name="compat_qr_dialog_title">Skannaa lähettääksesi raportti sähköpostilla</string>
-    <string name="compat_qr_dialog_desc">Skannaa puhelimellasi — avaa esitäytetyn sähköpostin osoitteeseen %1$s. Valitse tilisi ja paina Lähetä. Linkki vanhenee 12 tunnin kuluttua.</string>
+    <string name="compat_qr_dialog_desc">Skannaa puhelimellasi — avaa esitäytetyn sähköpostin osoitteeseen %1$s. Valitse tilisi ja paina Lähetä. Linkki vanhenee 24 tunnin kuluttua.</string>
     <string name="compat_qr_no_render">QR-koodia ei voitu renderöidä. Käytä "Kopioi linkki" ja lähetä se sähköpostilla osoitteeseen %1$s.</string>
     <string name="compat_qr_content_desc">QR-koodi, joka avaa esitäytetyn sähköpostin probe-latauslinkillä</string>
     <string name="web_access_pin_label">Käyttö-PIN</string>
@@ -1117,7 +1117,7 @@
     <string name="vehicle_compat_label">Ajoneuvon yhteensopivuus</string>
     <string name="compat_help_desc">Auta lisäämään tuki BYD-mallillesi jakamalla raaka telemetriakoettimen raportti. Ota koettimet käyttöön, aja pari minuuttia, sitten vie ja jaa tiedosto.</string>
     <string name="privacy_notice_label">Tietosuojailmoitus</string>
-    <string name="privacy_desc_text">Raportti kaappaa raakaarvoja jokaisesta auton päätelayksikön datakäyttäytymisestä — numeerisia arvoja, merkkijonoja ja taulukoita.\n\nGPS-leveys- ja pituusasteita EI sisällytetä.\n\nKaikki muu sisällytetään: akkutila, moottoridata, vaihde, nopeus, ajotilat, ilmastointitila, latauksen tila, PHEV-kohtaiset arvot jne.\n\nMitään ei lähetetä automaattisesti. \"Sähköposti QR-koodin kautta\" lataa raportin väliaikaiselle julkiselle palvelimelle ja näyttää linkin joka poistuu automaattisesti 12 tunnin jälkeen.</string>
+    <string name="privacy_desc_text">Raportti kaappaa raakaarvoja jokaisesta auton päätelayksikön datakäyttäytymisestä — numeerisia arvoja, merkkijonoja ja taulukoita.\n\nGPS-leveys- ja pituusasteita EI sisällytetä.\n\nKaikki muu sisällytetään: akkutila, moottoridata, vaihde, nopeus, ajotilat, ilmastointitila, latauksen tila, PHEV-kohtaiset arvot jne.\n\nMitään ei lähetetä automaattisesti. \"Sähköposti QR-koodin kautta\" lataa raportin väliaikaiselle julkiselle palvelimelle ja näyttää linkin joka poistuu automaattisesti 24 tunnin jälkeen.</string>
     <string name="enable_compat_probe_label">Ota yhteensopivuuskoettimet käyttöön</string>
     <string name="active_probe_status">Aktiivinen — %1$s kenttää kaapattu%2$s</string>
     <string name="probe_off_status">Pois päältä — ota käyttöön, aja lyhyesti, sitten vie.</string>
@@ -1130,7 +1130,7 @@
     <string name="probe_cleared_msg">Koettimen data tyhjennetty.</string>
     <string name="upload_failed_msg">Lataus epäonnistui: %1$s</string>
     <string name="scan_to_email_qr_label">Skannaa lähettääksesi raportti sähköpostitse</string>
-    <string name="email_qr_desc_text">Skannaa puhelimellasi — avaa esitäytetyn sähköpostin osoitteeseen %1$s. Valitse vain tilisi ja paina Lähetä. Linkki vanhenee 12 tunnissa.</string>
+    <string name="email_qr_desc_text">Skannaa puhelimellasi — avaa esitäytetyn sähköpostin osoitteeseen %1$s. Valitse vain tilisi ja paina Lähetä. Linkki vanhenee 24 tunnissa.</string>
     <string name="qr_failed_msg">QR-koodia ei voitu luoda. Käytä \"Kopioi linkki\" ja lähetä se sähköpostitse osoitteeseen %1$s.</string>
     <string name="compat_telegram_action">Telegram</string>
 

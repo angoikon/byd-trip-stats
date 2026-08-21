@@ -750,7 +750,7 @@
     <string name="danger_zone_title">危険ゾーン</string>
     <string name="danger_zone_desc">すべての旅行、データポイント、統計を完全に削除します。リセット前にローカルバックアップが自動的に作成されます。</string>
     <string name="send_diag_log_desc">診断ログ全体（speed-stallおよび\'テレメトリ更新停止\'イベント）を接続されたTelegramボットに直接送信します—ローカルに保存または共有されるものはありません。まずBackup &amp; Restore → Telegramバックアップでボットを接続してください。</string>
-    <string name="compat_privacy_notice_body">レポートは車のヘッドユニットのすべてのデータソースから生の値を取得します—数値、文字列、配列。\n\nGPSの緯度と経度は含まれません。\n\nその他すべてが含まれます：バッテリー状態、モーターデータ、ギア、速度、ドライブモード、空調状態、充電状態、PHEV固有の値など。\n\n自動送信されるものはありません。"QRコードでメール"はレポートを一時的な公開ホスト（litterbox）にアップロードし、12時間後に自動削除されるリンクを表示します；それまでリンクを持つ誰でも読めます。他のオプションはレポートをデバイスに保存します。</string>
+    <string name="compat_privacy_notice_body">レポートは車のヘッドユニットのすべてのデータソースから生の値を取得します—数値、文字列、配列。\n\nGPSの緯度と経度は含まれません。\n\nその他すべてが含まれます：バッテリー状態、モーターデータ、ギア、速度、ドライブモード、空調状態、充電状態、PHEV固有の値など。\n\n自動送信されるものはありません。"QRコードでメール"はレポートを一時的な公開ホスト（litterbox）にアップロードし、24時間後に自動削除されるリンクを表示します；それまでリンクを持つ誰でも読めます。他のオプションはレポートをデバイスに保存します。</string>
     <string name="compat_sending_label">送信中…</string>
     <string name="compat_email_qr_label">QRコードでメール</string>
     <string name="compat_uploading_label">アップロード中…</string>
@@ -762,7 +762,7 @@
     <string name="compat_upload_failed">アップロード失敗：%1$s</string>
     <string name="compat_qr_copy_link">リンクをコピー</string>
     <string name="compat_qr_dialog_title">スキャンしてレポートをメールで送信</string>
-    <string name="compat_qr_dialog_desc">スマートフォンでスキャン — %1$s宛の事前入力済みメールが開きます。アカウントを選択して送信を押してください。リンクは12時間後に失効します。</string>
+    <string name="compat_qr_dialog_desc">スマートフォンでスキャン — %1$s宛の事前入力済みメールが開きます。アカウントを選択して送信を押してください。リンクは24時間後に失効します。</string>
     <string name="compat_qr_no_render">"リンクをコピー"を使用して%1$sにメールしてください。</string>
     <string name="compat_qr_content_desc">プローブダウンロードリンク付きの事前入力済みメールを開くQRコード</string>
     <string name="web_access_pin_label">アクセスPIN</string>
@@ -1117,7 +1117,7 @@
     <string name="vehicle_compat_label">車両互換性</string>
     <string name="compat_help_desc">生のテレメトリープローブレポートを共有して、お使いのBYDモデルのサポートに貢献してください。プロービングを有効にし、数分間走行してから、ファイルをエクスポートして共有してください。</string>
     <string name="privacy_notice_label">プライバシー通知</string>
-    <string name="privacy_desc_text">レポートは車のヘッドユニット上のすべてのデータソースから生の値をキャプチャします — 数値、文字列、配列。\n\nGPSの緯度と経度は含まれません。\n\nその他すべてが含まれます：バッテリー状態、モーターデータ、ギア、速度、ドライブモード、気候状態、充電状態、PHEV固有の値など。\n\n自動的に送信されるものはありません。「QRコードでメール」はレポートを一時的な公開ホストにアップロードし、12時間後に自動削除されるリンクを表示します。</string>
+    <string name="privacy_desc_text">レポートは車のヘッドユニット上のすべてのデータソースから生の値をキャプチャします — 数値、文字列、配列。\n\nGPSの緯度と経度は含まれません。\n\nその他すべてが含まれます：バッテリー状態、モーターデータ、ギア、速度、ドライブモード、気候状態、充電状態、PHEV固有の値など。\n\n自動的に送信されるものはありません。「QRコードでメール」はレポートを一時的な公開ホストにアップロードし、24時間後に自動削除されるリンクを表示します。</string>
     <string name="enable_compat_probe_label">互換性プロービングを有効化</string>
     <string name="active_probe_status">アクティブ — %1$s フィールドをキャプチャ済み%2$s</string>
     <string name="probe_off_status">オフ — 有効にして少し走行してからエクスポートしてください。</string>
@@ -1130,7 +1130,7 @@
     <string name="probe_cleared_msg">プローブデータがクリアされました。</string>
     <string name="upload_failed_msg">アップロードに失敗しました：%1$s</string>
     <string name="scan_to_email_qr_label">スキャンしてレポートをメールで送信</string>
-    <string name="email_qr_desc_text">スマートフォンでスキャン — %1$s への事前入力済みメールが開きます。アカウントを選択して送信を押すだけです。リンクは12時間で期限切れになります。</string>
+    <string name="email_qr_desc_text">スマートフォンでスキャン — %1$s への事前入力済みメールが開きます。アカウントを選択して送信を押すだけです。リンクは24時間で期限切れになります。</string>
     <string name="qr_failed_msg">QRコードをレンダリングできませんでした。「リンクをコピー」して %1$s にメールしてください。</string>
     <string name="compat_telegram_action">Telegram</string>
 

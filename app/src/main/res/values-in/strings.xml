@@ -747,7 +747,7 @@
     <string name="danger_zone_title">ZONA BAHAYA</string>
     <string name="danger_zone_desc">Menghapus permanen semua perjalanan, titik data, dan statistik. Cadangan lokal dibuat otomatis sebelum penyetelan ulang.</string>
     <string name="send_diag_log_desc">Mengirim log diagnostik lengkap (peristiwa macet kecepatan dan \'penyegaran telemetri macet\') langsung ke bot Telegram yang terhubung — tidak ada yang disimpan atau dibagikan secara lokal. Hubungkan bot dulu di Cadangkan &amp; Pulihkan → Cadangan Telegram.</string>
-    <string name="compat_privacy_notice_body">Laporan menangkap nilai mentah dari setiap sumber data di unit kepala mobil Anda — nilai numerik, string, dan larik.\n\nLintang dan bujur GPS TIDAK disertakan.\n\nSemua lainnya disertakan: status baterai, data motor, gigi, kecepatan, mode berkendara, status AC, status pengisian, nilai khusus PHEV, dll.\n\nTidak ada yang dikirim otomatis. \"Email via kode QR\" mengunggah laporan ke host publik sementara (litterbox) dan menampilkan tautan yang terhapus otomatis setelah 12 jam; hingga saat itu siapa pun dengan tautan dapat membacanya. Opsi lain menyimpan laporan di perangkat Anda.</string>
+    <string name="compat_privacy_notice_body">Laporan menangkap nilai mentah dari setiap sumber data di unit kepala mobil Anda — nilai numerik, string, dan larik.\n\nLintang dan bujur GPS TIDAK disertakan.\n\nSemua lainnya disertakan: status baterai, data motor, gigi, kecepatan, mode berkendara, status AC, status pengisian, nilai khusus PHEV, dll.\n\nTidak ada yang dikirim otomatis. \"Email via kode QR\" mengunggah laporan ke host publik sementara (litterbox) dan menampilkan tautan yang terhapus otomatis setelah 24 jam; hingga saat itu siapa pun dengan tautan dapat membacanya. Opsi lain menyimpan laporan di perangkat Anda.</string>
     <string name="compat_sending_label">Mengirim…</string>
     <string name="compat_email_qr_label">Email via kode QR</string>
     <string name="compat_uploading_label">Mengunggah…</string>
@@ -759,7 +759,7 @@
     <string name="compat_upload_failed">Unggah gagal: %1$s</string>
     <string name="compat_qr_copy_link">Salin tautan</string>
     <string name="compat_qr_dialog_title">Pindai untuk mengirim laporan via email</string>
-    <string name="compat_qr_dialog_desc">Pindai dengan ponsel Anda — membuka email terisi otomatis ke %1$s. Cukup pilih akun Anda dan tekan Kirim. Tautan kedaluwarsa dalam 12 jam.</string>
+    <string name="compat_qr_dialog_desc">Pindai dengan ponsel Anda — membuka email terisi otomatis ke %1$s. Cukup pilih akun Anda dan tekan Kirim. Tautan kedaluwarsa dalam 24 jam.</string>
     <string name="compat_qr_no_render">Tidak dapat merender kode QR. Gunakan \"Salin tautan\" dan kirim via email ke %1$s.</string>
     <string name="compat_qr_content_desc">Kode QR yang membuka email terisi otomatis dengan tautan unduh probe</string>
     <string name="web_access_pin_label">PIN Akses</string>
@@ -1113,7 +1113,7 @@
     <string name="vehicle_compat_label">Kompatibilitas Kendaraan</string>
     <string name="compat_help_desc">Bantu dukungan untuk model BYD Anda dengan membagikan laporan probe telemetri mentah. Aktifkan probing, berkendara beberapa menit, lalu ekspor dan bagikan filenya.</string>
     <string name="privacy_notice_label">Pemberitahuan privasi</string>
-    <string name="privacy_desc_text">Laporan menangkap nilai mentah dari setiap sumber data di unit kepala mobil Anda — nilai numerik, string, dan larik.\n\nLintang dan bujur GPS TIDAK disertakan.\n\nSemua lainnya disertakan: status baterai, data motor, gigi, kecepatan, mode berkendara, status AC, status pengisian, nilai khusus PHEV, dll.\n\nTidak ada yang dikirim otomatis. \"Email via kode QR\" mengunggah laporan ke host publik sementara dan menampilkan tautan yang terhapus otomatis setelah 12 jam.</string>
+    <string name="privacy_desc_text">Laporan menangkap nilai mentah dari setiap sumber data di unit kepala mobil Anda — nilai numerik, string, dan larik.\n\nLintang dan bujur GPS TIDAK disertakan.\n\nSemua lainnya disertakan: status baterai, data motor, gigi, kecepatan, mode berkendara, status AC, status pengisian, nilai khusus PHEV, dll.\n\nTidak ada yang dikirim otomatis. \"Email via kode QR\" mengunggah laporan ke host publik sementara dan menampilkan tautan yang terhapus otomatis setelah 24 jam.</string>
     <string name="enable_compat_probe_label">Aktifkan probing kompatibilitas</string>
     <string name="active_probe_status">Aktif — %1$s bidang ditangkap%2$s</string>
     <string name="probe_off_status">Mati — aktifkan, berkendara sebentar, lalu ekspor.</string>
@@ -1126,7 +1126,7 @@
     <string name="probe_cleared_msg">Data probe dibersihkan.</string>
     <string name="upload_failed_msg">Unggah gagal: %1$s</string>
     <string name="scan_to_email_qr_label">Pindai untuk mengirim laporan via email</string>
-    <string name="email_qr_desc_text">Pindai dengan ponsel Anda — membuka email terisi otomatis ke %1$s. Cukup pilih akun Anda dan tekan Kirim. Tautan kedaluwarsa dalam 12 jam.</string>
+    <string name="email_qr_desc_text">Pindai dengan ponsel Anda — membuka email terisi otomatis ke %1$s. Cukup pilih akun Anda dan tekan Kirim. Tautan kedaluwarsa dalam 24 jam.</string>
     <string name="qr_failed_msg">Tidak dapat merender kode QR. Gunakan "Salin tautan" dan kirim via email ke %1$s.</string>
     <string name="compat_telegram_action">Telegram</string>
 

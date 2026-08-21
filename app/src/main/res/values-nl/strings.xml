@@ -750,7 +750,7 @@
     <string name="danger_zone_title">GEVAARZONE</string>
     <string name="danger_zone_desc">Verwijdert permanent alle ritten, datapunten en statistieken. Voor het resetten wordt automatisch een lokale back-up gemaakt.</string>
     <string name="send_diag_log_desc">Stuurt het volledige diagnoselogboek (speed-stall en \'telemetrie refresh vastgelopen\'-gebeurtenissen) rechtstreeks naar uw verbonden Telegram-bot — er wordt niets lokaal opgeslagen of gedeeld. Verbind eerst een bot via Backup &amp; Restore → Telegram Backup.</string>
-    <string name="compat_privacy_notice_body">Het rapport bevat ruwe waarden van elke gegevensbron van de head unit van uw auto — numerieke waarden, tekenreeksen en arrays.\n\nGPS-breedte- en lengtegraad zijn NIET inbegrepen.\n\nAl het andere is inbegrepen: batterijstatus, motorgegevens, versnelling, snelheid, rijmodi, klimaatstatus, laadstatus, PHEV-specifieke waarden, enz.\n\nEr wordt niets automatisch verzonden. "E-mail via QR-code" uploadt het rapport naar een tijdelijke openbare host (litterbox) en toont een link die na 12 uur automatisch wordt verwijderd; iedereen met de link kan het tot dan lezen. De andere opties houden het rapport op uw apparaat.</string>
+    <string name="compat_privacy_notice_body">Het rapport bevat ruwe waarden van elke gegevensbron van de head unit van uw auto — numerieke waarden, tekenreeksen en arrays.\n\nGPS-breedte- en lengtegraad zijn NIET inbegrepen.\n\nAl het andere is inbegrepen: batterijstatus, motorgegevens, versnelling, snelheid, rijmodi, klimaatstatus, laadstatus, PHEV-specifieke waarden, enz.\n\nEr wordt niets automatisch verzonden. "E-mail via QR-code" uploadt het rapport naar een tijdelijke openbare host (litterbox) en toont een link die na 24 uur automatisch wordt verwijderd; iedereen met de link kan het tot dan lezen. De andere opties houden het rapport op uw apparaat.</string>
     <string name="compat_sending_label">Verzenden…</string>
     <string name="compat_email_qr_label">E-mail via QR-code</string>
     <string name="compat_uploading_label">Uploaden…</string>
@@ -762,7 +762,7 @@
     <string name="compat_upload_failed">Upload mislukt: %1$s</string>
     <string name="compat_qr_copy_link">Link kopiëren</string>
     <string name="compat_qr_dialog_title">Scan om het rapport per e-mail te sturen</string>
-    <string name="compat_qr_dialog_desc">Scan met uw telefoon — het opent een vooraf ingevulde e-mail naar %1$s. Kies uw account en druk op Verzenden. De link verloopt na 12 uur.</string>
+    <string name="compat_qr_dialog_desc">Scan met uw telefoon — het opent een vooraf ingevulde e-mail naar %1$s. Kies uw account en druk op Verzenden. De link verloopt na 24 uur.</string>
     <string name="compat_qr_no_render">QR-code kon niet worden weergegeven. Gebruik "Link kopiëren" en stuur het per e-mail naar %1$s.</string>
     <string name="compat_qr_content_desc">QR-code die een vooraf ingevulde e-mail opent met de probe-downloadlink</string>
     <string name="web_access_pin_label">Toegangs-PIN</string>
@@ -1117,7 +1117,7 @@
     <string name="vehicle_compat_label">Voertuigcompatibiliteit</string>
     <string name="compat_help_desc">Help de ondersteuning voor je BYD-model door een onbewerkt telemetrieproberapport te delen. Schakel probing in, rijd een paar minuten en exporteer en deel vervolgens het bestand.</string>
     <string name="privacy_notice_label">Privacymelding</string>
-    <string name="privacy_desc_text">Het rapport legt ruwe waarden vast van elke gegevensbron op de head unit van je auto — numerieke waarden, tekenreeksen en arrays.\n\nGPS-breedte- en lengtegraad zijn NIET inbegrepen.\n\nAl het andere is inbegrepen: batterijstatus, motorgegevens, versnelling, snelheid, rijmodi, klimaatstatus, laadstatus, PHEV-specifieke waarden, enz.\n\nNiets wordt automatisch verzonden. "E-mail via QR-code" uploadt het rapport naar een tijdelijke publieke host en toont een link die na 12 uur automatisch wordt verwijderd.</string>
+    <string name="privacy_desc_text">Het rapport legt ruwe waarden vast van elke gegevensbron op de head unit van je auto — numerieke waarden, tekenreeksen en arrays.\n\nGPS-breedte- en lengtegraad zijn NIET inbegrepen.\n\nAl het andere is inbegrepen: batterijstatus, motorgegevens, versnelling, snelheid, rijmodi, klimaatstatus, laadstatus, PHEV-specifieke waarden, enz.\n\nNiets wordt automatisch verzonden. "E-mail via QR-code" uploadt het rapport naar een tijdelijke publieke host en toont een link die na 24 uur automatisch wordt verwijderd.</string>
     <string name="enable_compat_probe_label">Compatibiliteitsprobing inschakelen</string>
     <string name="active_probe_status">Actief — %1$s velden vastgelegd%2$s</string>
     <string name="probe_off_status">Uit — schakel in, rijd kort, exporteer dan.</string>
@@ -1130,7 +1130,7 @@
     <string name="probe_cleared_msg">Probegegevens gewist.</string>
     <string name="upload_failed_msg">Uploaden mislukt: %1$s</string>
     <string name="scan_to_email_qr_label">Scan om het rapport te e-mailen</string>
-    <string name="email_qr_desc_text">Scan met je telefoon — het opent een vooringevulde e-mail naar %1$s. Kies gewoon je account en druk op Verzenden. De link verloopt over 12 uur.</string>
+    <string name="email_qr_desc_text">Scan met je telefoon — het opent een vooringevulde e-mail naar %1$s. Kies gewoon je account en druk op Verzenden. De link verloopt over 24 uur.</string>
     <string name="qr_failed_msg">Kan de QR-code niet weergeven. Gebruik "Link kopiëren" en e-mail naar %1$s.</string>
     <string name="compat_telegram_action">Telegram</string>
 

@@ -241,7 +241,7 @@ internal fun VehicleCompatibilitySection(context: Context, scope: CoroutineScope
                     scope.launch(Dispatchers.IO) {
                         launch(Dispatchers.Main) { uploadInProgress = true; statusMessage = null }
                         try {
-                            val url = VehicleCompatibilityProbe.uploadReport(retention = "12h")
+                            val url = VehicleCompatibilityProbe.uploadReport(retention = "24h")
                             launch(Dispatchers.Main) {
                                 uploadInProgress = false
                                 qrUrl = url
@@ -302,17 +302,17 @@ internal fun VehicleCompatibilitySection(context: Context, scope: CoroutineScope
  * Shows a QR code encoding a pre-filled `mailto:bydtripstats@gmail.com` whose body carries
  * the probe download link. The head unit has no mail app, so the user scans this with their
  * phone, picks an account and presses Send — the report link reaches support, and the link
- * expires in 12h. Falls back to showing the raw URL with a copy button.
+ * expires in 24h. Falls back to showing the raw URL with a copy button.
  */
 @Composable
-private fun ProbeEmailQrDialog(downloadUrl: String, onDismiss: () -> Unit) {
+internal fun ProbeEmailQrDialog(downloadUrl: String, onDismiss: () -> Unit) {
     val supportEmail = "bydtripstats@gmail.com"
     val clipboard = LocalClipboardManager.current
     val sizePx = with(LocalDensity.current) { 220.dp.roundToPx() }
     val qr = remember(downloadUrl) {
         val subject = "BYD Trip Stats — vehicle compatibility probe"
         val body = "Vehicle compatibility probe report.\n\n" +
-            "Download (expires in 12h):\n$downloadUrl\n\n" +
+            "Download (expires in 24h):\n$downloadUrl\n\n" +
             "Sent from BYD Trip Stats."
         val mailto = "mailto:$supportEmail?subject=" + Uri.encode(subject) +
             "&body=" + Uri.encode(body)

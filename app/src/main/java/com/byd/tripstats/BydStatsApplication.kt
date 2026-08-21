@@ -1,15 +1,18 @@
 package com.byd.tripstats
 
 import android.app.Application
+import android.os.SystemClock
 import android.util.Log
 import androidx.work.Configuration
 import com.byd.tripstats.data.entitlement.EntitlementManager
 import com.byd.tripstats.data.preferences.PreferencesManager
+import com.byd.tripstats.receiver.ServiceRestartReceiver
 import com.byd.tripstats.runtimebridge.RuntimeExtensionBridge
 import com.byd.tripstats.sdk.VehicleCompatibilityProbe
 import com.byd.tripstats.server.WebServerManager
 import com.byd.tripstats.service.ServiceRestarterJobService
 import com.byd.tripstats.service.VehicleTelemetryService
+import com.byd.tripstats.util.BootSessionTracker
 import com.byd.tripstats.util.RtDispatch
 import com.byd.tripstats.util.RtInProcessPatches
 import com.byd.tripstats.util.RtShellPatches
@@ -77,10 +80,30 @@ class BydStatsApplication : Application(), Configuration.Provider {
         // those fire and silently no-op (they also check the flag) is
         // preferable to immediately re-acquiring the wake lock.
         val idle = ServiceIdleState.isStayingIdle(this)
+        // sinceBoot separates a cold boot (small value — the head unit genuinely rebooted) from a
+        // resume-from-suspend (hours), and pins how late in the boot we were started. Together with
+        // the BootReceiver and MainActivity launch markers it classifies every "app didn't
+        // autostart" report: never started vs started-and-killed vs started-late.
         DiagLog.event(
             this, TAG,
-            "Application.onCreate pid=${android.os.Process.myPid()} stayingIdle=$idle",
+            "Application.onCreate pid=${android.os.Process.myPid()} stayingIdle=$idle " +
+                "sinceBoot=${SystemClock.elapsedRealtime() / 1000}s",
         )
+        // Once per head-unit boot: did the app actually come up with it? A force-stopped package
+        // gets no BOOT_COMPLETED, so on DiLink 5 it can miss a boot entirely — silently, since with
+        // no process there is nothing to log, notify or retry. The only trace is this late first
+        // start, so record it and keep a hit rate. Instrumentation only: no UI, because reading a
+        // card would require opening the app, which is itself the recovery.
+        runCatching { BootSessionTracker.recordStart(this) }.getOrNull()?.let { boot ->
+            if (boot.firstStartOfBoot) {
+                DiagLog.event(
+                    this, TAG,
+                    "boot session: first app start at boot+${boot.sinceBootSec}s — " +
+                        (if (boot.missed) "MISSED (app did not start with the head unit)" else "ok") +
+                        "; missed ${boot.recentMissed}/${boot.recentTotal} recent boots",
+                )
+            }
+        }
         if (idle) {
             // Off-state idle: skip auto-starting the service so we don't undo
             // the self-stop. The process may have been recreated by an alarm
@@ -89,6 +112,18 @@ class BydStatsApplication : Application(), Configuration.Provider {
             ServiceWatchdogWorker.schedule(this)
             ServiceRestarterJobService.schedulePeriodic(this, "application-start")
             startTelemetryService()
+            // Fast catch-up kicks on EVERY start path, not just BootReceiver's. A process started by
+            // the OEM autostart (an activity launch) or by a periodic job used to arm nothing faster
+            // than the 15-minute watchdog/job — so if the boot storm killed it before the foreground
+            // service took hold, telemetry stayed down for up to 15 minutes, which from the driver's
+            // seat is indistinguishable from "autostart never fired".
+            // Safe by construction: these only ever call VehicleTelemetryService.start() — no
+            // activity launch, no self-kill, no process relaunch (the DI5 boot-loop trigger) — a
+            // duplicate start is ignored by onStartCommand, and ServiceRestartReceiver re-checks the
+            // idle flag when each one fires, so a pending kick can't undo an off-state self-stop.
+            ServiceRestartReceiver.schedule(this, delayMs = 15_000L, reason = "app-start")
+            ServiceRestartReceiver.schedule(this, delayMs = 45_000L, reason = "app-start-followup")
+            ServiceRestartReceiver.schedule(this, delayMs = 120_000L, reason = "app-start-platform-ready")
         }
     }
 
@@ -110,10 +145,25 @@ class BydStatsApplication : Application(), Configuration.Provider {
             } catch (e: Throwable) {
                 Log.w(TAG, "Shell patches threw: ${e.message}")
             }
-            try {
-                RtDispatch.launch(applicationContext)
-            } catch (e: Throwable) {
-                Log.w(TAG, "Dispatch threw: ${e.message}")
+            // Early retry ladder. The first attempt lands within a second or two of process start,
+            // which at a cold boot is ~20 s in — before WiFi has associated and, on DiLink 5, before
+            // the wireless-adb listener exists. That single miss is what left a Sealion 7 with no
+            // background restarter for nine hours on 2026-08-19. The watchdog retries too, but only
+            // every 15 min, and a short errand can end before the first tick.
+            //
+            // In-process delays, not alarms: the process is already alive through this window, so
+            // this adds no wakeups (deep sleep stays dark). Each attempt short-circuits on a healthy
+            // probe, and an unreachable channel fails instantly on the port check, so the steady
+            // states both cost nothing.
+            for (delayMs in longArrayOf(0L, 30_000L, 60_000L, 210_000L)) {
+                if (delayMs > 0L) kotlinx.coroutines.delay(delayMs)
+                val up = try {
+                    RtDispatch.launch(applicationContext)
+                } catch (e: Throwable) {
+                    Log.w(TAG, "Dispatch threw: ${e.message}")
+                    false
+                }
+                if (up) break   // supervisor running — stop probing
             }
         }
     }

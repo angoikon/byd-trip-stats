@@ -32,10 +32,10 @@ object LitterboxUploader {
      * @param fileName  name (with extension) the host should keep; the extension drives
      *                  the suffix on the returned URL.
      * @param content   the text payload (the probe JSON).
-     * @param retention one of [RETENTIONS]; defaults to 12h.
+     * @param retention one of [RETENTIONS]; defaults to 24h.
      * @return the public `https://litter.catbox.moe/…` URL.
      */
-    fun upload(fileName: String, content: String, retention: String = "12h"): String {
+    fun upload(fileName: String, content: String, retention: String = "24h"): String {
         require(retention in RETENTIONS) { "Unsupported retention: $retention" }
 
         val boundary = "----BydTripStatsBoundary${System.currentTimeMillis()}"

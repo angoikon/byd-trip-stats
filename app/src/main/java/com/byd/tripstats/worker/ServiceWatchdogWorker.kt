@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.work.*
 import com.byd.tripstats.service.VehicleTelemetryService
+import com.byd.tripstats.util.RtDispatch
 import com.byd.tripstats.util.ServiceIdleState
 import java.util.concurrent.TimeUnit
 
@@ -30,6 +31,14 @@ class ServiceWatchdogWorker(
             return Result.success()
         }
         Log.i(TAG, "Watchdog fired — ensuring vehicle telemetry service is running")
+        // Re-attempt the runtime dispatch on every tick. RtDispatch otherwise runs only at process
+        // start and on ACC/boot broadcasts, so a single failure — e.g. the adb channel not yet open
+        // 19 s into a cold boot, or the car being away from WiFi if the OEM gates the port on it —
+        // left the car with no background restarter for the rest of the day. The probe short-circuits
+        // when the supervisor is healthy, and when the channel is down the port check fails
+        // instantly, so a tick costs nothing in either steady state. Never fails the worker.
+        runCatching { RtDispatch.launch(applicationContext) }
+            .onFailure { Log.w(TAG, "runtime dispatch retry threw: ${it.message}") }
         return try {
             VehicleTelemetryService.start(applicationContext)
             Log.i(TAG, "✅ Watchdog restart complete")

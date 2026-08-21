@@ -747,7 +747,7 @@
     <string name="danger_zone_title">ZONĂ PERICULOASĂ</string>
     <string name="danger_zone_desc">Șterge definitiv toate călătoriile, punctele de date și statisticile. Un backup local se creează automat înainte de resetare.</string>
     <string name="send_diag_log_desc">Trimite jurnalul complet de diagnostic (evenimente de blocare a vitezei și \'reîmprospătare telemetrie blocată\') direct botului Telegram conectat — nimic nu se salvează sau partajează local. Conectați mai întâi un bot în Backup și restaurare → Backup Telegram.</string>
-    <string name="compat_privacy_notice_body">Raportul capturează valori brute din fiecare sursă de date a unității principale a mașinii — valori numerice, șiruri și vectori.\n\nLatitudinea și longitudinea GPS NU sunt incluse.\n\nTot restul este inclus: starea bateriei, datele motorului, treapta, viteza, modurile de condus, starea climatizării, starea încărcării, valori specifice PHEV etc.\n\nNimic nu se trimite automat. \"Email prin cod QR\" încarcă raportul pe o gazdă publică temporară (litterbox) și afișează un link care se șterge singur după 12 ore; până atunci oricine are linkul îl poate citi. Celelalte opțiuni păstrează raportul pe dispozitiv.</string>
+    <string name="compat_privacy_notice_body">Raportul capturează valori brute din fiecare sursă de date a unității principale a mașinii — valori numerice, șiruri și vectori.\n\nLatitudinea și longitudinea GPS NU sunt incluse.\n\nTot restul este inclus: starea bateriei, datele motorului, treapta, viteza, modurile de condus, starea climatizării, starea încărcării, valori specifice PHEV etc.\n\nNimic nu se trimite automat. \"Email prin cod QR\" încarcă raportul pe o gazdă publică temporară (litterbox) și afișează un link care se șterge singur după 24 ore; până atunci oricine are linkul îl poate citi. Celelalte opțiuni păstrează raportul pe dispozitiv.</string>
     <string name="compat_sending_label">Se trimite…</string>
     <string name="compat_email_qr_label">Email prin cod QR</string>
     <string name="compat_uploading_label">Se încarcă…</string>
@@ -759,7 +759,7 @@
     <string name="compat_upload_failed">Încărcarea a eșuat: %1$s</string>
     <string name="compat_qr_copy_link">Copiază linkul</string>
     <string name="compat_qr_dialog_title">Scanați pentru a trimite raportul pe email</string>
-    <string name="compat_qr_dialog_desc">Scanați cu telefonul — se deschide un email precompletat către %1$s. Alegeți doar contul și apăsați Trimite. Linkul expiră în 12 ore.</string>
+    <string name="compat_qr_dialog_desc">Scanați cu telefonul — se deschide un email precompletat către %1$s. Alegeți doar contul și apăsați Trimite. Linkul expiră în 24 ore.</string>
     <string name="compat_qr_no_render">Codul QR nu a putut fi redat. Folosiți \"Copiază linkul\" și trimiteți-l pe email la %1$s.</string>
     <string name="compat_qr_content_desc">Cod QR care deschide un email precompletat cu linkul de descărcare al sondei</string>
     <string name="web_access_pin_label">PIN de acces</string>
@@ -1113,7 +1113,7 @@
     <string name="vehicle_compat_label">Compatibilitate vehicul</string>
     <string name="compat_help_desc">Ajutați suportul pentru modelul dvs. BYD partajând un raport brut de sondă de telemetrie. Activați sondarea, conduceți câteva minute, apoi exportați și partajați fișierul.</string>
     <string name="privacy_notice_label">Notificare de confidențialitate</string>
-    <string name="privacy_desc_text">Raportul capturează valori brute din fiecare sursă de date a unității principale a mașinii — valori numerice, șiruri și vectori.\n\nLatitudinea și longitudinea GPS NU sunt incluse.\n\nTot restul este inclus: starea bateriei, datele motorului, treapta, viteza, modurile de condus, starea climatizării, starea încărcării, valori specifice PHEV etc.\n\nNimic nu se trimite automat. \"Email prin cod QR\" încarcă raportul pe o gazdă publică temporară și afișează un link care se șterge singur după 12 ore.</string>
+    <string name="privacy_desc_text">Raportul capturează valori brute din fiecare sursă de date a unității principale a mașinii — valori numerice, șiruri și vectori.\n\nLatitudinea și longitudinea GPS NU sunt incluse.\n\nTot restul este inclus: starea bateriei, datele motorului, treapta, viteza, modurile de condus, starea climatizării, starea încărcării, valori specifice PHEV etc.\n\nNimic nu se trimite automat. \"Email prin cod QR\" încarcă raportul pe o gazdă publică temporară și afișează un link care se șterge singur după 24 ore.</string>
     <string name="enable_compat_probe_label">Activează sondarea de compatibilitate</string>
     <string name="active_probe_status">Activ — %1$s câmpuri capturate%2$s</string>
     <string name="probe_off_status">Oprit — activați, conduceți scurt, apoi exportați.</string>
@@ -1126,7 +1126,7 @@
     <string name="probe_cleared_msg">Datele sondei au fost șterse.</string>
     <string name="upload_failed_msg">Încărcarea a eșuat: %1$s</string>
     <string name="scan_to_email_qr_label">Scanați pentru a trimite raportul pe email</string>
-    <string name="email_qr_desc_text">Scanați cu telefonul — se deschide un email precompletat către %1$s. Alegeți doar contul și apăsați Trimite. Linkul expiră în 12 ore.</string>
+    <string name="email_qr_desc_text">Scanați cu telefonul — se deschide un email precompletat către %1$s. Alegeți doar contul și apăsați Trimite. Linkul expiră în 24 ore.</string>
     <string name="qr_failed_msg">Codul QR nu a putut fi redat. Folosiți "Copiază linkul" și trimiteți-l pe email la %1$s.</string>
     <string name="compat_telegram_action">Telegram</string>
 

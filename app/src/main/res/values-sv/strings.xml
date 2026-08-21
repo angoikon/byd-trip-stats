@@ -750,7 +750,7 @@
     <string name="danger_zone_title">FARLIG ZON</string>
     <string name="danger_zone_desc">Raderar permanent alla resor, datapunkter och statistik. En lokal säkerhetskopia skapas automatiskt innan återställningen.</string>
     <string name="send_diag_log_desc">Skickar hela diagnoseloggen (speed-stall och \'telemetri refresh fastnat\'-händelser) direkt till din anslutna Telegram-bot — inget sparas eller delas lokalt. Anslut en bot under Backup &amp; Restore → Telegram Backup först.</string>
-    <string name="compat_privacy_notice_body">Rapporten fångar råvärden från varje datakälla på bilens head unit — numeriska värden, strängar och arrayer.\n\nGPS-latitud och -longitud ingår INTE.\n\nAllt annat ingår: batteritillstånd, motordata, växel, hastighet, körlägen, klimattillstånd, laddningstillstånd, PHEV-specifika värden osv.\n\nInget skickas automatiskt. "E-post via QR-kod" laddar upp rapporten till en tillfällig offentlig värd (litterbox) och visar en länk som raderas automatiskt efter 12 timmar; vem som helst med länken kan läsa den tills dess. De andra alternativen behåller rapporten på din enhet.</string>
+    <string name="compat_privacy_notice_body">Rapporten fångar råvärden från varje datakälla på bilens head unit — numeriska värden, strängar och arrayer.\n\nGPS-latitud och -longitud ingår INTE.\n\nAllt annat ingår: batteritillstånd, motordata, växel, hastighet, körlägen, klimattillstånd, laddningstillstånd, PHEV-specifika värden osv.\n\nInget skickas automatiskt. "E-post via QR-kod" laddar upp rapporten till en tillfällig offentlig värd (litterbox) och visar en länk som raderas automatiskt efter 24 timmar; vem som helst med länken kan läsa den tills dess. De andra alternativen behåller rapporten på din enhet.</string>
     <string name="compat_sending_label">Skickar…</string>
     <string name="compat_email_qr_label">E-post via QR-kod</string>
     <string name="compat_uploading_label">Laddar upp…</string>
@@ -762,7 +762,7 @@
     <string name="compat_upload_failed">Uppladdning misslyckades: %1$s</string>
     <string name="compat_qr_copy_link">Kopiera länk</string>
     <string name="compat_qr_dialog_title">Skanna för att e-posta rapporten</string>
-    <string name="compat_qr_dialog_desc">Skanna med din telefon — det öppnar ett förifyllt e-postmeddelande till %1$s. Välj ditt konto och tryck på Skicka. Länken går ut om 12 timmar.</string>
+    <string name="compat_qr_dialog_desc">Skanna med din telefon — det öppnar ett förifyllt e-postmeddelande till %1$s. Välj ditt konto och tryck på Skicka. Länken går ut om 24 timmar.</string>
     <string name="compat_qr_no_render">Kunde inte rendera QR-koden. Använd "Kopiera länk" och e-posta den till %1$s.</string>
     <string name="compat_qr_content_desc">QR-kod som öppnar ett förifyllt e-postmeddelande med probe-nedladdningslänken</string>
     <string name="web_access_pin_label">Åtkomst-PIN</string>
@@ -1117,7 +1117,7 @@
     <string name="vehicle_compat_label">Fordonskompatibilitet</string>
     <string name="compat_help_desc">Hjälp med att stödja din BYD-modell genom att dela en råtelemetrisondering. Aktivera sondering, kör i ett par minuter, exportera och dela sedan filen.</string>
     <string name="privacy_notice_label">Integritetsmeddelande</string>
-    <string name="privacy_desc_text">Rapporten fångar råvärden från varje datakälla på din bils head-unit — numeriska värden, strängar och arrayer.\n\nGPS latitud och longitud inkluderas INTE.\n\nAllt annat inkluderas: batteritillstånd, motordata, växel, hastighet, körlägen, klimattillstånd, laddningstillstånd, PHEV-specifika värden etc.\n\nIngenting skickas automatiskt. \"E-post via QR-kod\" laddar upp rapporten till en tillfällig offentlig värd och visar en länk som automatiskt raderas efter 12 timmar.</string>
+    <string name="privacy_desc_text">Rapporten fångar råvärden från varje datakälla på din bils head-unit — numeriska värden, strängar och arrayer.\n\nGPS latitud och longitud inkluderas INTE.\n\nAllt annat inkluderas: batteritillstånd, motordata, växel, hastighet, körlägen, klimattillstånd, laddningstillstånd, PHEV-specifika värden etc.\n\nIngenting skickas automatiskt. \"E-post via QR-kod\" laddar upp rapporten till en tillfällig offentlig värd och visar en länk som automatiskt raderas efter 24 timmar.</string>
     <string name="enable_compat_probe_label">Aktivera kompatibilitetssondering</string>
     <string name="active_probe_status">Aktiv — %1$s fält fångade%2$s</string>
     <string name="probe_off_status">Av — aktivera, kör kort, exportera sedan.</string>
@@ -1130,7 +1130,7 @@
     <string name="probe_cleared_msg">Sonderingsdata rensad.</string>
     <string name="upload_failed_msg">Uppladdning misslyckades: %1$s</string>
     <string name="scan_to_email_qr_label">Skanna för att e-posta rapporten</string>
-    <string name="email_qr_desc_text">Skanna med din telefon — det öppnar ett förifyllt e-postmeddelande till %1$s. Välj bara ditt konto och tryck Skicka. Länken löper ut om 12 timmar.</string>
+    <string name="email_qr_desc_text">Skanna med din telefon — det öppnar ett förifyllt e-postmeddelande till %1$s. Välj bara ditt konto och tryck Skicka. Länken löper ut om 24 timmar.</string>
     <string name="qr_failed_msg">Kunde inte rendera QR-koden. Använd "Kopiera länk" och e-posta den till %1$s.</string>
     <string name="compat_telegram_action">Telegram</string>
 

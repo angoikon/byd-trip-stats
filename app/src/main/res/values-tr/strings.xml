@@ -750,7 +750,7 @@
     <string name="danger_zone_title">TEHLİKE BÖLGESİ</string>
     <string name="danger_zone_desc">Tüm gezileri, veri noktalarını ve istatistikleri kalıcı olarak siler. Sıfırlama öncesinde otomatik olarak yerel bir yedek oluşturulur.</string>
     <string name="send_diag_log_desc">Tam tanılama günlüğünü (speed-stall ve \'telemetri yenileme takıldı\' olayları) doğrudan bağlı Telegram botunuza gönderir — yerel olarak hiçbir şey kaydedilmez veya paylaşılmaz. Önce Backup &amp; Restore → Telegram Backup altında bir bot bağlayın.</string>
-    <string name="compat_privacy_notice_body">Rapor, aracınızın kafa ünitesindeki her veri kaynağından ham değerleri yakalar — sayısal değerler, dizeler ve diziler.\n\nGPS enlem ve boylamı DAHİL DEĞİLDİR.\n\nDiğer her şey dahildir: akü durumu, motor verileri, vites, hız, sürüş modları, klima durumu, şarj durumu, PHEV\'e özgü değerler vb.\n\nHiçbir şey otomatik olarak gönderilmez. "QR koduyla e-posta" raporu geçici bir genel sunucuya (litterbox) yükler ve 12 saat sonra otomatik olarak silinen bir bağlantı gösterir; o zamana kadar bağlantıya sahip olan herkes okuyabilir. Diğer seçenekler raporu cihazınızda tutar.</string>
+    <string name="compat_privacy_notice_body">Rapor, aracınızın kafa ünitesindeki her veri kaynağından ham değerleri yakalar — sayısal değerler, dizeler ve diziler.\n\nGPS enlem ve boylamı DAHİL DEĞİLDİR.\n\nDiğer her şey dahildir: akü durumu, motor verileri, vites, hız, sürüş modları, klima durumu, şarj durumu, PHEV\'e özgü değerler vb.\n\nHiçbir şey otomatik olarak gönderilmez. "QR koduyla e-posta" raporu geçici bir genel sunucuya (litterbox) yükler ve 24 saat sonra otomatik olarak silinen bir bağlantı gösterir; o zamana kadar bağlantıya sahip olan herkes okuyabilir. Diğer seçenekler raporu cihazınızda tutar.</string>
     <string name="compat_sending_label">Gönderiliyor…</string>
     <string name="compat_email_qr_label">QR koduyla e-posta</string>
     <string name="compat_uploading_label">Yükleniyor…</string>
@@ -762,7 +762,7 @@
     <string name="compat_upload_failed">Yükleme başarısız: %1$s</string>
     <string name="compat_qr_copy_link">Bağlantıyı kopyala</string>
     <string name="compat_qr_dialog_title">Raporu e-postayla göndermek için QR\'ı tarayın</string>
-    <string name="compat_qr_dialog_desc">Telefonunuzla tarayın — %1$s adresine önceden doldurulmuş bir e-posta açar. Hesabınızı seçin ve Gönder\'e basın. Bağlantı 12 saat sonra sona erer.</string>
+    <string name="compat_qr_dialog_desc">Telefonunuzla tarayın — %1$s adresine önceden doldurulmuş bir e-posta açar. Hesabınızı seçin ve Gönder\'e basın. Bağlantı 24 saat sonra sona erer.</string>
     <string name="compat_qr_no_render">QR kodu oluşturulamadı. "Bağlantıyı kopyala"yı kullanın ve %1$s adresine e-posta ile gönderin.</string>
     <string name="compat_qr_content_desc">Probe indirme bağlantısıyla önceden doldurulmuş e-posta açan QR kodu</string>
     <string name="web_access_pin_label">Erişim PIN</string>
@@ -1117,7 +1117,7 @@
     <string name="vehicle_compat_label">Araç Uyumluluğu</string>
     <string name="compat_help_desc">Ham telemetri prob raporu paylaşarak BYD modeliniz için destek sağlamaya yardımcı olun. Problamayı etkinleştirin, birkaç dakika sürün, ardından dosyayı dışa aktarın ve paylaşın.</string>
     <string name="privacy_notice_label">Gizlilik bildirimi</string>
-    <string name="privacy_desc_text">Rapor, aracınızın baş ünitesindeki her veri kaynağından ham değerleri yakalar — sayısal değerler, dizeler ve diziler.\n\nGPS enlemi ve boylamı DAHİL DEĞİLDİR.\n\nDiğer her şey dahildir: pil durumu, motor verisi, vites, hız, sürüş modları, iklim durumu, şarj durumu, PHEV\'e özgü değerler vb.\n\nHiçbir şey otomatik olarak gönderilmez. "QR kodu aracılığıyla e-posta gönder" raporu geçici bir genel ana bilgisayara yükler ve 12 saat sonra otomatik olarak silinen bir bağlantı gösterir.</string>
+    <string name="privacy_desc_text">Rapor, aracınızın baş ünitesindeki her veri kaynağından ham değerleri yakalar — sayısal değerler, dizeler ve diziler.\n\nGPS enlemi ve boylamı DAHİL DEĞİLDİR.\n\nDiğer her şey dahildir: pil durumu, motor verisi, vites, hız, sürüş modları, iklim durumu, şarj durumu, PHEV\'e özgü değerler vb.\n\nHiçbir şey otomatik olarak gönderilmez. "QR kodu aracılığıyla e-posta gönder" raporu geçici bir genel ana bilgisayara yükler ve 24 saat sonra otomatik olarak silinen bir bağlantı gösterir.</string>
     <string name="enable_compat_probe_label">Uyumluluk problamayı etkinleştir</string>
     <string name="active_probe_status">Etkin — %1$s alan yakalandı%2$s</string>
     <string name="probe_off_status">Kapalı — etkinleştirin, kısa sürün, ardından dışa aktarın.</string>
@@ -1130,7 +1130,7 @@
     <string name="probe_cleared_msg">Prob verileri temizlendi.</string>
     <string name="upload_failed_msg">Yükleme başarısız: %1$s</string>
     <string name="scan_to_email_qr_label">Raporu e-posta ile göndermek için tarayın</string>
-    <string name="email_qr_desc_text">Telefonunuzla tarayın — %1$s\'e önceden doldurulmuş bir e-posta açar. Yalnızca hesabınızı seçin ve Gönder\'e basın. Bağlantı 12 saat sonra sona erer.</string>
+    <string name="email_qr_desc_text">Telefonunuzla tarayın — %1$s\'e önceden doldurulmuş bir e-posta açar. Yalnızca hesabınızı seçin ve Gönder\'e basın. Bağlantı 24 saat sonra sona erer.</string>
     <string name="qr_failed_msg">QR kodu oluşturulamadı. "Bağlantıyı kopyala"yı kullanın ve %1$s adresine e-posta ile gönderin.</string>
     <string name="compat_telegram_action">Telegram</string>
 

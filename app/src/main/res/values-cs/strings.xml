@@ -747,7 +747,7 @@
     <string name="danger_zone_title">NEBEZPEČNÁ ZÓNA</string>
     <string name="danger_zone_desc">Trvale smaže všechny jízdy, datové body a statistiky. Před resetem se automaticky vytvoří lokální záloha.</string>
     <string name="send_diag_log_desc">Odešle úplný diagnostický protokol (události zamrznutí rychlosti a \'zaseknutého obnovení telemetrie\') přímo připojenému Telegram botovi — lokálně se nic neukládá ani nesdílí. Nejprve připojte bota v Záloha a obnovení → Záloha na Telegram.</string>
-    <string name="compat_privacy_notice_body">Zpráva zachycuje surové hodnoty z každého zdroje dat hlavní jednotky vozu — číselné hodnoty, řetězce a pole.\n\nZeměpisná šířka a délka GPS NEJSOU zahrnuty.\n\nVše ostatní zahrnuto je: stav baterie, data motoru, zařazený stupeň, rychlost, jízdní režimy, stav klimatizace, stav nabíjení, hodnoty specifické pro PHEV atd.\n\nNic se neodesílá automaticky. \"E-mail přes QR kód\" nahraje zprávu na dočasný veřejný hosting (litterbox) a zobrazí odkaz, který se sám smaže po 12 hodinách; do té doby ji může číst kdokoli s odkazem. Ostatní možnosti ponechávají zprávu na zařízení.</string>
+    <string name="compat_privacy_notice_body">Zpráva zachycuje surové hodnoty z každého zdroje dat hlavní jednotky vozu — číselné hodnoty, řetězce a pole.\n\nZeměpisná šířka a délka GPS NEJSOU zahrnuty.\n\nVše ostatní zahrnuto je: stav baterie, data motoru, zařazený stupeň, rychlost, jízdní režimy, stav klimatizace, stav nabíjení, hodnoty specifické pro PHEV atd.\n\nNic se neodesílá automaticky. \"E-mail přes QR kód\" nahraje zprávu na dočasný veřejný hosting (litterbox) a zobrazí odkaz, který se sám smaže po 24 hodinách; do té doby ji může číst kdokoli s odkazem. Ostatní možnosti ponechávají zprávu na zařízení.</string>
     <string name="compat_sending_label">Odesílání…</string>
     <string name="compat_email_qr_label">E-mail přes QR kód</string>
     <string name="compat_uploading_label">Nahrávání…</string>
@@ -759,7 +759,7 @@
     <string name="compat_upload_failed">Nahrání se nezdařilo: %1$s</string>
     <string name="compat_qr_copy_link">Kopírovat odkaz</string>
     <string name="compat_qr_dialog_title">Naskenujte pro odeslání zprávy e-mailem</string>
-    <string name="compat_qr_dialog_desc">Naskenujte telefonem — otevře se předvyplněný e-mail na %1$s. Stačí vybrat účet a stisknout Odeslat. Odkaz vyprší za 12 hodin.</string>
+    <string name="compat_qr_dialog_desc">Naskenujte telefonem — otevře se předvyplněný e-mail na %1$s. Stačí vybrat účet a stisknout Odeslat. Odkaz vyprší za 24 hodin.</string>
     <string name="compat_qr_no_render">QR kód se nepodařilo vykreslit. Použijte \"Kopírovat odkaz\" a pošlete ho e-mailem na %1$s.</string>
     <string name="compat_qr_content_desc">QR kód otevírající předvyplněný e-mail s odkazem ke stažení sondy</string>
     <string name="web_access_pin_label">Přístupový PIN</string>
@@ -1113,7 +1113,7 @@
     <string name="vehicle_compat_label">Kompatibilita vozidla</string>
     <string name="compat_help_desc">Pomozte s podporou vašeho modelu BYD sdílením surové telemetrické sondy. Zapněte sondování, jeďte pár minut, pak exportujte a sdílejte soubor.</string>
     <string name="privacy_notice_label">Upozornění na soukromí</string>
-    <string name="privacy_desc_text">Zpráva zachycuje surové hodnoty z každého zdroje dat hlavní jednotky vašeho vozu — číselné hodnoty, řetězce a pole.\n\nZeměpisná šířka a délka GPS NEJSOU zahrnuty.\n\nVše ostatní zahrnuto je: stav baterie, data motoru, zařazený stupeň, rychlost, jízdní režimy, stav klimatizace, stav nabíjení, hodnoty specifické pro PHEV atd.\n\nNic se neodesílá automaticky. \"E-mail přes QR kód\" nahraje zprávu na dočasný veřejný hosting a zobrazí odkaz, který se sám smaže po 12 hodinách.</string>
+    <string name="privacy_desc_text">Zpráva zachycuje surové hodnoty z každého zdroje dat hlavní jednotky vašeho vozu — číselné hodnoty, řetězce a pole.\n\nZeměpisná šířka a délka GPS NEJSOU zahrnuty.\n\nVše ostatní zahrnuto je: stav baterie, data motoru, zařazený stupeň, rychlost, jízdní režimy, stav klimatizace, stav nabíjení, hodnoty specifické pro PHEV atd.\n\nNic se neodesílá automaticky. \"E-mail přes QR kód\" nahraje zprávu na dočasný veřejný hosting a zobrazí odkaz, který se sám smaže po 24 hodinách.</string>
     <string name="enable_compat_probe_label">Zapnout sondování kompatibility</string>
     <string name="active_probe_status">Aktivní — zachyceno %1$s polí%2$s</string>
     <string name="probe_off_status">Vypnuto — zapněte, krátce jeďte, pak exportujte.</string>
@@ -1126,7 +1126,7 @@
     <string name="probe_cleared_msg">Data sondy vymazána.</string>
     <string name="upload_failed_msg">Nahrání se nezdařilo: %1$s</string>
     <string name="scan_to_email_qr_label">Naskenujte pro odeslání zprávy e-mailem</string>
-    <string name="email_qr_desc_text">Naskenujte telefonem — otevře se předvyplněný e-mail na %1$s. Stačí vybrat účet a stisknout Odeslat. Odkaz vyprší za 12 hodin.</string>
+    <string name="email_qr_desc_text">Naskenujte telefonem — otevře se předvyplněný e-mail na %1$s. Stačí vybrat účet a stisknout Odeslat. Odkaz vyprší za 24 hodin.</string>
     <string name="qr_failed_msg">QR kód se nepodařilo vykreslit. Použijte "Kopírovat odkaz" a pošlete ho e-mailem na %1$s.</string>
     <string name="compat_telegram_action">Telegram</string>
 

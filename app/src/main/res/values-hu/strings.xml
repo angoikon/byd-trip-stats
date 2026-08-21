@@ -747,7 +747,7 @@
     <string name="danger_zone_title">VESZÉLYZÓNA</string>
     <string name="danger_zone_desc">Véglegesen töröl minden utat, adatpontot és statisztikát. A visszaállítás előtt automatikusan helyi mentés készül.</string>
     <string name="send_diag_log_desc">A teljes diagnosztikai naplót (sebesség-elakadás és \'beragadt telemetriafrissítés\' események) közvetlenül a csatlakoztatott Telegram botnak küldi — semmi sem kerül helyi mentésre vagy megosztásra. Először csatlakoztasson botot: Mentés és visszaállítás → Telegram-mentés.</string>
-    <string name="compat_privacy_notice_body">A jelentés nyers értékeket rögzít az autó fejegységének minden adatforrásából — számértékeket, szövegeket és tömböket.\n\nA GPS szélesség és hosszúság NINCS benne.\n\nMinden más benne van: akkuállapot, motoradatok, fokozat, sebesség, vezetési módok, klímaállapot, töltési állapot, PHEV-specifikus értékek stb.\n\nSemmi sem kerül automatikus elküldésre. Az \"E-mail QR-kóddal\" ideiglenes nyilvános tárhelyre (litterbox) tölti fel a jelentést, és linket mutat, amely 12 óra után magától törlődik; addig bárki elolvashatja, akinek megvan a link. A többi lehetőség az eszközön tartja a jelentést.</string>
+    <string name="compat_privacy_notice_body">A jelentés nyers értékeket rögzít az autó fejegységének minden adatforrásából — számértékeket, szövegeket és tömböket.\n\nA GPS szélesség és hosszúság NINCS benne.\n\nMinden más benne van: akkuállapot, motoradatok, fokozat, sebesség, vezetési módok, klímaállapot, töltési állapot, PHEV-specifikus értékek stb.\n\nSemmi sem kerül automatikus elküldésre. Az \"E-mail QR-kóddal\" ideiglenes nyilvános tárhelyre (litterbox) tölti fel a jelentést, és linket mutat, amely 24 óra után magától törlődik; addig bárki elolvashatja, akinek megvan a link. A többi lehetőség az eszközön tartja a jelentést.</string>
     <string name="compat_sending_label">Küldés…</string>
     <string name="compat_email_qr_label">E-mail QR-kóddal</string>
     <string name="compat_uploading_label">Feltöltés…</string>
@@ -759,7 +759,7 @@
     <string name="compat_upload_failed">A feltöltés nem sikerült: %1$s</string>
     <string name="compat_qr_copy_link">Link másolása</string>
     <string name="compat_qr_dialog_title">Szkennelje be a jelentés e-mailezéséhez</string>
-    <string name="compat_qr_dialog_desc">Szkennelje be telefonjával — előre kitöltött e-mailt nyit a következő címre: %1$s. Csak válassza ki a fiókját, és nyomja meg a Küldést. A link 12 óra múlva lejár.</string>
+    <string name="compat_qr_dialog_desc">Szkennelje be telefonjával — előre kitöltött e-mailt nyit a következő címre: %1$s. Csak válassza ki a fiókját, és nyomja meg a Küldést. A link 24 óra múlva lejár.</string>
     <string name="compat_qr_no_render">A QR-kódot nem sikerült megjeleníteni. Használja a \"Link másolása\" lehetőséget, és e-mailezze ide: %1$s.</string>
     <string name="compat_qr_content_desc">QR-kód, amely előre kitöltött e-mailt nyit a szonda letöltési linkjével</string>
     <string name="web_access_pin_label">Hozzáférési PIN</string>
@@ -1113,7 +1113,7 @@
     <string name="vehicle_compat_label">Járműkompatibilitás</string>
     <string name="compat_help_desc">Segítse BYD modellje támogatását egy nyers telemetria-szondajelentés megosztásával. Kapcsolja be a szondázást, vezessen pár percet, majd exportálja és ossza meg a fájlt.</string>
     <string name="privacy_notice_label">Adatvédelmi tájékoztató</string>
-    <string name="privacy_desc_text">A jelentés nyers értékeket rögzít az autó fejegységének minden adatforrásából — számértékeket, szövegeket és tömböket.\n\nA GPS szélesség és hosszúság NINCS benne.\n\nMinden más benne van: akkuállapot, motoradatok, fokozat, sebesség, vezetési módok, klímaállapot, töltési állapot, PHEV-specifikus értékek stb.\n\nSemmi sem kerül automatikus elküldésre. Az \"E-mail QR-kóddal\" ideiglenes nyilvános tárhelyre tölti fel a jelentést, és linket mutat, amely 12 óra után magától törlődik.</string>
+    <string name="privacy_desc_text">A jelentés nyers értékeket rögzít az autó fejegységének minden adatforrásából — számértékeket, szövegeket és tömböket.\n\nA GPS szélesség és hosszúság NINCS benne.\n\nMinden más benne van: akkuállapot, motoradatok, fokozat, sebesség, vezetési módok, klímaállapot, töltési állapot, PHEV-specifikus értékek stb.\n\nSemmi sem kerül automatikus elküldésre. Az \"E-mail QR-kóddal\" ideiglenes nyilvános tárhelyre tölti fel a jelentést, és linket mutat, amely 24 óra után magától törlődik.</string>
     <string name="enable_compat_probe_label">Kompatibilitási szondázás engedélyezése</string>
     <string name="active_probe_status">Aktív — %1$s mező rögzítve%2$s</string>
     <string name="probe_off_status">Ki — kapcsolja be, vezessen röviden, majd exportáljon.</string>
@@ -1126,7 +1126,7 @@
     <string name="probe_cleared_msg">Szondaadatok törölve.</string>
     <string name="upload_failed_msg">A feltöltés nem sikerült: %1$s</string>
     <string name="scan_to_email_qr_label">Szkennelje be a jelentés e-mailezéséhez</string>
-    <string name="email_qr_desc_text">Szkennelje be telefonjával — előre kitöltött e-mailt nyit ide: %1$s. Csak válassza ki fiókját, és nyomja meg a Küldést. A link 12 óra múlva lejár.</string>
+    <string name="email_qr_desc_text">Szkennelje be telefonjával — előre kitöltött e-mailt nyit ide: %1$s. Csak válassza ki fiókját, és nyomja meg a Küldést. A link 24 óra múlva lejár.</string>
     <string name="qr_failed_msg">A QR-kódot nem sikerült megjeleníteni. Használja a "Link másolása" lehetőséget, és e-mailezze ide: %1$s.</string>
     <string name="compat_telegram_action">Telegram</string>
 

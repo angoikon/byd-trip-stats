@@ -747,7 +747,7 @@
     <string name="danger_zone_title">VÙNG NGUY HIỂM</string>
     <string name="danger_zone_desc">Xóa vĩnh viễn tất cả chuyến đi, điểm dữ liệu và thống kê. Một bản sao lưu cục bộ được tạo tự động trước khi đặt lại.</string>
     <string name="send_diag_log_desc">Gửi nhật ký chẩn đoán đầy đủ (sự kiện kẹt tốc độ và \'làm mới đo từ xa bị kẹt\') thẳng tới bot Telegram đã kết nối — không có gì được lưu hoặc chia sẻ cục bộ. Kết nối bot trước trong Sao lưu &amp; Khôi phục → Sao lưu Telegram.</string>
-    <string name="compat_privacy_notice_body">Báo cáo thu thập giá trị thô từ mọi nguồn dữ liệu trên đầu máy xe của bạn — giá trị số, chuỗi và mảng.\n\nVĩ độ và kinh độ GPS KHÔNG được bao gồm.\n\nMọi thứ khác đều được bao gồm: trạng thái pin, dữ liệu mô-tơ, số, tốc độ, chế độ lái, trạng thái điều hòa, trạng thái sạc, giá trị riêng của PHEV, v.v.\n\nKhông có gì được gửi tự động. \"Email qua mã QR\" tải báo cáo lên máy chủ công cộng tạm thời (litterbox) và hiển thị liên kết tự xóa sau 12 giờ; đến lúc đó ai có liên kết đều có thể đọc. Các tùy chọn khác giữ báo cáo trên thiết bị của bạn.</string>
+    <string name="compat_privacy_notice_body">Báo cáo thu thập giá trị thô từ mọi nguồn dữ liệu trên đầu máy xe của bạn — giá trị số, chuỗi và mảng.\n\nVĩ độ và kinh độ GPS KHÔNG được bao gồm.\n\nMọi thứ khác đều được bao gồm: trạng thái pin, dữ liệu mô-tơ, số, tốc độ, chế độ lái, trạng thái điều hòa, trạng thái sạc, giá trị riêng của PHEV, v.v.\n\nKhông có gì được gửi tự động. \"Email qua mã QR\" tải báo cáo lên máy chủ công cộng tạm thời (litterbox) và hiển thị liên kết tự xóa sau 24 giờ; đến lúc đó ai có liên kết đều có thể đọc. Các tùy chọn khác giữ báo cáo trên thiết bị của bạn.</string>
     <string name="compat_sending_label">Đang gửi…</string>
     <string name="compat_email_qr_label">Email qua mã QR</string>
     <string name="compat_uploading_label">Đang tải lên…</string>
@@ -759,7 +759,7 @@
     <string name="compat_upload_failed">Tải lên thất bại: %1$s</string>
     <string name="compat_qr_copy_link">Sao chép liên kết</string>
     <string name="compat_qr_dialog_title">Quét để gửi báo cáo qua email</string>
-    <string name="compat_qr_dialog_desc">Quét bằng điện thoại của bạn — mở email điền sẵn tới %1$s. Chỉ cần chọn tài khoản và nhấn Gửi. Liên kết hết hạn sau 12 giờ.</string>
+    <string name="compat_qr_dialog_desc">Quét bằng điện thoại của bạn — mở email điền sẵn tới %1$s. Chỉ cần chọn tài khoản và nhấn Gửi. Liên kết hết hạn sau 24 giờ.</string>
     <string name="compat_qr_no_render">Không thể hiển thị mã QR. Dùng \"Sao chép liên kết\" và gửi qua email tới %1$s.</string>
     <string name="compat_qr_content_desc">Mã QR mở email điền sẵn với liên kết tải xuống thăm dò</string>
     <string name="web_access_pin_label">PIN Truy cập</string>
@@ -1113,7 +1113,7 @@
     <string name="vehicle_compat_label">Tương thích Xe</string>
     <string name="compat_help_desc">Giúp hỗ trợ mẫu BYD của bạn bằng cách chia sẻ báo cáo thăm dò đo từ xa thô. Bật thăm dò, lái vài phút, rồi xuất và chia sẻ tệp.</string>
     <string name="privacy_notice_label">Thông báo quyền riêng tư</string>
-    <string name="privacy_desc_text">Báo cáo thu thập giá trị thô từ mọi nguồn dữ liệu trên đầu máy xe của bạn — giá trị số, chuỗi và mảng.\n\nVĩ độ và kinh độ GPS KHÔNG được bao gồm.\n\nMọi thứ khác đều được bao gồm: trạng thái pin, dữ liệu mô-tơ, số, tốc độ, chế độ lái, trạng thái điều hòa, trạng thái sạc, giá trị riêng của PHEV, v.v.\n\nKhông có gì được gửi tự động. \"Email qua mã QR\" tải báo cáo lên máy chủ công cộng tạm thời và hiển thị liên kết tự xóa sau 12 giờ.</string>
+    <string name="privacy_desc_text">Báo cáo thu thập giá trị thô từ mọi nguồn dữ liệu trên đầu máy xe của bạn — giá trị số, chuỗi và mảng.\n\nVĩ độ và kinh độ GPS KHÔNG được bao gồm.\n\nMọi thứ khác đều được bao gồm: trạng thái pin, dữ liệu mô-tơ, số, tốc độ, chế độ lái, trạng thái điều hòa, trạng thái sạc, giá trị riêng của PHEV, v.v.\n\nKhông có gì được gửi tự động. \"Email qua mã QR\" tải báo cáo lên máy chủ công cộng tạm thời và hiển thị liên kết tự xóa sau 24 giờ.</string>
     <string name="enable_compat_probe_label">Bật thăm dò tương thích</string>
     <string name="active_probe_status">Đang hoạt động — đã thu %1$s trường%2$s</string>
     <string name="probe_off_status">Tắt — bật, lái ngắn, rồi xuất.</string>
@@ -1126,7 +1126,7 @@
     <string name="probe_cleared_msg">Đã xóa dữ liệu thăm dò.</string>
     <string name="upload_failed_msg">Tải lên thất bại: %1$s</string>
     <string name="scan_to_email_qr_label">Quét để gửi báo cáo qua email</string>
-    <string name="email_qr_desc_text">Quét bằng điện thoại của bạn — mở email điền sẵn tới %1$s. Chỉ cần chọn tài khoản và nhấn Gửi. Liên kết hết hạn sau 12 giờ.</string>
+    <string name="email_qr_desc_text">Quét bằng điện thoại của bạn — mở email điền sẵn tới %1$s. Chỉ cần chọn tài khoản và nhấn Gửi. Liên kết hết hạn sau 24 giờ.</string>
     <string name="qr_failed_msg">Không thể hiển thị mã QR. Dùng "Sao chép liên kết" và gửi qua email tới %1$s.</string>
     <string name="compat_telegram_action">Telegram</string>
 

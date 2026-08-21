@@ -759,7 +759,7 @@
     <string name="danger_zone_title">DANGER ZONE</string>
     <string name="danger_zone_desc">Permanently delete all trips, data points and statistics. A local backup is created automatically before the reset.</string>
     <string name="send_diag_log_desc">Sends the full diagnostics log (speed-stall and \'telemetry refresh wedged\' events) straight to your connected Telegram bot — nothing is saved or shared locally. Connect a bot under Backup &amp; Restore → Telegram Backup first.</string>
-    <string name="compat_privacy_notice_body">The report captures raw values from every data source on your car\'s head unit — numeric values, strings, and arrays.\n\nGPS latitude and longitude are NOT included.\n\nEverything else is included: battery state, motor data, gear, speed, drive modes, climate state, charging state, PHEV-specific values, etc.\n\nNothing is sent automatically. \"Email via QR code\" uploads the report to a temporary public host (litterbox) and shows a link that auto-deletes after 12 hours; anyone with the link can read it until then. The other options keep the report on your device.</string>
+    <string name="compat_privacy_notice_body">The report captures raw values from every data source on your car\'s head unit — numeric values, strings, and arrays.\n\nGPS latitude and longitude are NOT included.\n\nEverything else is included: battery state, motor data, gear, speed, drive modes, climate state, charging state, PHEV-specific values, etc.\n\nNothing is sent automatically. \"Email via QR code\" uploads the report to a temporary public host (litterbox) and shows a link that auto-deletes after 24 hours; anyone with the link can read it until then. The other options keep the report on your device.</string>
     <string name="compat_sending_label">Sending…</string>
     <string name="compat_email_qr_label">Email via QR code</string>
     <string name="compat_uploading_label">Uploading…</string>
@@ -771,7 +771,7 @@
     <string name="compat_upload_failed">Upload failed: %1$s</string>
     <string name="compat_qr_copy_link">Copy link</string>
     <string name="compat_qr_dialog_title">Scan to email the report</string>
-    <string name="compat_qr_dialog_desc">Scan with your phone — it opens a pre-filled email to %1$s. Just choose your account and press Send. The link expires in 12 hours.</string>
+    <string name="compat_qr_dialog_desc">Scan with your phone — it opens a pre-filled email to %1$s. Just choose your account and press Send. The link expires in 24 hours.</string>
     <string name="compat_qr_no_render">Couldn\'t render the QR code. Use \"Copy link\" and email it to %1$s.</string>
     <string name="compat_qr_content_desc">QR code that opens a pre-filled email with the probe download link</string>
     <string name="web_access_pin_label">Access PIN</string>
@@ -1126,7 +1126,7 @@
     <string name="vehicle_compat_label">Vehicle Compatibility</string>
     <string name="compat_help_desc">Help support for your BYD model by sharing a raw telemetry probe report. Enable probing, drive for a couple of minutes, then export and share the file.</string>
     <string name="privacy_notice_label">Privacy notice</string>
-    <string name="privacy_desc_text">The report captures raw values from every data source on your car\'s head unit — numeric values, strings, and arrays.\n\nGPS latitude and longitude are NOT included.\n\nEverything else is included: battery state, motor data, gear, speed, drive modes, climate state, charging state, PHEV-specific values, etc.\n\nNothing is sent automatically. \"Email via QR code\" uploads the report to a temporary public host and shows a link that auto-deletes after 12 hours.</string>
+    <string name="privacy_desc_text">The report captures raw values from every data source on your car\'s head unit — numeric values, strings, and arrays.\n\nGPS latitude and longitude are NOT included.\n\nEverything else is included: battery state, motor data, gear, speed, drive modes, climate state, charging state, PHEV-specific values, etc.\n\nNothing is sent automatically. \"Email via QR code\" uploads the report to a temporary public host and shows a link that auto-deletes after 24 hours.</string>
     <string name="enable_compat_probe_label">Enable compatibility probing</string>
     <string name="active_probe_status">Active — %1$s fields captured%2$s</string>
     <string name="probe_off_status">Off — enable, drive briefly, then export.</string>
@@ -1139,7 +1139,7 @@
     <string name="probe_cleared_msg">Probe data cleared.</string>
     <string name="upload_failed_msg">Upload failed: %1$s</string>
     <string name="scan_to_email_qr_label">Scan to email the report</string>
-    <string name="email_qr_desc_text">Scan with your phone — it opens a pre-filled email to %1$s. Just choose your account and press Send. The link expires in 12 hours.</string>
+    <string name="email_qr_desc_text">Scan with your phone — it opens a pre-filled email to %1$s. Just choose your account and press Send. The link expires in 24 hours.</string>
     <string name="qr_failed_msg">Couldn\'t render the QR code. Use "Copy link" and email it to %1$s.</string>
     <string name="compat_telegram_action">Telegram</string>
 

@@ -787,9 +787,9 @@ object VehicleCompatibilityProbe {
      *
      * Blocking network call — invoke from a background dispatcher. The URL is meant to
      * be embedded in a `mailto:` QR code so the user can email the link from their phone;
-     * litterbox auto-deletes the file after [retention] (default 12h).
+     * litterbox auto-deletes the file after [retention] (default 24h).
      */
-    fun uploadReport(retention: String = "12h"): String {
+    fun uploadReport(retention: String = "24h"): String {
         val json = buildReportJson()
         return com.byd.tripstats.util.LitterboxUploader.upload(
             fileName = "byd_compat_probe.json",
