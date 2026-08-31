@@ -38,7 +38,7 @@ android {
     // version, so beta testers automatically receive the stable upgrade via sideload.
     val versionMajor    = 2
     val versionMinor    = 15
-    val versionPatch    = 0
+    val versionPatch    = 1
     val versionPre      = 99 // 99 = stable; 1–98 = beta (e.g. 1 → "beta01")
     // Hotfix revision for the SAME versionName. Bumps versionCode ONLY — the in-app
     // updater compares the GitHub tag against versionName (UpdateRepository.isNewerVersion),
