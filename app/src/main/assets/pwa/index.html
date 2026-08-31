@@ -244,6 +244,31 @@ span.star { cursor: default; }
   border-radius: var(--radius); padding: 16px;
 }
 .chart-panel.full-width { grid-column: 1 / -1; }
+/* ── Report panels (Overview + analyses, live mode only) ────────────────────── */
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.report-panel {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+}
+.report-note { font-size: 12px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; }
+.report-row {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 13px;
+}
+.report-row:last-child { border-bottom: none; }
+.report-row .lbl { color: var(--muted); }
+.report-row .val { font-weight: 600; text-align: right; }
+.report-row.sub .lbl { padding-left: 12px; }
+.report-bar {
+  height: 6px; border-radius: 3px; margin: 8px 0 12px;
+  background: rgba(255,209,102,0.25); overflow: hidden;
+}
+.report-bar > div { height: 100%; background: var(--green, #4cc9f0); }
 .chart-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
 .chart-wrap { position: relative; height: 200px; }
 .chart-wrap.tall { height: 280px; }
@@ -340,6 +365,7 @@ span.star { cursor: default; }
       <span id="trip-detail-fav"></span>
     </div>
     <div id="trip-detail-stats" class="stats-row"></div>
+    <div id="trip-report" class="report-grid"></div>
     <div id="trip-map" class="map-container"></div>
     <div class="charts-grid">
       <div class="chart-panel"><div class="chart-title">Speed Profile</div><div class="chart-wrap"><canvas id="chart-speed"></canvas></div></div>
@@ -801,6 +827,8 @@ async function _renderTripDetail(id) {
     `<div class="stat"><span class="val">${v}</span><span class="lbl">${l}</span></div>`
   ).join('');
 
+  renderTripReport(t.report);
+
   // Map — live mode delivers compressedRoute as an already-parsed array; file mode
   // delivers it as a JSON string from SQLite. Handle both.
   const route = Array.isArray(t.compressedRoute) ? t.compressedRoute : tryParse(t.compressedRoute);
@@ -820,6 +848,122 @@ async function _renderTripDetail(id) {
         );
     renderTripCharts(pts);
   }, 50);
+}
+
+// ── Trip report (Overview figures + analyses) ──────────────────────────────────
+//
+// Rendered from the `report` object the app builds in TripReport.kt, so these
+// panels show exactly what the app's Overview tab shows — same formulas, same
+// sanity rules. Only the live API carries it: an offline .db file has the raw
+// rows but not the physics/PHEV analyses, so the section stays empty there.
+function rNum(v, d = 1, unit = '') {
+  if (v == null || !isFinite(+v)) return '—';
+  // '%' and '°C' hug the number the way the app prints them; real units get a space.
+  const sep = (unit === '%' || unit === '°C') ? '' : ' ';
+  return (+v).toFixed(d) + (unit ? sep + unit : '');
+}
+function rRow(label, value, sub = false) {
+  return `<div class="report-row${sub ? ' sub' : ''}"><span class="lbl">${label}</span><span class="val">${value}</span></div>`;
+}
+function rPanel(title, rows, note = '', extra = '') {
+  const body = rows.filter(Boolean).join('');
+  if (!body) return '';
+  return `<div class="report-panel"><div class="chart-title">${title}</div>` +
+         (note ? `<div class="report-note">${note}</div>` : '') + extra + body + '</div>';
+}
+
+function renderTripReport(rep) {
+  const el = document.getElementById('trip-report');
+  el.innerHTML = '';
+  if (!rep) return;
+  const o = rep.overview || {};
+  const panels = [];
+
+  // Panel 1 — the Overview tab's "Trip statistics" card.
+  const panelSoc = +o.startSocPanel > 0;
+  const socLabel = panelSoc ? 'Panel' : 'BMS';
+  const socStart = panelSoc ? o.startSocPanel : o.startSoc;
+  const socEnd   = panelSoc ? o.endSocPanel   : o.endSoc;
+  const socDelta = panelSoc ? o.socPanelDelta : o.socDelta;
+  const socDp    = panelSoc ? 0 : 1;
+  panels.push(rPanel('Trip statistics', [
+    rRow('Start time',  fmtDate(o.startTime)),
+    rRow('End time',    o.endTime ? fmtDate(o.endTime) : 'In progress'),
+    rRow('Duration',    fmtDuration(o.duration)),
+    rRow('Initial mileage', rNum(o.startOdometer, 1, 'km')),
+    rRow('Final mileage',   rNum(o.endOdometer, 1, 'km')),
+    rRow('Trip distance',   rNum(o.distance, 1, 'km')),
+    rRow(`Start SoC (${socLabel})`, rNum(socStart, socDp, '%')),
+    rRow(`End SoC (${socLabel})`,   rNum(socEnd, socDp, '%')),
+    rRow(`SoC change (${socLabel})`, rNum(socDelta, socDp, '%')),
+    rRow('Max speed', rNum(o.maxSpeed, 0, 'km/h')),
+    rRow('Avg speed', rNum(o.avgSpeed, 0, 'km/h')),
+    rRow('Max power', rNum(o.maxPower, 0, 'kW')),
+    rRow('Max regen', rNum(o.maxRegenPower, 0, 'kW')),
+    rRow('Energy consumed',    rNum(o.energyConsumed, 2, 'kWh')),
+    rRow('Energy regenerated', rNum(o.regenEnergy, 2, 'kWh')),
+    rRow('Gross energy',       rNum(o.grossEnergy, 2, 'kWh')),
+    rRow('Regen efficiency',   rNum(o.regenEfficiencyPct, 2, '%')),
+    o.energyRatePerKwh != null
+      ? rRow('Energy rate', +o.energyRatePerKwh <= 0 ? 'Free'
+          : `${o.currencySymbol || ''}${(+o.energyRatePerKwh).toFixed(3)}/kWh`)
+      : '',
+    o.tripCost != null
+      ? rRow('Trip cost', +o.tripCost <= 0 ? 'Free'
+          : `${o.currencySymbol || ''}${(+o.tripCost).toFixed(2)}`)
+      : '',
+    rRow('Battery temp range', o.batteryTempRangeLabel || '—'),
+    rRow('Avg battery temp',   o.avgBatteryTempLabel || '—'),
+    o.tripScore != null ? rRow('Trip score', `${o.tripScore} / 100`) : '',
+  ]));
+
+  // Panel 2 — hybrid split, PHEV cars whose points carry the fuel/ICE counters.
+  const p = rep.phev;
+  if (p) {
+    const bar = `<div class="report-bar"><div style="width:${Math.max(0, Math.min(100, +p.evSharePct || 0))}%"></div></div>`;
+    panels.push(rPanel('Hybrid breakdown', [
+      rRow('EV share',      rNum(p.evSharePct, 0, '%')),
+      rRow('EV distance',   rNum(p.evKm, 1, 'km')),
+      rRow('ICE distance',  rNum(p.iceKm, 1, 'km')),
+      rRow('Fuel used',     rNum(p.fuelLiters, 2, 'L')),
+      rRow('Fuel (ICE km)',      rNum(p.fuelLPer100IceKm, 1, 'L/100km')),
+      rRow('Fuel (combined)',    rNum(p.fuelLPer100TotalKm, 1, 'L/100km')),
+      rRow('EV consumption',     rNum(p.evKwhPer100EvKm, 2, 'kWh/100km')),
+    ], 'Derived from the trip’s fuel and ICE counters.', bar));
+  }
+
+  // Panel 3 — modelled energy split. Terms the car config can't support read "n/a".
+  const b = rep.energyBreakdown;
+  if (b) {
+    const caveats = [];
+    if (!b.hasPhysicsBreakdown) caveats.push('Rolling, aero, and gradient estimates require vehicle mass');
+    if (!b.hasAeroEstimate)     caveats.push('Aerodynamic estimate requires CdA for this model');
+    const kwhPct = (kwh, pct) => `${rNum(kwh, 2, 'kWh')} (${rNum(pct, 1)}%)`;
+    const signed = v => (v == null || !isFinite(+v)) ? '—'
+      : (+v >= 0 ? '+' : '−') + rNum(Math.abs(+v), 2, 'kWh');
+    panels.push(rPanel('Energy breakdown', [
+      rRow('Total consumed', rNum(b.totalConsumedKwh, 2, 'kWh')),
+      rRow('Rolling resistance', b.hasPhysicsBreakdown ? kwhPct(b.rollingKwh, b.rollingPct) : 'n/a'),
+      rRow('Aerodynamic drag',   b.hasAeroEstimate     ? kwhPct(b.aeroKwh, b.aeroPct)       : 'n/a'),
+      rRow('Climb',   b.hasGradientEstimate ? rNum(b.climbKwh, 2, 'kWh') : 'n/a'),
+      rRow('Descent', b.hasGradientEstimate ? '−' + rNum(b.descentKwh, 2, 'kWh') : 'n/a'),
+      rRow('Net gradient', b.hasGradientEstimate
+        ? `${signed(b.netGradientKwh)} (${rNum(b.gradientPct, 1)}%)` : 'n/a'),
+      rRow('Auxiliary + losses', b.hasPhysicsBreakdown ? kwhPct(b.auxiliaryKwh, b.auxiliaryPct) : 'n/a'),
+      rRow('Vehicle mass', b.estimatedKerbMassKg != null ? rNum(b.estimatedKerbMassKg, 0, 'kg') : 'n/a'),
+      rRow('CdA (drag area)', b.cdA != null ? rNum(b.cdA, 3, 'm²') : 'n/a'),
+    ], caveats.join(' · ')));
+  }
+
+  if (rep.car) {
+    panels.push(rPanel('Vehicle', [
+      rRow('Model', rep.car.name || rep.car.id || '—'),
+      rRow('Battery', rNum(rep.car.batteryKwh, 2, 'kWh')),
+      rRow('Drivetrain', rep.car.isPhev ? 'PHEV' : 'BEV'),
+    ]));
+  }
+
+  el.innerHTML = panels.filter(Boolean).join('');
 }
 
 // ── Charging list ──────────────────────────────────────────────────────────────

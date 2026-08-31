@@ -10,6 +10,7 @@ import com.byd.tripstats.data.analysis.CostAttribution
 import com.byd.tripstats.data.analysis.RouteGroup
 import com.byd.tripstats.data.analysis.RouteGrouping
 import com.byd.tripstats.data.analysis.RouteTripInput
+import com.byd.tripstats.data.analysis.TripReport
 import com.byd.tripstats.data.local.entity.ChargingDataPointEntity
 import com.byd.tripstats.data.local.entity.ChargingSessionEntity
 import com.byd.tripstats.data.local.entity.TagEntity
@@ -512,34 +513,13 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 //   - efficiency must be available
                 //   - distance ≥ 0.5 km  (filters out micro/accidental trips)
                 //   - duration > 0
+                //
+                // The formulas themselves live in TripReport so the HTML export and the
+                // web companion report the same score as this list.
                 // ─────────────────────────────────────────────────────────────
-                val score = run {
-                    val eff = trip.efficiency ?: return@run null
-                    if (dist == null || dur == null || dist < 0.5 || dur <= 0) return@run null
-                    val effScore = when {
-                        eff <= 17.0 -> 40
-                        eff >= 25.0 -> 0
-                        else        -> ((25.0 - eff) / (25.0 - 15.0) * 40).toInt()
-                    }
-                    val maxRegen = kotlin.math.abs(trip.maxRegenPower)
-                    val maxPower = trip.maxPower
-                    val regenScore = if (maxPower + maxRegen > 0)
-                        ((maxRegen / (maxPower + maxRegen)) * 30).toInt().coerceIn(0, 30) else 0
-                    val smoothAvg = avgSpeed?.toDouble() ?: dist / (dur / 3_600_000.0)
-                    val smoothScore = if (trip.maxSpeed > 0)
-                        ((smoothAvg / trip.maxSpeed) * 30).toInt().coerceIn(0, 30) else 0
-                    (effScore + regenScore + smoothScore).coerceIn(0, 100)
-                }
+                val score = TripReport.tripScore(trip, avgSpeed?.toDouble())
 
-                val tripStat = statsById[trip.id]
-                val regenPct = if (
-                    tripStat != null &&
-                    trip.energyConsumed != null &&
-                    trip.energyConsumed!! > 0
-                ) {
-                    val regen = tripStat.totalRegenEnergy
-                    (regen / (trip.energyConsumed!! + regen)) * 100.0
-                } else null
+                val regenPct = TripReport.regenEfficiencyPct(trip, statsById[trip.id])
 
                 val rate = blendedRates[trip.id]
                 val tripCost = if (rate != null && trip.energyConsumed != null)

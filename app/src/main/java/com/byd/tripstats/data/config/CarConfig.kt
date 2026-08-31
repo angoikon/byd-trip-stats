@@ -245,6 +245,47 @@ object CarCatalog {
         cdA = 0.694       // Cd 0.272 × A 2.55 m²
     )
 
+    // BYD Atto 3 EVO — the 2026 model-year overhaul, and a different car under the skin from
+    // the three FWD Atto 3 entries above: rear- or all-wheel drive, a 74.8 kWh pack (published
+    // usable; 76.0 kWh gross) and 220 kW DC charging. Ships with DiLink 5, so it needs the
+    // `dilink5` build. Two trims are offered — Design (RWD) and Excellence (AWD).
+    //
+    // Pack: the published 499.2 V nominal is exactly 156 × 3.2 V, and 156 × 0.48 kWh = 74.88 kWh,
+    // so this is the same 156S blade pack as the Atto 3 Premium — the cell count is derived, not
+    // estimated. Kerb mass, WLTP range, WLTP consumption and motor outputs are published figures.
+    // Body dimensions are unchanged from the pre-EVO Atto 3 (4455 × 1615 mm), so cdA is carried
+    // over; tyre pressures likewise, pending a door-placard reading from an owner.
+    val BYD_ATTO_3_EVO_DESIGN = CarConfig(
+        id = "BYD_ATTO_3_EVO_DESIGN",
+        displayName = "Atto 3 EVO Design",
+        drivetrain = Drivetrain.RWD,
+        batteryKwh = 74.88,             // 156 × 0.48 kWh blade cell; published as "74.8 kWh"
+        estimatedKerbMassKg = 1880.0,   // published kerb mass
+        wltpKm = 510,                   // published WLTP combined
+        referenceConsumptionKwhPer100km = 16.4, // published WLTP combined (14.7 is the pack ÷ range figure)
+        frontTyrePressureBar = 2.5,     // carried over from the Atto 3 — verify against the placard
+        rearTyrePressureBar = 2.5,      // carried over from the Atto 3 — verify against the placard
+        rearMotorRatedKw = 230,         // published (single rear motor)
+        cellCount = 156,                // 499.2 V ÷ 3.2 V per cell
+        cdA = 0.694                     // Cd 0.272 × A 2.55 m² — same body as the pre-EVO Atto 3
+    )
+
+    val BYD_ATTO_3_EVO_EXCELLENCE = CarConfig(
+        id = "BYD_ATTO_3_EVO_EXCELLENCE",
+        displayName = "Atto 3 EVO Excellence",
+        drivetrain = Drivetrain.AWD,
+        batteryKwh = 74.88,             // same pack as the Design, driven through both axles
+        estimatedKerbMassKg = 1990.0,   // published kerb mass (+110 kg over the RWD)
+        wltpKm = 470,                   // published WLTP combined
+        referenceConsumptionKwhPer100km = 17.8, // published WLTP combined
+        frontTyrePressureBar = 2.5,     // carried over from the Atto 3 — verify against the placard
+        rearTyrePressureBar = 2.5,      // carried over from the Atto 3 — verify against the placard
+        frontMotorRatedKw = 100,        // published — 100 + 230 = the quoted 330 kW combined
+        rearMotorRatedKw = 230,         // published
+        cellCount = 156,                // 499.2 V ÷ 3.2 V per cell
+        cdA = 0.694                     // assumed shared with the Design — verify
+    )
+
     val BYD_SEAL_U_COMFORT = CarConfig(
         id = "BYD_SEAL_U_COMFORT",
         displayName = "Seal U Comfort",
@@ -767,6 +808,42 @@ object CarCatalog {
         phevUsableBatteryKwh = 18.3
     )
 
+    // BYD Seal 7 DM-i — the GCC/MENA nameplate of the Chinese Seal 07 DM-i (China Aug 2024;
+    // GCC June 2025 — Saudi Arabia, UAE, Kuwait, Qatar, Oman, later Bahrain). A 4.98 m DM-i
+    // saloon: 1.5 L petrol engine (74 kW) plus a single 160 kW front motor. Listed under its
+    // regional badge because that is the only name it carries there, the same way the Brazilian
+    // Song Pro DM-i is listed apart from the Sealion 5 DM-i — and note it is NOT related to the
+    // Seal 5 / Seal 6 entries, which are different cars despite the numbering.
+    //
+    // Sold in two trims (base and Flagship) that differ only in equipment — same battery, motor
+    // and engine — so one entry covers both. The head-unit generation is not confirmed (the GCC
+    // cars ship a 15.6" rotating unit); the catalog entry is generation-agnostic, and the app
+    // detects DiLink 3 vs 5 at runtime and warns when the wrong build is installed.
+    val BYD_SEAL_7_DM_I = CarConfig(
+        id = "BYD_SEAL_7_DM_I",
+        displayName = "Seal 7 DM-i",
+        drivetrain = Drivetrain.FWD,            // confirmed — single front motor
+        batteryKwh = 17.6,                      // confirmed Blade LFP gross pack (BYD GCC launch spec)
+        estimatedKerbMassKg = 1830.0,           // published Seal 07 kerb range is 1795–1900 kg; the
+                                                // 17.6 kWh car sits low in it — estimate, verify
+        wltpKm = 75,                            // BYD's published EV-only figure for the region. The
+                                                // Chinese 17.6 kWh car is rated 135 km CLTC, but the
+                                                // conservative regional number is the safer anchor —
+                                                // PHEV projections ceiling on max(car's own range, this).
+        referenceConsumptionKwhPer100km = 19.5, // estimate for EV mode: a 4.98 m saloon at ~1.83 t sits
+                                                // below the Sealion 5 DM-i crossover's 21.3 — verify
+        frontTyrePressureBar = 2.4,             // estimate for 225/50 R18 — verify against the door placard
+        rearTyrePressureBar = 2.4,              // estimate — verify against the door placard
+        frontMotorRatedKw = 160,                // confirmed (BYD Saudi spec page: 160 kW, 260/325 N·m)
+        cdA = 0.60,                             // estimate: Cd ~0.24 × A ~2.5 m². BYD has not published a
+                                                // Cd for this car; the Seal BEV saloon measures 0.568
+        isPhev = true,
+        phevUsableBatteryKwh = 15.0,            // ~85% of gross — the ratio BYD's other DM-i packs show
+                                                // (Seal U DM-i is 18.3 → 15.2) — verify
+        fuelTankLiters = 50.0                   // confirmed spec sheet; with 75 km EV that lands on the
+                                                // ~850 km combined range BYD quotes for the region
+    )
+
     // BYD Shark 6 — DM-O (Dual Mode Off-road) plug-in hybrid pickup. Dual-motor AWD
     // (front + rear) with a 1.5T petrol engine. Only sold as an AWD variant.
     val BYD_SHARK_6_AWD = CarConfig(
@@ -800,6 +877,8 @@ object CarCatalog {
         BYD_ATTO_3_SR,
         BYD_ATTO_3,
         BYD_ATTO_3_PREMIUM,
+        BYD_ATTO_3_EVO_DESIGN,
+        BYD_ATTO_3_EVO_EXCELLENCE,
         BYD_SEAL_U_COMFORT,
         BYD_SEAL_U_DESIGN,
         BYD_SEAGULL_ACTIVE,
@@ -825,6 +904,7 @@ object CarCatalog {
         BYD_TANG_DM_I,
         BYD_SEALION_5_DMI_COMFORT,
         BYD_SEALION_5_DMI_DESIGN,
+        BYD_SEAL_7_DM_I,
         BYD_SEALION_6_DMI_PREMIUM,
         BYD_SEALION_6_DMI_PERFORMANCE,
         BYD_SHARK_6_AWD,
@@ -843,13 +923,15 @@ object CarCatalog {
     /**
      * Cars grouped for display in selection screens.
      * Two top-level categories (BEV / PHEV), each with named model groups.
-     * Mostly DiLink 3 vehicles; the Sealion 7 (DiLink 5) is supported by the `dilink5` flavor.
+     * Mostly DiLink 3 vehicles; the Sealion 7 and the Atto 3 EVO (DiLink 5) are supported by
+     * the `dilink5` flavor.
      */
     val groupedBev: LinkedHashMap<String, List<CarConfig>> = linkedMapOf(
         "BYD Seal" to listOf(BYD_SEAL_DYNAMIC_RWD, BYD_SEAL_PREMIUM_RWD, BYD_SEAL_EXCELLENCE),
         "BYD Dolphin" to listOf(BYD_DOLPHIN_STANDARD, BYD_DOLPHIN_EXTENDED),
         "BYD Atto 2" to listOf(BYD_ATTO_2_ACTIVE, BYD_ATTO_2_BOOST, BYD_ATTO_2_COMFORT),
         "BYD Atto 3" to listOf(BYD_ATTO_3_SR, BYD_ATTO_3, BYD_ATTO_3_PREMIUM),
+        "BYD Atto 3 EVO (DiLink 5)" to listOf(BYD_ATTO_3_EVO_DESIGN, BYD_ATTO_3_EVO_EXCELLENCE),
         "BYD Seal U" to listOf(BYD_SEAL_U_COMFORT, BYD_SEAL_U_DESIGN),
         "BYD Seagull / Dolphin Surf / Atto 1" to listOf(BYD_SEAGULL_ACTIVE, BYD_SEAGULL_FLYING, BYD_DOLPHIN_SURF_ACTIVE, BYD_DOLPHIN_SURF_BOOST, BYD_DOLPHIN_SURF_COMFORT),
         "BYD M6" to listOf(BYD_M6_STANDARD_120KW, BYD_M6_SUPERIOR_100KW, BYD_M6_SUPERIOR_150KW),
@@ -868,6 +950,8 @@ object CarCatalog {
         "BYD Han DM-i" to listOf(BYD_HAN_DM_I),
         "BYD Tang DM-i" to listOf(BYD_TANG_DM_I),
         "BYD Seal 5 / Sealion 5 DM-i" to listOf(BYD_SEALION_5_DMI_COMFORT, BYD_SEALION_5_DMI_DESIGN),
+        // GCC/MENA-only nameplate (the Chinese Seal 07 DM-i) — unrelated to the Seal 5 group above.
+        "BYD Seal 7 DM-i (MENA)" to listOf(BYD_SEAL_7_DM_I),
         "BYD Sealion 6 DM-i" to listOf(BYD_SEALION_6_DMI_PREMIUM, BYD_SEALION_6_DMI_PERFORMANCE),
         "BYD Shark 6" to listOf(BYD_SHARK_6_AWD),
     )

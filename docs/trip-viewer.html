@@ -103,6 +103,39 @@
   }
   .stat .unit { font-size: 12px; color: var(--muted); margin-left: 3px; }
 
+  /* ── Report panels: the app's Overview figures + derived analyses ─────────── */
+  .report-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .report-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .report-panel h3 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .report-note { font-size: 12px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; }
+  .report-row {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+    padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 13px;
+  }
+  .report-row:last-child { border-bottom: none; }
+  .report-row .lbl { color: var(--muted); }
+  .report-row .val { font-weight: 600; text-align: right; }
+  .report-bar {
+    height: 6px; border-radius: 3px; margin: 8px 0 12px;
+    background: rgba(247, 37, 133, 0.2); overflow: hidden;
+  }
+  .report-bar > div { height: 100%; background: #06d6a0; }
+
   .charts {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
@@ -164,6 +197,7 @@
 
   <div id="content" class="hidden">
     <div class="summary" id="summary"></div>
+    <div class="report-grid" id="report"></div>
     <div class="charts" id="charts"></div>
   </div>
 </main>
@@ -177,6 +211,7 @@ const resetBtn = document.getElementById('resetBtn');
 const content = document.getElementById('content');
 const summaryEl = document.getElementById('summary');
 const chartsEl = document.getElementById('charts');
+const reportEl = document.getElementById('report');
 const errorEl = document.getElementById('error');
 
 let charts = [];
@@ -218,6 +253,7 @@ fileInput.addEventListener('change', e => {
 resetBtn.addEventListener('click', () => {
   fileInput.value = '';
   content.classList.add('hidden');
+  reportEl.innerHTML = '';
   dropzone.classList.remove('hidden');
   resetBtn.classList.add('hidden');
   clearError();
@@ -321,6 +357,118 @@ function createLineChart(canvas, datasets, yLabel) {
   });
 }
 
+// ── Trip report (Overview figures + analyses) ─────────────────────────────────
+//
+// Rendered from the `report` object the app embeds at export time (TripReport.kt),
+// so these panels show what the app's Overview tab shows — same formulas, same
+// sanity rules. Trip JSON exported before this existed simply has no `report`,
+// and the section is skipped.
+function rNum(v, d = 1, unit = '') {
+  if (v == null || !isFinite(+v)) return '—';
+  // '%' and '°C' hug the number the way the app prints them; real units get a space.
+  const sep = (unit === '%' || unit === '°C') ? '' : ' ';
+  return (+v).toFixed(d) + (unit ? sep + unit : '');
+}
+function rRow(label, value) {
+  return `<div class="report-row"><span class="lbl">${label}</span><span class="val">${value}</span></div>`;
+}
+function rPanel(title, rows, note = '', extra = '') {
+  const body = rows.filter(Boolean).join('');
+  if (!body) return '';
+  return `<div class="report-panel"><h3>${title}</h3>` +
+         (note ? `<div class="report-note">${note}</div>` : '') + extra + body + '</div>';
+}
+
+function renderReport(rep) {
+  reportEl.innerHTML = '';
+  if (!rep) return;
+  const o = rep.overview || {};
+  const panels = [];
+
+  const panelSoc = +o.startSocPanel > 0;
+  const socLabel = panelSoc ? 'Panel' : 'BMS';
+  const socStart = panelSoc ? o.startSocPanel : o.startSoc;
+  const socEnd   = panelSoc ? o.endSocPanel   : o.endSoc;
+  const socDelta = panelSoc ? o.socPanelDelta : o.socDelta;
+  const socDp    = panelSoc ? 0 : 1;
+  panels.push(rPanel('Trip statistics', [
+    rRow('Start time', fmtDate(o.startTime)),
+    rRow('End time',   o.endTime ? fmtDate(o.endTime) : 'In progress'),
+    rRow('Duration',   o.duration != null ? fmtDuration(o.duration) : '—'),
+    rRow('Initial mileage', rNum(o.startOdometer, 1, 'km')),
+    rRow('Final mileage',   rNum(o.endOdometer, 1, 'km')),
+    rRow('Trip distance',   rNum(o.distance, 1, 'km')),
+    rRow(`Start SoC (${socLabel})`,  rNum(socStart, socDp, '%')),
+    rRow(`End SoC (${socLabel})`,    rNum(socEnd, socDp, '%')),
+    rRow(`SoC change (${socLabel})`, rNum(socDelta, socDp, '%')),
+    rRow('Max speed', rNum(o.maxSpeed, 0, 'km/h')),
+    rRow('Avg speed', rNum(o.avgSpeed, 0, 'km/h')),
+    rRow('Max power', rNum(o.maxPower, 0, 'kW')),
+    rRow('Max regen', rNum(o.maxRegenPower, 0, 'kW')),
+    rRow('Energy consumed',    rNum(o.energyConsumed, 2, 'kWh')),
+    rRow('Energy regenerated', rNum(o.regenEnergy, 2, 'kWh')),
+    rRow('Gross energy',       rNum(o.grossEnergy, 2, 'kWh')),
+    rRow('Regen efficiency',   rNum(o.regenEfficiencyPct, 2, '%')),
+    o.energyRatePerKwh != null
+      ? rRow('Energy rate', +o.energyRatePerKwh <= 0 ? 'Free'
+          : `${o.currencySymbol || ''}${(+o.energyRatePerKwh).toFixed(3)}/kWh`)
+      : '',
+    o.tripCost != null
+      ? rRow('Trip cost', +o.tripCost <= 0 ? 'Free'
+          : `${o.currencySymbol || ''}${(+o.tripCost).toFixed(2)}`)
+      : '',
+    rRow('Battery temp range', o.batteryTempRangeLabel || '—'),
+    rRow('Avg battery temp',   o.avgBatteryTempLabel || '—'),
+    o.tripScore != null ? rRow('Trip score', `${o.tripScore} / 100`) : '',
+  ]));
+
+  const p = rep.phev;
+  if (p) {
+    const bar = `<div class="report-bar"><div style="width:${Math.max(0, Math.min(100, +p.evSharePct || 0))}%"></div></div>`;
+    panels.push(rPanel('Hybrid breakdown', [
+      rRow('EV share',     rNum(p.evSharePct, 0, '%')),
+      rRow('EV distance',  rNum(p.evKm, 1, 'km')),
+      rRow('ICE distance', rNum(p.iceKm, 1, 'km')),
+      rRow('Fuel used',    rNum(p.fuelLiters, 2, 'L')),
+      rRow('Fuel (ICE km)',   rNum(p.fuelLPer100IceKm, 1, 'L/100km')),
+      rRow('Fuel (combined)', rNum(p.fuelLPer100TotalKm, 1, 'L/100km')),
+      rRow('EV consumption',  rNum(p.evKwhPer100EvKm, 2, 'kWh/100km')),
+    ], 'Derived from the trip’s fuel and ICE counters.', bar));
+  }
+
+  const b = rep.energyBreakdown;
+  if (b) {
+    const caveats = [];
+    if (!b.hasPhysicsBreakdown) caveats.push('Rolling, aero, and gradient estimates require vehicle mass');
+    if (!b.hasAeroEstimate)     caveats.push('Aerodynamic estimate requires CdA for this model');
+    const kwhPct = (kwh, pct) => `${rNum(kwh, 2, 'kWh')} (${rNum(pct, 1)}%)`;
+    const signed = v => (v == null || !isFinite(+v)) ? '—'
+      : (+v >= 0 ? '+' : '−') + rNum(Math.abs(+v), 2, 'kWh');
+    panels.push(rPanel('Energy breakdown', [
+      rRow('Total consumed', rNum(b.totalConsumedKwh, 2, 'kWh')),
+      rRow('Rolling resistance', b.hasPhysicsBreakdown ? kwhPct(b.rollingKwh, b.rollingPct) : 'n/a'),
+      rRow('Aerodynamic drag',   b.hasAeroEstimate     ? kwhPct(b.aeroKwh, b.aeroPct)       : 'n/a'),
+      rRow('Climb',   b.hasGradientEstimate ? rNum(b.climbKwh, 2, 'kWh') : 'n/a'),
+      rRow('Descent', b.hasGradientEstimate ? '−' + rNum(b.descentKwh, 2, 'kWh') : 'n/a'),
+      rRow('Net gradient', b.hasGradientEstimate
+        ? `${signed(b.netGradientKwh)} (${rNum(b.gradientPct, 1)}%)` : 'n/a'),
+      rRow('Auxiliary + losses', b.hasPhysicsBreakdown ? kwhPct(b.auxiliaryKwh, b.auxiliaryPct) : 'n/a'),
+      rRow('Vehicle mass', b.estimatedKerbMassKg != null ? rNum(b.estimatedKerbMassKg, 0, 'kg') : 'n/a'),
+      rRow('CdA (drag area)', b.cdA != null ? rNum(b.cdA, 3, 'm²') : 'n/a'),
+    ], caveats.join(' · ')));
+  }
+
+  if (rep.car) {
+    panels.push(rPanel('Vehicle', [
+      rRow('Model',      rep.car.name || rep.car.id || '—'),
+      rRow('Battery',    rNum(rep.car.batteryKwh, 2, 'kWh')),
+      rRow('Drivetrain', rep.car.isPhev ? 'PHEV' : 'BEV'),
+    ]));
+  }
+
+  reportEl.innerHTML = panels.filter(Boolean).join('');
+}
+
 function renderTrip(trip) {
   destroyCharts();
   summaryEl.innerHTML = '';
@@ -352,6 +500,8 @@ function renderTrip(trip) {
   if (trip.maxSpeed != null) summaryEl.appendChild(stat('Max speed', trip.maxSpeed.toFixed(0), 'km/h'));
   if (trip.maxPower != null) summaryEl.appendChild(stat('Max power', trip.maxPower.toFixed(0), 'kW'));
   if (trip.startTime) summaryEl.appendChild(stat('Start', fmtDate(trip.startTime)));
+
+  renderReport(trip.report);
 
   // Build only the series referenced by CHART_SPECS — single pass over points.
   const wantedFields = new Set();

@@ -57,6 +57,13 @@ interface TripDao {
      *  Used on startup to backfill stats for trips that missed calculateTripStats. */
     @Query("SELECT * FROM trips WHERE isActive = 0 AND id NOT IN (SELECT tripId FROM trip_stats)")
     suspend fun getCompletedTripsWithoutStats(): List<TripEntity>
+
+    /** Completed trips whose panel-SoC pair collapsed onto a flat "x% → x%" — the
+     *  signature of the pre-2.15.1 cold-start close path (see
+     *  TripRepository.repairFlatEndSocPanel). Trips with no panel reading at all
+     *  (startSocPanel = 0) are excluded: there is nothing to recover there. */
+    @Query("SELECT * FROM trips WHERE isActive = 0 AND endSocPanel IS NOT NULL AND endSocPanel = startSocPanel AND startSocPanel > 0")
+    suspend fun getTripsWithFlatPanelSoc(): List<TripEntity>
 }
 
 @Dao
@@ -95,6 +102,12 @@ interface TripDataPointDao {
      *  doesn't collapse endOdometer down to trip.startOdometer. */
     @Query("SELECT * FROM trip_data_points WHERE tripId = :tripId AND odometer > :minOdometer ORDER BY timestamp DESC LIMIT 1")
     suspend fun getLastValidOdometerPointForTrip(tripId: Long, minOdometer: Double): TripDataPointEntity?
+
+    /** Panel SoC of the most recent point of [tripId] that actually carries a reading
+     *  (0 means the panel value was never recorded / read as 0). Lets the one-shot
+     *  flat-endSocPanel repair resolve a trip without materialising all of its points. */
+    @Query("SELECT socPanel FROM trip_data_points WHERE tripId = :tripId AND socPanel > 0 ORDER BY timestamp DESC LIMIT 1")
+    suspend fun getLastPanelSocForTrip(tripId: Long): Int?
 
     /** Bulk-deletes points by primary key. Room batches the IN (...) clause.
      *  Used by thinOldDataPoints — first and last points of each trip are never passed here. */

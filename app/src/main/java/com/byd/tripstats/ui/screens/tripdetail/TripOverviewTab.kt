@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.byd.tripstats.R
 import com.byd.tripstats.data.analysis.PhevTripAnalysis
+import com.byd.tripstats.data.analysis.TripReport
 import com.byd.tripstats.data.analysis.calculateTripEnergyBreakdown
 import com.byd.tripstats.data.config.CarConfig
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
@@ -220,8 +221,8 @@ fun TripOverviewTab(
                 DetailRow(stringResource(R.string.regeneration_efficiency_label), regenEfficiencyPct?.let { String.format("%.2f%%", it) } ?: "-")
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = (MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)))
 
-                DetailRow(stringResource(R.string.battery_temp_range_label), tripBatteryTempRangeLabel(trip))
-                DetailRow(stringResource(R.string.avg_battery_temp_label), tripBatteryAvgTempLabel(trip))
+                DetailRow(stringResource(R.string.battery_temp_range_label), TripReport.batteryTempRangeLabel(trip))
+                DetailRow(stringResource(R.string.avg_battery_temp_label), TripReport.avgBatteryTempLabel(trip))
             }
         }
 
@@ -442,29 +443,6 @@ fun TripOverviewTab(
         }
     }
 
-}
-
-private fun tripBatteryTempRangeLabel(trip: TripEntity): String {
-    fun isValidCellTemp(value: Int): Boolean = value in -40..120
-    val min = trip.minBatteryCellTemp.takeIf(::isValidCellTemp)
-    val max = trip.maxBatteryCellTemp.takeIf(::isValidCellTemp)
-    val rangeValid = min != null && max != null && max >= min && (max - min) <= 25
-    return when {
-        rangeValid -> "${min}°C - ${max}°C"
-        min != null -> "${min}°C"
-        max != null && max in -40..80 -> "${max}°C"
-        else -> "-"
-    }
-}
-
-private fun tripBatteryAvgTempLabel(trip: TripEntity): String {
-    val min = trip.minBatteryCellTemp.takeIf { it in -40..120 }?.toDouble()
-    val max = trip.maxBatteryCellTemp.takeIf { it in -40..120 }?.toDouble()
-    if (min != null && max != null && max >= min && (max - min) <= 25) {
-        return "${((min + max) / 2.0).toInt()}°C"
-    }
-    val avg = trip.avgBatteryTemp.takeIf { it.isFinite() && it in -40.0..120.0 } ?: return "-"
-    return "${avg.toInt()}°C"
 }
 
 private fun formatKwh(value: Double): String =

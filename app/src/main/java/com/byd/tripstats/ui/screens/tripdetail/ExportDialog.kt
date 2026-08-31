@@ -33,9 +33,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.byd.tripstats.R
+import com.byd.tripstats.data.analysis.TripReport
 import com.byd.tripstats.data.backup.TelegramManager
+import com.byd.tripstats.data.config.CarConfig
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
 import com.byd.tripstats.data.local.entity.TripEntity
+import com.byd.tripstats.data.local.entity.TripStatsEntity
 import com.byd.tripstats.data.preferences.SocSource
 import com.byd.tripstats.data.preferences.UnitSystem
 import com.byd.tripstats.util.QrCodeGenerator
@@ -48,11 +51,29 @@ fun ExportDialog(
     dataPoints: List<TripDataPointEntity>,
     onDismiss: () -> Unit,
     unitSystem: UnitSystem = UnitSystem.METRIC,
-    socSource: SocSource = SocSource.PANEL
+    socSource: SocSource = SocSource.PANEL,
+    stats: TripStatsEntity? = null,
+    carConfig: CarConfig? = null,
+    blendedRate: Double? = null,
+    currencySymbol: String = "€",
 ) {
     val context          = LocalContext.current
     val stableTrip       = remember { trip }
     val stableDataPoints = remember { dataPoints.toList() }
+
+    // Overview figures + derived analyses, carried inside every JSON/HTML export so the
+    // viewer shows what the app's Overview tab shows. Built once from the same captured
+    // trip and points the export itself writes out.
+    val report = remember(stableTrip, stableDataPoints, stats, carConfig, blendedRate) {
+        TripReport.build(
+            trip = stableTrip,
+            stats = stats,
+            dataPoints = stableDataPoints,
+            carConfig = carConfig,
+            blendedRate = blendedRate,
+            currencySymbol = currencySymbol,
+        )
+    }
 
     val telegram         = remember { TelegramManager.getInstance(context) }
     val telegramConfig   by telegram.config.collectAsState()
@@ -106,7 +127,7 @@ fun ExportDialog(
                         scope.launch(Dispatchers.IO) {
                             launch(Dispatchers.Main) { uploadInProgress = true; uploadError = null }
                             try {
-                                val url = uploadTripJson(stableTrip, stableDataPoints)
+                                val url = uploadTripJson(stableTrip, stableDataPoints, report = report)
                                 launch(Dispatchers.Main) {
                                     uploadInProgress = false
                                     qrUrl = url
@@ -169,7 +190,7 @@ fun ExportDialog(
 
                     OutlinedButton(
                         onClick = {
-                            saveTripAsJSON(context, stableTrip, stableDataPoints)
+                            saveTripAsJSON(context, stableTrip, stableDataPoints, report)
                             onDismiss()
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -181,7 +202,7 @@ fun ExportDialog(
 
                     OutlinedButton(
                         onClick = {
-                            saveTripAsHtml(context, stableTrip, stableDataPoints)
+                            saveTripAsHtml(context, stableTrip, stableDataPoints, report)
                             onDismiss()
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -234,7 +255,7 @@ fun ExportDialog(
                             sendTripExportToTelegram(
                                 context, telegram, scope, stableTrip,
                                 format = "json",
-                                content = buildTripJson(stableTrip, stableDataPoints)
+                                content = buildTripJson(stableTrip, stableDataPoints, report)
                             )
                             onDismiss()
                         },
@@ -251,7 +272,7 @@ fun ExportDialog(
                             sendTripExportToTelegram(
                                 context, telegram, scope, stableTrip,
                                 format = "html",
-                                content = buildTripEmbeddedHtml(context, stableTrip, stableDataPoints)
+                                content = buildTripEmbeddedHtml(context, stableTrip, stableDataPoints, report)
                             )
                             onDismiss()
                         },

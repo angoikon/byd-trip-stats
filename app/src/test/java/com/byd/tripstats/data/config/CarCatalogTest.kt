@@ -102,8 +102,21 @@ class CarCatalogTest {
         assertEquals(Drivetrain.FWD, CarCatalog.BYD_SEAL_U_DESIGN.drivetrain)
     }
 
-    @Test fun `catalog contains all 45 expected cars`() {
-        assertEquals(45, CarCatalog.allCars.size)
+    @Test fun `catalog contains all 48 expected cars`() {
+        assertEquals(48, CarCatalog.allCars.size)
+    }
+
+    /** The EVO breaks the Atto 3 family's FWD pattern — Design is RWD, Excellence is dual-motor AWD. */
+    @Test fun `Atto 3 EVO trims are RWD and dual-motor AWD`() {
+        assertEquals(Drivetrain.RWD, CarCatalog.BYD_ATTO_3_EVO_DESIGN.drivetrain)
+        assertNull("RWD Design must not declare a front motor", CarCatalog.BYD_ATTO_3_EVO_DESIGN.frontMotorRatedKw)
+
+        val awd = CarCatalog.BYD_ATTO_3_EVO_EXCELLENCE
+        assertEquals(Drivetrain.AWD, awd.drivetrain)
+        assertNotNull("AWD Excellence must declare a front motor", awd.frontMotorRatedKw)
+        assertNotNull("AWD Excellence must declare a rear motor", awd.rearMotorRatedKw)
+        assertEquals("front + rear must match the quoted 330 kW combined",
+            330, awd.frontMotorRatedKw!! + awd.rearMotorRatedKw!!)
     }
 
     @Test fun `both Sealion 7 AWD trims are dual-motor`() {
@@ -128,6 +141,33 @@ class CarCatalogTest {
         CarCatalog.allCars.forEach { car ->
             assertTrue("${car.id} is in allCars but not in any picker group", car in grouped)
         }
+    }
+
+    @Test fun `every PHEV declares a usable EV capacity below its gross pack`() {
+        CarCatalog.allCars.filter { it.isPhev }.forEach { car ->
+            val usable = car.phevUsableBatteryKwh
+            assertNotNull("${car.id} is a PHEV and must declare phevUsableBatteryKwh", usable)
+            assertTrue(
+                "${car.id} usable ($usable) must be below the gross pack (${car.batteryKwh})",
+                usable!! < car.batteryKwh
+            )
+        }
+    }
+
+    /** MENA/GCC-only nameplate (the Chinese Seal 07 DM-i) — a PHEV saloon that must not be
+     *  confused with, or folded into, the unrelated Seal 5 / Sealion 5 DM-i entries. */
+    @Test fun `Seal 7 DM-i is a single-motor FWD plug-in hybrid in its own group`() {
+        val car = CarCatalog.fromId("BYD_SEAL_7_DM_I")
+        assertNotNull(car)
+        assertTrue("Seal 7 DM-i must be a PHEV", car!!.isPhev)
+        assertEquals(Drivetrain.FWD, car.drivetrain)
+        assertEquals(160, car.frontMotorRatedKw)
+        assertNull("Seal 7 DM-i is single-motor FWD", car.rearMotorRatedKw)
+        assertEquals(50.0, car.fuelTankLiters!!, 0.001)
+
+        val group = CarCatalog.groupedPhev.entries.singleOrNull { it.key.contains("Seal 7") }
+        assertNotNull("Seal 7 DM-i must have its own picker group", group)
+        assertEquals(listOf(car), group!!.value)
     }
 
     @Test fun `Atto 3 pack sizes are exact blade-cell multiples`() {

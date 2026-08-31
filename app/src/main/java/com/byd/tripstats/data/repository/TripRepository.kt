@@ -15,6 +15,7 @@ import com.byd.tripstats.data.local.entity.TripTagCrossRef
 import com.byd.tripstats.data.local.entity.TAG_PALETTE_SIZE
 import com.byd.tripstats.data.model.VehicleTelemetry
 import com.byd.tripstats.data.preferences.PreferencesManager
+import com.byd.tripstats.util.DiagLog
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -286,6 +287,12 @@ class TripRepository private constructor(context: Context) {
     // a process death falls back to the normal stale-trip recovery on next start.
     private var keepCurrentOffWindow: Boolean = false
 
+    // Last car-off stop action written to diag.log. The evaluation runs on every telemetry
+    // tick, and a KEEP_HELD / HOLD_FOR_CONFIRM state can stand for the full 30-minute cap —
+    // so only transitions are recorded, not one line per tick. Cleared when the off-window
+    // closes (engine back on) and on trip reset, so the next park logs afresh.
+    private var lastLoggedCarOffAction: CarOffStopAction? = null
+
     // Safety cap: even a "kept" trip is auto-ended once the car has been off this
     // long continuously, so a forgotten trip can't linger. Nobody parks with the
     // engine on for this long, so 30 min is a safe ceiling. The trip's end time is
@@ -320,10 +327,17 @@ class TripRepository private constructor(context: Context) {
             confirmEnabled = confirmEnabled,
             uiVisible      = uiVisible
         )
-        if (action != CarOffStopAction.WITHIN_WINDOW) {
-            Log.i(TAG, "Car-off stop: $action (off=${(now - carOffSinceMs) / 1000}s " +
-                "timeout=${timeoutMs / 1000}s uiVisible=$uiVisible confirm=$confirmEnabled " +
-                "kept=$keepCurrentOffWindow)")
+        if (action != CarOffStopAction.WITHIN_WINDOW && action != lastLoggedCarOffAction) {
+            lastLoggedCarOffAction = action
+            // Persistent, not just logcat: on DiLink-5 this is the last thing the app manages to
+            // record before the OEM force-stop, and its absence is itself the finding — it means
+            // the app was already dead when the engine-off timeout came due.
+            DiagLog.event(
+                appContext, TAG,
+                "car-off stop: $action (off=${(now - carOffSinceMs) / 1000}s " +
+                    "timeout=${timeoutMs / 1000}s uiVisible=$uiVisible confirm=$confirmEnabled " +
+                    "kept=$keepCurrentOffWindow)"
+            )
         }
         when (action) {
             CarOffStopAction.WITHIN_WINDOW,
@@ -333,7 +347,7 @@ class TripRepository private constructor(context: Context) {
                 _pendingAutoStop.value = false
                 // End where the silent auto-stop always did: car-off + timeout, so
                 // the parked time isn't counted and stats are unchanged.
-                doEndTrip(overrideEndTime = carOffSinceMs + timeoutMs)
+                doEndTrip(reason = "car-off-timeout", overrideEndTime = carOffSinceMs + timeoutMs)
             }
         }
     }
@@ -550,6 +564,15 @@ class TripRepository private constructor(context: Context) {
                         .putBoolean(PREF_DURATION_REPAIR_DONE, true)
                         .apply()
                 }
+                // One-shot repair of trips whose panel-SoC pair collapsed to a flat
+                // "x% → x%" when they were closed from the cold-start recovery path
+                // (routine on DiLink-5). Only rows with that exact signature are read.
+                if (!prefs.getBoolean(PREF_FLAT_END_SOC_PANEL_REPAIR_DONE, false)) {
+                    repairFlatEndSocPanel()
+                    prefs.edit()
+                        .putBoolean(PREF_FLAT_END_SOC_PANEL_REPAIR_DONE, true)
+                        .apply()
+                }
             } catch (e: Exception) {
                 Log.w(TAG, "offStateDuration backfill / repair failed: ${e.message}")
             }
@@ -680,6 +703,51 @@ class TripRepository private constructor(context: Context) {
         Log.i(TAG, "duration repair: fixed $fixed / ${all.size} trips")
     }
 
+    /**
+     * One-shot repair (2.15.1) for trips whose stored [TripEntity.endSocPanel] collapsed
+     * onto [TripEntity.startSocPanel], showing a flat "80% → 80%" in the history list while
+     * the trip's own data points held the real decline all along.
+     *
+     * Cause: when a trip was closed from the cold-start recovery path, [doEndTrip] had no
+     * live telemetry (fresh process) and its data-point fallback was suppressed by the
+     * caller's odometer override, so the panel-SoC chain had no source and fell through to
+     * `?: trip.startSocPanel`. That is the *normal* close path on DiLink-5, where the OEM
+     * force-stops the app at ignition-off, which is why the flat pair shows up there
+     * routinely; DiLink-3 closes trips in-process and only lands here if it happened to be
+     * killed mid-trip. Fixed forward by the `overrideSocPanel` argument.
+     *
+     * Safety — this must never rewrite a correct value, on either head unit:
+     *  • only rows carrying the exact corruption signature are even read
+     *    ([TripDao.getTripsWithFlatPanelSoc]: completed, endSocPanel non-null and equal to
+     *    startSocPanel, panel data present);
+     *  • a genuinely flat trip (a short drive where the integer panel SoC really didn't
+     *    move) resolves to a candidate equal to startSocPanel and is skipped, so DiLink-3
+     *    history — where flat pairs are usually real — is left untouched;
+     *  • the candidate is the same value the fixed close path would now write: the last
+     *    recorded non-zero panel reading of that trip.
+     *
+     * endSocPanel is display-only (history card, trip detail, comparison, web/export) — no
+     * stats row or energy/cost ledger derives from it — so this is a plain column rewrite.
+     * Idempotent: a second run finds candidate == stored value and writes nothing.
+     */
+    private suspend fun repairFlatEndSocPanel() {
+        val candidates = tripDao.getTripsWithFlatPanelSoc()
+        if (candidates.isEmpty()) return
+        var fixed = 0
+        for (trip in candidates) {
+            val lastPanelSoc = dataPointDao.getLastPanelSocForTrip(trip.id)?.toDouble() ?: continue
+            if (lastPanelSoc !in 1.0..100.0) continue
+            if (lastPanelSoc == trip.startSocPanel) continue   // genuinely flat — leave alone
+            tripDao.updateTrip(trip.copy(endSocPanel = lastPanelSoc))
+            fixed++
+            kotlinx.coroutines.yield()
+        }
+        DiagLog.event(
+            appContext, TAG,
+            "flat endSocPanel repair: fixed $fixed / ${candidates.size} candidate trips"
+        )
+    }
+
     // ── Event dispatcher ──────────────────────────────────────────────────────
 
     private suspend fun handleEvent(event: TripEvent) {
@@ -787,6 +855,7 @@ class TripRepository private constructor(context: Context) {
                     // The car-off window is over — drop any held auto-stop prompt and the
                     // user's "keep" flag so a future stop is evaluated fresh.
                     keepCurrentOffWindow = false
+                    lastLoggedCarOffAction = null
                     _pendingAutoStop.value = false
                     // getTotalElecConValue resets to ~0 at car-on on resetting firmwares,
                     // so the first post-resume delta would be a large negative jump. Drop
@@ -864,7 +933,7 @@ class TripRepository private constructor(context: Context) {
                 // window is never falsely closed here.
                 if (lastTelemetryTime > 0 && now - lastTelemetryTime > carOffTimeoutMs()) {
                     Log.w(TAG, "Long gap (${(now - lastTelemetryTime) / 60_000} min) while car on → ending stale trip")
-                    doEndTrip(overrideEndTime = lastTelemetryTime)
+                    doEndTrip(reason = "long-gap-while-on", overrideEndTime = lastTelemetryTime)
                     // Re-evaluate this same packet for a new auto-start rather than
                     // discarding it — avoids a one-packet hole after stale-trip close.
                     val inCooldown = now < manualStopCooldownUntilMs
@@ -922,7 +991,7 @@ class TripRepository private constructor(context: Context) {
         // looked like a manual one with stale bounds).
         if (tripState == TripState.ACTIVE) {
             Log.i(TAG, "Manual start requested while auto trip active — closing auto trip first")
-            doEndTrip()
+            doEndTrip(reason = "manual-start-replaces-auto")
         }
         Log.i(TAG, "Manual start requested")
         doStartTrip(
@@ -941,7 +1010,7 @@ class TripRepository private constructor(context: Context) {
             return
         }
         Log.i(TAG, "Manual stop requested")
-        doEndTrip()
+        doEndTrip(reason = "manual-stop")
     }
 
     /** User tapped "Keep recording" on the auto-stop prompt. */
@@ -963,7 +1032,7 @@ class TripRepository private constructor(context: Context) {
         val endAt = if (carOffSinceMs > 0L) carOffSinceMs + carOffTimeoutMs() else null
         Log.i(TAG, "Auto-stop prompt: user confirmed stop")
         manualStopCooldownUntilMs = System.currentTimeMillis() + MANUAL_STOP_COOLDOWN_MS
-        doEndTrip(overrideEndTime = endAt)
+        doEndTrip(reason = "auto-stop-confirmed", overrideEndTime = endAt)
     }
 
     private suspend fun handleWatchdogTick() {
@@ -977,7 +1046,7 @@ class TripRepository private constructor(context: Context) {
         val silence = now - lastTelemetryTime
         if (silence > TELEMETRY_TIMEOUT_MS) {
             Log.w(TAG, "Watchdog: ${silence / 1000}s silence → ending trip")
-            doEndTrip(overrideEndTime = lastTelemetryTime)
+            doEndTrip(reason = "watchdog-silence", overrideEndTime = lastTelemetryTime)
         }
     }
 
@@ -1058,6 +1127,19 @@ class TripRepository private constructor(context: Context) {
         lastTripTotalDischarge = dataPoints.lastOrNull()?.totalDischarge
             ?.takeIf { it.isFinite() && it >= 0.0 }
 
+        // The resume-vs-close decision, recorded before it is acted on. On DiLink-5 this line
+        // is the one that explains a trip's stored end values: the app is force-stopped at
+        // ignition-off, so whether it lands on "resume" or "stale-close" comes down to whether
+        // the background restarter woke it inside the engine-off timeout.
+        DiagLog.event(
+            appContext, TAG,
+            "trip recover id=${activeTrip.id} " +
+                "decision=${if (gap > STALE_THRESHOLD || staleBecauseCarOff) "stale-close" else "resume"} " +
+                "gap=${gap / 1000}s threshold=${STALE_THRESHOLD / 1000}s " +
+                "carOffFor=${storedOffSince?.let { (now - it) / 1000 }?.toString()?.plus("s") ?: "-"} " +
+                "points=${dataPoints.size}"
+        )
+
         if (gap > STALE_THRESHOLD || staleBecauseCarOff) {
             Log.w(TAG, "Stale trip ${activeTrip.id} — closing with last DB values")
             // Seed state so doEndTrip can find the trip
@@ -1070,12 +1152,21 @@ class TripRepository private constructor(context: Context) {
             // odometer=0 and would zero out trip distance/energy if used as-is.
             // Pass null rather than a stale zero so doEndTrip's fallback chain
             // lands on trip.startOdometer instead of storing a 0 endOdometer.
+            //
+            // Panel SoC: the last recorded non-zero panel reading. Taken from the whole
+            // point list rather than validPoint alone so a single wedged (0) panel read on
+            // the final driving sample doesn't collapse the trip back to startSocPanel.
+            // A 0 soc on validPoint is likewise dropped so doEndTrip falls through to
+            // tripMinSoc (seeded above) instead of storing a stale 0 as the end SoC.
+            val lastPanelSoc = dataPoints.lastOrNull { it.socPanel > 0 }?.socPanel?.toDouble()
             doEndTrip(
+                reason                 = "cold-start-recovery",
                 overrideEndTime        = storedOffSince?.let { it + carOffTimeoutMs() }
                                             ?: validPoint?.timestamp
                                             ?: lastPoint?.timestamp,
                 overrideOdometer       = validPoint?.odometer,
-                overrideSoc            = validPoint?.soc,
+                overrideSoc            = validPoint?.soc?.takeIf { it > 0.0 },
+                overrideSocPanel       = lastPanelSoc,
                 overrideTotalDischarge = validPoint?.totalDischarge
             )
         } else {
@@ -1232,9 +1323,16 @@ class TripRepository private constructor(context: Context) {
         lastRecordedTelemetry = telemetry
         lastWriteTime = System.currentTimeMillis()
 
-        Log.i(TAG, "Trip started id=$tripId (manual=$isManual) " +
-            "startOdo=$startOdometer backdate=${clampedBackdateMs / 1000}s " +
-            "journey=$journeyKm backAnchor=$backAnchorToJourney")
+        // Paired with the "trip close" line below, so a whole drive can be read out of
+        // diag.log — including the SoC the trip was anchored at, which is what an end value
+        // silently falls back to when the close path has no live reading.
+        DiagLog.event(
+            appContext, TAG,
+            "trip start id=$tripId manual=$isManual " +
+                "soc=${"%.1f".format(telemetry.soc)} panel=${telemetry.socPanel} " +
+                "odo=${"%.1f".format(startOdometer)} backdate=${clampedBackdateMs / 1000}s " +
+                "journey=$journeyKm backAnchor=$backAnchorToJourney"
+        )
     }
 
     /**
@@ -1242,9 +1340,15 @@ class TripRepository private constructor(context: Context) {
      * to supply DB-sourced values when lastTelemetry is null on cold start.
      */
     private suspend fun doEndTrip(
+        /** Which trigger closed the trip. Recorded in diag.log — the close path is the
+         *  difference between a trip finalised from live telemetry and one reconstructed
+         *  from the DB on the next cold start, and after the fact there is no other way
+         *  to tell which one a given trip took. */
+        reason:                 String  = "unspecified",
         overrideEndTime:        Long?   = null,
         overrideOdometer:       Double? = null,
         overrideSoc:            Double? = null,
+        overrideSocPanel:       Double? = null,
         overrideTotalDischarge: Double? = null
     ) {
         val tripId = _currentTripId.value ?: run {
@@ -1380,13 +1484,29 @@ class TripRepository private constructor(context: Context) {
         val resolvedEndSoc = overrideSoc
             ?: socCandidates.minOrNull()
             ?: trip.startSoc
+        val endSocSource = when {
+            overrideSoc != null        -> "override"
+            socCandidates.isNotEmpty() -> "min-of-${socCandidates.size}"
+            else                       -> "START-FALLBACK"
+        }
 
         // Panel SoC: take the last available non-zero reading (no "lowest wins" logic
         // since panel SoC doesn't monotonically decrease on PHEVs with engine assist).
-        val resolvedEndSocPanel = listOfNotNull(
-            endTelemetry?.socPanel?.toDouble()?.takeIf { it > 0.0 },
-            endPointFallback?.socPanel?.toDouble()?.takeIf { it > 0.0 }
-        ).firstOrNull() ?: trip.startSocPanel
+        // overrideSocPanel comes first: on the cold-start recovery path lastTelemetry is
+        // null AND endPointFallback is suppressed (the caller supplies overrideOdometer),
+        // so without a DB-sourced panel value this chain had no source at all and every
+        // recovered trip stored endSocPanel == startSocPanel — a flat "80% → 80%" in the
+        // history list. That is the *normal* close path on DiLink-5, where the OEM
+        // force-stops the app at ignition-off and the trip is only closed on next start.
+        // Carried as (source, value) pairs purely so the close line in diag.log can name
+        // which one won — a "START-FALLBACK" there is the flat-pair bug reproducing.
+        val panelCandidates: List<Pair<String, Double>> = listOfNotNull(
+            overrideSocPanel?.takeIf { it > 0.0 }?.let { "override" to it },
+            endTelemetry?.socPanel?.toDouble()?.takeIf { it > 0.0 }?.let { "telemetry" to it },
+            endPointFallback?.socPanel?.toDouble()?.takeIf { it > 0.0 }?.let { "point" to it }
+        )
+        val resolvedEndSocPanel = panelCandidates.firstOrNull()?.second ?: trip.startSocPanel
+        val endSocPanelSource = panelCandidates.firstOrNull()?.first ?: "START-FALLBACK"
 
         // Time the car was off but the trip stayed open — subtracted from
         // trip.duration so avg speed / displayed duration reflect actual driving
@@ -1407,6 +1527,25 @@ class TripRepository private constructor(context: Context) {
                 avgBatteryTemp      = finalAvgTemp,
                 offStateDurationMs  = offStateMs
             )
+        )
+
+        // Persistent record of HOW this trip was closed. The logcat ring buffer on these head
+        // units is shredded within minutes, so without this there is no way — after the fact —
+        // to tell a trip finalised from live telemetry apart from one reconstructed on the next
+        // cold start, which is exactly the distinction that decides whether the stored end
+        // values are real or fallbacks. `panel=…[START-FALLBACK]` means the flat
+        // "x% → x%" pair got stored; on DiLink-5 that also implies the app was not alive at
+        // car-off + the engine-off timeout, i.e. the background restarter didn't win.
+        DiagLog.event(
+            appContext, TAG,
+            "trip close id=$tripId via=$reason " +
+                "telemetry=${if (endTelemetry != null) "live" else "none"} " +
+                "dbPoint=${if (endPointFallback != null) "yes" else "no"} " +
+                "soc=${"%.1f".format(trip.startSoc)}→${"%.1f".format(resolvedEndSoc)}[$endSocSource] " +
+                "panel=${trip.startSocPanel.toInt()}→${resolvedEndSocPanel.toInt()}[$endSocPanelSource] " +
+                "odo=${"%.1f".format(trip.startOdometer)}→${"%.1f".format(resolvedEndOdometer)} " +
+                "kwh=${"%.2f".format(resolvedEndDischarge - trip.startTotalDischarge)} " +
+                "offState=${offStateMs / 1000}s"
         )
 
         // Drop trips shorter than the user-configured minimum. Done before stats
@@ -1440,6 +1579,7 @@ class TripRepository private constructor(context: Context) {
         batteryTempSamples    = 0
         carOffSinceMs         = 0L
         keepCurrentOffWindow  = false
+        lastLoggedCarOffAction = null
         _pendingAutoStop.value = false
         tripBestDistanceKm    = 0.0
         tripBestTotalDischarge = 0.0
@@ -2376,6 +2516,7 @@ class TripRepository private constructor(context: Context) {
         private const val PREF_AUTO_TRIP = "auto_trip_detection"
         private const val PREF_OFFSTATE_BACKFILL_DONE = "offstate_duration_backfill_v4"
         private const val PREF_DURATION_REPAIR_DONE = "duration_repair_v1"
+        private const val PREF_FLAT_END_SOC_PANEL_REPAIR_DONE = "flat_end_soc_panel_repair_v1"
 
         /**
          * Gap between consecutive recorded data points (or between the last point

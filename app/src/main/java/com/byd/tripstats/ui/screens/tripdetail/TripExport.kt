@@ -145,9 +145,16 @@ internal fun Any?.toJsonLiteral(): String = when (this) {
     else -> "\"${jsonEscape(toString())}\""
 }
 
+/**
+ * [report] carries the Overview-tab figures and the derived analyses (energy
+ * breakdown, PHEV split) so the embedded viewer can render the same detail the app
+ * shows. Optional: a caller without a car config or cost rate simply omits it and
+ * the viewer falls back to the data points alone.
+ */
 fun buildTripJson(
     trip: TripEntity,
-    dataPoints: List<TripDataPointEntity>
+    dataPoints: List<TripDataPointEntity>,
+    report: org.json.JSONObject? = null,
 ): String = buildString {
     appendLine("{")
     appendLine("  \"tripId\": ${trip.id},")
@@ -161,6 +168,7 @@ fun buildTripJson(
     appendLine("  \"energyConsumed\": ${trip.energyConsumed},")
     appendLine("  \"maxSpeed\": ${trip.maxSpeed},")
     appendLine("  \"maxPower\": ${trip.maxPower},")
+    report?.let { appendLine("  \"report\": ${it.toString().replace("</", "<\\/")},") }
     appendLine("  \"dataPoints\": [")
     val exportable = dataPoints.filter { it.latitude != 0.0 || it.longitude != 0.0 }
     exportable.forEachIndexed { index, point ->
@@ -184,11 +192,12 @@ fun buildTripJson(
 fun saveTripAsJSON(
     context: android.content.Context,
     trip: TripEntity,
-    dataPoints: List<TripDataPointEntity>
+    dataPoints: List<TripDataPointEntity>,
+    report: org.json.JSONObject? = null,
 ) {
     try {
         val fileName = "trip_${trip.id}_${System.currentTimeMillis()}.json"
-        saveToDownloads(context, fileName, "application/json", buildTripJson(trip, dataPoints))
+        saveToDownloads(context, fileName, "application/json", buildTripJson(trip, dataPoints, report))
     } catch (e: Exception) {
         Log.e("TripDetailScreen", "Save JSON failed", e)
         android.widget.Toast.makeText(context, "Save failed: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
@@ -210,21 +219,23 @@ fun uploadTripJson(
     trip: TripEntity,
     dataPoints: List<TripDataPointEntity>,
     retention: String = "72h",
+    report: org.json.JSONObject? = null,
 ): String = com.byd.tripstats.util.LitterboxUploader.upload(
     fileName = "trip_${trip.id}.json",
-    content = buildTripJson(trip, dataPoints),
+    content = buildTripJson(trip, dataPoints, report),
     retention = retention,
 )
 
 fun buildTripEmbeddedHtml(
     context: android.content.Context,
     trip: TripEntity,
-    dataPoints: List<TripDataPointEntity>
+    dataPoints: List<TripDataPointEntity>,
+    report: org.json.JSONObject? = null,
 ): String {
     val viewerTemplate = context.assets.open("trip-viewer.html")
         .bufferedReader(Charsets.UTF_8)
         .use { it.readText() }
-    val tripJson = buildTripJson(trip, dataPoints)
+    val tripJson = buildTripJson(trip, dataPoints, report)
     val safeJson = tripJson.replace("</", "<\\/")
     val embedTag = "<script>window.__embeddedTrip = $safeJson;</script>\n</head>"
     return viewerTemplate.replaceFirst("</head>", embedTag)
@@ -241,11 +252,12 @@ private val TripExportTelegramScope: CoroutineScope =
 fun saveTripAsHtml(
     context: android.content.Context,
     trip: TripEntity,
-    dataPoints: List<TripDataPointEntity>
+    dataPoints: List<TripDataPointEntity>,
+    report: org.json.JSONObject? = null,
 ) {
     try {
         val fileName = "trip_${trip.id}_${System.currentTimeMillis()}.html"
-        saveToDownloads(context, fileName, "text/html", buildTripEmbeddedHtml(context, trip, dataPoints))
+        saveToDownloads(context, fileName, "text/html", buildTripEmbeddedHtml(context, trip, dataPoints, report))
     } catch (e: Exception) {
         Log.e("TripDetailScreen", "Save HTML failed", e)
         android.widget.Toast.makeText(context, "Save failed: ${e.message}", android.widget.Toast.LENGTH_LONG).show()

@@ -2,7 +2,12 @@ package com.byd.tripstats.server
 
 import android.content.Context
 import android.util.Log
+import com.byd.tripstats.data.analysis.CostAttribution
+import com.byd.tripstats.data.analysis.TripReport
 import com.byd.tripstats.data.local.BydStatsDatabase
+import com.byd.tripstats.data.local.entity.TripEntity
+import com.byd.tripstats.data.local.entity.TripStatsEntity
+import com.byd.tripstats.data.preferences.PreferencesManager
 import fi.iki.elonen.NanoHTTPD
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -340,9 +345,36 @@ code{background:#20242d;padding:2px 8px;border-radius:6px;font-size:13px;color:#
                         arr.put(JSONObject().apply { put("lat", pt.lat); put("lon", pt.lon) })
                     }}
                 })
+                // Overview figures + derived analyses — the same TripReport the HTML
+                // export embeds, so the companion's detail matches the app's Overview tab.
+                put("report", buildTripReport(trip, stats))
             }.toString()
         }
         return serveJson(json)
+    }
+
+    /**
+     * Runs the analyses over the trip's full point set (never the decimated one the
+     * charts get — the physics model integrates per interval, so dropped points would
+     * skew it). Cost needs the whole trip/charge history because the FIFO cost basis
+     * is resolved across sessions, so it is only attempted when a price signal exists.
+     */
+    private suspend fun buildTripReport(trip: TripEntity, stats: TripStatsEntity?): JSONObject {
+        val points = db.tripDataPointDao().getDataPointsForTripSync(trip.id)
+        val prefs  = PreferencesManager(context)
+        val blendedRate = runCatching {
+            val trips    = db.tripDao().getCompletedTripsBefore(Long.MAX_VALUE)
+            val sessions = db.chargingSessionDao().getAllCompletedSessions()
+            CostAttribution.blendedTripRates(trips, sessions, prefs.getCachedElectricityPrice())[trip.id]
+        }.getOrNull()
+        return TripReport.build(
+            trip = trip,
+            stats = stats,
+            dataPoints = points,
+            carConfig = prefs.getCachedSelectedCarConfig(),
+            blendedRate = blendedRate,
+            currencySymbol = prefs.getCachedCurrencySymbol(),
+        )
     }
 
     private fun serveTripPoints(tripId: Long): Response {

@@ -198,7 +198,11 @@ fun TripDetailScreen(
             dataPoints = capturedPoints,
             onDismiss = { dialogData = null },
             unitSystem = unitSystem,
-            socSource = socSource
+            socSource = socSource,
+            stats = stats,
+            carConfig = selectedCarConfig,
+            blendedRate = tripBlendedRates[tripId],
+            currencySymbol = currencySymbol
         )
     }
 
