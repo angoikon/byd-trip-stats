@@ -37,8 +37,8 @@ android {
     // A stable release always has a higher versionCode than any beta of the same
     // version, so beta testers automatically receive the stable upgrade via sideload.
     val versionMajor    = 2
-    val versionMinor    = 15
-    val versionPatch    = 1
+    val versionMinor    = 16
+    val versionPatch    = 0
     val versionPre      = 99 // 99 = stable; 1–98 = beta (e.g. 1 → "beta01")
     // Hotfix revision for the SAME versionName. Bumps versionCode ONLY — the in-app
     // updater compares the GitHub tag against versionName (UpdateRepository.isNewerVersion),
@@ -302,6 +302,11 @@ dependencies {
     // DataStore for preferences
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.hivemq.mqtt.client)
+    // hivemq-mqtt-client treats WebSocket support as optional and does not pull
+    // netty-codec-http, which holds io.netty.handler.codec.http.websocketx.*.
+    // Without it the "Use WebSocket" transport dies with NoClassDefFoundError
+    // right after the TLS handshake. Keep the version in sync with hivemqMqtt.
+    implementation(libs.netty.codec.http)
 
     // QR code generation (Pro licence request — encodes a pre-filled mailto)
     implementation(libs.zxing.core)
