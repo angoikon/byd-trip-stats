@@ -501,6 +501,24 @@
     <string name="delete_backup_title">Удалить резервную копию?</string>
     <string name="delete_telegram_backup_confirm">\"%1$s\" будет удалён из этого списка и из вашего чата Telegram, если он был отправлен менее 48 часов назад (Telegram не позволяет ботам удалять более старые сообщения).</string>
     <string name="delete_backup_action">Удалить резервную копию</string>
+    <string name="reopen_notification_channel">Открыть снова после перезапуска</string>
+    <string name="reopen_notification_channel_desc">Способ вернуться в приложение, когда оно закрылось само, чтобы завершить операцию с базой данных</string>
+    <string name="reopen_notification_title">Нажмите, чтобы снова открыть BYD Trip Stats</string>
+    <string name="reopen_after_restore">Приложение закрылось, чтобы завершить восстановление ваших данных.</string>
+    <string name="reopen_after_reset">Приложение закрылось, чтобы завершить сброс ваших данных.</string>
+    <string name="reopen_after_trim">Приложение закрылось, чтобы завершить освобождение места на диске.</string>
+    <string name="settings_backup_label">Резервное копирование и восстановление настроек</string>
+    <string name="settings_backup_desc">Резервная копия базы данных содержит ваши поездки; эта — всё остальное: автомобиль, единицы измерения, тему, макет панели, тариф на электроэнергию, цели, подключения MQTT/ABRP/Telegram, язык и ваш код Pro. Файл настроек сохраняется автоматически с каждой резервной копией базы данных, поэтому после переустановки всё можно вернуть точно в прежнем виде.</string>
+    <string name="settings_include_credentials_label">Включить учётные данные</string>
+    <string name="settings_include_credentials_desc">Сохраняет в файле пароль MQTT, токены ABRP и Telegram, PIN веб-компаньона и ваш код Pro. Оставьте включённым, если не собираетесь делиться файлом — без этого такие подключения восстановить нельзя.</string>
+    <string name="settings_backup_now_action">Создать резервную копию настроек сейчас</string>
+    <string name="available_settings_files_label">Доступные файлы настроек:</string>
+    <string name="no_settings_files">Файлов настроек пока нет. Они создаются автоматически с каждой резервной копией базы данных.</string>
+    <string name="restore_settings_title">Восстановить настройки?</string>
+    <string name="restore_settings_msg">Настройки из %1$s заменят текущие. Поездки и сессии зарядки не затрагиваются.\n\nПриложение не нужно закрывать — всё применяется сразу.</string>
+    <string name="delete_settings_title">Удалить файл настроек?</string>
+    <string name="restore_with_settings_label">Также восстановить настройки, сохранённые с этой резервной копией</string>
+    <string name="restore_no_settings_note">С этой резервной копией файл настроек не сохранялся — будут восстановлены только данные поездок.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Резервная копия в Telegram</string>
@@ -782,7 +800,6 @@
     <!-- Initialization screen -->
     <string name="choose_model_title">Выберите модель BYD, на которой вы ездите</string>
     <string name="model_saved_info">Этот выбор будет сохранён и использован для загрузки правильной конфигурации автомобиля.</string>
-    <string name="dilink3_only_notice">Поддерживаются только автомобили с DiLink 3. DiLink 4 и 5 пока не поддерживаются.</string>
     <string name="car_type_bev">Электромобиль (BEV)</string>
     <string name="car_type_phev">Подключаемый гибрид (PHEV / DM-i)</string>
     <string name="select_car_label">Выберите автомобиль</string>
@@ -1023,7 +1040,7 @@
     <string name="about_install_note">Кнопка установки станет доступна на стоянке без активной поездки и зарядки</string>
     <string name="about_install_now">Установить сейчас</string>
     <string name="about_download_update">Скачать обновление</string>
-    <string name="about_update_manual_di5_instructions">Автоматическая установка недоступна на DiLink 5. На компьютере или телефоне скачайте APK этой версии со страницы релизов, затем установите его через ADB:</string>
+    <string name="about_update_manual_di5_instructions">Автоматическая установка недоступна на этом головном устройстве. На компьютере или телефоне скачайте APK этой версии со страницы релизов, затем установите его через ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Открыть страницу релизов</string>
 

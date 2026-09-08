@@ -504,6 +504,24 @@
     <string name="delete_backup_title">バックアップを削除しますか？</string>
     <string name="delete_telegram_backup_confirm">\"%1$s\" はこのリストから削除され、送信から48時間未満の場合は Telegram チャットからも削除されます（Telegram はボットによる古いメッセージの削除を許可していません）。</string>
     <string name="delete_backup_action">バックアップを削除</string>
+    <string name="reopen_notification_channel">再起動後に再度開く</string>
+    <string name="reopen_notification_channel_desc">データベース操作を完了するためにアプリが自ら終了したときに、アプリへ戻る手段</string>
+    <string name="reopen_notification_title">タップして BYD Trip Stats を再度開く</string>
+    <string name="reopen_after_restore">データの復元を完了するためにアプリを終了しました。</string>
+    <string name="reopen_after_reset">データのリセットを完了するためにアプリを終了しました。</string>
+    <string name="reopen_after_trim">ディスク領域の解放を完了するためにアプリを終了しました。</string>
+    <string name="settings_backup_label">設定のバックアップと復元</string>
+    <string name="settings_backup_desc">データベースのバックアップにはトリップが含まれます。こちらはその周辺のすべて — 車両、単位、テーマ、ダッシュボードのレイアウト、電気料金、目標、MQTT/ABRP/Telegram の接続、言語、Pro コード — を保持します。設定ファイルはデータベースのバックアップごとに自動保存されるため、再インストール後もまったく同じ状態に戻せます。</string>
+    <string name="settings_include_credentials_label">認証情報を含める</string>
+    <string name="settings_include_credentials_desc">MQTT パスワード、ABRP と Telegram のトークン、ウェブコンパニオンの PIN、Pro コードをファイル内に保存します。ファイルを共有する予定がない限りオンのままにしてください — これがないと、それらの接続は復元できません。</string>
+    <string name="settings_backup_now_action">設定を今すぐバックアップ</string>
+    <string name="available_settings_files_label">利用可能な設定ファイル:</string>
+    <string name="no_settings_files">設定ファイルはまだありません。データベースのバックアップごとに自動的に作成されます。</string>
+    <string name="restore_settings_title">設定を復元しますか？</string>
+    <string name="restore_settings_msg">%1$s の設定が現在の設定を置き換えます。トリップと充電セッションには影響しません。\n\nアプリを閉じる必要はありません — すべてすぐに適用されます。</string>
+    <string name="delete_settings_title">設定ファイルを削除しますか？</string>
+    <string name="restore_with_settings_label">このバックアップと共に保存された設定も復元する</string>
+    <string name="restore_no_settings_note">このバックアップには設定ファイルが保存されていません — トリップデータのみが復元されます。</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegramバックアップ</string>
@@ -785,7 +803,6 @@
     <!-- Initialization screen -->
     <string name="choose_model_title">お乗りのBYDモデルを選択</string>
     <string name="model_saved_info">この選択は保存され、正しい車の設定を読み込むために使用されます。</string>
-    <string name="dilink3_only_notice">DiLink 3搭載車のみ対応しています。DiLink 4および5は未対応です。</string>
     <string name="car_type_bev">バッテリー電気自動車（BEV）</string>
     <string name="car_type_phev">プラグインハイブリッド（PHEV / DM-i）</string>
     <string name="select_car_label">車を選択</string>
@@ -1027,7 +1044,7 @@
     <string name="about_install_note">インストールボタンは、アクティブな走行や充電がない駐車状態のときに利用可能になります</string>
     <string name="about_install_now">今すぐインストール</string>
     <string name="about_download_update">更新をダウンロード</string>
-    <string name="about_update_manual_di5_instructions">自動インストールは DiLink 5 では利用できません。PC またはスマートフォンで、リリースページからこのバージョンの APK をダウンロードし、ADB でインストールしてください:</string>
+    <string name="about_update_manual_di5_instructions">自動インストールはこのヘッドユニットでは利用できません。PC またはスマートフォンで、リリースページからこのバージョンの APK をダウンロードし、ADB でインストールしてください:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">リリースページを開く</string>
 

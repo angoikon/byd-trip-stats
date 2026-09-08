@@ -1912,11 +1912,14 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     // ── Update actions ────────────────────────────────────────────────────────
 
     fun downloadUpdate() {
-        // DiLink-5: in-app download + silent PackageInstaller can't complete on the head unit
-        // (unprivileged, no installer UI), and a post-install self-relaunch is a boot-loop hazard
-        // there. Updates on D5 are delivered by manual `adb install -r` — see AboutTab's D5 card.
-        // The update badge/notice still shows (checkForUpdate keeps running); only the auto path is off.
-        if (com.byd.tripstats.sdk.DiLink5Platform.isDiLink5) return
+        // Anything newer than DiLink-3: the in-app download + silent PackageInstaller can't
+        // complete on the head unit (unprivileged, no installer UI), and the post-install
+        // self-relaunch is the same boot-loop hazard as every other self-restart — so this is
+        // gated on selfRestartUnsafe, not on DiLink-5 alone. A DiLink-100 is not a DiLink-5 by
+        // `ro.vehicle.type` and was still driving the silent installer until now. Updates there
+        // are delivered by manual `adb install -r` — see AboutTab's manual-update card. The
+        // badge/notice still shows (checkForUpdate keeps running); only the auto path is off.
+        if (com.byd.tripstats.sdk.DiLink5Platform.selfRestartUnsafe) return
         val info = updateInfo.value ?: return
         updateRepository.downloadUpdate(info)
         // Poll progress every second and push to our own StateFlow
@@ -1931,9 +1934,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun installUpdate() {
-        // DiLink-5: never drive the silent installer / self-relaunch on the head unit (see
-        // downloadUpdate). D5 updates are sideloaded via `adb install -r`.
-        if (com.byd.tripstats.sdk.DiLink5Platform.isDiLink5) return
+        // Never drive the silent installer / self-relaunch on a head unit newer than
+        // DiLink-3 (see downloadUpdate). Those updates are sideloaded via `adb install -r`.
+        if (com.byd.tripstats.sdk.DiLink5Platform.selfRestartUnsafe) return
         val apk = downloadedApk.value ?: return
         if (!canInstallNow.value) {
             Log.w(TAG, "installUpdate called but canInstallNow = false")
@@ -3140,6 +3143,20 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         )
     )
     val tripGoals: StateFlow<TripGoals> = _tripGoals.asStateFlow()
+
+    /**
+     * Re-reads the goals from disk. Called after a settings restore, which writes the
+     * prefs behind this ViewModel's back — without it the dashboard would keep showing
+     * the old goals until the process restarted.
+     */
+    fun reloadTripGoals() {
+        _tripGoals.value = TripGoals(
+            targetConsumptionKwhPer100km = goalPrefs.getFloat(GOAL_CONSUMPTION_KEY, 0f)
+                .takeIf { it > 0f }?.toDouble(),
+            targetDistanceKmPerMonth     = goalPrefs.getFloat(GOAL_DISTANCE_KEY, 0f)
+                .takeIf { it > 0f }?.toDouble()
+        )
+    }
 
     fun saveTripGoals(consumption: Double?, distancePerMonth: Double?) {
         _tripGoals.value = TripGoals(consumption, distancePerMonth)

@@ -504,6 +504,24 @@
     <string name="delete_backup_title">Back-up verwijderen?</string>
     <string name="delete_telegram_backup_confirm">\"%1$s\" wordt uit deze lijst verwijderd en uit je Telegram-chat verwijderd als het minder dan 48 uur geleden is verzonden (Telegram laat bots geen oudere berichten verwijderen).</string>
     <string name="delete_backup_action">Back-up verwijderen</string>
+    <string name="reopen_notification_channel">Opnieuw openen na een herstart</string>
+    <string name="reopen_notification_channel_desc">Een manier om terug in de app te komen wanneer die zichzelf heeft afgesloten om een databasebewerking te voltooien</string>
+    <string name="reopen_notification_title">Tik om BYD Trip Stats opnieuw te openen</string>
+    <string name="reopen_after_restore">De app is gesloten om het herstellen van je gegevens te voltooien.</string>
+    <string name="reopen_after_reset">De app is gesloten om het resetten van je gegevens te voltooien.</string>
+    <string name="reopen_after_trim">De app is gesloten om het vrijmaken van schijfruimte te voltooien.</string>
+    <string name="settings_backup_label">Instellingen back-uppen en herstellen</string>
+    <string name="settings_backup_desc">De databaseback-up bevat je ritten; dit bevat al het andere — auto, eenheden, thema, dashboardindeling, elektriciteitstarief, doelen, MQTT-/ABRP-/Telegram-verbindingen, taal en je Pro-code. Een instellingenbestand wordt automatisch opgeslagen bij elke databaseback-up, zodat een herinstallatie precies kan worden hersteld zoals die was.</string>
+    <string name="settings_include_credentials_label">Inloggegevens opnemen</string>
+    <string name="settings_include_credentials_desc">Slaat het MQTT-wachtwoord, de ABRP- en Telegram-tokens, de pincode van de web companion en je Pro-code op in het bestand. Laat dit aan tenzij je het bestand wilt delen — die verbindingen kunnen zonder niet worden hersteld.</string>
+    <string name="settings_backup_now_action">Instellingen nu back-uppen</string>
+    <string name="available_settings_files_label">Beschikbare instellingenbestanden:</string>
+    <string name="no_settings_files">Nog geen instellingenbestanden. Ze worden automatisch aangemaakt bij elke databaseback-up.</string>
+    <string name="restore_settings_title">Instellingen herstellen?</string>
+    <string name="restore_settings_msg">De instellingen uit %1$s vervangen je huidige. Ritten en laadsessies blijven ongemoeid.\n\nDe app hoeft niet te sluiten — alles wordt meteen toegepast.</string>
+    <string name="delete_settings_title">Instellingenbestand verwijderen?</string>
+    <string name="restore_with_settings_label">Herstel ook de instellingen die met deze back-up zijn opgeslagen</string>
+    <string name="restore_no_settings_note">Er is geen instellingenbestand opgeslagen bij deze back-up — alleen ritgegevens worden hersteld.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram-back-up</string>
@@ -785,7 +803,6 @@
     <!-- Initialization screen -->
     <string name="choose_model_title">Kies het BYD-model dat je rijdt</string>
     <string name="model_saved_info">Deze selectie wordt opgeslagen en gebruikt om de juiste autoconfiguratie te laden.</string>
-    <string name="dilink3_only_notice">Alleen DiLink 3-voertuigen worden ondersteund. DiLink 4 en 5 worden nog niet ondersteund.</string>
     <string name="car_type_bev">Volledig elektrisch (BEV)</string>
     <string name="car_type_phev">Plug-in hybride (PHEV / DM-i)</string>
     <string name="select_car_label">Auto selecteren</string>
@@ -1027,7 +1044,7 @@
     <string name="about_install_note">Installatieknop wordt beschikbaar wanneer geparkeerd zonder actieve rit of opladen</string>
     <string name="about_install_now">Nu installeren</string>
     <string name="about_download_update">Update downloaden</string>
-    <string name="about_update_manual_di5_instructions">Automatische installatie is niet beschikbaar op DiLink 5. Download op een pc of telefoon de APK van deze versie van de releasespagina en installeer deze vervolgens via ADB:</string>
+    <string name="about_update_manual_di5_instructions">Automatische installatie is niet beschikbaar op deze head-unit. Download op een pc of telefoon de APK van deze versie van de releasespagina en installeer deze vervolgens via ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Releasespagina openen</string>
 

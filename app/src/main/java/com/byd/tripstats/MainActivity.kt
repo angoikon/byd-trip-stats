@@ -46,6 +46,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
 import com.byd.tripstats.adb.AdbPermissionManager
+import com.byd.tripstats.util.AppRestart
 import com.byd.tripstats.util.DiagLog
 import com.byd.tripstats.util.LocaleHelper
 import com.byd.tripstats.data.preferences.PreferencesManager
@@ -123,6 +124,10 @@ class MainActivity : ComponentActivity() {
             "MainActivity onCreate — UI launch (restored=${savedInstanceState != null} " +
                 "caller=${runCatching { referrer?.host }.getOrNull() ?: "?"})",
         )
+        // The UI is up, so the "tap to reopen" notification left behind by a restore,
+        // reset or trim has done its job (or the relaunch beat it to it).
+        AppRestart.cancelReopenNotification(applicationContext)
+
         requestRequiredPermissions()
         checkAndShowAutostartReminder()
         checkSetupRequired()
@@ -378,26 +383,40 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun checkSetupRequired() {
-        // DiLink-5 build on DiLink-5 hardware ONLY. The adb setup + hidden-API exemption exist solely
-        // so the DiLink-5 bydauto SDK (present only in the dilink5 flavor) can bind. Skip it when:
-        //  - not DiLink-5 hardware (D3 needs none of it), OR
-        //  - not the dilink5 build — a dilink3 APK on a D5 car has no D5 code to exempt, so running
-        //    the setup is pointless and would stack a consent dialog on top of the wrong-build warning.
-        if (!DiLink5Platform.isDiLink5 || BuildConfig.FLAVOR != "dilink5") return
+        // The hidden-API exemption is DiLink-5-build-on-DiLink-5-hardware ONLY: it exists so the
+        // DiLink-5 bydauto SDK (present only in the dilink5 flavor) can bind, and it is a global
+        // device setting we must not touch anywhere else. A dilink3 APK on a D5 car has no D5 code
+        // to exempt, so asking there would stack a consent dialog on the wrong-build warning.
+        if (DiLink5Platform.isDiLink5 && BuildConfig.FLAVOR == "dilink5") {
+            // Idempotently re-assert DiLink-5 vehicle-API access on startup. This grants the bydauto
+            // *_COMMON perms (app-scoped, always) and — only if the user consented — re-applies the
+            // hidden-API exemption if it was reset (reboot). No-ops if adb isn't authorised yet.
+            lifecycleScope.launch {
+                AdbPermissionManager.ensureVehicleApiAccess(this@MainActivity)
+            }
 
-        // Idempotently re-assert DiLink-5 vehicle-API access on startup. This grants the bydauto
-        // *_COMMON perms (app-scoped, always) and — only if the user consented — re-applies the
-        // hidden-API exemption if it was reset (reboot). No-ops if adb isn't authorised yet.
-        lifecycleScope.launch {
-            AdbPermissionManager.ensureVehicleApiAccess(this@MainActivity)
+            // One-time opt-in for the hidden-API exemption (a global device change). Ask once; a
+            // decline is remembered so we don't nag, and can be reversed from Settings.
+            if (!AdbPermissionManager.hasHiddenApiConsent(this) &&
+                !AdbPermissionManager.hasBeenPromptedForHiddenApi(this)) {
+                showHiddenApiConsent.value = true
+            }
         }
 
-        // One-time opt-in for the hidden-API exemption (a global device change). Ask once; a decline
-        // is remembered so we don't nag, and can be reversed from Settings.
-        if (!AdbPermissionManager.hasHiddenApiConsent(this) &&
-            !AdbPermissionManager.hasBeenPromptedForHiddenApi(this)) {
-            showHiddenApiConsent.value = true
-        }
+        // The adb setup itself is needed on EVERY platform, not just DiLink-5: RtDispatch refuses to
+        // launch the privileged telemetry supervisor until isSetupComplete (see RtDispatch.dispatch),
+        // and that supervisor is where instant speed/gear/power come from. Gating this whole function
+        // on isDiLink5 (added with DiLink-5 support) rested on "D3 needs none of it", which was
+        // already untrue when written — RtDispatch had shipped three months earlier. It left every
+        // FRESH non-D5 install with no supervisor and no way to reach the grant flow at all;
+        // existing users were masked by the already-persisted PREF_PERMISSIONS_GRANTED, which is why
+        // it stayed invisible for six weeks.
+        //
+        // Still skipped on a DiLink-3 build sitting on DiLink-5 hardware: that combination shows the
+        // wrong-build warning and can't work until the right APK is installed, so stacking a setup
+        // dialog on top of it is the noise 53374ae removed. Nothing is lost — the supervisor would
+        // have no telemetry to guard there anyway.
+        if (DiLink5Platform.isBuildUnsupportedForHardware) return
         if (AdbPermissionManager.isSetupComplete(this)) return
         showSetupRequired.value = true
         lifecycleScope.launch {

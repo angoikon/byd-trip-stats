@@ -1,9 +1,6 @@
 package com.byd.tripstats.ui.screens
 
 import android.Manifest
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -38,10 +35,11 @@ import com.byd.tripstats.R
 import com.byd.tripstats.data.backup.LocalBackupManager
 import com.byd.tripstats.data.backup.TelegramManager
 import com.byd.tripstats.data.entitlement.EntitlementManager
-import com.byd.tripstats.sdk.DiLink5Platform
+import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.ui.components.BrandNavigationBar
 import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
+import com.byd.tripstats.util.AppRestart
 import com.byd.tripstats.worker.DatabaseTrimmer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -63,6 +61,7 @@ fun LocalBackupScreen(
 
     val backupState by manager.state.collectAsState()
     val localBackups by manager.localBackups.collectAsState()
+    val settingsFiles by manager.settingsFiles.collectAsState()
 
     val telegramManager = remember { TelegramManager.getInstance(context) }
     val telegramState by telegramManager.state.collectAsState()
@@ -138,21 +137,12 @@ fun LocalBackupScreen(
         val s = backupState
         if (s is LocalBackupManager.BackupState.Success && s.restartRequired) {
             delay(2000)
-            // DiLink-5: do NOT auto-relaunch. An app-initiated kill + immediate relaunch
-            // races the bydauto SDK classloader injection and boot-loops the head unit
-            // (2.13.0 incident). The process just ends; the user reopens (safe, like adb install -r).
-            val launchIntent = context.packageManager
-                .getLaunchIntentForPackage(context.packageName)
-                ?.apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK) }
-            if (launchIntent != null && !DiLink5Platform.isDiLink5) {
-                val pending = PendingIntent.getActivity(
-                    context, 0, launchIntent,
-                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-                )
-                val alarm = context.getSystemService(android.app.AlarmManager::class.java)
-                alarm.set(AlarmManager.RTC, System.currentTimeMillis() + 500L, pending)
-            }
-            android.os.Process.killProcess(android.os.Process.myPid())
+            AppRestart.restart(
+                context     = context,
+                body        = context.getString(R.string.reopen_after_restore),
+                reason      = "db-restore",
+                requestCode = AppRestart.REQUEST_RESTORE,
+            )
         }
     }
 
@@ -236,6 +226,18 @@ fun LocalBackupScreen(
                     )
                     else -> {}
                 }
+            }
+
+            // ── SETTINGS group ────────────────────────────────────────────────
+            // First on the screen deliberately: it used to sit under the restore list,
+            // which grows with every backup, and was easy to miss entirely.
+            item {
+                SettingsBackupSection(
+                    manager   = manager,
+                    viewModel = viewModel,
+                    scope     = scope,
+                    isBusy    = isBusy,
+                )
             }
 
             // ── LOCAL group ───────────────────────────────────────────────────
@@ -416,11 +418,6 @@ fun LocalBackupScreen(
                     }
                 }
                 }
-            }
-
-            // ── MAINTENANCE group ─────────────────────────────────────────────
-            item {
-                DatabaseTrimSection(scope = scope, isBusy = isBusy)
             }
 
             // ── TELEGRAM group ────────────────────────────────────────────────
@@ -792,10 +789,16 @@ fun LocalBackupScreen(
                 }
             }
 
+            // ── MAINTENANCE group ─────────────────────────────────────────────
+            item {
+                DatabaseTrimSection(scope = scope, isBusy = isBusy)
+            }
+
             // ── Danger Zone ───────────────────────────────────────────────────
             item {
                 var showResetConfirm by remember { mutableStateOf(false) }
                 val resetBusy = backupState is LocalBackupManager.BackupState.InProgress
+                GroupSection(title = stringResource(R.string.danger_zone_title), icon = Icons.Filled.DeleteForever) {
                 SectionCard(title = stringResource(R.string.danger_zone_title), icon = Icons.Filled.DeleteForever) {
                     Text(
                         text = stringResource(R.string.danger_zone_desc),
@@ -843,20 +846,13 @@ fun LocalBackupScreen(
                                             // 2. Wipe via ViewModel (closes Room, deletes file)
                                             viewModel.resetDatabase()
                                             // 3. Restart app so Room recreates the schema cleanly.
-                                            //    DiLink-5: skip auto-relaunch (SDK-injection race → head-unit
-                                            //    boot loop, 2.13.0 incident). Process ends; user reopens.
-                                            val launchIntent = context.packageManager
-                                                .getLaunchIntentForPackage(context.packageName)
-                                                ?.apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK) }
-                                            if (launchIntent != null && !DiLink5Platform.isDiLink5) {
-                                                val pending = PendingIntent.getActivity(
-                                                    context, 1, launchIntent,
-                                                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-                                                )
-                                                val alarm = context.getSystemService(android.app.AlarmManager::class.java)
-                                                alarm.set(android.app.AlarmManager.RTC, System.currentTimeMillis() + 800L, pending)
-                                            }
-                                            android.os.Process.killProcess(android.os.Process.myPid())
+                                            AppRestart.restart(
+                                                context     = context,
+                                                body        = context.getString(R.string.reopen_after_reset),
+                                                reason      = "db-reset",
+                                                requestCode = AppRestart.REQUEST_RESET,
+                                                delayMs     = 800L,
+                                            )
                                         }
                                     },
                                     colors = ButtonDefaults.buttonColors(
@@ -870,6 +866,7 @@ fun LocalBackupScreen(
                         )
                     }
                 }
+                }
             }
     }
 
@@ -878,6 +875,9 @@ fun LocalBackupScreen(
     telegramRestoreTarget?.let { backup ->
         RestoreConfirmDialog(
             description = backup.fileName,
+            // Telegram restores fetch the .db only; settings are restored from the
+            // local file list, where the pairing is known.
+            settingsFileName = null,
             onConfirm = {
                 val b = backup
                 telegramRestoreTarget = null
@@ -912,13 +912,17 @@ fun LocalBackupScreen(
 
     // ── Restore confirm dialog ────────────────────────────────────────────────
     restoreTarget?.let { backup ->
+        // The settings file written in the same run as this backup, if it's still there.
+        val pairedSettings = remember(backup.name, settingsFiles) { manager.settingsFileFor(backup.name) }
         RestoreConfirmDialog(
-            description = backup.name,
-            onConfirm = {
+            description      = backup.name,
+            settingsFileName = pairedSettings?.name,
+            onConfirm = { alsoSettings ->
                 val b = backup
+                val s = pairedSettings.takeIf { alsoSettings }
                 restoreTarget = null
                 manager.resetState()
-                scope.launch { manager.restoreFromBackupFile(b) }
+                scope.launch { manager.restoreFromBackupFile(b, s) }
             },
             onDismiss = { restoreTarget = null }
         )
@@ -1159,12 +1163,21 @@ private fun TelegramBackupListItem(
     }
 }
 
+/**
+ * [settingsFileName] is the settings file saved alongside this backup, or null when there
+ * isn't one (a backup from before settings were included, or one whose file was deleted).
+ * When present the user chooses whether to restore it too — restoring an old database onto
+ * a working install shouldn't silently replace the current broker password or tariff.
+ */
 @Composable
 private fun RestoreConfirmDialog(
     description: String,
-    onConfirm: () -> Unit,
+    settingsFileName: String?,
+    onConfirm: (restoreSettings: Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
+    var restoreSettings by remember(settingsFileName) { mutableStateOf(settingsFileName != null) }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -1175,11 +1188,45 @@ private fun RestoreConfirmDialog(
         },
         title = { Text(stringResource(R.string.restore_database_title)) },
         text  = {
-            Text(stringResource(R.string.restore_database_msg, description))
+            Column {
+                Text(stringResource(R.string.restore_database_msg, description))
+                Spacer(Modifier.height(12.dp))
+                if (settingsFileName == null) {
+                    Text(
+                        stringResource(R.string.restore_no_settings_note),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    Row(
+                        modifier          = Modifier
+                            .fillMaxWidth()
+                            .clickable { restoreSettings = !restoreSettings },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked         = restoreSettings,
+                            onCheckedChange = { restoreSettings = it }
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                stringResource(R.string.restore_with_settings_label),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                settingsFileName,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
         },
         confirmButton = {
             Button(
-                onClick = onConfirm,
+                onClick = { onConfirm(restoreSettings) },
                 colors  = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
             ) { Text(stringResource(R.string.restore_section_label)) }
         },
@@ -1187,6 +1234,230 @@ private fun RestoreConfirmDialog(
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         }
     )
+}
+
+/**
+ * Settings backup: the sibling of the database backup above. One is written automatically
+ * with every database backup; this card exists for the standalone cases — exporting after
+ * changing a setting, importing on a fresh install, and choosing whether the file carries
+ * credentials.
+ */
+@Composable
+private fun SettingsBackupSection(
+    manager: LocalBackupManager,
+    viewModel: DashboardViewModel,
+    scope: kotlinx.coroutines.CoroutineScope,
+    isBusy: Boolean,
+) {
+    val context  = LocalContext.current
+    val activity = context as? android.app.Activity
+    val prefs    = remember { PreferencesManager(context.applicationContext) }
+    val includeCredentials by prefs.settingsBackupIncludeCredentials.collectAsState(initial = true)
+    val settingsFiles by manager.settingsFiles.collectAsState()
+
+    var restoreTarget by remember { mutableStateOf<LocalBackupManager.SettingsFile?>(null) }
+    var deleteTarget  by remember { mutableStateOf<LocalBackupManager.SettingsFile?>(null) }
+
+    // Deleting the copy in the public Download folder is a direct filesystem write on this
+    // legacy-storage setup, so it needs WRITE_EXTERNAL_STORAGE — not granted on a fresh
+    // install. Same pattern as the database delete above.
+    var pendingDelete by remember { mutableStateOf<LocalBackupManager.SettingsFile?>(null) }
+    val writePermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        val target = pendingDelete
+        pendingDelete = null
+        if (granted && target != null) scope.launch { manager.deleteSettingsFile(target) }
+    }
+
+    val dateFmt = remember { SimpleDateFormat("dd MMM yyyy  HH:mm", Locale.getDefault()) }
+
+    GroupSection(title = stringResource(R.string.settings_backup_label), icon = Icons.Filled.Tune) {
+    SectionCard(title = stringResource(R.string.settings_backup_label), icon = Icons.Filled.Tune) {
+        Text(
+            stringResource(R.string.settings_backup_desc),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        Row(
+            modifier          = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    stringResource(R.string.settings_include_credentials_label),
+                    style      = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    stringResource(R.string.settings_include_credentials_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Spacer(Modifier.width(8.dp))
+            Switch(
+                checked         = includeCredentials,
+                onCheckedChange = { scope.launch { prefs.saveSettingsBackupIncludeCredentials(it) } }
+            )
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        Button(
+            onClick  = {
+                manager.resetState()
+                scope.launch { manager.backupSettings() }
+            },
+            enabled  = !isBusy,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(Icons.Filled.Save, null, modifier = Modifier.size(20.dp))
+            Spacer(Modifier.width(8.dp))
+            Text(if (isBusy) stringResource(R.string.running) else stringResource(R.string.settings_backup_now_action))
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        Row(
+            modifier              = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment     = Alignment.CenterVertically
+        ) {
+            Text(
+                stringResource(R.string.available_settings_files_label),
+                style      = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            IconButton(
+                onClick = { scope.launch { manager.scanSettingsFiles() } },
+                enabled = !isBusy
+            ) {
+                Icon(Icons.Filled.Refresh, stringResource(R.string.refresh), modifier = Modifier.size(22.dp))
+            }
+        }
+        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+        if (settingsFiles.isEmpty()) {
+            Spacer(Modifier.height(4.dp))
+            Text(
+                stringResource(R.string.no_settings_files),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
+            settingsFiles.forEachIndexed { index, file ->
+                if (index > 0) HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                Row(
+                    modifier          = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Filled.Tune, null,
+                        modifier = Modifier.size(22.dp),
+                        tint     = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(Modifier.width(10.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(file.name,
+                            style      = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium)
+                        Text(
+                            "${dateFmt.format(Date(file.dateModified))}  ·  %.1f KB".format(file.sizeBytes / 1_024.0),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (file.source.isNotEmpty()) {
+                            Text(file.source,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                    TextButton(onClick = { restoreTarget = file }, enabled = !isBusy) {
+                        Text(stringResource(R.string.restore_section_label))
+                    }
+                    IconButton(onClick = { deleteTarget = file }, enabled = !isBusy) {
+                        Icon(
+                            Icons.Filled.DeleteOutline, stringResource(R.string.delete),
+                            modifier = Modifier.size(20.dp),
+                            tint     = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            }
+        }
+    }
+    }
+
+    restoreTarget?.let { file ->
+        AlertDialog(
+            onDismissRequest = { restoreTarget = null },
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            icon  = {
+                Icon(Icons.Filled.Tune, null,
+                    tint     = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(32.dp))
+            },
+            title = { Text(stringResource(R.string.restore_settings_title), fontWeight = FontWeight.Bold) },
+            text  = { Text(stringResource(R.string.restore_settings_msg, file.name)) },
+            confirmButton = {
+                Button(onClick = {
+                    val f = file
+                    restoreTarget = null
+                    manager.resetState()
+                    scope.launch {
+                        val result = manager.restoreSettings(f)
+                        if (result != null) {
+                            // The goals live behind an Activity-scoped ViewModel that read
+                            // them at construction; without this the dashboard would show
+                            // the old ones until the process restarted.
+                            viewModel.reloadTripGoals()
+                            if (result.localeChanged) {
+                                // Let the success banner be readable before the Activity
+                                // restarts to pick up the restored language.
+                                delay(1500)
+                                activity?.recreate()
+                            }
+                        }
+                    }
+                }) { Text(stringResource(R.string.restore_section_label)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { restoreTarget = null }) { Text(stringResource(R.string.cancel)) }
+            }
+        )
+    }
+
+    deleteTarget?.let { file ->
+        AlertDialog(
+            onDismissRequest = { deleteTarget = null },
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            title = { Text(stringResource(R.string.delete_settings_title)) },
+            text  = { Text(stringResource(R.string.delete_backup_confirm, file.name)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    val f = file
+                    deleteTarget = null
+                    val needsWritePermission = Build.VERSION.SDK_INT <= 32 &&
+                        ContextCompat.checkSelfPermission(
+                            context, Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        ) != PackageManager.PERMISSION_GRANTED
+                    if (needsWritePermission) {
+                        pendingDelete = f
+                        writePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    } else {
+                        scope.launch { manager.deleteSettingsFile(f) }
+                    }
+                }) { Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { deleteTarget = null }) { Text(stringResource(R.string.cancel)) }
+            }
+        )
+    }
 }
 @Composable
 private fun DatabaseTrimSection(
@@ -1206,23 +1477,18 @@ private fun DatabaseTrimSection(
     }
 
     // Auto-restart after VACUUM completes — Room was closed to allow VACUUM, so
-    // the process must restart for the schema to reopen cleanly.
+    // the process must restart for the schema to reopen cleanly. Only reached on
+    // DiLink-3: DatabaseTrimmer skips VACUUM (and so restartRequired) everywhere else.
     LaunchedEffect(trimState) {
         val s = trimState
         if (s is DatabaseTrimmer.State.Success && s.restartRequired) {
             delay(3000)
-            val launchIntent = context.packageManager
-                .getLaunchIntentForPackage(context.packageName)
-                ?.apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK) }
-            if (launchIntent != null) {
-                val pending = PendingIntent.getActivity(
-                    context, 2, launchIntent,
-                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-                )
-                val alarm = context.getSystemService(AlarmManager::class.java)
-                alarm.set(AlarmManager.RTC, System.currentTimeMillis() + 500L, pending)
-            }
-            android.os.Process.killProcess(android.os.Process.myPid())
+            AppRestart.restart(
+                context     = context,
+                body        = context.getString(R.string.reopen_after_trim),
+                reason      = "db-trim",
+                requestCode = AppRestart.REQUEST_TRIM,
+            )
         }
     }
 

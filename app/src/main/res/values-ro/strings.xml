@@ -501,6 +501,24 @@
     <string name="delete_backup_title">Ștergi copia de rezervă?</string>
     <string name="delete_telegram_backup_confirm">\"%1$s\" va fi eliminat din această listă și șters din chatul tău Telegram dacă a fost trimis cu mai puțin de 48 de ore în urmă (Telegram nu permite boților să șteargă mesaje mai vechi).</string>
     <string name="delete_backup_action">Șterge copia de rezervă</string>
+    <string name="reopen_notification_channel">Redeschide după o repornire</string>
+    <string name="reopen_notification_channel_desc">O modalitate de a reveni în aplicație când s-a închis singură pentru a finaliza o operațiune pe baza de date</string>
+    <string name="reopen_notification_title">Atinge pentru a redeschide BYD Trip Stats</string>
+    <string name="reopen_after_restore">Aplicația s-a închis pentru a finaliza restaurarea datelor tale.</string>
+    <string name="reopen_after_reset">Aplicația s-a închis pentru a finaliza resetarea datelor tale.</string>
+    <string name="reopen_after_trim">Aplicația s-a închis pentru a finaliza eliberarea spațiului pe disc.</string>
+    <string name="settings_backup_label">Backup și restaurare setări</string>
+    <string name="settings_backup_desc">Backupul bazei de date conține cursele tale; acesta conține tot restul — mașină, unități, temă, aspectul tabloului de bord, tariful la electricitate, obiective, conexiuni MQTT/ABRP/Telegram, limbă și codul tău Pro. Un fișier de setări este salvat automat cu fiecare backup al bazei de date, astfel încât o reinstalare să poată fi readusă exact cum era.</string>
+    <string name="settings_include_credentials_label">Include acreditările</string>
+    <string name="settings_include_credentials_desc">Salvează în fișier parola MQTT, tokenurile ABRP și Telegram, PIN-ul aplicației web companion și codul tău Pro. Lasă opțiunea activată, cu excepția cazului în care intenționezi să partajezi fișierul — acele conexiuni nu pot fi restaurate fără ea.</string>
+    <string name="settings_backup_now_action">Fă backup setărilor acum</string>
+    <string name="available_settings_files_label">Fișiere de setări disponibile:</string>
+    <string name="no_settings_files">Încă nu există fișiere de setări. Sunt create automat cu fiecare backup al bazei de date.</string>
+    <string name="restore_settings_title">Restaurezi setările?</string>
+    <string name="restore_settings_msg">Setările din %1$s le vor înlocui pe cele actuale. Cursele și sesiunile de încărcare nu sunt afectate.\n\nAplicația nu trebuie închisă — totul se aplică imediat.</string>
+    <string name="delete_settings_title">Ștergi fișierul de setări?</string>
+    <string name="restore_with_settings_label">Restaurează și setările salvate cu acest backup</string>
+    <string name="restore_no_settings_note">Nu a fost salvat niciun fișier de setări cu acest backup — vor fi restaurate doar datele curselor.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Backup Telegram</string>
@@ -782,7 +800,6 @@
     <!-- Initialization screen -->
     <string name="choose_model_title">Alegeți modelul BYD pe care îl conduceți</string>
     <string name="model_saved_info">Această selecție va fi salvată și folosită pentru a încărca configurația corectă a mașinii.</string>
-    <string name="dilink3_only_notice">Sunt acceptate doar vehiculele DiLink 3. DiLink 4 și 5 nu sunt încă acceptate.</string>
     <string name="car_type_bev">Electric pe baterie (BEV)</string>
     <string name="car_type_phev">Hibrid plug-in (PHEV / DM-i)</string>
     <string name="select_car_label">Selectează mașina</string>
@@ -1023,7 +1040,7 @@
     <string name="about_install_note">Butonul de instalare va deveni disponibil parcat, fără călătorie sau încărcare activă</string>
     <string name="about_install_now">Instalează acum</string>
     <string name="about_download_update">Descarcă actualizarea</string>
-    <string name="about_update_manual_di5_instructions">Instalarea automată nu este disponibilă pe DiLink 5. Pe un PC sau telefon, descarcă APK-ul acestei versiuni de pe pagina de versiuni, apoi instalează-l prin ADB:</string>
+    <string name="about_update_manual_di5_instructions">Instalarea automată nu este disponibilă pe această unitate. Pe un PC sau telefon, descarcă APK-ul acestei versiuni de pe pagina de versiuni, apoi instalează-l prin ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Deschide pagina de versiuni</string>
 

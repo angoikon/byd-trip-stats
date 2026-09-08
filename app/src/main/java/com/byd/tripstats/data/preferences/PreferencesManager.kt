@@ -56,6 +56,7 @@ private val WEB_SERVER_PORT              = intPreferencesKey("web_server_port")
 private val WEB_SERVER_PIN               = stringPreferencesKey("web_server_pin")
 private val CELL_IMBALANCE_ALERT_ENABLED = booleanPreferencesKey("cell_imbalance_alert_enabled")
 private val CELL_IMBALANCE_THRESHOLD_V   = doublePreferencesKey("cell_imbalance_threshold_v")
+private val SETTINGS_BACKUP_CREDENTIALS  = booleanPreferencesKey("settings_backup_include_credentials")
 
 const val DEFAULT_CAR_OFF_TIMEOUT_MINUTES = 3
 const val DEFAULT_CONFIRM_BEFORE_AUTO_STOP = true
@@ -496,6 +497,20 @@ class PreferencesManager(private val context: Context) {
         val clamped = v.coerceIn(0.01, 0.5)
         context.dataStore.edit { it[CELL_IMBALANCE_THRESHOLD_V] = clamped }
         cache.edit().putFloat("cell_imbalance_threshold_v", clamped.toFloat()).apply()
+    }
+
+    // ── Settings backup ───────────────────────────────────────────────────────
+    // Whether the settings file written alongside every database backup carries the
+    // secrets it holds (MQTT password, ABRP and Telegram tokens, web PIN, Pro code).
+    // Defaults to true: the file lives in the car's own Download folder next to the
+    // database, and restoring the connections without their credentials would leave
+    // them configured but silently unable to connect. Turn it off to share the file.
+
+    val settingsBackupIncludeCredentials: Flow<Boolean> = context.dataStore.data
+        .map { it[SETTINGS_BACKUP_CREDENTIALS] ?: true }
+
+    suspend fun saveSettingsBackupIncludeCredentials(include: Boolean) {
+        context.dataStore.edit { it[SETTINGS_BACKUP_CREDENTIALS] = include }
     }
 
     // ── Web companion server ──────────────────────────────────────────────────

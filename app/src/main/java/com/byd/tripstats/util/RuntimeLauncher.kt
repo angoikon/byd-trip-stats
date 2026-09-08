@@ -22,8 +22,32 @@ object RuntimeLauncher {
     private const val COOLDOWN_MS = 60_000L
     private var lastAliveMs = 0L
     private const val ALIVE_GRACE_MS = 90_000L
+    /**
+     * Grace applied instead when the package is in Android's *stopped* state, i.e. it was
+     * force-stopped rather than crashing or being trimmed. See [forceStopped].
+     */
+    private const val FORCE_STOP_GRACE_MS = 10_000L
     /** Tracks the alive→down edge so the transition is logged once, not every tick. */
     private var wasAlive = true
+    /**
+     * Was the last disappearance a force-stop? Decided once per alive→down edge (a `dumpsys`
+     * per tick would be far too heavy) and reset when the target comes back.
+     *
+     * This is the discriminator that lets the grace be short when it is safe to be short. The
+     * 90 s default exists for the ambiguous deaths — a crash, a low-memory trim, or the app
+     * deliberately going dark in Deep Sleep — where waking immediately would fight something
+     * that may recover, or may have stopped on purpose. A force-stop is none of those: it is
+     * deterministic, the app is never coming back on its own, and on DiLink 5 it is what BYD
+     * does at every single car-off.
+     *
+     * Why it matters beyond lost telemetry: Android persists the stopped state, so a package
+     * still stopped when the head unit powers down receives no BOOT_COMPLETED at the next boot
+     * — it cannot start, so it cannot re-dispatch a supervisor, so nothing can ever wake it
+     * again. That latch is only escapable by hand. BYD gives us ~10 min between the standby
+     * force-stop and the shutdown (CarPowerService: MAX_NUM 10 × TIMER_DELAY_MS 60000), and the
+     * old 90 s grace plus the 60 s cooldown spent up to two of them for no benefit.
+     */
+    private var forceStopped = false
 
     private data class WakeStrategy(
         val label: String,
@@ -129,17 +153,24 @@ object RuntimeLauncher {
         if (isTargetAlive(pkg)) {
             if (!wasAlive) p("tick=$tick target back up")
             wasAlive = true
+            forceStopped = false
             lastAliveMs = android.os.SystemClock.elapsedRealtime()
             if (tick % 10 == 0) p("tick=$tick healthy")
             return true
         }
         // Down-transition is printed once, immediately: it timestamps the car-off kill in the
         // persistent log, which is what pins "was the resurrector even running?" after the fact.
-        if (wasAlive) p("tick=$tick target DOWN")
+        // The stopped-state probe rides along on the same edge — one dumpsys per disappearance,
+        // never per tick — and decides how long we are willing to wait before waking.
+        if (wasAlive) {
+            forceStopped = isTargetStopped(pkg)
+            p("tick=$tick target DOWN forceStopped=$forceStopped")
+        }
         wasAlive = false
 
         val now = android.os.SystemClock.elapsedRealtime()
-        if (now - lastAliveMs < ALIVE_GRACE_MS) {
+        val grace = if (forceStopped) FORCE_STOP_GRACE_MS else ALIVE_GRACE_MS
+        if (now - lastAliveMs < grace) {
             if (tick % 10 == 0) p("tick=$tick recently alive, skip")
             return true
         }
@@ -215,6 +246,26 @@ object RuntimeLauncher {
             }
         }
         return false
+    }
+
+    /**
+     * Is the package in Android's *stopped* state — i.e. force-stopped, as opposed to crashed,
+     * trimmed, or self-stopped? Read from `dumpsys package`, piped through `grep` because the
+     * full dump is hundreds of KB and we want one line of it.
+     *
+     * Conservative on failure: an unreadable dump returns false, which keeps the long grace.
+     * Only ever called on an alive→down edge.
+     */
+    private fun isTargetStopped(pkg: String): Boolean {
+        val sh = s(115, 104) // "sh"
+        val dashC = s(45, 99) // "-c"
+        val dumpsys = s(100, 117, 109, 112, 115, 121, 115) // "dumpsys"
+        val pkgArg = s(112, 97, 99, 107, 97, 103, 101) // "package"
+        val stoppedTrue = s(115, 116, 111, 112, 112, 101, 100, 61, 116, 114, 117, 101) // "stopped=true"
+        val (exit, out) = runCapture(
+            arrayOf(sh, dashC, "$dumpsys $pkgArg $pkg 2>/dev/null | grep -m1 -F $stoppedTrue"),
+        )
+        return exit == 0 && out.isNotBlank()
     }
 
     private fun isTargetAlive(pkg: String): Boolean {

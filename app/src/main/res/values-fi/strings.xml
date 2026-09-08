@@ -504,6 +504,24 @@
     <string name="delete_backup_title">Poistetaanko varmuuskopio?</string>
     <string name="delete_telegram_backup_confirm">\"%1$s\" poistetaan tästä luettelosta ja Telegram-keskustelustasi, jos se lähetettiin alle 48 tuntia sitten (Telegram ei anna bottien poistaa vanhempia viestejä).</string>
     <string name="delete_backup_action">Poista varmuuskopio</string>
+    <string name="reopen_notification_channel">Avaa uudelleen uudelleenkäynnistyksen jälkeen</string>
+    <string name="reopen_notification_channel_desc">Tapa palata sovellukseen, kun se on sulkenut itsensä viimeistelläkseen tietokantatoiminnon</string>
+    <string name="reopen_notification_title">Avaa BYD Trip Stats uudelleen napauttamalla</string>
+    <string name="reopen_after_restore">Sovellus sulkeutui viimeistelläkseen tietojesi palauttamisen.</string>
+    <string name="reopen_after_reset">Sovellus sulkeutui viimeistelläkseen tietojesi nollauksen.</string>
+    <string name="reopen_after_trim">Sovellus sulkeutui viimeistelläkseen levytilan vapauttamisen.</string>
+    <string name="settings_backup_label">Asetusten varmuuskopiointi ja palautus</string>
+    <string name="settings_backup_desc">Tietokannan varmuuskopio sisältää matkasi; tämä sisältää kaiken muun — auto, yksiköt, teema, koontinäytön asettelu, sähkön hinta, tavoitteet, MQTT-/ABRP-/Telegram-yhteydet, kieli ja Pro-koodisi. Asetustiedosto tallennetaan automaattisesti jokaisen tietokantavarmuuskopion yhteydessä, joten uudelleenasennus voidaan palauttaa täsmälleen entiselleen.</string>
+    <string name="settings_include_credentials_label">Sisällytä tunnistetiedot</string>
+    <string name="settings_include_credentials_desc">Tallentaa MQTT-salasanan, ABRP- ja Telegram-tunnukset, verkkokumppanin PIN-koodin ja Pro-koodisi tiedostoon. Jätä tämä päälle, ellet aio jakaa tiedostoa — noita yhteyksiä ei voi palauttaa ilman sitä.</string>
+    <string name="settings_backup_now_action">Varmuuskopioi asetukset nyt</string>
+    <string name="available_settings_files_label">Käytettävissä olevat asetustiedostot:</string>
+    <string name="no_settings_files">Ei vielä asetustiedostoja. Ne luodaan automaattisesti jokaisen tietokantavarmuuskopion yhteydessä.</string>
+    <string name="restore_settings_title">Palautetaanko asetukset?</string>
+    <string name="restore_settings_msg">Asetukset kohteesta %1$s korvaavat nykyiset. Matkoihin ja lataustapahtumiin ei kosketa.\n\nSovellusta ei tarvitse sulkea — kaikki tulee voimaan heti.</string>
+    <string name="delete_settings_title">Poistetaanko asetustiedosto?</string>
+    <string name="restore_with_settings_label">Palauta myös tämän varmuuskopion mukana tallennetut asetukset</string>
+    <string name="restore_no_settings_note">Tämän varmuuskopion mukana ei tallennettu asetustiedostoa — vain matkatiedot palautetaan.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram-varmuuskopio</string>
@@ -785,7 +803,6 @@
     <!-- Initialization screen -->
     <string name="choose_model_title">Valitse ajamasi BYD-malli</string>
     <string name="model_saved_info">Tämä valinta tallennetaan ja sitä käytetään oikean autokonfiguraation lataamiseen.</string>
-    <string name="dilink3_only_notice">Vain DiLink 3 -ajoneuvot ovat tuettuja. DiLink 4 ja 5 eivät ole vielä tuettuja.</string>
     <string name="car_type_bev">Täyssähkö (BEV)</string>
     <string name="car_type_phev">Ladattava hybridi (PHEV / DM-i)</string>
     <string name="select_car_label">Valitse auto</string>
@@ -1027,7 +1044,7 @@
     <string name="about_install_note">Asennuspainike tulee saataville kun pysäköitynä ilman aktiivista matkaa tai latausta</string>
     <string name="about_install_now">Asenna nyt</string>
     <string name="about_download_update">Lataa päivitys</string>
-    <string name="about_update_manual_di5_instructions">Automaattinen asennus ei ole käytettävissä DiLink 5:ssä. Lataa tämän version APK julkaisusivulta tietokoneella tai puhelimella ja asenna se sitten ADB:n kautta:</string>
+    <string name="about_update_manual_di5_instructions">Automaattinen asennus ei ole käytettävissä tässä pääyksikössä. Lataa tämän version APK julkaisusivulta tietokoneella tai puhelimella ja asenna se sitten ADB:n kautta:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Avaa julkaisusivu</string>
 

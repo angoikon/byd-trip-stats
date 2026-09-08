@@ -1,9 +1,6 @@
 package com.byd.tripstats.ui.screens.settings
 
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -18,9 +15,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import com.byd.tripstats.R
-import com.byd.tripstats.sdk.DiLink5Platform
 import com.byd.tripstats.ui.theme.BydErrorRed
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
+import com.byd.tripstats.util.AppRestart
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -112,20 +109,13 @@ internal fun AppManagementTab(
                         showResetConfirm = false
                         scope.launch {
                             viewModel.resetDatabase()
-                            // DiLink-5: skip auto-relaunch — kill+relaunch races the SDK
-                            // injection and boot-loops the head unit (2.13.0 incident). User reopens.
-                            val launchIntent = context.packageManager
-                                .getLaunchIntentForPackage(context.packageName)
-                                ?.apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK) }
-                            if (launchIntent != null && !DiLink5Platform.isDiLink5) {
-                                val pending = PendingIntent.getActivity(
-                                    context, 1, launchIntent,
-                                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-                                )
-                                val alarm = context.getSystemService(AlarmManager::class.java)
-                                alarm.set(AlarmManager.RTC, System.currentTimeMillis() + 800L, pending)
-                            }
-                            android.os.Process.killProcess(android.os.Process.myPid())
+                            AppRestart.restart(
+                                context     = context,
+                                body        = context.getString(R.string.reopen_after_reset),
+                                reason      = "db-reset",
+                                requestCode = AppRestart.REQUEST_RESET,
+                                delayMs     = 800L,
+                            )
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = BydErrorRed)

@@ -217,25 +217,16 @@
 -keepclassmembers class fi.iki.elonen.** { *; }
 
 # 5. HiveMQ/Netty optional desktop/server transports not packaged on Android
+# NOTE: the io.netty.handler.codec.http.** rules that used to live here were
+# removed deliberately. Those classes ship in netty-codec-http, which the MQTT
+# "Use WebSocket" transport genuinely needs; the -dontwarn only hid the fact
+# that they were absent, so the release built clean and then crashed at runtime
+# with NoClassDefFoundError. The dependency is now declared in build.gradle.kts
+# and a future regression must fail the build instead. Do not re-add them.
 -dontwarn io.netty.channel.epoll.Epoll
 -dontwarn io.netty.channel.epoll.EpollEventLoopGroup
 -dontwarn io.netty.channel.epoll.EpollSocketChannel
--dontwarn io.netty.handler.codec.http.FullHttpResponse
--dontwarn io.netty.handler.codec.http.HttpClientCodec
--dontwarn io.netty.handler.codec.http.HttpHeaders
--dontwarn io.netty.handler.codec.http.HttpObjectAggregator
--dontwarn io.netty.handler.codec.http.HttpRequest
--dontwarn io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame
--dontwarn io.netty.handler.codec.http.websocketx.CloseWebSocketFrame
--dontwarn io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame
--dontwarn io.netty.handler.codec.http.websocketx.PingWebSocketFrame
--dontwarn io.netty.handler.codec.http.websocketx.PongWebSocketFrame
--dontwarn io.netty.handler.codec.http.websocketx.TextWebSocketFrame
--dontwarn io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker
--dontwarn io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory
--dontwarn io.netty.handler.codec.http.websocketx.WebSocketFrame
--dontwarn io.netty.handler.codec.http.websocketx.WebSocketHandshakeException
--dontwarn io.netty.handler.codec.http.websocketx.WebSocketVersion
+# Still genuinely absent — these live in netty-handler-proxy, which we do not ship.
 -dontwarn io.netty.handler.proxy.HttpProxyHandler
 -dontwarn io.netty.handler.proxy.ProxyHandler
 -dontwarn io.netty.handler.proxy.Socks4ProxyHandler

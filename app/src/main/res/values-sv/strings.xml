@@ -504,6 +504,24 @@
     <string name="delete_backup_title">Ta bort säkerhetskopia?</string>
     <string name="delete_telegram_backup_confirm">\"%1$s\" tas bort från den här listan och raderas från din Telegram-chatt om det skickades för mindre än 48 timmar sedan (Telegram tillåter inte att bottar raderar äldre meddelanden).</string>
     <string name="delete_backup_action">Ta bort säkerhetskopia</string>
+    <string name="reopen_notification_channel">Öppna igen efter omstart</string>
+    <string name="reopen_notification_channel_desc">Ett sätt tillbaka in i appen när den har stängt sig själv för att slutföra en databasåtgärd</string>
+    <string name="reopen_notification_title">Tryck för att öppna BYD Trip Stats igen</string>
+    <string name="reopen_after_restore">Appen stängdes för att slutföra återställningen av dina data.</string>
+    <string name="reopen_after_reset">Appen stängdes för att slutföra nollställningen av dina data.</string>
+    <string name="reopen_after_trim">Appen stängdes för att slutföra frigörandet av diskutrymme.</string>
+    <string name="settings_backup_label">Säkerhetskopiering och återställning av inställningar</string>
+    <string name="settings_backup_desc">Databasens säkerhetskopia innehåller dina resor; den här innehåller allt runt omkring — bil, enheter, tema, instrumentpanelens layout, elpris, mål, MQTT-/ABRP-/Telegram-anslutningar, språk och din Pro-kod. En inställningsfil sparas automatiskt med varje databassäkerhetskopia, så en ominstallation kan återställas exakt som den var.</string>
+    <string name="settings_include_credentials_label">Inkludera autentiseringsuppgifter</string>
+    <string name="settings_include_credentials_desc">Sparar MQTT-lösenordet, ABRP- och Telegram-tokens, webbföljeslagarens PIN-kod och din Pro-kod i filen. Låt detta vara på om du inte tänker dela filen — de anslutningarna kan inte återställas utan den.</string>
+    <string name="settings_backup_now_action">Säkerhetskopiera inställningar nu</string>
+    <string name="available_settings_files_label">Tillgängliga inställningsfiler:</string>
+    <string name="no_settings_files">Inga inställningsfiler ännu. De skapas automatiskt med varje databassäkerhetskopia.</string>
+    <string name="restore_settings_title">Återställa inställningar?</string>
+    <string name="restore_settings_msg">Inställningarna från %1$s ersätter dina nuvarande. Resor och laddningssessioner påverkas inte.\n\nAppen behöver inte stängas — allt tillämpas direkt.</string>
+    <string name="delete_settings_title">Ta bort inställningsfil?</string>
+    <string name="restore_with_settings_label">Återställ även inställningarna som sparats med denna säkerhetskopia</string>
+    <string name="restore_no_settings_note">Ingen inställningsfil sparades med denna säkerhetskopia — endast resdata återställs.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram-säkerhetskopiering</string>
@@ -785,7 +803,6 @@
     <!-- Initialization screen -->
     <string name="choose_model_title">Välj den BYD-modell du kör</string>
     <string name="model_saved_info">Det här valet sparas och används för att läsa in rätt bilkonfiguration.</string>
-    <string name="dilink3_only_notice">Endast DiLink 3-fordon stöds. DiLink 4 och 5 stöds ännu inte.</string>
     <string name="car_type_bev">Batterielektrisk (BEV)</string>
     <string name="car_type_phev">Plug-in-hybrid (PHEV / DM-i)</string>
     <string name="select_car_label">Välj bil</string>
@@ -1027,7 +1044,7 @@
     <string name="about_install_note">Installationsknappen blir tillgänglig när parkerad utan aktiv resa eller laddning</string>
     <string name="about_install_now">Installera nu</string>
     <string name="about_download_update">Ladda ner uppdatering</string>
-    <string name="about_update_manual_di5_instructions">Automatisk installation är inte tillgänglig på DiLink 5. Ladda ner den här versionens APK från utgåvesidan på en dator eller telefon och installera den sedan via ADB:</string>
+    <string name="about_update_manual_di5_instructions">Automatisk installation är inte tillgänglig på denna huvudenhet. Ladda ner den här versionens APK från utgåvesidan på en dator eller telefon och installera den sedan via ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Öppna utgåvesidan</string>
 

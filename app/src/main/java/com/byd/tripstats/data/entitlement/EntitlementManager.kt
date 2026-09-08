@@ -85,6 +85,26 @@ object EntitlementManager {
         return RedeemResult.SUCCESS
     }
 
+    /** The stored unlock code, for the settings backup. Null when none was ever redeemed. */
+    fun savedUnlockCode(): String? = storedCode
+
+    /**
+     * Re-installs a code from a settings backup without re-validating it against a
+     * vehicle. [redeem] can't be used here: after a reinstall the vehicle id usually
+     * hasn't arrived from telemetry yet, so redeem would answer NO_VEHICLE_YET and throw
+     * the code away. Storing it is safe — [recompute] runs now and on every launch, and
+     * only grants Pro once the live vehicle matches the code. The vehicle id itself is
+     * never restored from a backup; it comes from telemetry.
+     */
+    fun restoreUnlockCode(rawCode: String) {
+        if (appContext == null) return
+        val code = LicenseCode.normalizeInput(rawCode).takeIf { it.isNotBlank() } ?: return
+        storedCode = code
+        prefs().edit().putString(KEY_CODE, code).apply()
+        recompute()
+        Log.i(TAG, "Unlock code restored from settings backup; pro=${_isPro.value}")
+    }
+
     /** Remove the saved code and drop back to the free tier. */
     fun clear() {
         storedCode = null

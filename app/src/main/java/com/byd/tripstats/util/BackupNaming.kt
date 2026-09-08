@@ -9,12 +9,16 @@ import java.util.Locale
  * Centralised backup filename scheme: `<prefix>_v<appVersion>_<timestamp>.db`
  *
  * The `v<appVersion>` segment records which build produced a backup, so a restored
- * `.db` can be matched to the schema it was written against. Nothing parses this name
- * back — every scan/sort/prune path keys off the file's `lastModified()` time — so the
- * layout can change freely without breaking restore.
+ * `.db` can be matched to the schema it was written against. Every scan/sort/prune path
+ * keys off the file's `lastModified()` time rather than this name; the one thing read
+ * back out of it is the timestamp ([timestampOf]), which pairs a database backup with
+ * the settings file written in the same run.
  */
 object BackupNaming {
     const val EXTENSION = ".db"
+
+    /** `..._<yyyy-MM-dd_HH-mm>.<ext>` — the shared segment of a backup/settings pair. */
+    private val TIMESTAMP_REGEX = Regex("""_(\d{4}-\d{2}-\d{2}_\d{2}-\d{2})\.[A-Za-z0-9]+$""")
 
     /** App version, sanitised to filename-safe characters (e.g. "2.11.1-beta09"). */
     val appVersionTag: String
@@ -24,6 +28,13 @@ object BackupNaming {
     fun timestamp(): String =
         SimpleDateFormat("yyyy-MM-dd_HH-mm", Locale.getDefault()).format(Date())
 
-    fun fileName(prefix: String = "byd_stats_backup", timestamp: String = timestamp()): String =
-        "${prefix}_v${appVersionTag}_$timestamp$EXTENSION"
+    fun fileName(
+        prefix: String = "byd_stats_backup",
+        timestamp: String = timestamp(),
+        extension: String = EXTENSION,
+    ): String = "${prefix}_v${appVersionTag}_$timestamp$extension"
+
+    /** The timestamp segment of [fileName], or null for a name that doesn't carry one. */
+    fun timestampOf(fileName: String): String? =
+        TIMESTAMP_REGEX.find(fileName)?.groupValues?.getOrNull(1)
 }

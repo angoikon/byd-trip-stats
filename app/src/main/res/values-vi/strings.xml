@@ -501,6 +501,24 @@
     <string name="delete_backup_title">Xóa bản sao lưu?</string>
     <string name="delete_telegram_backup_confirm">\"%1$s\" sẽ bị xóa khỏi danh sách này và bị xóa khỏi cuộc trò chuyện Telegram của bạn nếu được gửi cách đây chưa đến 48 giờ (Telegram không cho phép bot xóa tin nhắn cũ hơn).</string>
     <string name="delete_backup_action">Xóa bản sao lưu</string>
+    <string name="reopen_notification_channel">Mở lại sau khi khởi động lại</string>
+    <string name="reopen_notification_channel_desc">Cách quay lại ứng dụng khi ứng dụng tự đóng để hoàn tất một thao tác cơ sở dữ liệu</string>
+    <string name="reopen_notification_title">Nhấn để mở lại BYD Trip Stats</string>
+    <string name="reopen_after_restore">Ứng dụng đã đóng để hoàn tất việc khôi phục dữ liệu của bạn.</string>
+    <string name="reopen_after_reset">Ứng dụng đã đóng để hoàn tất việc đặt lại dữ liệu của bạn.</string>
+    <string name="reopen_after_trim">Ứng dụng đã đóng để hoàn tất việc thu hồi dung lượng đĩa.</string>
+    <string name="settings_backup_label">Sao lưu và khôi phục cài đặt</string>
+    <string name="settings_backup_desc">Bản sao lưu cơ sở dữ liệu chứa các chuyến đi của bạn; bản này chứa mọi thứ xung quanh chúng — xe, đơn vị, giao diện, bố cục bảng điều khiển, biểu giá điện, mục tiêu, kết nối MQTT/ABRP/Telegram, ngôn ngữ và mã Pro của bạn. Một tệp cài đặt được lưu tự động cùng với mỗi bản sao lưu cơ sở dữ liệu, để khi cài đặt lại có thể khôi phục chính xác như trước.</string>
+    <string name="settings_include_credentials_label">Bao gồm thông tin đăng nhập</string>
+    <string name="settings_include_credentials_desc">Lưu mật khẩu MQTT, mã thông báo ABRP và Telegram, mã PIN của web companion và mã Pro của bạn vào trong tệp. Hãy để bật trừ khi bạn định chia sẻ tệp — những kết nối đó không thể khôi phục nếu thiếu nó.</string>
+    <string name="settings_backup_now_action">Sao lưu cài đặt ngay</string>
+    <string name="available_settings_files_label">Tệp cài đặt có sẵn:</string>
+    <string name="no_settings_files">Chưa có tệp cài đặt nào. Chúng được tạo tự động cùng với mỗi bản sao lưu cơ sở dữ liệu.</string>
+    <string name="restore_settings_title">Khôi phục cài đặt?</string>
+    <string name="restore_settings_msg">Cài đặt từ %1$s sẽ thay thế cài đặt hiện tại của bạn. Các chuyến đi và phiên sạc không bị ảnh hưởng.\n\nKhông cần đóng ứng dụng — mọi thứ được áp dụng ngay lập tức.</string>
+    <string name="delete_settings_title">Xóa tệp cài đặt?</string>
+    <string name="restore_with_settings_label">Đồng thời khôi phục cài đặt đã lưu cùng bản sao lưu này</string>
+    <string name="restore_no_settings_note">Không có tệp cài đặt nào được lưu cùng bản sao lưu này — chỉ dữ liệu chuyến đi sẽ được khôi phục.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Sao lưu Telegram</string>
@@ -782,7 +800,6 @@
     <!-- Initialization screen -->
     <string name="choose_model_title">Chọn mẫu BYD bạn lái</string>
     <string name="model_saved_info">Lựa chọn này sẽ được lưu và dùng để tải đúng cấu hình xe.</string>
-    <string name="dilink3_only_notice">Chỉ hỗ trợ xe DiLink 3. DiLink 4 và 5 chưa được hỗ trợ.</string>
     <string name="car_type_bev">Điện chạy pin (BEV)</string>
     <string name="car_type_phev">Hybrid cắm sạc (PHEV / DM-i)</string>
     <string name="select_car_label">Chọn xe</string>
@@ -1023,7 +1040,7 @@
     <string name="about_install_note">Nút cài đặt sẽ khả dụng khi đỗ mà không có chuyến đi hoặc sạc đang hoạt động</string>
     <string name="about_install_now">Cài đặt ngay</string>
     <string name="about_download_update">Tải cập nhật</string>
-    <string name="about_update_manual_di5_instructions">Cài đặt tự động không khả dụng trên DiLink 5. Trên PC hoặc điện thoại, hãy tải APK của phiên bản này từ trang phát hành, sau đó cài đặt qua ADB:</string>
+    <string name="about_update_manual_di5_instructions">Cài đặt tự động không khả dụng trên head unit này. Trên PC hoặc điện thoại, hãy tải APK của phiên bản này từ trang phát hành, sau đó cài đặt qua ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Mở trang phát hành</string>
 

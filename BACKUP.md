@@ -1,6 +1,6 @@
 # BYD Trip Stats — Backup & Restore Guide
 
-Your trip data lives in a single SQLite database file on the car's infotainment unit. This guide covers all available methods to back it up and restore it.
+Your trip data lives in a single SQLite database file on the car's infotainment unit. Your **settings** live outside it, so every backup writes a second, tiny file next to the database — see [Settings backup](#settings-backup). This guide covers all available methods to back both up and restore them.
 
 ---
 
@@ -10,6 +10,7 @@ Your trip data lives in a single SQLite database file on the car's infotainment 
   - [Download Folder](#1-download-folder)
   - [Telegram](#2-telegram)
   - [Wireless ADB](#3-wireless-adb)
+- [Settings backup](#settings-backup)
 - [Restore Methods](#restore-methods)
   - [From the backup list](#1-from-the-backup-list)
   - [From Telegram](#2-from-telegram)
@@ -111,9 +112,33 @@ adb -s 192.168.x.x:5555 shell run-as com.byd.tripstats \
 
 ---
 
+## Settings backup
+
+The database holds trips and charging sessions. Everything *around* them — selected car, units, theme, dashboard layout, electricity tariff and currency, personal goals, MQTT / ABRP / Telegram connections, web companion port and PIN, language, tyre-pressure unit and your Pro unlock code — lives in the app's preferences, which an uninstall wipes.
+
+So every backup writes a second file alongside the `.db`:
+
+```
+Download/BydTripStats/byd_stats_settings_v2.15.2_2026-09-07_14-30.json
+```
+
+It is a couple of kilobytes of plain JSON, written to the same places as the database backup (Download, the private ADB directory, the SD card) and sent to Telegram with it — including on the automatic schedule. The two files share the same timestamp, which is how the app pairs them at restore time.
+
+**Credentials.** By default the file carries the secrets it needs to be useful: the MQTT password, the ABRP and Telegram tokens, the web companion PIN and the Pro code. That file sits in your own car's Download folder, next to your trip database. If you plan to share it — to copy a configuration to another car, or to attach it to a bug report — turn **Include credentials** off in *Settings → App → Backup & Restore → Settings backup & restore* first; everything else is still exported, and the connections come back configured but need their passwords re-entered.
+
+The Pro unlock code is safe to carry either way: it is checked against the vehicle it was issued for on every launch, so a copied code unlocks nothing on another car.
+
+**Backing up settings on their own.** Tap **Back up settings now** in that card, for example after changing a tariff, without waiting for the next database backup.
+
+**Restoring.** The same card lists every settings file it can find, newest first, each with **Restore**. Restoring settings does **not** touch trips, and does **not** close the app — every value applies immediately (only a language change restarts the screen). A settings file restored from a car that had a different vehicle selected will switch the selected car too.
+
+> The `Download/BydTripStats/` folder survives an uninstall, so after a reinstall the settings file is normally still there, ready to restore before or after the database.
+
+---
+
 ## Restore Methods
 
-> ⚠️ Restoring **permanently replaces all current trip data**. The app restarts automatically after a successful restore.
+> ⚠️ Restoring **permanently replaces all current trip data**. The app closes after a successful restore so the database reopens cleanly, and comes back on its own where the head unit allows it (DiLink-3). On newer head units it does not relaunch itself — an app-initiated restart there can wedge the unit — so it leaves a **Tap to reopen BYD Trip Stats** notification instead; tapping it, or the app icon, brings it back.
 
 ---
 
@@ -130,6 +155,8 @@ The app scans all known backup locations (Download folder and private ADB direct
 
 Each entry shows the filename, date, size, and source location (*Download* or *Internal (ADB)*). Tap the refresh icon to re-scan if you have just created a new backup or pushed a file via ADB.
 
+If the settings file written with that backup is still present, the confirmation dialog offers **Also restore the settings saved with this backup**, ticked by default. Untick it to restore only the trip data and keep your current settings — restoring an old database onto a working install would otherwise replace your current tariff, broker password and layout as well.
+
 ---
 
 ### 2. From Telegram
@@ -145,6 +172,8 @@ Restore a backup directly from your Telegram chat without needing a PC or ADB.
 6. The app downloads the file, validates it, restores the database, and restarts automatically
 
 > If you have just reinstalled the app or cleared app data, your previous backups will reappear after tapping refresh — as long as `Download/BydTripStats/telegram_registry.json` is still present.
+
+> The Telegram restore list holds **databases only**. Settings files are sent to your chat with every backup so you have an off-car copy, but they are restored from the local list in the *Settings backup & restore* card — on the car itself, `Download/BydTripStats/` survives the uninstall, so the settings file is normally already there.
 
 ---
 

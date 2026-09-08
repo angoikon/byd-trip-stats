@@ -145,25 +145,15 @@ class BydStatsApplication : Application(), Configuration.Provider {
             } catch (e: Throwable) {
                 Log.w(TAG, "Shell patches threw: ${e.message}")
             }
-            // Early retry ladder. The first attempt lands within a second or two of process start,
-            // which at a cold boot is ~20 s in — before WiFi has associated and, on DiLink 5, before
-            // the wireless-adb listener exists. That single miss is what left a Sealion 7 with no
-            // background restarter for nine hours on 2026-08-19. The watchdog retries too, but only
-            // every 15 min, and a short errand can end before the first tick.
-            //
-            // In-process delays, not alarms: the process is already alive through this window, so
-            // this adds no wakeups (deep sleep stays dark). Each attempt short-circuits on a healthy
-            // probe, and an unreachable channel fails instantly on the port check, so the steady
-            // states both cost nothing.
-            for (delayMs in longArrayOf(0L, 30_000L, 60_000L, 210_000L)) {
-                if (delayMs > 0L) kotlinx.coroutines.delay(delayMs)
-                val up = try {
-                    RtDispatch.launch(applicationContext)
-                } catch (e: Throwable) {
-                    Log.w(TAG, "Dispatch threw: ${e.message}")
-                    false
-                }
-                if (up) break   // supervisor running — stop probing
+            // Dispatch the background restarter, then — if the adb channel isn't up yet — keep
+            // watching for it for the rest of the boot window instead of retrying at a few guessed
+            // offsets. At a DiLink 5 cold boot the app starts before adbd is listening, and the
+            // previous fixed ladder could spend all four attempts against a closed port; the port
+            // then opened with nothing left to use it. See RtDispatch.launchWatchingForChannel.
+            try {
+                RtDispatch.launchWatchingForChannel(applicationContext)
+            } catch (e: Throwable) {
+                Log.w(TAG, "Dispatch threw: ${e.message}")
             }
         }
     }

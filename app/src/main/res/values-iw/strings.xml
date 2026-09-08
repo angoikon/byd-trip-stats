@@ -501,6 +501,24 @@
     <string name="delete_backup_title">למחוק את הגיבוי?</string>
     <string name="delete_telegram_backup_confirm">\"%1$s\" יוסר מרשימה זו, ויימחק מצ\'אט ה-Telegram שלך אם נשלח לפני פחות מ-48 שעות (Telegram אינו מאפשר לבוטים למחוק הודעות ישנות יותר).</string>
     <string name="delete_backup_action">מחק גיבוי</string>
+    <string name="reopen_notification_channel">פתח מחדש לאחר הפעלה מחדש</string>
+    <string name="reopen_notification_channel_desc">דרך לחזור לאפליקציה כאשר היא נסגרה מעצמה כדי לסיים פעולה במסד הנתונים</string>
+    <string name="reopen_notification_title">הקש כדי לפתוח מחדש את BYD Trip Stats</string>
+    <string name="reopen_after_restore">האפליקציה נסגרה כדי לסיים את שחזור הנתונים שלך.</string>
+    <string name="reopen_after_reset">האפליקציה נסגרה כדי לסיים את איפוס הנתונים שלך.</string>
+    <string name="reopen_after_trim">האפליקציה נסגרה כדי לסיים את שחרור שטח האחסון.</string>
+    <string name="settings_backup_label">גיבוי ושחזור הגדרות</string>
+    <string name="settings_backup_desc">הגיבוי של מסד הנתונים מכיל את הנסיעות שלך; זה מכיל את כל השאר — רכב, יחידות, ערכת נושא, פריסת לוח המחוונים, תעריף חשמל, יעדים, חיבורי MQTT/ABRP/Telegram, שפה וקוד ה-Pro שלך. קובץ הגדרות נשמר אוטומטית עם כל גיבוי של מסד הנתונים, כך שהתקנה מחדש יכולה לחזור בדיוק כפי שהייתה.</string>
+    <string name="settings_include_credentials_label">כלול פרטי גישה</string>
+    <string name="settings_include_credentials_desc">שומר בקובץ את סיסמת ה-MQTT, את האסימונים של ABRP ו-Telegram, את קוד ה-PIN של מלווה הרשת ואת קוד ה-Pro שלך. השאר מופעל אלא אם אתה מתכוון לשתף את הקובץ — לא ניתן לשחזר את החיבורים האלה בלעדיו.</string>
+    <string name="settings_backup_now_action">גבה הגדרות עכשיו</string>
+    <string name="available_settings_files_label">קובצי הגדרות זמינים:</string>
+    <string name="no_settings_files">עדיין אין קובצי הגדרות. הם נוצרים אוטומטית עם כל גיבוי של מסד הנתונים.</string>
+    <string name="restore_settings_title">לשחזר הגדרות?</string>
+    <string name="restore_settings_msg">ההגדרות מ-%1$s יחליפו את הנוכחיות שלך. נסיעות וסשני טעינה לא מושפעים.\n\nאין צורך לסגור את האפליקציה — הכול מוחל מיד.</string>
+    <string name="delete_settings_title">למחוק את קובץ ההגדרות?</string>
+    <string name="restore_with_settings_label">שחזר גם את ההגדרות שנשמרו עם גיבוי זה</string>
+    <string name="restore_no_settings_note">לא נשמר קובץ הגדרות עם גיבוי זה — רק נתוני הנסיעות ישוחזרו.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">גיבוי Telegram</string>
@@ -782,7 +800,6 @@
     <!-- Initialization screen -->
     <string name="choose_model_title">בחרו את דגם ה-BYD שאתם נוהגים בו</string>
     <string name="model_saved_info">בחירה זו תישמר ותשמש לטעינת תצורת הרכב הנכונה.</string>
-    <string name="dilink3_only_notice">רק רכבי DiLink 3 נתמכים. DiLink 4 ו-5 עדיין לא נתמכים.</string>
     <string name="car_type_bev">חשמלי מלא (BEV)</string>
     <string name="car_type_phev">היברידי נטען (PHEV / DM-i)</string>
     <string name="select_car_label">בחר רכב</string>
@@ -1023,7 +1040,7 @@
     <string name="about_install_note">כפתור ההתקנה יהפוך זמין בחנייה ללא נסיעה או טעינה פעילה</string>
     <string name="about_install_now">התקן עכשיו</string>
     <string name="about_download_update">הורד עדכון</string>
-    <string name="about_update_manual_di5_instructions">התקנה אוטומטית אינה זמינה ב-DiLink 5. במחשב או בטלפון, הורד את קובץ ה-APK של גרסה זו מדף הגרסאות, ולאחר מכן התקן אותו דרך ADB:</string>
+    <string name="about_update_manual_di5_instructions">התקנה אוטומטית אינה זמינה ביחידת הראש הזו. במחשב או בטלפון, הורד את קובץ ה-APK של גרסה זו מדף הגרסאות, ולאחר מכן התקן אותו דרך ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">פתח את דף הגרסאות</string>
 

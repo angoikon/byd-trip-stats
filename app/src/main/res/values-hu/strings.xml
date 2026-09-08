@@ -501,6 +501,24 @@
     <string name="delete_backup_title">Törli a biztonsági mentést?</string>
     <string name="delete_telegram_backup_confirm">A(z) \"%1$s\" eltávolításra kerül erről a listáról, és törlődik a Telegram-csevegésből, ha kevesebb mint 48 órája küldték (a Telegram nem engedi, hogy a botok régebbi üzeneteket töröljenek).</string>
     <string name="delete_backup_action">Biztonsági mentés törlése</string>
+    <string name="reopen_notification_channel">Újranyitás újraindítás után</string>
+    <string name="reopen_notification_channel_desc">Út vissza az alkalmazásba, amikor bezárta magát egy adatbázis-művelet befejezéséhez</string>
+    <string name="reopen_notification_title">Koppintson a BYD Trip Stats újranyitásához</string>
+    <string name="reopen_after_restore">Az alkalmazás bezárult az adatai visszaállításának befejezéséhez.</string>
+    <string name="reopen_after_reset">Az alkalmazás bezárult az adatai alaphelyzetbe állításának befejezéséhez.</string>
+    <string name="reopen_after_trim">Az alkalmazás bezárult a lemezterület felszabadításának befejezéséhez.</string>
+    <string name="settings_backup_label">Beállítások mentése és visszaállítása</string>
+    <string name="settings_backup_desc">Az adatbázis biztonsági mentése az utakat tartalmazza; ez pedig minden mást — autó, mértékegységek, téma, irányítópult elrendezése, áramdíj, célok, MQTT-/ABRP-/Telegram-kapcsolatok, nyelv és a Pro kódod. Egy beállításfájl automatikusan mentésre kerül minden adatbázis-mentéssel, így az újratelepítés pontosan úgy állítható vissza, ahogy volt.</string>
+    <string name="settings_include_credentials_label">Hitelesítő adatok belefoglalása</string>
+    <string name="settings_include_credentials_desc">Elmenti a fájlba az MQTT-jelszót, az ABRP- és Telegram-tokeneket, a webes társalkalmazás PIN-kódját és a Pro kódodat. Hagyd bekapcsolva, hacsak nem tervezed megosztani a fájlt — enélkül ezek a kapcsolatok nem állíthatók vissza.</string>
+    <string name="settings_backup_now_action">Beállítások mentése most</string>
+    <string name="available_settings_files_label">Elérhető beállításfájlok:</string>
+    <string name="no_settings_files">Még nincsenek beállításfájlok. Minden adatbázis-mentéssel automatikusan létrejönnek.</string>
+    <string name="restore_settings_title">Visszaállítja a beállításokat?</string>
+    <string name="restore_settings_msg">A(z) %1$s beállításai lecserélik a jelenlegieket. Az utak és a töltési munkamenetek érintetlenek maradnak.\n\nAz alkalmazást nem kell bezárni — minden azonnal érvénybe lép.</string>
+    <string name="delete_settings_title">Törli a beállításfájlt?</string>
+    <string name="restore_with_settings_label">Állítsa vissza az ezzel a mentéssel elmentett beállításokat is</string>
+    <string name="restore_no_settings_note">Ehhez a mentéshez nem lett beállításfájl mentve — csak az útadatok lesznek visszaállítva.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram-mentés</string>
@@ -782,7 +800,6 @@
     <!-- Initialization screen -->
     <string name="choose_model_title">Válassza ki a BYD modellt, amelyet vezet</string>
     <string name="model_saved_info">Ez a választás mentésre kerül, és a megfelelő autókonfiguráció betöltésére szolgál.</string>
-    <string name="dilink3_only_notice">Csak DiLink 3-as járművek támogatottak. A DiLink 4 és 5 még nem támogatott.</string>
     <string name="car_type_bev">Tisztán elektromos (BEV)</string>
     <string name="car_type_phev">Plug-in hibrid (PHEV / DM-i)</string>
     <string name="select_car_label">Autó kiválasztása</string>
@@ -1023,7 +1040,7 @@
     <string name="about_install_note">A telepítés gomb parkoláskor válik elérhetővé, aktív út vagy töltés nélkül</string>
     <string name="about_install_now">Telepítés most</string>
     <string name="about_download_update">Frissítés letöltése</string>
-    <string name="about_update_manual_di5_instructions">Az automatikus telepítés nem érhető el DiLink 5 rendszeren. Számítógépen vagy telefonon töltse le ennek a verziónak az APK-ját a kiadások oldaláról, majd telepítse ADB-n keresztül:</string>
+    <string name="about_update_manual_di5_instructions">Az automatikus telepítés nem érhető el ezen a fejegységen. Számítógépen vagy telefonon töltse le ennek a verziónak az APK-ját a kiadások oldaláról, majd telepítse ADB-n keresztül:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Kiadások oldalának megnyitása</string>
 

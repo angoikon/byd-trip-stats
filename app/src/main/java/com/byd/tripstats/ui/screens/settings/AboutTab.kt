@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -106,7 +107,16 @@ internal fun AboutTab(viewModel: DashboardViewModel) {
                 SettingsDetailRow(stringResource(R.string.about_author_label), "Angelos Oikonomou (angoikon)")
                 SettingsDetailRow(
                     label = stringResource(R.string.about_platform_label),
-                    value = "Android 10 · API 29",
+                    // Read from the device, not assumed: this row said "Android 10 · API 29" on
+                    // every unit, which is DiLink-3's version and wrong on DiLink-5 (11) and
+                    // DiLink-100 (14) — the two platforms a support question is most likely about.
+                    // The head unit's own product string is appended where it exposes one.
+                    value = buildString {
+                        append("Android ${Build.VERSION.RELEASE} · API ${Build.VERSION.SDK_INT}")
+                        com.byd.tripstats.sdk.DiLink5Platform.vehicleType
+                            .takeIf { it.isNotBlank() }
+                            ?.let { append(" · $it") }
+                    },
                     onClick = {
                         easterEggClicks++
                         if (easterEggClicks >= 5) {
@@ -170,7 +180,7 @@ internal fun AboutTab(viewModel: DashboardViewModel) {
             downloadedApk    = downloadedApk,
             canInstallNow    = canInstallNow,
             isChecking       = isCheckingUpdate,
-            isDiLink5        = com.byd.tripstats.sdk.DiLink5Platform.isDiLink5,
+            manualInstallOnly = com.byd.tripstats.sdk.DiLink5Platform.selfRestartUnsafe,
             onDownload       = { viewModel.downloadUpdate() },
             onInstall        = { viewModel.installUpdate() },
             onCancel         = { viewModel.cancelDownload() },
@@ -195,7 +205,8 @@ private fun UpdateCard(
     downloadedApk   : java.io.File?,
     canInstallNow   : Boolean,
     isChecking      : Boolean = false,
-    isDiLink5       : Boolean = false,
+    /** Head unit where the app must not install itself — see DiLink5Platform.selfRestartUnsafe. */
+    manualInstallOnly: Boolean = false,
     onDownload      : () -> Unit,
     onInstall       : () -> Unit,
     onCancel        : () -> Unit,
@@ -238,12 +249,13 @@ private fun UpdateCard(
         return
     }
 
-    // DiLink-5: the in-app download + silent PackageInstaller can't complete on the head unit
-    // (unprivileged, no installer UI), so surface the update as available with manual `adb install -r`
-    // instructions instead of the Download/Install flow. The badge on the About tab still appears
-    // (it keys off updateInfo). DiLink-3 keeps the full auto-update card below.
-    if (isDiLink5 && updateInfo != null) {
-        Di5ManualUpdateCard(updateInfo)
+    // Newer than DiLink-3: the in-app download + silent PackageInstaller can't complete on the
+    // head unit (unprivileged, no installer UI) and the post-install relaunch is a boot-loop
+    // hazard, so surface the update as available with manual `adb install -r` instructions
+    // instead of the Download/Install flow. The badge on the About tab still appears (it keys
+    // off updateInfo). DiLink-3 keeps the full auto-update card below.
+    if (manualInstallOnly && updateInfo != null) {
+        ManualUpdateCard(updateInfo)
         return
     }
 
@@ -386,9 +398,10 @@ private fun UpdateCard(
     }
 }
 
-// DiLink-5 manual-update card: update detected, but installed by the user via `adb install -r`.
+// Manual-update card: update detected, but installed by the user via `adb install -r`.
+// Shown on every head unit newer than DiLink-3 (DiLink-5, DiLink-100).
 @Composable
-private fun Di5ManualUpdateCard(
+private fun ManualUpdateCard(
     updateInfo: com.byd.tripstats.data.repository.UpdateRepository.UpdateInfo
 ) {
     val context = LocalContext.current

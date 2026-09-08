@@ -12,8 +12,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import com.byd.tripstats.data.local.BydStatsDatabase
+import com.byd.tripstats.data.preferences.PreferencesManager
+import com.byd.tripstats.util.AppRestart
 import com.byd.tripstats.util.BackupNaming
 import java.io.File
 import java.io.FileInputStream
@@ -76,11 +79,23 @@ class LocalBackupManager private constructor(private val context: Context) {
         val source: String = "" // "Downloads" or "Internal (ADB)"
     )
 
+    /** A settings export ([SettingsBackup]) sitting next to the database backups. */
+    data class SettingsFile(
+        val name: String,
+        val uri: Uri,
+        val sizeBytes: Long,
+        val dateModified: Long,
+        val source: String = ""
+    )
+
     private val _state = MutableStateFlow<BackupState>(BackupState.Idle)
     val state: StateFlow<BackupState> = _state.asStateFlow()
 
     private val _localBackups = MutableStateFlow<List<BackupFile>>(emptyList())
     val localBackups: StateFlow<List<BackupFile>> = _localBackups.asStateFlow()
+
+    private val _settingsFiles = MutableStateFlow<List<SettingsFile>>(emptyList())
+    val settingsFiles: StateFlow<List<SettingsFile>> = _settingsFiles.asStateFlow()
 
     // ── Backup ────────────────────────────────────────────────────────────────
 
@@ -102,7 +117,10 @@ class LocalBackupManager private constructor(private val context: Context) {
             _state.value = BackupState.InProgress("Flushing database…")
             flushWal(dbFile)
 
-            val fileName = BackupNaming.fileName()
+            // One timestamp for both artefacts: the settings file is paired back to this
+            // database by that segment when the user restores (see [settingsFileFor]).
+            val timestamp = BackupNaming.timestamp()
+            val fileName  = BackupNaming.fileName(timestamp = timestamp)
 
             _state.value = BackupState.InProgress("Saving to Download…")
 
@@ -135,9 +153,16 @@ class LocalBackupManager private constructor(private val context: Context) {
             // Also write to private app dir for ADB access
             copyToPrivateBackup(dbFile, fileName)
 
+            // Settings live outside the database, so a database-only backup can't put a
+            // reinstalled app back the way it was. Written as a sibling file, never as
+            // part of the .db — a new Room entity would mean a schema version bump.
+            _state.value = BackupState.InProgress("Saving settings…")
+            val settingsName = writeSettingsSidecar(timestamp, includeCredentialsSetting())
+
             val sizeMb = "%.1f".format(dbFile.length() / 1_048_576.0)
             _state.value = BackupState.Success(
-                "Saved: $fileName ($sizeMb MB)\nDownload/$BACKUP_SUBFOLDER/ + internal storage"
+                "Saved: $fileName ($sizeMb MB)\nDownload/$BACKUP_SUBFOLDER/ + internal storage" +
+                    if (settingsName != null) "\nSettings: $settingsName" else ""
             )
             Log.i(TAG, "Backup saved: $fileName")
 
@@ -249,20 +274,29 @@ class LocalBackupManager private constructor(private val context: Context) {
             _state.value = BackupState.InProgress("Flushing database…")
             flushWal(dbFile)
 
-            val fileName = BackupNaming.fileName()
+            val timestamp = BackupNaming.timestamp()
+            val fileName  = BackupNaming.fileName(timestamp = timestamp)
 
             _state.value = BackupState.InProgress("Saving to SD card…")
             val dest = File(dir, fileName)
             dbFile.copyTo(dest, overwrite = true)
 
-            // Prune old SD backups — keep newest SD_BACKUP_MAX
-            dir.listFiles { f -> f.extension == "db" }
-                ?.sortedByDescending { it.lastModified() }
-                ?.drop(SD_BACKUP_MAX)
-                ?.forEach { it.delete() }
+            // Settings sibling, same as the Download backup.
+            val settingsName = writeSettingsToSdCard(dir, timestamp)
+
+            // Prune old SD backups — keep newest SD_BACKUP_MAX of each kind
+            listOf("db", "json").forEach { ext ->
+                dir.listFiles { f -> f.extension == ext }
+                    ?.sortedByDescending { it.lastModified() }
+                    ?.drop(SD_BACKUP_MAX)
+                    ?.forEach { it.delete() }
+            }
 
             val sizeMb = "%.1f".format(dbFile.length() / 1_048_576.0)
-            _state.value = BackupState.Success("Saved to SD card: $SD_BACKUP_FOLDER/$fileName ($sizeMb MB)")
+            _state.value = BackupState.Success(
+                "Saved to SD card: $SD_BACKUP_FOLDER/$fileName ($sizeMb MB)" +
+                    if (settingsName != null) "\nSettings: $settingsName" else ""
+            )
             Log.i(TAG, "SD card backup saved: ${dest.path}")
 
             scanLocalBackups()
@@ -300,7 +334,7 @@ class LocalBackupManager private constructor(private val context: Context) {
      * Restores the database from a URI returned by the system file picker.
      * After success the app process is killed so Room reinitialises cleanly.
      */
-    suspend fun restoreFromUri(uri: Uri) = withContext(Dispatchers.IO) {
+    suspend fun restoreFromUri(uri: Uri, settingsNote: String = "") = withContext(Dispatchers.IO) {
         try {
             _state.value = BackupState.InProgress("Reading backup file…")
 
@@ -316,7 +350,7 @@ class LocalBackupManager private constructor(private val context: Context) {
             } ?: throw Exception("Cannot read selected file")
 
             _state.value = BackupState.InProgress("Restoring database…")
-            doRestore(uri, resolver)
+            doRestore(uri, resolver, settingsNote)
 
         } catch (e: Exception) {
             Log.e(TAG, "Restore from URI failed", e)
@@ -325,10 +359,25 @@ class LocalBackupManager private constructor(private val context: Context) {
     }
 
     /**
-     * Restores from a BackupFile found by [scanLocalBackups].
+     * Restores from a BackupFile found by [scanLocalBackups], optionally applying the
+     * settings file [settings] that was written alongside it.
+     *
+     * Settings go first on purpose: a successful database restore ends with
+     * restartRequired, and the screen kills the process a couple of seconds later.
      */
-    suspend fun restoreFromBackupFile(backup: BackupFile) {
-        restoreFromUri(backup.uri)
+    suspend fun restoreFromBackupFile(backup: BackupFile, settings: SettingsFile? = null) =
+        withContext(Dispatchers.IO) {
+        var settingsNote = ""
+        if (settings != null) {
+            settingsNote = try {
+                val result = SettingsBackup.import(context, readSettingsText(settings))
+                "\nSettings restored: ${result.sections.joinToString(", ")}."
+            } catch (e: Exception) {
+                Log.e(TAG, "Settings restore failed during database restore", e)
+                "\nSettings could NOT be restored: ${e.message}"
+            }
+        }
+        restoreFromUri(backup.uri, settingsNote)
     }
 
     // ── Scan local backups ────────────────────────────────────────────────────
@@ -399,6 +448,9 @@ class LocalBackupManager private constructor(private val context: Context) {
                 .sortedByDescending { it.dateModified }
 
             _localBackups.value = merged
+            // Keep the settings list in step so a restore can offer the file that was
+            // written alongside whichever backup the user picks.
+            scanSettingsFiles()
             Log.i(TAG, "Found ${merged.size} backup(s) — MediaStore: ${results.size}, filesystem: ${filesystemResults.size}, internal: ${privateResults.size}, SD: ${sdResults.size}")
             if (merged.isEmpty()) {
                 _state.value = BackupState.Error("No backups found. Run a backup first.")
@@ -672,6 +724,283 @@ class LocalBackupManager private constructor(private val context: Context) {
         }
     }
 
+    // ── Settings backup (the sibling of every .db) ────────────────────────────
+    // The database backup carries trips and charging sessions; the settings file carries
+    // everything around them (see [SettingsBackup]). They are written together and share a
+    // timestamp, so a restore can offer the settings that belong to the database picked.
+
+    fun settingsFileName(timestamp: String): String = BackupNaming.fileName(
+        prefix    = SettingsBackup.FILE_PREFIX,
+        timestamp = timestamp,
+        extension = SettingsBackup.EXTENSION,
+    )
+
+    /** The user's "carry secrets in the settings file" choice; defaults to on. */
+    suspend fun includeCredentialsSetting(): Boolean =
+        runCatching { PreferencesManager(context).settingsBackupIncludeCredentials.first() }
+            .getOrDefault(true)
+
+    /** Exports settings on their own, without touching the database. */
+    suspend fun backupSettings() = withContext(Dispatchers.IO) {
+        _state.value = BackupState.InProgress("Saving settings…")
+        val includeCredentials = includeCredentialsSetting()
+        val name = writeSettingsSidecar(BackupNaming.timestamp(), includeCredentials)
+        if (name == null) {
+            _state.value = BackupState.Error("Could not save the settings file.")
+        } else {
+            scanSettingsFiles()
+            _state.value = BackupState.Success(
+                "Saved: $name\nDownload/$BACKUP_SUBFOLDER/ + internal storage\n" +
+                    if (includeCredentials) "Credentials included."
+                    else "Credentials excluded — tokens and passwords are not in this file."
+            )
+        }
+    }
+
+    /**
+     * Writes the settings file to Download/ and the private dir. Never throws: a settings
+     * failure must not fail the database backup, which is the part that cannot be
+     * reproduced by hand.
+     */
+    private suspend fun writeSettingsSidecar(timestamp: String, includeCredentials: Boolean): String? =
+        try {
+            val json = SettingsBackup.export(context, includeCredentials)
+            val name = settingsFileName(timestamp)
+            // Private dir first: it needs no permission and no MediaStore, so the copy
+            // that ADB can reach exists even if the Download write is refused. One
+            // surviving copy is a success — only a total failure returns null.
+            val privateOk = writeSettingsToPrivate(name, json)
+            val downloadOk = runCatching { writeSettingsToDownloads(name, json) }
+                .onFailure { Log.w(TAG, "Settings Download write failed: ${it.message}") }
+                .isSuccess
+            Log.i(TAG, "Settings file written: $name (credentials=$includeCredentials, " +
+                "download=$downloadOk, private=$privateOk)")
+            if (privateOk || downloadOk) name else null
+        } catch (e: Exception) {
+            Log.w(TAG, "Settings file write failed (non-fatal): ${e.message}")
+            null
+        }
+
+    private suspend fun writeSettingsToSdCard(dir: File, timestamp: String): String? = try {
+        val json = SettingsBackup.export(context, includeCredentialsSetting())
+        val name = settingsFileName(timestamp)
+        File(dir, name).writeText(json)
+        name
+    } catch (e: Exception) {
+        Log.w(TAG, "SD settings write failed (non-fatal): ${e.message}")
+        null
+    }
+
+    /** Also used by [TelegramBackupWorker] so scheduled backups carry settings too. */
+    internal suspend fun sendSettingsToTelegram(telegramManager: TelegramManager, timestamp: String) {
+        try {
+            val includeCredentials = includeCredentialsSetting()
+            val json = SettingsBackup.export(context, includeCredentials)
+            val temp = File(context.cacheDir, settingsFileName(timestamp))
+            temp.writeText(json)
+            telegramManager.sendFile(
+                temp,
+                caption = "BYD Trip Stats settings — $timestamp" +
+                    if (includeCredentials) "" else " (credentials excluded)"
+            )
+            temp.delete()
+        } catch (e: Exception) {
+            Log.w(TAG, "Telegram settings send failed (non-fatal): ${e.message}")
+        }
+    }
+
+    private fun writeSettingsToDownloads(name: String, json: String) {
+        // MediaStore appends " (1)" rather than overwriting a duplicate display name, so
+        // clear any same-named row first (two exports inside the same minute).
+        runCatching { deleteDownloadsEntry(name) }
+
+        val resolver = context.contentResolver
+        val values = ContentValues().apply {
+            put(MediaStore.Downloads.DISPLAY_NAME, name)
+            put(MediaStore.Downloads.MIME_TYPE, SettingsBackup.MIME_TYPE)
+            put(MediaStore.Downloads.RELATIVE_PATH, "$BYD_DOWNLOAD_DIR/$BACKUP_SUBFOLDER")
+            put(MediaStore.Downloads.IS_PENDING, 1)
+        }
+        val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+            ?: throw Exception("Could not create the settings file in Download")
+
+        resolver.openOutputStream(uri)?.use { it.write(json.toByteArray(Charsets.UTF_8)) }
+            ?: throw Exception("Could not open the settings output stream")
+
+        // Same SIZE/DATE_MODIFIED stamp the database backup needs — this ROM's
+        // MediaProvider leaves both at their insert-time defaults otherwise.
+        values.clear()
+        values.put(MediaStore.Downloads.IS_PENDING, 0)
+        values.put(MediaStore.Downloads.SIZE, json.toByteArray(Charsets.UTF_8).size.toLong())
+        values.put(MediaStore.Downloads.DATE_MODIFIED, System.currentTimeMillis() / 1000L)
+        resolver.update(uri, values, null, null)
+    }
+
+    private fun writeSettingsToPrivate(name: String, json: String): Boolean = try {
+        val dir = File(context.filesDir, PRIVATE_BACKUP_DIR)
+        dir.mkdirs()
+        File(dir, name).writeText(json)
+        dir.listFiles { f -> f.extension == "json" }
+            ?.sortedByDescending { it.lastModified() }
+            ?.drop(PRIVATE_BACKUP_MAX)
+            ?.forEach { it.delete() }
+        true
+    } catch (e: Exception) {
+        Log.w(TAG, "Private settings copy failed (non-fatal): ${e.message}")
+        false
+    }
+
+    private fun deleteDownloadsEntry(name: String) {
+        context.contentResolver.delete(
+            MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+            "${MediaStore.Downloads.DISPLAY_NAME} = ?",
+            arrayOf(name)
+        )
+    }
+
+    /**
+     * Finds settings files in every place a backup can live. Filtered by the
+     * `byd_stats_settings` prefix so it can't pick up `telegram_registry.json`, which
+     * shares the folder.
+     */
+    suspend fun scanSettingsFiles() = withContext(Dispatchers.IO) {
+        val results = mutableListOf<SettingsFile>()
+
+        // Download/BydTripStats via MediaStore
+        try {
+            val collection = MediaStore.Downloads.EXTERNAL_CONTENT_URI
+            context.contentResolver.query(
+                collection,
+                arrayOf(MediaStore.Downloads._ID, MediaStore.Downloads.DISPLAY_NAME,
+                    MediaStore.Downloads.SIZE, MediaStore.Downloads.DATE_MODIFIED),
+                "${MediaStore.Downloads.RELATIVE_PATH} LIKE ? AND ${MediaStore.Downloads.DISPLAY_NAME} LIKE ?",
+                arrayOf("%$BACKUP_SUBFOLDER%", "${SettingsBackup.FILE_PREFIX}%${SettingsBackup.EXTENSION}"),
+                "${MediaStore.Downloads.DATE_MODIFIED} DESC"
+            )?.use { cursor ->
+                val idCol   = cursor.getColumnIndexOrThrow(MediaStore.Downloads._ID)
+                val nameCol = cursor.getColumnIndexOrThrow(MediaStore.Downloads.DISPLAY_NAME)
+                val sizeCol = cursor.getColumnIndexOrThrow(MediaStore.Downloads.SIZE)
+                val dateCol = cursor.getColumnIndexOrThrow(MediaStore.Downloads.DATE_MODIFIED)
+                while (cursor.moveToNext()) {
+                    results.add(SettingsFile(
+                        name         = cursor.getString(nameCol),
+                        uri          = ContentUris.withAppendedId(collection, cursor.getLong(idCol)),
+                        sizeBytes    = cursor.getLong(sizeCol),
+                        dateModified = cursor.getLong(dateCol) * 1000L,
+                        source       = "Downloads"
+                    ))
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Settings MediaStore scan failed: ${e.message}")
+        }
+
+        // Filesystem: private dir, the public Download folder (the path that still works
+        // after a reinstall, when MediaStore ownership is gone), and the SD card.
+        val dirs = buildList {
+            add(File(context.filesDir, PRIVATE_BACKUP_DIR) to "Internal (ADB)")
+            val base = runCatching { Environment.getExternalStorageDirectory() }.getOrNull()
+            if (base != null) {
+                add(File(base, "$BYD_DOWNLOAD_DIR/$BACKUP_SUBFOLDER") to "Download (file)")
+                add(File(base, "Downloads/$BACKUP_SUBFOLDER") to "Download (file)")
+            }
+            sdBackupDir()?.let { add(it to "SD card") }
+        }
+        dirs.forEach { (dir, source) ->
+            try {
+                if (!dir.isDirectory) return@forEach
+                dir.listFiles { f ->
+                    f.isFile && f.name.startsWith(SettingsBackup.FILE_PREFIX) &&
+                        f.name.endsWith(SettingsBackup.EXTENSION, ignoreCase = true)
+                }?.forEach { f ->
+                    results.add(SettingsFile(f.name, Uri.fromFile(f), f.length(), f.lastModified(), source))
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Settings scan failed for ${dir.path}: ${e.message}")
+            }
+        }
+
+        // Same dedupe rule as the database list: one entry per name, preferring the
+        // representation that reports a real size (MediaStore rows can read 0 here).
+        _settingsFiles.value = results
+            .groupBy { it.name }
+            .map { (_, group) -> group.maxByOrNull { it.sizeBytes } ?: group.first() }
+            .sortedByDescending { it.dateModified }
+
+        Log.i(TAG, "Found ${_settingsFiles.value.size} settings file(s)")
+    }
+
+    /** The settings file written in the same run as [dbName], if it is still around. */
+    fun settingsFileFor(dbName: String): SettingsFile? {
+        val timestamp = BackupNaming.timestampOf(dbName) ?: return null
+        return _settingsFiles.value.firstOrNull { BackupNaming.timestampOf(it.name) == timestamp }
+    }
+
+    /**
+     * Applies [file] to the running app. No process restart: every value is written
+     * through its normal setter and is live immediately — which also keeps this off the
+     * self-kill path that boot-loops DiLink-5 head units.
+     */
+    suspend fun restoreSettings(file: SettingsFile): SettingsBackup.ImportResult? =
+        withContext(Dispatchers.IO) {
+            try {
+                _state.value = BackupState.InProgress("Restoring settings…")
+                val result = SettingsBackup.import(context, readSettingsText(file))
+                _state.value = BackupState.Success(settingsRestoredMessage(result))
+                result
+            } catch (e: Exception) {
+                Log.e(TAG, "Settings restore failed", e)
+                _state.value = BackupState.Error("Settings restore failed: ${e.message}")
+                null
+            }
+        }
+
+    private fun settingsRestoredMessage(result: SettingsBackup.ImportResult): String =
+        if (result.sections.isEmpty()) "The settings file held nothing this version can apply."
+        else "Settings restored: ${result.sections.joinToString(", ")}." +
+            if (result.credentialsIncluded) ""
+            else "\nThis file was saved without credentials — tokens and passwords are unchanged."
+
+    private fun readSettingsText(file: SettingsFile): String {
+        if (file.sizeBytes > SettingsBackup.MAX_FILE_BYTES) {
+            throw Exception("That file is too large to be a settings backup.")
+        }
+        val text = if (file.uri.scheme == "file") {
+            File(file.uri.path!!).readText()
+        } else {
+            context.contentResolver.openInputStream(file.uri)?.use {
+                it.readBytes().toString(Charsets.UTF_8)
+            } ?: throw Exception("Could not read the settings file.")
+        }
+        if (!SettingsBackup.isSettingsFile(text)) {
+            throw Exception("That file is not a BYD Trip Stats settings backup.")
+        }
+        return text
+    }
+
+    /** Deletes every representation of a settings file, then refreshes the list. */
+    suspend fun deleteSettingsFile(file: SettingsFile) = withContext(Dispatchers.IO) {
+        runCatching { deleteDownloadsEntry(file.name) }
+            .onFailure { Log.w(TAG, "MediaStore delete failed for ${file.name}: ${it.message}") }
+        val dirs = buildList {
+            add(File(context.filesDir, PRIVATE_BACKUP_DIR))
+            runCatching { Environment.getExternalStorageDirectory() }.getOrNull()?.let { base ->
+                add(File(base, "$BYD_DOWNLOAD_DIR/$BACKUP_SUBFOLDER"))
+                add(File(base, "Downloads/$BACKUP_SUBFOLDER"))
+            }
+            sdBackupDir()?.let { add(it) }
+        }
+        dirs.forEach { dir ->
+            val f = File(dir, file.name)
+            // Same escalation the database delete needs: after a reinstall the app no
+            // longer owns the MediaStore row and a plain File.delete() is refused.
+            if (f.exists() && !deleteFilesystemFile(f.path, f.name)) {
+                Log.w(TAG, "Could not delete ${f.path}")
+            }
+        }
+        scanSettingsFiles()
+    }
+
     // ── Telegram backup ─────────────────────────────────────────────────
 
     /**
@@ -687,6 +1016,11 @@ class LocalBackupManager private constructor(private val context: Context) {
             flushWal(dbFile)
 
             val timestamp = BackupNaming.timestamp()
+
+            // Settings first, database second: the database send is the one that can fail
+            // on the 50 MB cap, and whichever finishes last owns the status banner.
+            sendSettingsToTelegram(telegramManager, timestamp)
+
             val fileName = BackupNaming.fileName(timestamp = timestamp)
             val tempFile = File(context.cacheDir, fileName)
             dbFile.copyTo(tempFile, overwrite = true)
@@ -738,7 +1072,11 @@ class LocalBackupManager private constructor(private val context: Context) {
 
     // ── Private helpers ───────────────────────────────────────────────────────
 
-    private fun doRestore(uri: Uri, resolver: android.content.ContentResolver) {
+    private fun doRestore(
+        uri: Uri,
+        resolver: android.content.ContentResolver,
+        settingsNote: String = "",
+    ) {
         val dbFile  = context.getDatabasePath(DATABASE_NAME)
         val walFile = File(dbFile.path + "-wal")
         val shmFile = File(dbFile.path + "-shm")
@@ -773,7 +1111,11 @@ class LocalBackupManager private constructor(private val context: Context) {
         tempFile.delete()
 
         _state.value = BackupState.Success(
-            "Database restored successfully.\nThe app will close and reopen automatically.",
+            "Database restored successfully.$settingsNote\n" +
+                // Only DiLink-3 relaunches itself; promising it everywhere is how a
+                // head unit that simply closed the app looks like a bug.
+                if (AppRestart.canAutoRelaunch) "The app will close and reopen automatically."
+                else "The app will now close — tap the notification, or the app icon, to reopen it.",
             restartRequired = true
         )
         Log.i(TAG, "Restore complete — process will restart")

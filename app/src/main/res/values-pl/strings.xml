@@ -501,6 +501,24 @@
     <string name="delete_backup_title">Usunąć kopię zapasową?</string>
     <string name="delete_telegram_backup_confirm">\"%1$s\" zostanie usunięty z tej listy oraz z Twojego czatu Telegram, jeśli został wysłany mniej niż 48 godzin temu (Telegram nie pozwala botom usuwać starszych wiadomości).</string>
     <string name="delete_backup_action">Usuń kopię zapasową</string>
+    <string name="reopen_notification_channel">Otwórz ponownie po restarcie</string>
+    <string name="reopen_notification_channel_desc">Sposób na powrót do aplikacji, gdy zamknęła się sama, aby dokończyć operację na bazie danych</string>
+    <string name="reopen_notification_title">Dotknij, aby ponownie otworzyć BYD Trip Stats</string>
+    <string name="reopen_after_restore">Aplikacja zamknęła się, aby dokończyć przywracanie Twoich danych.</string>
+    <string name="reopen_after_reset">Aplikacja zamknęła się, aby dokończyć resetowanie Twoich danych.</string>
+    <string name="reopen_after_trim">Aplikacja zamknęła się, aby dokończyć zwalnianie miejsca na dysku.</string>
+    <string name="settings_backup_label">Kopia zapasowa i przywracanie ustawień</string>
+    <string name="settings_backup_desc">Kopia zapasowa bazy danych zawiera Twoje trasy; ta zawiera wszystko wokół nich — samochód, jednostki, motyw, układ pulpitu, taryfę za prąd, cele, połączenia MQTT/ABRP/Telegram, język i Twój kod Pro. Plik ustawień jest zapisywany automatycznie przy każdej kopii bazy danych, więc po ponownej instalacji można przywrócić wszystko dokładnie tak, jak było.</string>
+    <string name="settings_include_credentials_label">Uwzględnij dane logowania</string>
+    <string name="settings_include_credentials_desc">Zapisuje w pliku hasło MQTT, tokeny ABRP i Telegram, PIN towarzysza webowego oraz Twój kod Pro. Pozostaw włączone, chyba że zamierzasz udostępnić plik — bez tego tych połączeń nie da się przywrócić.</string>
+    <string name="settings_backup_now_action">Utwórz kopię ustawień teraz</string>
+    <string name="available_settings_files_label">Dostępne pliki ustawień:</string>
+    <string name="no_settings_files">Brak plików ustawień. Są tworzone automatycznie przy każdej kopii bazy danych.</string>
+    <string name="restore_settings_title">Przywrócić ustawienia?</string>
+    <string name="restore_settings_msg">Ustawienia z %1$s zastąpią bieżące. Trasy i sesje ładowania pozostają nienaruszone.\n\nAplikacja nie musi się zamykać — wszystko stosuje się natychmiast.</string>
+    <string name="delete_settings_title">Usunąć plik ustawień?</string>
+    <string name="restore_with_settings_label">Przywróć także ustawienia zapisane z tą kopią</string>
+    <string name="restore_no_settings_note">Z tą kopią nie zapisano pliku ustawień — przywrócone zostaną tylko dane tras.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Kopia zapasowa Telegram</string>
@@ -782,7 +800,6 @@
     <!-- Initialization screen -->
     <string name="choose_model_title">Wybierz model BYD, którym jeździsz</string>
     <string name="model_saved_info">Ten wybór zostanie zapisany i użyty do wczytania właściwej konfiguracji samochodu.</string>
-    <string name="dilink3_only_notice">Obsługiwane są tylko pojazdy z DiLink 3. DiLink 4 i 5 nie są jeszcze obsługiwane.</string>
     <string name="car_type_bev">Elektryczny (BEV)</string>
     <string name="car_type_phev">Hybryda plug-in (PHEV / DM-i)</string>
     <string name="select_car_label">Wybierz samochód</string>
@@ -1023,7 +1040,7 @@
     <string name="about_install_note">Przycisk instalacji stanie się dostępny podczas postoju bez aktywnej podróży ani ładowania</string>
     <string name="about_install_now">Zainstaluj teraz</string>
     <string name="about_download_update">Pobierz aktualizację</string>
-    <string name="about_update_manual_di5_instructions">Automatyczna instalacja nie jest dostępna na DiLink 5. Na komputerze lub telefonie pobierz plik APK tej wersji ze strony wydań, a następnie zainstaluj go przez ADB:</string>
+    <string name="about_update_manual_di5_instructions">Automatyczna instalacja nie jest dostępna na tej jednostce. Na komputerze lub telefonie pobierz plik APK tej wersji ze strony wydań, a następnie zainstaluj go przez ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Otwórz stronę wydań</string>
 

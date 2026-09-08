@@ -138,14 +138,22 @@ object DatabaseTrimmer {
             //      will reopen cleanly on next launch.
             var vacuumOk = false
             var vacuumError: String? = null
-            // DiLink-5: NEVER run the VACUUM path here. It closes Room and signals a
-            // process self-restart, and an app-initiated kill + auto-relaunch races the
-            // bydauto SDK classloader injection — which wedges the OEM com.byd.data.collect
+            // Anything newer than DiLink-3: NEVER run the VACUUM path here. It closes Room and
+            // signals a process self-restart, and on DiLink-5 an app-initiated kill + auto-relaunch
+            // races the bydauto SDK classloader injection — which wedges the OEM com.byd.data.collect
             // service and boot-loops the head unit (ADAS/cluster fault; the 2.13.0 incident).
             // Phases A–D still trim the rows in place; we just don't reclaim the freed pages.
-            val skipVacuum = DiLink5Platform.isDiLink5
+            //
+            // Widened from isDiLink5 to isPostDiLink3 so an unrecognised platform fails safe. On
+            // DiLink-100 the specific wedge above can't occur (no injection happens there — the
+            // bydauto classes are on the boot classpath), but the kill+relaunch at the LocalBackup
+            // call site is guarded by nothing else, and this is where it is cheapest to stop: with
+            // vacuumOk false the State.Success carries restartRequired=false, so no kill is
+            // scheduled AND the banner already reads "VACUUM was skipped" instead of promising a
+            // restart that would never arrive. Guarding the relaunch alone would do the opposite.
+            val skipVacuum = DiLink5Platform.isPostDiLink3
             if (skipVacuum) {
-                Log.i(TAG, "Phase E — VACUUM skipped on DiLink-5 (self-restart hazard); rows trimmed in place")
+                Log.i(TAG, "Phase E — VACUUM skipped (post-DiLink-3 self-restart hazard); rows trimmed in place")
             } else {
                 _state.value = State.InProgress("Stopping service & reclaiming space (VACUUM)…")
                 try {

@@ -501,6 +501,24 @@
     <string name="delete_backup_title">Odstranit zálohu?</string>
     <string name="delete_telegram_backup_confirm">\"%1$s\" bude odstraněn z tohoto seznamu a smazán z vašeho chatu Telegram, pokud byl odeslán před méně než 48 hodinami (Telegram neumožňuje botům mazat starší zprávy).</string>
     <string name="delete_backup_action">Odstranit zálohu</string>
+    <string name="reopen_notification_channel">Znovu otevřít po restartu</string>
+    <string name="reopen_notification_channel_desc">Způsob, jak se vrátit do aplikace, když se sama zavřela kvůli dokončení operace s databází</string>
+    <string name="reopen_notification_title">Klepnutím znovu otevřete BYD Trip Stats</string>
+    <string name="reopen_after_restore">Aplikace se zavřela, aby dokončila obnovení vašich dat.</string>
+    <string name="reopen_after_reset">Aplikace se zavřela, aby dokončila resetování vašich dat.</string>
+    <string name="reopen_after_trim">Aplikace se zavřela, aby dokončila uvolňování místa na disku.</string>
+    <string name="settings_backup_label">Záloha a obnovení nastavení</string>
+    <string name="settings_backup_desc">Záloha databáze obsahuje vaše jízdy; toto obsahuje vše ostatní — auto, jednotky, motiv, rozvržení panelu, tarif za elektřinu, cíle, připojení MQTT/ABRP/Telegram, jazyk a váš kód Pro. Soubor nastavení se automaticky ukládá s každou zálohou databáze, takže po přeinstalaci lze vše obnovit přesně tak, jak bylo.</string>
+    <string name="settings_include_credentials_label">Zahrnout přihlašovací údaje</string>
+    <string name="settings_include_credentials_desc">Uloží do souboru heslo MQTT, tokeny ABRP a Telegram, PIN webového společníka a váš kód Pro. Ponechte zapnuté, pokud nechcete soubor sdílet — bez toho nelze tato připojení obnovit.</string>
+    <string name="settings_backup_now_action">Zálohovat nastavení nyní</string>
+    <string name="available_settings_files_label">Dostupné soubory nastavení:</string>
+    <string name="no_settings_files">Zatím žádné soubory nastavení. Vytvářejí se automaticky s každou zálohou databáze.</string>
+    <string name="restore_settings_title">Obnovit nastavení?</string>
+    <string name="restore_settings_msg">Nastavení z %1$s nahradí vaše aktuální. Jízdy a nabíjecí relace zůstanou nedotčeny.\n\nAplikaci není nutné zavírat — vše se použije okamžitě.</string>
+    <string name="delete_settings_title">Odstranit soubor nastavení?</string>
+    <string name="restore_with_settings_label">Obnovit také nastavení uložená s touto zálohou</string>
+    <string name="restore_no_settings_note">S touto zálohou nebyl uložen žádný soubor nastavení — obnoví se pouze data jízd.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Záloha na Telegram</string>
@@ -782,7 +800,6 @@
     <!-- Initialization screen -->
     <string name="choose_model_title">Vyberte model BYD, kterým jezdíte</string>
     <string name="model_saved_info">Tento výběr se uloží a použije k načtení správné konfigurace vozu.</string>
-    <string name="dilink3_only_notice">Podporována jsou pouze vozidla s DiLink 3. DiLink 4 a 5 zatím podporovány nejsou.</string>
     <string name="car_type_bev">Elektromobil (BEV)</string>
     <string name="car_type_phev">Plug-in hybrid (PHEV / DM-i)</string>
     <string name="select_car_label">Vybrat vůz</string>
@@ -1023,7 +1040,7 @@
     <string name="about_install_note">Tlačítko instalace bude dostupné při parkování bez aktivní jízdy nebo nabíjení</string>
     <string name="about_install_now">Nainstalovat nyní</string>
     <string name="about_download_update">Stáhnout aktualizaci</string>
-    <string name="about_update_manual_di5_instructions">Automatická instalace není na DiLink 5 dostupná. V počítači nebo telefonu si stáhněte APK této verze ze stránky vydání a poté ho nainstalujte přes ADB:</string>
+    <string name="about_update_manual_di5_instructions">Automatická instalace není na této jednotce dostupná. V počítači nebo telefonu si stáhněte APK této verze ze stránky vydání a poté ho nainstalujte přes ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Otevřít stránku vydání</string>
 

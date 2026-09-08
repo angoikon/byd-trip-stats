@@ -189,13 +189,16 @@ object VehicleCompatibilityProbe {
                 val snapshot = deviceSnapshots.getOrPut(label) { LinkedHashMap() }
 
                 // ── No-arg getters ────────────────────────────────────────────
-                // NOT on DiLink-5. This blindly invokes EVERY no-arg method on the *injected* OEM
-                // device — including side-effecting ones (resetData(), setAllStatus() were both seen
-                // in DI5 captures) — and on some DI5 firmware that wedges com.byd.data.collect and
-                // boot-loops the head unit (cluster/ADAS fault). D3 uses inert stubs so it stays there.
-                // On D5 we keep the field constants + allowlisted indexed getters below and the pushed
-                // event path (recordDispatchedFeature); a future event-tap restores the rest safely.
-                if (!DiLink5Platform.isDiLink5) {
+                // DiLink-3 ONLY. This blindly invokes EVERY no-arg method on the OEM device —
+                // including side-effecting ones (resetData(), setAllStatus() were both seen in DI5
+                // captures) — and on some DI5 firmware that wedges com.byd.data.collect and
+                // boot-loops the head unit (cluster/ADAS fault). D3 tolerates it; nothing newer is
+                // known to. Gated on blindSweepUnsafe rather than isDiLink5 alone because the old
+                // "not Di5* ⇒ safe" default let a DiLink-100 car invoke wakeUpMcu/dspReset/padReset/
+                // StartOTA/syncMcuState for real — an unrecognised platform must fail safe.
+                // Elsewhere we keep the field constants + allowlisted indexed getters below and the
+                // pushed event path (recordDispatchedFeature).
+                if (!DiLink5Platform.blindSweepUnsafe) {
                     cls.methods
                         .filter { it.parameterCount == 0 && it.name !in excludedMethods }
                         .sortedBy { it.name }
@@ -500,9 +503,11 @@ object VehicleCompatibilityProbe {
      * Serialise the current snapshot to a JSON string ready to write to disk.
      * Structure:
      * {
-     *   "schema": 3,
+     *   "schema": 4,
      *   "capturedAt": "...",
      *   "androidBuild": "...",
+     *   "platform": { "flavor": "...", "vehicleType": "...", "sdkInt": 34,   // schema 4
+     *                 "bydautoPermissions": { ... } },
      *   "deviceClasses": { "climate": "...", ... },
      *   "deviceSnapshots": { "climate": { ... }, "phev-sweep": { ... },
      *                        "statistic-events": { ... }, ... },  // schema 3: DiLink-5 typed-listener taps
@@ -512,11 +517,12 @@ object VehicleCompatibilityProbe {
      */
     fun buildReportJson(): String {
         val root = JSONObject()
-        root.put("schema", 3)
+        root.put("schema", 4)
         root.put("capturedAt", Instant.now().toString())
         root.put("captureStartedAt", captureStartedAt.ifBlank { Instant.now().toString() })
         root.put("androidBuild", androidBuild)
         root.put("entryCount", _entryCount.value)
+        root.put("platform", buildPlatformInfo())
 
         // ── Vehicle identity ──────────────────────────────────────────────────
         val vehicleInfo = JSONObject()
@@ -556,6 +562,34 @@ object VehicleCompatibilityProbe {
         root.put("changeLog", log)
 
         return root.toString(2)
+    }
+
+    /**
+     * Which platform produced this report.
+     *
+     * Every field here was missing from schema 3, and their absence costed much time on the first
+     * DiLink-100 report: the flavor and `ro.vehicle.type` had to be asked for over chat, and the
+     * permission table had to be reconstructed by hand over adb — twice, because a table with no
+     * baseline to compare against is easy to over-read (see [VehicleSdkAccess]). Capturing it on
+     * every car is what gives the next unknown platform a baseline on day one.
+     */
+    private fun buildPlatformInfo(): JSONObject {
+        val obj = JSONObject()
+        obj.put("flavor", BuildConfig.FLAVOR.ifEmpty { "none" })
+        obj.put("vehicleType", DiLink5Platform.vehicleType.ifEmpty { "unset" })
+        obj.put("sdkInt", Build.VERSION.SDK_INT)
+        obj.put("isDiLink5", DiLink5Platform.isDiLink5)
+        obj.put("blindSweepUnsafe", DiLink5Platform.blindSweepUnsafe)
+        if (!initialized.get()) return obj
+
+        val states = VehicleSdkAccess.bydautoPermissionStates(appContext)
+        val perms = JSONObject()
+        states.forEach { (permission, granted) ->
+            perms.put(permission.removePrefix("android.permission."), if (granted) "granted" else "DENIED")
+        }
+        obj.put("bydautoPermissions", perms)
+        obj.put("bydautoPermissionsDenied", states.count { !it.value })
+        return obj
     }
 
     private fun buildVehicleAnalysis(): JSONObject {
@@ -608,7 +642,11 @@ object VehicleCompatibilityProbe {
         val tyrePressureSource = when {
             tyreSnap?.any { (k, v) -> k.startsWith("getTyrePressureValue[") && v != "0.0" } == true -> "TyreDevice"
             instrSnap?.any { (k, v) ->
-                (k.startsWith("getWheelPressure[") || k.startsWith("getDirectTyrePressValue[") || k.startsWith("getTyrePressureValue[")) && v != "0" && v != "0.0"
+                (k.startsWith("getWheelPressure[") || k.startsWith("getDirectTyrePressValue[") || k.startsWith("getTyrePressureValue[")) &&
+                    // Excluding only "0" counted BYD's negative error sentinels (COMMAND_FAILED
+                    // -2147482648, INVALID_VALUE -2147482645) as real pressure, and reported a
+                    // working instrument fallback on a car where every read had failed.
+                    (v.toDoubleOrNull() ?: 0.0) > 0.0
             } == true -> "InstrumentDevice (getWheelPressure fallback)"
             else -> "none found"
         }

@@ -501,6 +501,24 @@
     <string name="delete_backup_title">Hapus cadangan?</string>
     <string name="delete_telegram_backup_confirm">\"%1$s\" akan dihapus dari daftar ini, dan dihapus dari chat Telegram Anda jika dikirim kurang dari 48 jam yang lalu (Telegram tidak mengizinkan bot menghapus pesan yang lebih lama).</string>
     <string name="delete_backup_action">Hapus cadangan</string>
+    <string name="reopen_notification_channel">Buka kembali setelah mulai ulang</string>
+    <string name="reopen_notification_channel_desc">Cara kembali ke aplikasi saat aplikasi menutup dirinya untuk menyelesaikan operasi basis data</string>
+    <string name="reopen_notification_title">Ketuk untuk membuka kembali BYD Trip Stats</string>
+    <string name="reopen_after_restore">Aplikasi ditutup untuk menyelesaikan pemulihan data Anda.</string>
+    <string name="reopen_after_reset">Aplikasi ditutup untuk menyelesaikan pengaturan ulang data Anda.</string>
+    <string name="reopen_after_trim">Aplikasi ditutup untuk menyelesaikan pengosongan ruang disk.</string>
+    <string name="settings_backup_label">Cadangkan dan pulihkan pengaturan</string>
+    <string name="settings_backup_desc">Cadangan basis data menyimpan perjalanan Anda; ini menyimpan semua yang ada di sekitarnya — mobil, satuan, tema, tata letak dasbor, tarif listrik, sasaran, koneksi MQTT/ABRP/Telegram, bahasa, dan kode Pro Anda. Berkas pengaturan disimpan otomatis dengan setiap cadangan basis data, sehingga pemasangan ulang dapat dikembalikan persis seperti semula.</string>
+    <string name="settings_include_credentials_label">Sertakan kredensial</string>
+    <string name="settings_include_credentials_desc">Menyimpan kata sandi MQTT, token ABRP dan Telegram, PIN web companion, dan kode Pro Anda di dalam berkas. Biarkan aktif kecuali Anda berencana membagikan berkasnya — koneksi tersebut tidak dapat dipulihkan tanpanya.</string>
+    <string name="settings_backup_now_action">Cadangkan pengaturan sekarang</string>
+    <string name="available_settings_files_label">Berkas pengaturan yang tersedia:</string>
+    <string name="no_settings_files">Belum ada berkas pengaturan. Berkas dibuat otomatis dengan setiap cadangan basis data.</string>
+    <string name="restore_settings_title">Pulihkan pengaturan?</string>
+    <string name="restore_settings_msg">Pengaturan dari %1$s akan menggantikan pengaturan Anda saat ini. Perjalanan dan sesi pengisian daya tidak tersentuh.\n\nAplikasi tidak perlu ditutup — semuanya langsung diterapkan.</string>
+    <string name="delete_settings_title">Hapus berkas pengaturan?</string>
+    <string name="restore_with_settings_label">Pulihkan juga pengaturan yang disimpan dengan cadangan ini</string>
+    <string name="restore_no_settings_note">Tidak ada berkas pengaturan yang disimpan dengan cadangan ini — hanya data perjalanan yang akan dipulihkan.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Cadangan Telegram</string>
@@ -782,7 +800,6 @@
     <!-- Initialization screen -->
     <string name="choose_model_title">Pilih model BYD yang Anda kendarai</string>
     <string name="model_saved_info">Pilihan ini akan disimpan dan digunakan untuk memuat konfigurasi mobil yang benar.</string>
-    <string name="dilink3_only_notice">Hanya kendaraan DiLink 3 yang didukung. DiLink 4 dan 5 belum didukung.</string>
     <string name="car_type_bev">Listrik Baterai (BEV)</string>
     <string name="car_type_phev">Hibrida Colok (PHEV / DM-i)</string>
     <string name="select_car_label">Pilih mobil</string>
@@ -1023,7 +1040,7 @@
     <string name="about_install_note">Tombol pasang akan tersedia saat parkir tanpa perjalanan atau pengisian aktif</string>
     <string name="about_install_now">Pasang sekarang</string>
     <string name="about_download_update">Unduh pembaruan</string>
-    <string name="about_update_manual_di5_instructions">Instalasi otomatis tidak tersedia di DiLink 5. Di PC atau ponsel, unduh APK versi ini dari halaman rilis, lalu instal melalui ADB:</string>
+    <string name="about_update_manual_di5_instructions">Instalasi otomatis tidak tersedia di unit kepala ini. Di PC atau ponsel, unduh APK versi ini dari halaman rilis, lalu instal melalui ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Buka halaman rilis</string>
 

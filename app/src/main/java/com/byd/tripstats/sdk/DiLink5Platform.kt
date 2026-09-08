@@ -35,6 +35,46 @@ object DiLink5Platform {
     val expectedFlavor: String get() = if (isDiLink5) "dilink5" else "dilink3"
 
     /**
+     * True on any head unit newer than the DiLink-3 platform, which is the only one the blind
+     * invoke-every-no-arg-method and self-kill-and-relaunch paths were ever proven safe on.
+     *
+     * **The boundary is exactly one API level, so do not "tidy" this constant.** DiLink-3 is
+     * **Android 10 / API 29** (hence the app's `minSdk = 29`; see MD/APP_OVERVIEW.md), DiLink-5 is
+     * Android 11 / API 30, DiLink-100 is Android 14 / API 34. `>= 30` is therefore the tightest
+     * predicate that excludes DiLink-3 and catches every later generation; lowering it to 29 would
+     * silently disable the compat probe's getter sweep and the VACUUM disk-reclaim on the entire
+     * DiLink-3 fleet.
+     *
+     * Deliberately a version check, not a [vehicleType] match: the prop is a product string, and
+     * defaulting an unrecognised one to "safe" is exactly how a DiLink-100 car ended up blind-
+     * invoking OEM commands (`wakeUpMcu`, `dspReset`, `padReset`, `StartOTA`, `syncMcuState`) that
+     * the DiLink-5 guard exists to prevent. An unknown platform must fail safe, not fail open.
+     */
+    val isPostDiLink3: Boolean get() = Build.VERSION.SDK_INT >= 30
+
+    /**
+     * True when the compat probe must NOT blind-invoke every no-arg method on an OEM device.
+     * See [isPostDiLink3] — [isDiLink5] is kept as an explicit term so the guard still holds on a
+     * DiLink-5 unit that somehow reports an older SDK level.
+     */
+    val blindSweepUnsafe: Boolean get() = isDiLink5 || isPostDiLink3
+
+    /**
+     * True when the app must not restart or install itself: the self-kill-and-relaunch that
+     * follows a database restore/reset/VACUUM, and the in-app download + silent
+     * PackageInstaller + post-install relaunch of the updater.
+     *
+     * Both are the same hazard — an app-initiated process restart racing the bydauto SDK's
+     * classloader injection, which on DiLink-5 could leave the head unit boot-looping (the
+     * 2.13.0 incident) — so they share one predicate. [isDiLink5] is kept as an explicit term
+     * for a DiLink-5 unit that somehow reports an older SDK level; see [isPostDiLink3] for why
+     * the version check, and not a [vehicleType] match, is what makes an unknown platform fail
+     * safe. Where this is true the app closes without relaunching and updates are sideloaded
+     * with `adb install -r`.
+     */
+    val selfRestartUnsafe: Boolean get() = isDiLink5 || isPostDiLink3
+
+    /**
      * True only when the installed build genuinely can't drive this hardware: a **DiLink-5 car
      * running a non-dilink5 build**, which has no DiLink-5 SDK path at all (no Dilink5Client, no
      * injector) → no telemetry.

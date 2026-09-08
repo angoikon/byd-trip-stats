@@ -504,6 +504,24 @@
     <string name="delete_backup_title">Excluir backup?</string>
     <string name="delete_telegram_backup_confirm">\"%1$s\" será removido desta lista e excluído do seu chat do Telegram se tiver sido enviado há menos de 48 horas (o Telegram não permite que bots excluam mensagens mais antigas).</string>
     <string name="delete_backup_action">Excluir backup</string>
+    <string name="reopen_notification_channel">Reabrir após reinício</string>
+    <string name="reopen_notification_channel_desc">Uma forma de voltar ao app quando ele se fechou sozinho para concluir uma operação no banco de dados</string>
+    <string name="reopen_notification_title">Toque para reabrir o BYD Trip Stats</string>
+    <string name="reopen_after_restore">O app fechou para concluir a restauração dos seus dados.</string>
+    <string name="reopen_after_reset">O app fechou para concluir a redefinição dos seus dados.</string>
+    <string name="reopen_after_trim">O app fechou para concluir a liberação de espaço em disco.</string>
+    <string name="settings_backup_label">Backup e restauração de configurações</string>
+    <string name="settings_backup_desc">O backup do banco de dados contém suas viagens; este contém todo o resto — carro, unidades, tema, layout do painel, tarifa de eletricidade, metas, conexões MQTT/ABRP/Telegram, idioma e seu código Pro. Um arquivo de configurações é salvo automaticamente com cada backup do banco de dados, para que uma reinstalação possa ser restaurada exatamente como estava.</string>
+    <string name="settings_include_credentials_label">Incluir credenciais</string>
+    <string name="settings_include_credentials_desc">Salva no arquivo a senha MQTT, os tokens ABRP e Telegram, o PIN do companion web e seu código Pro. Deixe isto ativado, a menos que você planeje compartilhar o arquivo — essas conexões não podem ser restauradas sem ele.</string>
+    <string name="settings_backup_now_action">Fazer backup das configurações agora</string>
+    <string name="available_settings_files_label">Arquivos de configurações disponíveis:</string>
+    <string name="no_settings_files">Ainda não há arquivos de configurações. Eles são criados automaticamente com cada backup do banco de dados.</string>
+    <string name="restore_settings_title">Restaurar configurações?</string>
+    <string name="restore_settings_msg">As configurações de %1$s substituirão as atuais. As viagens e sessões de carregamento não são afetadas.\n\nO app não precisa fechar — tudo é aplicado imediatamente.</string>
+    <string name="delete_settings_title">Excluir arquivo de configurações?</string>
+    <string name="restore_with_settings_label">Restaurar também as configurações salvas com este backup</string>
+    <string name="restore_no_settings_note">Nenhum arquivo de configurações foi salvo com este backup — apenas os dados das viagens serão restaurados.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Backup via Telegram</string>
@@ -785,7 +803,6 @@
     <!-- Initialization screen -->
     <string name="choose_model_title">Escolha o modelo BYD que você dirige</string>
     <string name="model_saved_info">Esta seleção será salva e usada para carregar a configuração correta do carro.</string>
-    <string name="dilink3_only_notice">Apenas veículos DiLink 3 são suportados. DiLink 4 e 5 ainda não são suportados.</string>
     <string name="car_type_bev">Elétrico puro (BEV)</string>
     <string name="car_type_phev">Híbrido plug-in (PHEV / DM-i)</string>
     <string name="select_car_label">Selecionar carro</string>
@@ -1027,7 +1044,7 @@
     <string name="about_install_note">O botão de instalação ficará disponível quando estacionado sem viagem ativa nem carregamento</string>
     <string name="about_install_now">Instalar agora</string>
     <string name="about_download_update">Baixar atualização</string>
-    <string name="about_update_manual_di5_instructions">A instalação automática não está disponível no DiLink 5. Em um PC ou celular, baixe o APK desta versão na página de versões e instale-o via ADB:</string>
+    <string name="about_update_manual_di5_instructions">A instalação automática não está disponível nesta central multimídia. Em um PC ou celular, baixe o APK desta versão na página de versões e instale-o via ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Abrir página de versões</string>
 

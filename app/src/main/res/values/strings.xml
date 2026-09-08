@@ -514,6 +514,28 @@
     <string name="delete_telegram_backup_confirm">\"%1$s\" will be removed from this list, and deleted from your Telegram chat if it was sent less than 48 hours ago (Telegram does not let bots delete older messages).</string>
     <string name="delete_backup_action">Delete backup</string>
 
+    <!-- App restart -->
+    <string name="reopen_notification_channel">Reopen after a restart</string>
+    <string name="reopen_notification_channel_desc">A way back into the app when it has closed itself to finish a database operation</string>
+    <string name="reopen_notification_title">Tap to reopen BYD Trip Stats</string>
+    <string name="reopen_after_restore">The app closed to finish restoring your data.</string>
+    <string name="reopen_after_reset">The app closed to finish resetting your data.</string>
+    <string name="reopen_after_trim">The app closed to finish reclaiming disk space.</string>
+
+    <!-- Settings backup -->
+    <string name="settings_backup_label">Settings backup &amp; restore</string>
+    <string name="settings_backup_desc">The database backup holds your trips; this holds everything around them — car, units, theme, dashboard layout, electricity tariff, goals, MQTT/ABRP/Telegram connections, language and your Pro code. A settings file is saved automatically with every database backup, so a reinstall can be put back exactly as it was.</string>
+    <string name="settings_include_credentials_label">Include credentials</string>
+    <string name="settings_include_credentials_desc">Saves the MQTT password, the ABRP and Telegram tokens, the web companion PIN and your Pro code inside the file. Leave this on unless you plan to share the file — those connections cannot be restored without it.</string>
+    <string name="settings_backup_now_action">Back up settings now</string>
+    <string name="available_settings_files_label">Available settings files:</string>
+    <string name="no_settings_files">No settings files yet. They are written automatically with every database backup.</string>
+    <string name="restore_settings_title">Restore settings?</string>
+    <string name="restore_settings_msg">Settings from %1$s will replace your current ones. Trips and charging sessions are not touched.\n\nThe app does not need to close — everything applies immediately.</string>
+    <string name="delete_settings_title">Delete settings file?</string>
+    <string name="restore_with_settings_label">Also restore the settings saved with this backup</string>
+    <string name="restore_no_settings_note">No settings file was saved with this backup — only trip data will be restored.</string>
+
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram Backup</string>
     <string name="send_backup_now_action">Send Backup Now</string>
@@ -794,7 +816,6 @@
     <!-- Initialization screen -->
     <string name="choose_model_title">Choose the BYD model you drive</string>
     <string name="model_saved_info">This selection will be saved and used to load the correct car configuration.</string>
-    <string name="dilink3_only_notice">Only DiLink 3 vehicles are supported. DiLink 4 and 5 are not yet supported.</string>
     <string name="car_type_bev">Battery Electric (BEV)</string>
     <string name="car_type_phev">Plug-in Hybrid (PHEV / DM-i)</string>
     <string name="select_car_label">Select car</string>
@@ -1036,7 +1057,7 @@
     <string name="about_install_note">Install button will become available when parked with no active trip or charging</string>
     <string name="about_install_now">Install now</string>
     <string name="about_download_update">Download update</string>
-    <string name="about_update_manual_di5_instructions">Automatic install isn\'t available on DiLink 5. On a PC or phone, download this version\'s APK from the releases page, then install it over ADB:</string>
+    <string name="about_update_manual_di5_instructions">Automatic install isn\'t available on this head unit. On a PC or phone, download this version\'s APK from the releases page, then install it over ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Open releases page</string>
 

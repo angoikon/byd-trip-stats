@@ -115,6 +115,14 @@ internal object AppDiagnosticsMonitor {
         if (persisted) startSampling(context.applicationContext)
     }
 
+    /**
+     * Persisted state, readable without [initialize] and without starting sampling —
+     * the settings backup runs from a worker where no UI has initialised the monitor.
+     */
+    fun isEnabled(context: Context): Boolean =
+        context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean(KEY_ENABLED, false)
+
     @Synchronized
     fun setEnabled(context: Context, value: Boolean) {
         initialize(context)

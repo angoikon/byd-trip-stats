@@ -504,6 +504,24 @@
     <string name="delete_backup_title">Yedek silinsin mi?</string>
     <string name="delete_telegram_backup_confirm">\"%1$s\" bu listeden kaldırılacak ve 48 saatten kısa süre önce gönderildiyse Telegram sohbetinizden silinecek (Telegram, botların daha eski mesajları silmesine izin vermez).</string>
     <string name="delete_backup_action">Yedeği sil</string>
+    <string name="reopen_notification_channel">Yeniden başlatmadan sonra tekrar aç</string>
+    <string name="reopen_notification_channel_desc">Bir veritabanı işlemini tamamlamak için kendini kapattığında uygulamaya geri dönmenin bir yolu</string>
+    <string name="reopen_notification_title">BYD Trip Stats\'ı yeniden açmak için dokunun</string>
+    <string name="reopen_after_restore">Verilerinizin geri yüklenmesini tamamlamak için uygulama kapandı.</string>
+    <string name="reopen_after_reset">Verilerinizin sıfırlanmasını tamamlamak için uygulama kapandı.</string>
+    <string name="reopen_after_trim">Disk alanının geri kazanılmasını tamamlamak için uygulama kapandı.</string>
+    <string name="settings_backup_label">Ayarları yedekleme ve geri yükleme</string>
+    <string name="settings_backup_desc">Veritabanı yedeği yolculuklarınızı içerir; bu ise etrafındaki her şeyi içerir — araç, birimler, tema, gösterge paneli düzeni, elektrik tarifesi, hedefler, MQTT/ABRP/Telegram bağlantıları, dil ve Pro kodunuz. Her veritabanı yedeğiyle birlikte otomatik olarak bir ayar dosyası kaydedilir, böylece yeniden yükleme tam olarak eski haline döndürülebilir.</string>
+    <string name="settings_include_credentials_label">Kimlik bilgilerini dahil et</string>
+    <string name="settings_include_credentials_desc">MQTT parolasını, ABRP ve Telegram jetonlarını, web yardımcısı PIN\'ini ve Pro kodunuzu dosyanın içine kaydeder. Dosyayı paylaşmayı düşünmüyorsanız bunu açık bırakın — bu bağlantılar onsuz geri yüklenemez.</string>
+    <string name="settings_backup_now_action">Ayarları şimdi yedekle</string>
+    <string name="available_settings_files_label">Kullanılabilir ayar dosyaları:</string>
+    <string name="no_settings_files">Henüz ayar dosyası yok. Her veritabanı yedeğiyle birlikte otomatik olarak oluşturulur.</string>
+    <string name="restore_settings_title">Ayarlar geri yüklensin mi?</string>
+    <string name="restore_settings_msg">%1$s içindeki ayarlar mevcut ayarlarınızın yerini alacak. Yolculuklar ve şarj oturumları etkilenmez.\n\nUygulamanın kapatılmasına gerek yok — her şey anında uygulanır.</string>
+    <string name="delete_settings_title">Ayar dosyası silinsin mi?</string>
+    <string name="restore_with_settings_label">Bu yedekle kaydedilen ayarları da geri yükle</string>
+    <string name="restore_no_settings_note">Bu yedekle birlikte hiçbir ayar dosyası kaydedilmedi — yalnızca yolculuk verileri geri yüklenecek.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram Yedekleme</string>
@@ -785,7 +803,6 @@
     <!-- Initialization screen -->
     <string name="choose_model_title">Kullandığınız BYD modelini seçin</string>
     <string name="model_saved_info">Bu seçim kaydedilecek ve doğru araç yapılandırmasını yüklemek için kullanılacak.</string>
-    <string name="dilink3_only_notice">Yalnızca DiLink 3 araçlar desteklenmektedir. DiLink 4 ve 5 henüz desteklenmemektedir.</string>
     <string name="car_type_bev">Tam Elektrikli (BEV)</string>
     <string name="car_type_phev">Şarj Edilebilir Hibrit (PHEV / DM-i)</string>
     <string name="select_car_label">Araç seçin</string>
@@ -1027,7 +1044,7 @@
     <string name="about_install_note">Yükleme düğmesi, park edilmiş ve etkin seyahat veya şarj yokken kullanılabilir olacak</string>
     <string name="about_install_now">Şimdi yükle</string>
     <string name="about_download_update">Güncellemeyi indir</string>
-    <string name="about_update_manual_di5_instructions">Otomatik yükleme DiLink 5\'te kullanılamaz. Bir PC veya telefonda, bu sürümün APK\'sını sürümler sayfasından indirin, ardından ADB ile yükleyin:</string>
+    <string name="about_update_manual_di5_instructions">Otomatik yükleme bu ana ünitede kullanılamaz. Bir PC veya telefonda, bu sürümün APK\'sını sürümler sayfasından indirin, ardından ADB ile yükleyin:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Sürümler sayfasını aç</string>
 

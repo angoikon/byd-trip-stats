@@ -92,6 +92,76 @@ internal object RtDispatch {
         return r.exitCode == 0
     }
 
+    // ── Boot-window watcher ──────────────────────────────────────────────────────────────────
+
+    /**
+     * How long after a head-unit boot we keep watching for the adb port to appear. The DiLink 5
+     * powers itself down ~10 min after the vehicle goes to standby (CarPowerService: standby holds
+     * for MAX_NUM=10 × TIMER_DELAY_MS=60 s, then `PowerManager.shutdown`), so watching much beyond
+     * this is watching a unit that is already off.
+     */
+    private const val BOOT_WINDOW_MS = 20 * 60 * 1000L
+
+    /** Tight while the port is most likely to flip, then relaxed for the rest of the window. */
+    private const val EARLY_POLL_MS = 5_000L
+    private const val EARLY_PHASE_MS = 2 * 60 * 1000L
+    private const val LATE_POLL_MS = 15_000L
+
+    private fun inBootWindow(): Boolean =
+        android.os.SystemClock.elapsedRealtime() < BOOT_WINDOW_MS
+
+    /**
+     * Dispatch as soon as the channel exists, rather than at a few guessed offsets.
+     *
+     * The failure this addresses: at the DiLink 5's nightly ~02:31 cold boot the app starts at
+     * boot+11 s and finds `sock=closed` — adbd is not listening yet. The old fixed ladder
+     * (0 / 30 s / 60 s / 3.5 min) could spend every attempt against a still-closed port; the unit
+     * then went to standby, force-stopped the app (CarPowerBinder.forceStopThirdApp kills every
+     * non-system package unconditionally — there is no whitelist to be added to), and the morning
+     * car-on delivered no BOOT_COMPLETED to a stopped package.
+     *
+     * IMPORTANT — this is not, on its own, a fix for DiLink-5 auto-start, and must not be described
+     * as one. It only helps where the port opens *later, by itself*. On the Sealion 7 we have
+     * evidence it does NOT: the tester must re-enable adb by hand from a hidden debug menu after
+     * every reboot (it can even drop on a warm boot or a 15-minute park). An earlier reading of
+     * "port opens later, unaided" was wrong — the one `sock=open` we saw there followed a manual
+     * re-enable. So on that hardware the watcher is a *measurement*: if the port never appears
+     * inside the window, the log says so, which is the evidence that adb persistence
+     * (`persist.sys.adb.wiress.enable`) is the real blocker, one level below dispatch timing.
+     *
+     * Gating on [sockOpen] is what makes polling cheap enough to do properly: a connect to a closed
+     * loopback port is refused in microseconds, so the wait costs a syscall every few seconds and
+     * never touches the shell channel. Only when the port actually appears do we pay for a probe
+     * and a dispatch. In-process delays only — no alarms, no wakelocks, so an off-state unit stays
+     * dark, and the process is alive through this window anyway.
+     *
+     * DiLink 3 is unaffected in practice: the port is already open at boot there, so the first
+     * attempt succeeds and this returns before the loop runs once.
+     */
+    suspend fun launchWatchingForChannel(context: Context): Boolean {
+        if (launch(context)) return true
+        // No point burning a 20-minute watch on a device that has no grants to use anyway —
+        // launch() has already logged why.
+        if (!AdbPermissionManager.isSetupComplete(context)) return false
+
+        var sawPort = false
+        while (inBootWindow()) {
+            kotlinx.coroutines.delay(
+                if (android.os.SystemClock.elapsedRealtime() < EARLY_PHASE_MS) EARLY_POLL_MS
+                else LATE_POLL_MS,
+            )
+            if (!sockOpen()) continue
+            // Edge, not level: log the moment the port appears, because the gap between it and
+            // boot is the number that decides whether this whole approach can work.
+            if (!sawPort) {
+                sawPort = true
+                DiagLog.event(context, TAG, "adb port appeared ${bootAge()} — dispatching")
+            }
+            if (runCatching { launch(context) }.getOrDefault(false)) return true
+        }
+        return false
+    }
+
     // ── Channel diagnosis without the channel ────────────────────────────────────────────────
     //
     // Read in-process, so these values are available exactly when the shell channel is NOT — which
@@ -99,14 +169,37 @@ internal object RtDispatch {
     // channel: WiFi-gated adb (port empty while the OEM flag is on and WiFi is down) vs the flag
     // being off (wiress=false) vs adbd up but unreachable for some third reason (port=5555).
 
-    /** e.g. `port=[5555] sock=open wiress=[true] conn=[1] wifi=up` */
+    /** e.g. `port=[5555] sock=open wiress=[true] conn=[1] wifi=up rcv=on` */
     private fun channelDiag(context: Context): String {
         val port = prop("service.adb.tcp.port")
         val wiress = prop("persist.sys.adb.wiress.enable")
         val conn = prop("sys.connect.adb.wiress")
         return "port=[$port] sock=${if (sockOpen()) "open" else "closed"} " +
-            "wiress=[$wiress] conn=[$conn] wifi=${if (wifiUp(context)) "up" else "down"}"
+            "wiress=[$wiress] conn=[$conn] wifi=${if (wifiUp(context)) "up" else "down"} " +
+            "rcv=${bootReceiverState(context)}"
     }
+
+    /**
+     * Enabled state of our own BOOT_COMPLETED receiver — the exact bit BYD's "auto-start"
+     * settings screen writes. Decompiling BydAppStartManagement (b/a/a/b.java) shows the toggle
+     * is nothing but `setComponentEnabledSetting(<pkg's BOOT_COMPLETED receiver>, 2|1,
+     * DONT_KILL_APP)`, persisted to /data/system/users/0/package-restrictions.xml; the list it
+     * shows is built from `queryBroadcastReceivers(BOOT_COMPLETED, MATCH_DISABLED_COMPONENTS)`
+     * and each row's "off" is literally `getComponentEnabledSetting(...) == DISABLED`.
+     *
+     * So `rcv=OFF` means the user (or a stray tap) switched us off in that screen and no
+     * BOOT_COMPLETED will ever be delivered — indistinguishable, until now, from the force-stop
+     * case in a log. Reading our own component needs no permission and no shell channel, which is
+     * why it belongs here rather than behind the adb path that may itself be what's broken.
+     */
+    private fun bootReceiverState(context: Context): String = runCatching {
+        val cn = android.content.ComponentName(context, com.byd.tripstats.receiver.BootReceiver::class.java)
+        when (context.packageManager.getComponentEnabledSetting(cn)) {
+            android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED -> "OFF"
+            android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED -> "on"
+            else -> "dflt" // manifest value — enabled, never touched by the OEM screen
+        }
+    }.getOrDefault("?")
 
     /**
      * Raw TCP probe of the adb loopback port — the discriminator the property alone can't give.
@@ -153,11 +246,26 @@ internal object RtDispatch {
      * Log on state change, with a heartbeat every [REPEAT_HEARTBEAT] repeats. The watchdog retries
      * every 15 min, so an unchanged "channel unreachable" would otherwise write ~96 identical lines
      * a day and shred diag.log's history.
+     *
+     * Suspended inside the boot window: there the retries are the evidence. Collapsing them is what
+     * turned the 2026-08-22 cold boot into a single `sock=closed` line followed by a nine-hour hole,
+     * which reads identically to "the app never retried" — the one thing the log had to rule out.
+     *
+     * Hard-capped at [BOOT_WINDOW_VERBOSE_LINES] rather than left to run for the whole window: a
+     * unit whose dispatch fails every time on an *open* port would otherwise write a line per poll,
+     * every night, which is precisely the history-shredding the heartbeat exists to prevent. Two
+     * dozen consecutive failures already establish the pattern; the heartbeat carries it after that.
      */
+    private const val BOOT_WINDOW_VERBOSE_LINES = 25
+
+    @Volatile private var bootWindowLines = 0
+
     private fun logState(context: Context, key: String, message: String) {
         if (key == lastKey) {
             repeats++
-            if (repeats % REPEAT_HEARTBEAT != 0) return
+            val verbose = inBootWindow() && bootWindowLines < BOOT_WINDOW_VERBOSE_LINES
+            if (verbose) bootWindowLines++
+            if (!verbose && repeats % REPEAT_HEARTBEAT != 0) return
             DiagLog.event(context, TAG, "$message (unchanged ×$repeats)")
             return
         }

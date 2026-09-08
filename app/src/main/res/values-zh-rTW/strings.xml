@@ -504,6 +504,24 @@
     <string name="delete_backup_title">刪除備份？</string>
     <string name="delete_telegram_backup_confirm">\"%1$s\" 將從此清單中移除；如果它是在 48 小時內傳送的，還會從你的 Telegram 聊天中刪除（Telegram 不允許機器人刪除更早的訊息）。</string>
     <string name="delete_backup_action">刪除備份</string>
+    <string name="reopen_notification_channel">重新啟動後重新開啟</string>
+    <string name="reopen_notification_channel_desc">當應用為完成資料庫操作而自行關閉後，重新回到應用的入口</string>
+    <string name="reopen_notification_title">輕觸以重新開啟 BYD Trip Stats</string>
+    <string name="reopen_after_restore">應用已關閉以完成資料還原。</string>
+    <string name="reopen_after_reset">應用已關閉以完成資料重設。</string>
+    <string name="reopen_after_trim">應用已關閉以完成磁碟空間回收。</string>
+    <string name="settings_backup_label">設定備份與還原</string>
+    <string name="settings_backup_desc">資料庫備份保存你的行程；此檔案保存其餘的一切——車輛、單位、主題、儀表板版面、電價、目標、MQTT/ABRP/Telegram 連線、語言和你的 Pro 代碼。每次資料庫備份都會自動保存一個設定檔，因此重新安裝後可以完全還原原樣。</string>
+    <string name="settings_include_credentials_label">包含憑證</string>
+    <string name="settings_include_credentials_desc">將 MQTT 密碼、ABRP 和 Telegram 權杖、網頁助手 PIN 以及你的 Pro 代碼保存在檔案中。除非你打算分享該檔案，否則請保持開啟——沒有它這些連線無法還原。</string>
+    <string name="settings_backup_now_action">立即備份設定</string>
+    <string name="available_settings_files_label">可用的設定檔：</string>
+    <string name="no_settings_files">還沒有設定檔。它們會在每次資料庫備份時自動產生。</string>
+    <string name="restore_settings_title">還原設定？</string>
+    <string name="restore_settings_msg">來自 %1$s 的設定將取代你目前的設定。行程和充電記錄不受影響。\n\n無需關閉應用——所有變更立即生效。</string>
+    <string name="delete_settings_title">刪除設定檔？</string>
+    <string name="restore_with_settings_label">同時還原隨此備份保存的設定</string>
+    <string name="restore_no_settings_note">此備份未保存設定檔——將僅還原行程資料。</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram 備份</string>
@@ -785,7 +803,6 @@
     <!-- Initialization screen -->
     <string name="choose_model_title">選擇您駕駛的比亞迪車款</string>
     <string name="model_saved_info">此選擇將被儲存，用於載入正確的車輛設定。</string>
-    <string name="dilink3_only_notice">僅支援 DiLink 3 車款，暫不支援 DiLink 4 和 5。</string>
     <string name="car_type_bev">純電動（BEV）</string>
     <string name="car_type_phev">插電式油電混合（PHEV / DM-i）</string>
     <string name="select_car_label">選擇車款</string>
@@ -1027,7 +1044,7 @@
     <string name="about_install_note">停車且無活躍行程或充電時，安裝按鈕將變為可用</string>
     <string name="about_install_now">立即安裝</string>
     <string name="about_download_update">下載更新</string>
-    <string name="about_update_manual_di5_instructions">DiLink 5 不支援自動安裝。請在電腦或手機上從發布頁面下載此版本的 APK，然後透過 ADB 安裝:</string>
+    <string name="about_update_manual_di5_instructions">此車機不支援自動安裝。請在電腦或手機上從發布頁面下載此版本的 APK，然後透過 ADB 安裝:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">開啟發布頁面</string>
 

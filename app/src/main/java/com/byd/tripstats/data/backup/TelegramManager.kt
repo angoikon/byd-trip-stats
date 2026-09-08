@@ -228,6 +228,28 @@ class TelegramManager private constructor(private val context: Context) {
         }
     }
 
+    /**
+     * Re-installs a bot connection from a settings backup, without the getMe/getUpdates
+     * round-trip [validateAndSave] does — after a reinstall the car may have no network
+     * yet, and the token was already validated when it was first saved. An invalid token
+     * simply fails on the next send, exactly as an expired one would.
+     */
+    fun restoreConfig(token: String, chatId: String, botName: String, botId: Long) {
+        val trimmedToken = token.trim()
+        if (trimmedToken.isBlank() || chatId.isBlank()) return
+        prefs.edit()
+            .putString(KEY_TOKEN, trimmedToken)
+            .putString(KEY_CHAT_ID, chatId)
+            .putString(KEY_BOT_NAME, botName)
+            .putLong(KEY_BOT_ID, botId)
+            .apply()
+        _config.value = TelegramConfig(trimmedToken, chatId, botName, botId)
+        // Rediscovers the backups already in the chat from the registry in Download/.
+        _telegramBackups.value = loadSentFiles()
+        if (_autoEnabled.value) scheduleAutoBackup()
+        Log.i(TAG, "Telegram config restored from settings backup: bot=@$botName")
+    }
+
     fun clearConfig() {
         cancelAutoBackup()
         prefs.edit()

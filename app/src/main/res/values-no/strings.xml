@@ -504,6 +504,24 @@
     <string name="delete_backup_title">Slette sikkerhetskopi?</string>
     <string name="delete_telegram_backup_confirm">\"%1$s\" fjernes fra denne listen og slettes fra Telegram-chatten din hvis den ble sendt for mindre enn 48 timer siden (Telegram lar ikke roboter slette eldre meldinger).</string>
     <string name="delete_backup_action">Slett sikkerhetskopi</string>
+    <string name="reopen_notification_channel">Åpne igjen etter omstart</string>
+    <string name="reopen_notification_channel_desc">En vei tilbake til appen når den har lukket seg selv for å fullføre en databaseoperasjon</string>
+    <string name="reopen_notification_title">Trykk for å åpne BYD Trip Stats igjen</string>
+    <string name="reopen_after_restore">Appen lukket for å fullføre gjenopprettingen av dataene dine.</string>
+    <string name="reopen_after_reset">Appen lukket for å fullføre nullstillingen av dataene dine.</string>
+    <string name="reopen_after_trim">Appen lukket for å fullføre frigjøringen av diskplass.</string>
+    <string name="settings_backup_label">Sikkerhetskopiering og gjenoppretting av innstillinger</string>
+    <string name="settings_backup_desc">Databasesikkerhetskopien inneholder turene dine; denne inneholder alt rundt dem — bil, enheter, tema, dashbordoppsett, strømpris, mål, MQTT-/ABRP-/Telegram-tilkoblinger, språk og Pro-koden din. En innstillingsfil lagres automatisk med hver databasesikkerhetskopi, så en reinstallasjon kan gjenopprettes nøyaktig slik den var.</string>
+    <string name="settings_include_credentials_label">Inkluder påloggingsinformasjon</string>
+    <string name="settings_include_credentials_desc">Lagrer MQTT-passordet, ABRP- og Telegram-tokenene, PIN-koden til nettfølgesvennen og Pro-koden din i filen. La denne stå på med mindre du planlegger å dele filen — de tilkoblingene kan ikke gjenopprettes uten den.</string>
+    <string name="settings_backup_now_action">Sikkerhetskopier innstillinger nå</string>
+    <string name="available_settings_files_label">Tilgjengelige innstillingsfiler:</string>
+    <string name="no_settings_files">Ingen innstillingsfiler ennå. De opprettes automatisk med hver databasesikkerhetskopi.</string>
+    <string name="restore_settings_title">Gjenopprette innstillinger?</string>
+    <string name="restore_settings_msg">Innstillingene fra %1$s erstatter de nåværende. Turer og ladeøkter berøres ikke.\n\nAppen trenger ikke å lukkes — alt tas i bruk umiddelbart.</string>
+    <string name="delete_settings_title">Slette innstillingsfil?</string>
+    <string name="restore_with_settings_label">Gjenopprett også innstillingene som ble lagret med denne sikkerhetskopien</string>
+    <string name="restore_no_settings_note">Ingen innstillingsfil ble lagret med denne sikkerhetskopien — bare turdata gjenopprettes.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram-sikkerhetskopiering</string>
@@ -785,7 +803,6 @@
     <!-- Initialization screen -->
     <string name="choose_model_title">Velg BYD-modellen du kjører</string>
     <string name="model_saved_info">Dette valget lagres og brukes til å laste riktig bilkonfigurasjon.</string>
-    <string name="dilink3_only_notice">Kun DiLink 3-kjøretøy støttes. DiLink 4 og 5 støttes ikke ennå.</string>
     <string name="car_type_bev">Batterielektrisk (BEV)</string>
     <string name="car_type_phev">Ladbar hybrid (PHEV / DM-i)</string>
     <string name="select_car_label">Velg bil</string>
@@ -1027,7 +1044,7 @@
     <string name="about_install_note">Installeringsknappen blir tilgjengelig når du er parkert uten aktiv tur eller lading</string>
     <string name="about_install_now">Installer nå</string>
     <string name="about_download_update">Last ned oppdatering</string>
-    <string name="about_update_manual_di5_instructions">Automatisk installasjon er ikke tilgjengelig på DiLink 5. Last ned denne versjonens APK fra utgivelsessiden på en PC eller telefon, og installer den deretter via ADB:</string>
+    <string name="about_update_manual_di5_instructions">Automatisk installasjon er ikke tilgjengelig på denne hovedenheten. Last ned denne versjonens APK fra utgivelsessiden på en PC eller telefon, og installer den deretter via ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Åpne utgivelsesside</string>
 
