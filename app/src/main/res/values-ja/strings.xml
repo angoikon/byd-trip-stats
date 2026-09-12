@@ -883,13 +883,16 @@
     <string name="bg_minimal">最小限</string>
     <string name="bg_deep_sleep">ディープスリープ</string>
     <string name="bg_default_label">デフォルト</string>
-    <string name="bg_always_on_desc">常時起動（推奨デフォルト）：サービスが24時間365日稼働し、バッテリー履歴への継続的な12V/SoCサンプリングとオフ状態（例：夜間）の充電のキャプチャを行います。BYDの独自のバックグラウンドドレインに加えて小さな追加負荷。\n\n注意：多くのBYDユニットは車がオフになった後約15分でWiFiを切断し、アプリはそれを上書きできません。そのため駐車中は、WiFi経由ADB、Webコンパニオン（PWA）、自宅ネットワーク上のブローカーへのMQTTは車が電源オンになるまで停止します。インターネット経由のブローカー（例：HiveMQ Cloud）へのMQTTは通常、モバイルデータを通じて駐車中も公開を続けます。\n注意2：Electroアプリは上記を上書きして、車がオフのときでもWiFiを無制限に保持できます</string>
+    <string name="bg_always_on_desc">常時起動（推奨のデフォルト）：駐車後もテレメトリサービスが動作し続け、12V/SoC のサンプルを継続的にバッテリー履歴に記録し、オフ状態（例：夜間）の充電を取得します。BYD 自身の工場出荷時のバックグラウンド消費に加わるわずかな追加負荷です。\n\n注：ほとんどの BYD ユニットは車を切ってから約15分で Wi-Fi を切断します。そのため駐車中は、Wi-Fi 経由の ADB、Webコンパニオン（PWA）、自宅ネットワークのブローカーへの MQTT は、車が起動するまで停止します。インターネットから到達可能なブローカー（例：HiveMQ Cloud）への MQTT は、車がモバイルデータに接続されたままなので通常は発行を続けます。下の「駐車中も Wi-Fi を維持」オプションは、対応ユニットで Wi-Fi を開いたままにできます。</string>
     <string name="bg_minimal_desc">最小限：車がオフになった5分後にサービスが自動停止し、90分のアラームで充電スナップショットのために短時間起動します。消費が少ないですが、オフ状態のサンプルはまばらで、ADBは常時起動ではなく、Webコンパニオン（PWA）は短い起動の間だけアクセス可能で、MQTTは起動間は待機状態です。オフ状態の充電は約90分以内に検出され、その後充電の残りを公開します。</string>
     <string name="bg_deep_sleep_desc">ディープスリープ：車がオフになった5分後にサービスが自動停止し、以降の起動はありません。車のECUが完全なディープスリープに達することができます。Webコンパニオン（PWA）はアクセス不能で、MQTTは駐車中全体で無音です。オフ状態の充電はライブでキャプチャされず、次回の起動時のSoCデルタから再構築されるだけです。</string>
-    <string name="keepalive_never_fired">キープアライブ：まだ起動したことがありません%1$s。車が駐車された後もしばらく「なし」のままの場合、ヘッドユニットが駐車時に完全にオフになります — 最小限はディープスリープと同様に動作するため、駐車中のデータには常時起動を使用してください。</string>
-    <string name="keepalive_fired">キープアライブ：最終起動 %1$s · 合計 %2$s 回%3$s</string>
+    <string name="keepalive_never_fired">最小限の起動アラーム：まだ起動したことがありません%1$s。車をしばらく駐車した後も「なし」のままの場合、ヘッドユニットは駐車時に完全にオフになります — 最小限はそのときディープスリープのように動作するため、駐車中のデータには常時起動を使用してください。</string>
+    <string name="keepalive_fired">最小限の起動アラーム：最終起動 %1$s • 合計 %2$s%3$s</string>
     <string name="keepalive_armed">（準備完了）</string>
     <string name="keepalive_not_armed"> · 準備未完了</string>
+    <string name="wifi_keepalive_label">駐車中も Wi-Fi を維持</string>
+    <string name="wifi_keepalive_desc">駐車後に車が Wi-Fi をオフにした場合は再度オンにし、Webコンパニオンやその他のローカル（自宅ネットワーク）ツールに引き続きアクセスできるようにします。車がオフのときのみ動作し、12V バッテリーや充電状態が低下すると動作を控えます。駐車中はわずかに追加の電力を消費します。\n\nElectro、Overdrive、その他 Wi-Fi を維持するアプリも使っている場合は、そのうちの1つだけでこれをオンにし、他ではオフにしてください — 2つの維持機能が同時に動くと互いに干渉し、電力を無駄にすることがあります。</string>
+    <string name="wifi_keepalive_needs_setup">高度な ADB セットアップ（即時テレメトリと同じ）が必要です。これを有効にするには、まずそれを完了してください。</string>
 
     <!-- Settings dialogs -->
     <string name="tariff_dialog_title">電気料金</string>

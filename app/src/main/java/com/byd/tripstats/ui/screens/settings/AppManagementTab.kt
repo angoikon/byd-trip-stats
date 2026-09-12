@@ -46,6 +46,10 @@ internal fun AppManagementTab(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        PowerBackgroundSection(context = context, scope = scope)
+
+        HorizontalDivider()
+
         SectionHeader(icon = Icons.Filled.Backup, title = stringResource(R.string.backup_restore_title))
 
         // Two-column summary row

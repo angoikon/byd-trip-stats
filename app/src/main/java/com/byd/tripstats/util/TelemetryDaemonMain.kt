@@ -4,9 +4,13 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.hardware.bydauto.gearbox.AbsBYDAutoGearboxListener
 import android.hardware.bydauto.speed.AbsBYDAutoSpeedListener
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Looper
 import android.os.Process
+import com.byd.tripstats.runtimebridge.RuntimeExtensionBridge
 import org.json.JSONObject
+import java.util.concurrent.TimeUnit
 import java.io.PrintWriter
 import java.lang.reflect.Proxy
 import java.net.InetAddress
@@ -89,7 +93,7 @@ object TelemetryDaemonMain {
             java.io.File(s(47,100,97,116,97,47,108,111,99,97,108,47,116,109,112,47,46,98,121,100,116,101,108,101,109,100,46,112,105,100))
                 .writeText(Process.myPid().toString())
         }
-        runCatching { Looper.prepareMainLooper() }.onFailure { log("looper: ${it.message}") }
+        runCatching { prepareMainLooper() }.onFailure { log("looper: ${it.message}") }
 
         val ctx = buildContext() ?: run { log("no Context — abort"); return }
         registerSpeed(ctx)
@@ -97,10 +101,17 @@ object TelemetryDaemonMain {
         registerPower(ctx)
         startServer()
         startPusher()
+        startWifiKeepalive(ctx)
 
         log("entering Looper.loop()")
         runCatching { Looper.loop() }.onFailure { log("loop ended: ${it.message}") }
     }
+
+    // prepareMainLooper is deprecated for ordinary app code (the framework sets the main looper up),
+    // but this is a standalone app_process daemon with no framework-provided main looper — it must
+    // prepare one itself so the SDK's typed listener callbacks have a looper to post to.
+    @Suppress("DEPRECATION")
+    private fun prepareMainLooper() = Looper.prepareMainLooper()
 
     // ---- context bootstrap (no Activity), with inline permission bypass ----
 
@@ -209,14 +220,13 @@ object TelemetryDaemonMain {
                 it.parameterTypes[0].isAssignableFrom(proxy.javaClass) && it.parameterTypes[1] == IntArray::class.java
         }
         val subIds = (powerIds + frontIds + rearIds).toIntArray()
-        var ok = false
         if (m2 != null) {
             // Best-effort subscribe-all FIRST (Other app's engine strategy: empty int[]). On HALs that
             // honour it, every engine feature arrives — so rear is delivered (and discoverable) even if
             // its id is unknown. Register the explicit ids LAST so that whatever the HAL's add/replace
             // semantics, power/front and the resolved rear stay subscribed — the working front can't regress.
             val subscribeAll = runCatching { m2.invoke(dev, proxy, IntArray(0)); true }.getOrDefault(false)
-            ok = runCatching { m2.invoke(dev, proxy, subIds); true }.getOrDefault(false)
+            val ok = runCatching { m2.invoke(dev, proxy, subIds); true }.getOrDefault(false)
             log("engine listener: explicit=$ok subscribeAll=$subscribeAll ids=${subIds.toList()}")
         }
     }
@@ -298,6 +308,117 @@ object TelemetryDaemonMain {
             }
         }, "telemetry-push").apply { isDaemon = true }.start()
     }
+
+    // ---- Wi-Fi keepalive when parked (opt-in, DiLink-3) ----
+    //
+    // The MCU cuts Wi-Fi minutes after the car is switched off, taking down all LAN access while the
+    // unit stays alive on 4G. This is the same counter 3rd party keepalive apps use on
+    // DiLink-3: from this privileged shell (uid 2000) run `svc wifi enable` when Wi-Fi drops — a plain
+    // radio toggle, NOT a vehicle-power write (the ACC-whitelist / power-feature paths need DEVICE_ACC
+    // which is denied even to uid 2000). Gated so it can't flatten the 12V starter battery:
+    //   • not while DRIVING (our own speed > WIFI_MOVING_KMH) — so a deliberate Wi-Fi-off set while
+    //     driving is never overridden; parked/off (speed ~0) is when Wi-Fi actually needs help;
+    //   • only when the 12V aux battery and the traction SoC are above cutoff — those values are FED
+    //     BY THE APP via /data/local/tmp/.bydwifiguard (the battery/BMS devices don't instantiate in
+    //     this bare shell context, so the daemon can't read them itself; the app can, and does);
+    //   • only when Wi-Fi is actually down — so on a running-but-stationary car (Wi-Fi still up) we do
+    //     nothing regardless of the above.
+    // The power-state reading (n01) is LOGGED for diagnosis but NOT gated on: on the dev's DiLink-3 it
+    // never reported the expected "off" value (0), so gating on it silently disabled the whole feature
+    // (2026-09 test: only "thread up", never a decision line). Speed is the reliable, already-streamed
+    // signal; combined with the "Wi-Fi down" check it captures "parked with Wi-Fi cut" without n01.
+    // Enabled by a flag file the app writes over the adb channel (see WifiKeepalive); polled here so
+    // the toggle takes effect without relaunching the daemon.
+    private const val WIFI_V12_MIN = 12.0          // volts — skip below this to protect the 12V battery
+    private const val WIFI_SOC_MIN = 15.0          // percent — skip below this (traction battery)
+    private const val WIFI_MOVING_KMH = 2.0        // above this = driving → leave Wi-Fi alone
+    private const val WIFI_CHECK_INTERVAL_MS = 30_000L
+    private const val WIFI_GUARD_STALE_MS = 15 * 60 * 1000L  // ignore app-fed 12V/SoC older than this (push is 5 min, so one missed push is tolerated)
+
+    private fun startWifiKeepalive(ctx: Context) {
+        // "/data/local/tmp/.bydwifikeep" — matches WifiKeepalive.FLAG_PATH.
+        val flag = java.io.File(s(
+            47,100,97,116,97,47,108,111,99,97,108,47,116,109,112,47,
+            46,98,121,100,119,105,102,105,107,101,101,112,
+        ))
+        // "/data/local/tmp/.bydwifiguard" — the app writes "12V,SoC" here (WifiKeepalive.pushGuard),
+        // because the battery/BMS devices don't instantiate in this bare shell context (getInstance
+        // returns null, so an in-daemon read is always null). See readGuard().
+        val guardFile = java.io.File(s(
+            47,100,97,116,97,47,108,111,99,97,108,47,116,109,112,47,
+            46,98,121,100,119,105,102,105,103,117,97,114,100,
+        ))
+
+        Thread({
+            log("wifi-keepalive thread up (guard=${guardFile.path})")
+            var cycle = 0
+            var lastReason = ""
+            // Log on a change of outcome, plus a ~5 min heartbeat (every 10th 30 s cycle), so the
+            // parked-window trace is visible in supd.log without shredding it at 30 s cadence.
+            while (true) {
+                try {
+                    Thread.sleep(WIFI_CHECK_INTERVAL_MS)
+                    cycle++
+                    if (!flag.exists()) { lastReason = "off"; continue }  // toggle off — silent, expected
+                    val power = RuntimeExtensionBridge.intValue("n01", ctx, -1)   // diagnostic only
+                    val speed = snapshot.get().speedKmh ?: 0.0
+                    val onWifi = wifiUp(ctx)
+                    val (v12, soc) = readGuard(guardFile)   // 12V,SoC fed by the app; null if absent/stale
+                    val diag = "n01=$power spd=$speed wifi=$onWifi 12V=$v12 soc=$soc"
+
+                    // Only trust a 12V reading that looks like volts (10–15). Anything else is a
+                    // units mismatch (mV / 0.1V) or unreadable → don't block on it (the diag logs it).
+                    val reason = when {
+                        speed > WIFI_MOVING_KMH -> "skip-driving"
+                        v12 != null && v12 in 10.0..15.0 && v12 < WIFI_V12_MIN -> "skip-12v"
+                        soc != null && soc in 0.0..100.0 && soc < WIFI_SOC_MIN -> "skip-soc"
+                        onWifi -> "wifi-up"
+                        else -> "enable"
+                    }
+                    if (reason == "enable") {
+                        val ok = runSvcWifiEnable()
+                        if (lastReason != "enable" || cycle % 10 == 0) log("wifi-keepalive: enable ok=$ok $diag")
+                    } else if (reason != lastReason || cycle % 10 == 0) {
+                        log("wifi-keepalive: $reason $diag")
+                    }
+                    lastReason = reason
+                } catch (_: InterruptedException) {
+                    return@Thread
+                } catch (t: Throwable) {
+                    log("wifi-keepalive: ${t.javaClass.simpleName}: ${t.message}")
+                }
+            }
+        }, "wifi-keepalive").apply { isDaemon = true }.start()
+    }
+
+    /**
+     * Read the "12V,SoC" the app writes to [f] (WifiKeepalive.pushGuard). Either field may be blank
+     * (unknown → null). Ignored when the file is older than [WIFI_GUARD_STALE_MS]: a stale file means
+     * the app stopped feeding values, so both are treated as unknown rather than acting on old data.
+     */
+    private fun readGuard(f: java.io.File): Pair<Double?, Double?> = runCatching {
+        if (!f.exists() || System.currentTimeMillis() - f.lastModified() > WIFI_GUARD_STALE_MS) return null to null
+        val parts = f.readText().trim().split(",")
+        parts.getOrNull(0)?.trim()?.toDoubleOrNull() to parts.getOrNull(1)?.trim()?.toDoubleOrNull()
+    }.getOrDefault(null to null)
+
+    /** Any connected network with a Wi-Fi transport — no location permission needed. */
+    @Suppress("DEPRECATION") // allNetworks: deprecated at API 31, but this app targets 29 (same as RtDispatch.wifiUp)
+    private fun wifiUp(ctx: Context): Boolean = runCatching {
+        val cm = ctx.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+        cm?.allNetworks?.any {
+            cm.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
+        } ?: false
+    }.getOrDefault(false)
+
+    /** `svc wifi enable` via a short-lived shell, drained so it can't block, 5 s cap. */
+    private fun runSvcWifiEnable(): Boolean = runCatching {
+        val cmd = s(115,118,99,32,119,105,102,105,32,101,110,97,98,108,101) // "svc wifi enable"
+        val p = ProcessBuilder(s(115,104), s(45,99), cmd).redirectErrorStream(true).start()
+        Thread({ runCatching { p.inputStream.readBytes() } }, "wifi-svc-drain")
+            .apply { isDaemon = true }.start()
+        if (!p.waitFor(5, TimeUnit.SECONDS)) { p.destroyForcibly(); false } else p.exitValue() == 0
+    }.getOrDefault(false)
 
     private fun toJson(s: Snap): String = JSONObject().apply {
         s.speedKmh?.let { put("speedKmh", it) }

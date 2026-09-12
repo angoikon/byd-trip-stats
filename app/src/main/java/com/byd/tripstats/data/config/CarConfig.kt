@@ -229,7 +229,7 @@ object CarCatalog {
         cdA = 0.694       // Cd 0.272 × A 2.55 m²
     )
 
-    // Ships with DiLink 5
+    // Ships with DiLink 100
     val BYD_ATTO_3_PREMIUM = CarConfig(
         id = "BYD_ATTO_3_PREMIUM",
         displayName = "Atto 3 Premium",
@@ -247,8 +247,8 @@ object CarCatalog {
 
     // BYD Atto 3 EVO — the 2026 model-year overhaul, and a different car under the skin from
     // the three FWD Atto 3 entries above: rear- or all-wheel drive, a 74.8 kWh pack (published
-    // usable; 76.0 kWh gross) and 220 kW DC charging. Ships with DiLink 5, so it needs the
-    // `dilink5` build. Two trims are offered — Design (RWD) and Excellence (AWD).
+    // usable; 76.0 kWh gross) and 220 kW DC charging. Ships with DiLink 100, so it needs the
+    // `dilink100` build. Two trims are offered — Design (RWD) and Excellence (AWD).
     //
     // Pack: the published 499.2 V nominal is exactly 156 × 3.2 V, and 156 × 0.48 kWh = 74.88 kWh,
     // so this is the same 156S blade pack as the Atto 3 Premium — the cell count is derived, not
@@ -923,7 +923,7 @@ object CarCatalog {
     /**
      * Cars grouped for display in selection screens.
      * Two top-level categories (BEV / PHEV), each with named model groups.
-     * Mostly DiLink 3 vehicles; the Sealion 7 and the Atto 3 EVO (DiLink 5) are supported by
+     * Mostly DiLink 3 vehicles; the Sealion 7 (DiLink 5) and the Atto 3 EVO (DiLink 100) are supported by
      * the `dilink5` flavor.
      */
     val groupedBev: LinkedHashMap<String, List<CarConfig>> = linkedMapOf(
@@ -931,7 +931,7 @@ object CarCatalog {
         "BYD Dolphin" to listOf(BYD_DOLPHIN_STANDARD, BYD_DOLPHIN_EXTENDED),
         "BYD Atto 2" to listOf(BYD_ATTO_2_ACTIVE, BYD_ATTO_2_BOOST, BYD_ATTO_2_COMFORT),
         "BYD Atto 3" to listOf(BYD_ATTO_3_SR, BYD_ATTO_3, BYD_ATTO_3_PREMIUM),
-        "BYD Atto 3 EVO (DiLink 5)" to listOf(BYD_ATTO_3_EVO_DESIGN, BYD_ATTO_3_EVO_EXCELLENCE),
+        "BYD Atto 3 EVO (DiLink 100)" to listOf(BYD_ATTO_3_EVO_DESIGN, BYD_ATTO_3_EVO_EXCELLENCE),
         "BYD Seal U" to listOf(BYD_SEAL_U_COMFORT, BYD_SEAL_U_DESIGN),
         "BYD Seagull / Dolphin Surf / Atto 1" to listOf(BYD_SEAGULL_ACTIVE, BYD_SEAGULL_FLYING, BYD_DOLPHIN_SURF_ACTIVE, BYD_DOLPHIN_SURF_BOOST, BYD_DOLPHIN_SURF_COMFORT),
         "BYD M6" to listOf(BYD_M6_STANDARD_120KW, BYD_M6_SUPERIOR_100KW, BYD_M6_SUPERIOR_150KW),

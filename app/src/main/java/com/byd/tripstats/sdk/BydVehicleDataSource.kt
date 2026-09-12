@@ -567,6 +567,9 @@ class BydVehicleDataSource(context: Context) {
     @Volatile private var cachedWifiSsid: String = ""
     @Volatile private var lastWifiSsidReadMs: Long = 0L
 
+    // allNetworks (API 31) and WifiManager.connectionInfo/ssid are deprecated at compileSdk 34, but
+    // both are the correct APIs at this app's targetSdk 29 (same as RtDispatch.wifiUp).
+    @Suppress("DEPRECATION")
     private fun currentWifiSsid(): String {
         val now = SystemClock.elapsedRealtime()
         if (lastWifiSsidReadMs != 0L && now - lastWifiSsidReadMs < WIFI_SSID_TTL_MS) return cachedWifiSsid
@@ -579,9 +582,7 @@ class BydVehicleDataSource(context: Context) {
                 cm.getNetworkCapabilities(net)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
             } ?: false
             if (!onWifi) "" else {
-                @Suppress("DEPRECATION")
                 val wm = appContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
-                @Suppress("DEPRECATION")
                 val raw = wm?.connectionInfo?.ssid?.trim('"').orEmpty()
                 if (raw.isBlank() || raw.equals("<unknown ssid>", ignoreCase = true)) "connected" else raw
             }
@@ -1981,7 +1982,7 @@ class BydVehicleDataSource(context: Context) {
     private fun isParkedIdle(): Boolean {
         val s = _vehicleSnapshot.value
         val charging = s.isChargingActive || s.chargingPower > 0.0
-        val moving = (s.directSpeedKmh ?: 0.0) > 2.0
+        val moving = s.directSpeedKmh > 2.0
         val sdkSilent = lastFeatureEventElapsedMs > 0L &&
             (android.os.SystemClock.elapsedRealtime() - lastFeatureEventElapsedMs) > 60_000L
         return !charging && !moving && sdkSilent

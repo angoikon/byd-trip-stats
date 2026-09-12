@@ -113,7 +113,7 @@ object Dilink5SdkInjector {
             // for ANY name collision, independent of that race — bydauto/* is the only thing OEM
             // actually needs to supply, and compileOnly + dexdump verification (see PR discussion)
             // already confirm no bydauto class exists in our own apk to be shadowed by this ordering.
-            val comp = base.javaClass.componentType
+            val comp = base.javaClass.componentType!! // base is an array, so its component type is never null
             val combined = java.lang.reflect.Array.newInstance(comp, base.size + newEls.size)
             System.arraycopy(base, 0, combined, 0, base.size)
             System.arraycopy(newEls, 0, combined, base.size, newEls.size)

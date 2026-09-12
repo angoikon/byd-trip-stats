@@ -27,6 +27,7 @@ private val SELECTED_CAR_ID             = stringPreferencesKey("selected_car_id"
 private val LAST_SEEN_VERSION_CODE       = intPreferencesKey("last_seen_version_code")
 private val DASHBOARD_ANIMATIONS_ENABLED = booleanPreferencesKey("dashboard_animations_enabled")
 private val KEEP_SERVICE_ALIVE_WHEN_OFF  = booleanPreferencesKey("keep_service_alive_when_off")
+private val WIFI_KEEPALIVE_WHEN_OFF      = booleanPreferencesKey("wifi_keepalive_when_off")
 private val OFF_STATE_MODE               = stringPreferencesKey("off_state_mode")
 private val ELECTRICITY_PRICE            = doublePreferencesKey("electricity_price_per_kwh")
 private val CURRENCY_SYMBOL              = stringPreferencesKey("currency_symbol")
@@ -209,6 +210,24 @@ class PreferencesManager(private val context: Context) {
     suspend fun saveKeepServiceAliveWhenOff(enabled: Boolean) {
         context.dataStore.edit { it[KEEP_SERVICE_ALIVE_WHEN_OFF] = enabled }
         cache.edit().putBoolean("keep_service_alive_when_off", enabled).apply()
+    }
+
+    // ── Wi-Fi keepalive when parked ──────────────────────────────────────────
+    // Opt-in (default false): while the car is OFF, a privileged (UID-2000) loop re-runs
+    // `svc wifi enable` when Wi-Fi drops, so the head unit stays reachable on the LAN
+    // (web companion / adb / LAN MQTT) instead of the MCU cutting Wi-Fi minutes after park.
+    // Guarded in the daemon by 12V + SoC + power-state so it can't flatten the 12V battery.
+    // Needs the privileged adb setup; DiLink-3 only (see WifiKeepalive / TelemetryDaemonMain).
+    val wifiKeepaliveWhenOff: Flow<Boolean> = context.dataStore.data
+        .map { it[WIFI_KEEPALIVE_WHEN_OFF] ?: false }
+        .onEach { cache.edit().putBoolean("wifi_keepalive_when_off", it).apply() }
+
+    fun getCachedWifiKeepaliveWhenOff(): Boolean =
+        cache.getBoolean("wifi_keepalive_when_off", false)
+
+    suspend fun saveWifiKeepaliveWhenOff(enabled: Boolean) {
+        context.dataStore.edit { it[WIFI_KEEPALIVE_WHEN_OFF] = enabled }
+        cache.edit().putBoolean("wifi_keepalive_when_off", enabled).apply()
     }
 
     // ── Off-state mode ────────────────────────────────────────────────────────

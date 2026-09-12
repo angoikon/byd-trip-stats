@@ -233,6 +233,7 @@ internal object RtDispatch {
         }.getOrDefault("")
 
     /** Any connected network with a WiFi transport — no location permission needed. */
+    @Suppress("DEPRECATION") // allNetworks: deprecated at API 31, correct at this app's targetSdk 29
     private fun wifiUp(context: Context): Boolean = runCatching {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
         cm?.allNetworks?.any {

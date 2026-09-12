@@ -201,7 +201,7 @@ class Dilink5Client {
     // Battery-aware cadence: 1s driving/DC-charge, 5s AC-charge or just-stopped, 30s parked/idle.
     private fun pollIntervalMs(ds: BydVehicleDataSource): Long {
         val s = ds.vehicleSnapshot.value
-        val speed = s.directSpeedKmh ?: 0.0
+        val speed = s.directSpeedKmh
         val charging = s.isChargingActive || s.chargingPower > 0.0
         val now = SystemClock.elapsedRealtime()
         if (speed > 2.0 || charging) lastActiveMs = now

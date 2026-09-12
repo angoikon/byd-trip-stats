@@ -474,9 +474,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             val statsById = stats.associateBy { it.tripId }
             val blendedRates = CostAttribution.blendedTripRates(trips, sessions, pricePerKwh)
             trips.associate { trip ->
-                val dist = trip.distance
-                val dur  = trip.duration
-
                 // Use the persisted trip-stat average so the history list matches the
                 // detail screen. TripRepository now stores this as distance / duration,
                 // which aligns with the trip summary shown by the car and companion apps.

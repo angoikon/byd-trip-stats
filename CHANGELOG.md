@@ -1,3 +1,17 @@
+## [2.17.0] - Unreleased
+
+> **What's new in a nutshell**
+>
+> A new **DiLink-3** option to **keep Wi-Fi alive while the car is parked**. The head unit switches Wi-Fi off a few minutes after you park, which takes the **web companion**, adb and any LAN tools offline until the car is next used — even though the unit is still on and reporting over mobile data. With this turned on, the app's privileged background helper re-enables Wi-Fi whenever it drops while the car is off — the same approach the third-party keepalive apps use — so the car stays reachable on your home network without one of those installed. It only acts while the car is off, and backs off when the **12V battery** or **state of charge** is low so it can't flatten the battery. Off by default; find it under **Settings → App Management**, and it needs the same one-time ADB setup as instant telemetry.
+
+### Added
+
+- **Keep Wi-Fi alive when parked (DiLink-3)** — a new toggle in **Settings → App Management** that stops the head unit from becoming unreachable on your local network after you park. BYD's MCU cuts the Wi-Fi module minutes after the car is switched off, so the **web companion**, adb and LAN-based MQTT all go dark until the next drive, even though the unit stays powered on mobile data. When enabled, the app's privileged background helper re-enables Wi-Fi whenever it drops while the car is off — a plain radio toggle, the same mechanism Electro/Overdrive use — so you can reach the car on Wi-Fi without a third-party keepalive app. It **only acts while the car is off** (it never overrides a Wi-Fi-off you set while driving) and **skips when the 12V auxiliary battery or the traction state-of-charge is low**, to protect the battery on a long park. **Off by default**; requires the advanced ADB setup (the same one instant telemetry uses). DiLink-5 is unaffected — it powers its head unit down shortly after standby regardless.
+
+### Changed
+
+- **Settings reorganised** — the **Power & background** controls (the *Always On / Minimal / Deep Sleep* mode and the new *Keep Wi-Fi alive when parked* toggle) moved from **Preferences** to the **App Management** tab, so Preferences now holds only display and app-behaviour settings while the system/vehicle controls sit together. The Always On description was also clarified, and the Minimal wake-alarm status line now shows only in Minimal mode (it was confusingly displayed, and named, on the other modes too).
+
 ## [2.16.0] - 2026-Sep-12
 
 > **What's new in a nutshell**

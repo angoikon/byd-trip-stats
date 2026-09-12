@@ -73,6 +73,13 @@ class BydStatsApplication : Application(), Configuration.Provider {
                 val err  = WebServerManager.start(applicationContext, port, pin)
                 if (err != null) Log.w(TAG, "Web companion failed to start at boot on port $port: $err")
             }
+            // Re-sync the parked Wi-Fi-keepalive flag the UID-2000 daemon polls, so a reinstall or
+            // reboot reflects the saved preference (idempotent; no-op without the privileged setup).
+            runCatching {
+                com.byd.tripstats.util.WifiKeepalive.apply(
+                    applicationContext, prefs.wifiKeepaliveWhenOff.first(),
+                )
+            }
         }
         // If the service self-stopped due to off-state idle, skip re-arming the
         // periodic restart sources and skip auto-starting the service. The

@@ -883,13 +883,16 @@
     <string name="bg_minimal">最小化</string>
     <string name="bg_deep_sleep">深度休眠</string>
     <string name="bg_default_label">預設</string>
-    <string name="bg_always_on_desc">永遠開啟（建議預設）：服務全天候執行，持續採集 12V/SoC 樣本到電池歷史記錄，並擷取離線狀態（例如隔夜）充電。在比亞迪自身背景耗電之外增加少量額外負載。\n\n注意：大多數比亞迪車款在關閉約 15 分鐘後會中斷 WiFi，應用程式無法覆蓋此行為。因此在停車期間，ADB-over-WiFi、Web 伴侶（PWA）和連線家庭網路 MQTT 代理將在車輛開啟前停止運作。連線網際網路可存取代理（如 HiveMQ Cloud）的 MQTT 通常在停車時仍可透過行動數據繼續發佈。\n注意2：Electro 應用程式可以覆蓋上述限制，在車輛關閉時無限期保持 WiFi 連線</string>
+    <string name="bg_always_on_desc">永遠開啟（推薦預設）：停車後遙測服務會繼續執行，持續將 12V/SoC 取樣記錄到電池歷史，並擷取熄火狀態（例如夜間）的充電。在 BYD 自身出廠背景耗電之上增加少量額外負載。\n\n注意：大多數 BYD 車機在熄火約 15 分鐘後會切斷 Wi-Fi。因此在停車期間，透過 Wi-Fi 的 ADB、Web 伴侶（PWA）以及連線到家庭網路中代理的 MQTT 會停止，直到車輛通電。連線到可從網際網路存取的代理（例如 HiveMQ Cloud）的 MQTT 通常會繼續發布，因為車輛保持在行動數據上。下方的\"停車時保持 Wi-Fi 開啟\"選項可在支援的車機上保持 Wi-Fi 開啟。</string>
     <string name="bg_minimal_desc">最小化：車輛關閉 5 分鐘後服務自行停止，然後每 90 分鐘觸發一次簡短喚醒以取得充電快照。耗電更低，但離線樣本稀少，ADB 並非永遠在線，Web 伴侶（PWA）僅在短暫喚醒期間可存取，MQTT 在兩次喚醒間隔期間保持靜默。離線充電將在約 90 分鐘內被偵測到，之後在充電結束前持續發佈。</string>
     <string name="bg_deep_sleep_desc">深度休眠：車輛關閉 5 分鐘後服務自行停止，且不再觸發任何喚醒。允許車輛 ECU 進入完全深度休眠。Web 伴侶（PWA）無法存取，MQTT 在整個停車期間保持靜默；離線充電不會即時擷取 — 僅在車輛下次啟動時根據 SoC 差值重建。</string>
-    <string name="keepalive_never_fired">保活：從未觸發%1$s。如果車輛停車一段時間後仍顯示「從未」，說明您的車機在停車時完全斷電 — 最小化模式此時等同於深度休眠，請使用永遠開啟模式取得停車資料。</string>
-    <string name="keepalive_fired">保活：上次觸發 %1$s · 共 %2$s 次%3$s</string>
+    <string name="keepalive_never_fired">最小化喚醒鬧鐘：尚未觸發%1$s。如果車輛停放一段時間後仍顯示\"從不\"，表示你的車機在停車時會完全關閉——此時最小化的表現與深度休眠相同，因此停車資料請使用永遠開啟。</string>
+    <string name="keepalive_fired">最小化喚醒鬧鐘：上次觸發 %1$s • 共 %2$s%3$s</string>
     <string name="keepalive_armed">（已啟用）</string>
     <string name="keepalive_not_armed"> · 未啟用</string>
+    <string name="wifi_keepalive_label">停車時保持 Wi-Fi 開啟</string>
+    <string name="wifi_keepalive_desc">如果車輛在停車後關閉 Wi-Fi，則重新啟用它，讓 Web 伴侶和其他本機（家庭網路）工具保持可存取。僅在車輛熄火時作用，並在 12V 電池或電量偏低時自動退讓。停車期間會消耗少量額外電量。\n\n如果你還使用 Electro、Overdrive 或任何其他保持 Wi-Fi 的應用，請只在其中一個中開啟此項，並在其他應用中關閉——兩個保活機制同時執行可能會互相衝突並浪費電量。</string>
+    <string name="wifi_keepalive_needs_setup">需要進階 ADB 設定（與即時遙測相同）。請先完成該設定以啟用此功能。</string>
 
     <!-- Settings dialogs -->
     <string name="tariff_dialog_title">電費費率</string>

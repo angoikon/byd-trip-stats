@@ -499,6 +499,18 @@ class VehicleTelemetryService : Service() {
                         // (DiLink-5); fall back to the VIN on DiLink-3, where the serial isn't read.
                         EntitlementManager.onDeviceIdObserved(snapshot.tboxSerialNumber ?: snapshot.bodyworkAutoVin)
 
+                        // Feed the parked Wi-Fi keepalive daemon our 12V / SoC (the same values we
+                        // publish to MQTT) so its drain guard has real numbers — the daemon can't read
+                        // the battery device from its own shell context. No-op unless the toggle is on;
+                        // throttled internally. Launched off-loop so the shell write never stalls the poll.
+                        serviceScope.launch {
+                            com.byd.tripstats.util.WifiKeepalive.pushGuard(
+                                applicationContext,
+                                telemetry.battery12vVoltage.takeIf { it > 0.0 },
+                                telemetry.soc.takeIf { it > 0.0 },
+                            )
+                        }
+
                         // Keep WiFi alive while the car is off and a charger gun is present
                         // or the charger is actively working. Without this, the MCU cuts WiFi
                         // ~15 min after ACC_OFF and charging telemetry + MQTT are lost.

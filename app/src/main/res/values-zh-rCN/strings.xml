@@ -883,13 +883,16 @@
     <string name="bg_minimal">最小化</string>
     <string name="bg_deep_sleep">深度休眠</string>
     <string name="bg_default_label">默认</string>
-    <string name="bg_always_on_desc">始终开启（推荐默认）：服务全天候运行，持续采集 12V/SoC 样本到电池历史记录，并捕获离线状态（例如隔夜）充电。在比亚迪自身后台耗电之外增加少量额外负载。\n\n注意：大多数比亚迪车型在关闭约 15 分钟后会断开 WiFi，应用无法覆盖此行为。因此在停车期间，ADB-over-WiFi、Web 伴侣（PWA）和连接家庭网络 MQTT 代理将在车辆开启前停止工作。连接互联网可访问代理（如 HiveMQ Cloud）的 MQTT 通常在停车时仍可通过移动数据继续发布。\n注意2：Electro 应用可以覆盖上述限制，在车辆关闭时无限期保持 WiFi 连接</string>
+    <string name="bg_always_on_desc">始终开启（推荐默认）：泊车后遥测服务继续运行，持续将 12V/SoC 采样记录到电池历史，并捕获熄火状态（例如夜间）的充电。在 BYD 自身出厂后台耗电之上增加少量额外负载。\n\n注意：大多数 BYD 车机在熄火约 15 分钟后会切断 Wi-Fi。因此在泊车期间，通过 Wi-Fi 的 ADB、Web 伴侣（PWA）以及连接到家庭网络中代理的 MQTT 会停止，直到车辆通电。连接到可从互联网访问的代理（例如 HiveMQ Cloud）的 MQTT 通常会继续发布，因为车辆保持在移动数据上。下方的\"停车时保持 Wi-Fi 开启\"选项可在受支持的车机上保持 Wi-Fi 开启。</string>
     <string name="bg_minimal_desc">最小化：车辆关闭 5 分钟后服务自行停止，然后每 90 分钟触发一次简短唤醒以获取充电快照。耗电更低，但离线样本稀少，ADB 并非始终在线，Web 伴侣（PWA）仅在短暂唤醒期间可访问，MQTT 在两次唤醒间隔期间保持静默。离线充电将在约 90 分钟内被检测到，之后在充电结束前持续发布。</string>
     <string name="bg_deep_sleep_desc">深度休眠：车辆关闭 5 分钟后服务自行停止，且不再触发任何唤醒。允许车辆 ECU 进入完全深度休眠。Web 伴侣（PWA）无法访问，MQTT 在整个停车期间保持静默；离线充电不会实时捕获 — 仅在车辆下次启动时根据 SoC 差值重建。</string>
-    <string name="keepalive_never_fired">保活：从未触发%1$s。如果车辆停车一段时间后仍显示"从未"，说明您的车机在停车时完全断电 — 最小化模式此时等同于深度休眠，请使用始终开启模式获取停车数据。</string>
-    <string name="keepalive_fired">保活：上次触发 %1$s · 共 %2$s 次%3$s</string>
+    <string name="keepalive_never_fired">最小化唤醒闹钟：尚未触发%1$s。如果车辆停放一段时间后仍显示\"从不\"，说明你的车机在泊车时会完全关闭——此时最小化的表现与深度休眠相同，因此泊车数据请使用始终开启。</string>
+    <string name="keepalive_fired">最小化唤醒闹钟：上次触发 %1$s • 共 %2$s%3$s</string>
     <string name="keepalive_armed">（已激活）</string>
     <string name="keepalive_not_armed"> · 未激活</string>
+    <string name="wifi_keepalive_label">停车时保持 Wi-Fi 开启</string>
+    <string name="wifi_keepalive_desc">如果车辆在泊车后关闭 Wi-Fi，则重新启用它，让 Web 伴侣和其他本地（家庭网络）工具保持可访问。仅在车辆熄火时起作用，并在 12V 电池或电量偏低时自动退让。泊车期间会消耗少量额外电量。\n\n如果你还使用 Electro、Overdrive 或任何其他保持 Wi-Fi 的应用，请只在其中一个中开启此项，并在其他应用中关闭——两个保活机制同时运行可能会互相冲突并浪费电量。</string>
+    <string name="wifi_keepalive_needs_setup">需要高级 ADB 设置（与即时遥测相同）。请先完成该设置以启用此功能。</string>
 
     <!-- Settings dialogs -->
     <string name="tariff_dialog_title">电价</string>
