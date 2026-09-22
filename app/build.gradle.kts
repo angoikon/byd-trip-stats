@@ -37,9 +37,9 @@ android {
     // A stable release always has a higher versionCode than any beta of the same
     // version, so beta testers automatically receive the stable upgrade via sideload.
     val versionMajor    = 2
-    val versionMinor    = 16
+    val versionMinor    = 17
     val versionPatch    = 0
-    val versionPre      = 99 // 99 = stable; 1–98 = beta (e.g. 1 → "beta01")
+    val versionPre      = 31 // 99 = stable; 1–98 = beta (e.g. 1 → "beta01")
     // Hotfix revision for the SAME versionName. Bumps versionCode ONLY — the in-app
     // updater compares the GitHub tag against versionName (UpdateRepository.isNewerVersion),
     // NOT versionCode, so this does NOT auto-trigger an update, yet it lets us rebuild the
@@ -169,6 +169,22 @@ android {
             excludes += "META-INF/NOTICE.md"
             excludes += "META-INF/*.kotlin_module"
         }
+        jniLibs {
+            // Never let the NDK strip the Tailscale daemon. It currently *can't* — the binary is
+            // UPX-packed and has no section headers, so the release build logs "Unable to strip …
+            // packaging them as they are", which is the outcome we want. Saying so explicitly
+            // removes that warning and, more importantly, guards against a future toolchain that
+            // succeeds: stripping a packed executable corrupts it, and the only symptom would be a
+            // daemon that silently stops starting.
+            keepDebugSymbols += "**/libtailscale.so"
+
+            // The Tailscale daemon ships as jniLibs/arm64-v8a/libtailscale.so — not a library we
+            // load, but a static Go executable we *exec* through the shell channel. That only
+            // works if Android extracts it to the app's native-library directory as a real file
+            // on disk; with the modern default (extractNativeLibs=false) it stays inside the APK
+            // and there is nothing to exec. See MD/TAILSCALE.md.
+            useLegacyPackaging = true
+        }
     }
 
     // Use `adb install -r` (replace, keep data) instead of uninstall+install.
@@ -208,6 +224,13 @@ ksp {
 tasks.register<Copy>("syncPwa") {
     from(rootProject.file("docs/pwa"))
     into(layout.projectDirectory.dir("src/main/assets/pwa"))
+    // Stamp the app version into the service worker's cache name. A browser only reinstalls a
+    // worker when its bytes change, so without this a released cache would live for ever — which
+    // is exactly how a cache-first app shell could pin an installed PWA to an old index.html.
+    val pwaVersion = android.defaultConfig.versionName ?: "dev"
+    filesMatching("sw.js") {
+        filter { line -> line.replace("const VERSION = 'dev';", "const VERSION = '$pwaVersion';") }
+    }
 }
 // Keep app/src/main/assets/changelog.md in sync with the root CHANGELOG.md at every build
 tasks.register<Copy>("syncChangelog") {
