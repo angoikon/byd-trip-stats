@@ -30,7 +30,7 @@ class AbrpConnectionManager(context: Context) {
     ) {
         val config = AbrpConnectionStore.load(appContext)
         if (!config.enabled || config.userToken.isBlank()) return
-        // Skip uploads while the car is parked and not charging — ABRP only cares about
+        // Skip uploads while the car is turned off and not charging — ABRP only cares about
         // active driving/charging telemetry, and the foreground service stays alive 24/7
         // (keepServiceAliveWhenOff defaults to true), so without this gate the loop
         // would burn ~140 MB/day on idle uploads (a fresh TLS handshake per request

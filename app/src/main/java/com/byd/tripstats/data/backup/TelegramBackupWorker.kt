@@ -43,12 +43,6 @@ class TelegramBackupWorker(
 
             val timestamp = BackupNaming.timestamp()
 
-            // Settings ride along with every scheduled backup — they live outside the
-            // database, so a chat full of .db files alone can't put a reinstalled app back
-            // the way it was. Sent before the size check below: it is a couple of KB, and
-            // an over-cap database is exactly when it is the only thing that still gets out.
-            LocalBackupManager.getInstance(context).sendSettingsToTelegram(telegramManager, timestamp)
-
             // Pre-check against Telegram's 50 MB cap. Without this, every periodic run
             // would copy the DB to cache and stream the whole file to api.telegram.org
             // before the server replies with "Request Entity Too Large" — silently
@@ -67,6 +61,13 @@ class TelegramBackupWorker(
 
             // Flush WAL for a consistent snapshot
             flushWal(dbFile)
+
+            // Settings ride along with the database — and ONLY with it. They are sent after
+            // the size check above, not before it: a scheduled run that delivers a 2 KB
+            // settings file while the database it belongs to never left the car looks like
+            // the weekly backup arrived when it didn't. Over the cap, the run sends nothing
+            // and settings are exported by hand from Backup & Restore instead.
+            LocalBackupManager.getInstance(context).sendSettingsToTelegram(telegramManager, timestamp)
 
             val fileName = BackupNaming.fileName(prefix = "byd_stats_weekly", timestamp = timestamp)
             val tempFile = File(context.cacheDir, fileName)

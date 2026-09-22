@@ -267,14 +267,18 @@ Open from the gear icon. Three top-level tabs:
 
 ### Connections
 
-Optional integrations for forwarding live telemetry to external tools. **All are disabled by default.**
+Everything the app talks to outside the car. **All are disabled by default.** Four cards show live
+status at a glance; **tap one** to configure that connection on its own page.
 
-| Integration | What is sent | Where it goes |
-|---|---|---|
-| **ABRP** | Live telemetry snapshot (SoC, speed, power, GPS) | ABRP servers via Link Generic API using your user token |
-| **MQTT** | Full telemetry JSON at a configurable interval | An external broker you specify (host, port, topic, credentials) |
+| Connection | What it does |
+|---|---|
+| **ABRP** | Sends a live telemetry snapshot (SoC, speed, power, GPS) to ABRP servers via the Link Generic API, using your user token |
+| **MQTT** | Publishes full telemetry JSON at a configurable interval to a broker you specify (host, port, topic, credentials) |
+| **Telegram** | Links your own bot — used for backups, notifications, diagnostics and trip exports |
+| **Tailscale** | Puts the car on your private network so the web companion and ADB work from anywhere |
 
-Both have a **Test** action and show a last-sync timestamp. Disabling either has no effect on local trip recording or the dashboard.
+ABRP and MQTT each have a **Test** action and show a last-sync timestamp. Disabling any of them has
+no effect on local trip recording or the dashboard.
 
 ### About & FAQ
 
@@ -296,9 +300,137 @@ Backups are stored in `Download/BydTripStats/` on the car's internal storage.
 
 Connect a private Telegram bot for remote personal backups. This is optional.
 
-Setup: provide your bot token and chat ID in Settings → Data. You can trigger a backup manually or set a schedule (daily / weekly / monthly).
+Setup: link the bot once in **Settings → Connections**, alongside MQTT and ABRP — paste the token from @BotFather and the app finds your chat ID itself. Backups then live in **Settings → Data → Backup & Restore**, where you can send one manually or set a schedule (daily / weekly / monthly).
+
+The same bot carries **notifications** if you want them (Connections → Telegram Notifications): a summary after each drive, a note when a charge finishes, and the Pro cell-imbalance alert. Each has its own switch and all are off until you turn them on.
 
 **Note:** When enabled, your encrypted database file is sent to Telegram's servers as a file attachment to your bot. If you prefer to keep data entirely off third-party servers, use local filesystem backup instead.
+
+---
+
+## Battery history in the web companion
+
+The 🔋 button beside the notification bell opens the same **48-hour HV / 12V chart** as the
+dashboard card: **12V** on the left axis, **SoC** on the right, charging periods shaded green, and
+Latest / Min / Max / Δ above it along with the current HV pack voltage.
+
+Gaps in the line are stretches where the app wasn't running, so nothing was sampled. On a DiLink-3
+with **Always On** and the parked **Wi-Fi keepalive** enabled the trace is continuous, which is what
+makes it useful for watching the 12V overnight from somewhere else — over
+[Tailscale](#remote-access-tailscale), from anywhere.
+
+---
+
+## Getting files off the car (web companion → Files)
+
+The web companion has a **Files** tab, so backups, exports and the diagnostics log can be pulled off
+the head unit onto whatever device you are holding — no cable, no file manager on the car.
+
+Open the companion (**Settings → Connections → Web Companion** shows the address), enter the PIN, and
+pick **Files**. Four folders may be listed:
+
+| Folder | What's in it |
+|---|---|
+| **App files** | The diagnostics log (`diag.log`) and HTML trip exports |
+| **Backups (Download)** | What *Save to Download* writes — `Download/BydTripStats/` |
+| **Screenshots** | Screenshots taken on the head unit — `Download/Screenshots/` |
+| **Backups (SD card)** | The card's `BydTripStats/` folder, if a card is inserted |
+| **Automatic backups** | The rolling copies the app keeps itself — **read-only** |
+
+- **Download** saves the file to your device.
+- **View** opens text files — `diag.log` above all — in the browser without downloading first, and
+  shows screenshots full-size.
+- **Upload** copies a file from your device into the folder you're in: a database backup to restore,
+  for example. It is not available in *Automatic backups*.
+- **Delete** removes a file after asking you to confirm. Files only, never folders, and not in
+  *Automatic backups* — the app prunes those itself.
+
+Over [Tailscale](#remote-access-tailscale) this works from anywhere, which makes fetching a
+diagnostics log something you can do without going out to the car.
+
+**What it does not do:** it is not a browser for the whole head unit. Only the folders above are
+listed, and everything is behind the companion's PIN — the companion also answers on the car's Wi-Fi,
+and a database backup is your complete trip history. For wider access, use ADB.
+
+---
+
+## Remote access (Tailscale)
+
+The web companion and ADB normally work only on your home network. Putting the car on a
+[Tailscale](https://tailscale.com) network makes both reachable from anywhere — over mobile data,
+including while the car is turned off — without exposing anything to the internet or opening ports on
+your router. It is optional and off until you set it up.
+
+You do **not** install the Tailscale app on the head unit. The app carries the Tailscale daemon and
+runs it itself, using the same one-time ADB authorisation that instant telemetry uses.
+
+**Setup — the easy way, nothing to type**
+
+1. Create a free account at [tailscale.com](https://tailscale.com), and install Tailscale on your
+   phone or laptop signed into that account.
+2. In the car: **Settings → Connections → Tailscale → Sign in with your phone**.
+3. A **QR code** appears. Scan it with your phone's camera and approve the sign-in in the browser it
+   opens. That's it — the car joins your network, and you never type anything on the car screen.
+
+The sign-in waits patiently, so you can leave the screen while you do it. If sunlight makes the QR
+unreadable, the same link is printed underneath it.
+
+**Other ways in** (under *Other ways to sign in*)
+
+- **Type the key from your computer.** Generate an auth key in the console (**Settings → Keys**,
+  leave *Ephemeral* off), tap the Auth key box on the car so it has focus, then from your computer:
+  `adb shell input text "tskey-auth-…"`. You already have ADB set up, since Tailscale needs the same
+  authorisation.
+- **Paste an auth key** directly into the field, if you have some way to get it onto the car's
+  clipboard.
+
+The app then shows the car's address, e.g. `100.99.138.80`, with the two things you can do with it:
+
+```
+http://100.99.138.80:8888      # the web companion, from anywhere
+adb connect 100.99.138.80:5555 # ADB, from anywhere
+```
+
+The address is **stable** — it stays the same across reboots and across switching between Wi-Fi and
+mobile data.
+
+**Encrypting it (optional)**
+
+Turn on **Serve over HTTPS** and the Tailscale daemon terminates TLS itself, using a real
+certificate for the car's Tailscale name. The companion then answers at
+`https://<car>.<tailnet>.ts.net/` instead of an `http://` address, so the browser stops calling it
+insecure — and features browsers only allow on a secure page start working, notifications and
+copy-to-clipboard among them.
+
+Two one-time settings are needed first, in the Tailscale admin console. They apply to your whole
+network, not just the car, and both are free:
+
+1. On your phone or computer, open [login.tailscale.com/admin/dns](https://login.tailscale.com/admin/dns).
+2. **MagicDNS** — check it is on. Confusingly, it is **on** when the button reads
+   *"Disable MagicDNS…"* — that button would turn it off, so leave it alone. If you see
+   *"Enable MagicDNS…"* instead, click it.
+3. **HTTPS Certificates** — click *"Enable HTTPS…"* and confirm.
+4. Back in the car: **Settings → Connections → Tailscale → Serve over HTTPS**. Nothing needs
+   restarting.
+5. Open the `https://` address the app now shows — **exactly as shown, with no `:8888` on the end**.
+   The encrypted address uses the standard HTTPS port; only the `http://` addresses need a port.
+   The first load takes a few seconds while the certificate is issued, then it is instant.
+
+Enabling HTTPS exposes nothing to the internet — the certificate just proves the car is who it says
+it is, to devices already on your network. Only the `.ts.net` name is encrypted: a certificate
+cannot be issued for a bare `100.x` address, so that one and the Wi-Fi address stay `http://`.
+
+**Three things to set once, in the Tailscale admin console**
+
+- **Disable key expiry** for the car (Machines → your car → ⋯ → *Disable key expiry*). Otherwise it
+  silently drops off your network after about six months, and only a trip to the car can fix it.
+- **Do not set an exit node** on the car — that would route its ABRP, MQTT and Telegram traffic
+  through someone else's internet connection.
+- **Do not enable Funnel** — that would publish the web companion on the public internet, behind
+  nothing but its PIN.
+
+**DiLink-5:** the car force-stops every app when you switch off, so remote access stops when the car
+does and comes back when the car next wakes. While the car is on it works normally.
 
 ---
 
@@ -307,8 +439,10 @@ Setup: provide your bot token and chat ID in Settings → Data. You can trigger 
 By default, **nothing leaves the car**. The following are opt-in only:
 
 - **Telegram backup** — encrypted DB file sent to your own private Telegram bot when you configure it and trigger a backup
+- **Telegram notifications** — a short text card (trip summary, charge finished, battery alert) sent to that same bot, only for the events you switch on
 - **MQTT** — live telemetry JSON published to a broker you specify, at the interval you set
 - **ABRP** — live telemetry snapshot sent to ABRP using the token you provide
+- **Tailscale** — when you paste an auth key, the car joins your own private network; traffic goes to your devices and to Tailscale's coordination servers, and nothing is exposed publicly
 - **Update checks** — the app can check for new APK releases; this is the only network call made without explicit user setup
 
 ---

@@ -266,7 +266,7 @@
     <string name="export_save_html">Simpan sebagai penampil HTML (klik ganda untuk membuka)</string>
     <string name="export_send_telegram">Kirim ke bot Telegram</string>
     <string name="export_telegram_not_configured">Kirim ke bot Telegram (belum dikonfigurasi)</string>
-    <string name="export_telegram_setup_hint">Siapkan bot di Pengaturan → Cadangkan &amp; Pulihkan.</string>
+    <string name="export_telegram_setup_hint">Tautkan bot Telegram Anda di Pengaturan → Koneksi → Telegram.</string>
     <string name="export_send_csv">Kirim CSV ke Telegram</string>
     <string name="export_send_json">Kirim JSON ke Telegram</string>
     <string name="export_send_html">Kirim penampil HTML ke Telegram</string>
@@ -530,17 +530,70 @@
     <string name="wifi_only_desc">Cadangan otomatis hanya berjalan di Wi-Fi untuk menghemat data seluler</string>
     <string name="last_auto_backup_label">Cadangan otomatis terakhir: %1$s</string>
     <string name="schedule_updated_msg">Jadwal diperbarui ke %1$s. Cadangan otomatis berikutnya akan mengikuti interval baru.</string>
-    <string name="telegram_setup_info">Setelah terhubung, cadangan dapat dikirim manual atau terjadwal. Setiap cadangan mendarat sebagai file .db di obrolan pribadi Anda, dapat diakses dari perangkat apa pun dengan Telegram.</string>
+    <string name="telegram_setup_info">Cadangan dapat dikirim secara manual atau terjadwal. Masing-masing tiba sebagai berkas .db di chat pribadi Anda, dapat diakses dari perangkat mana pun yang memiliki Telegram.</string>
     <string name="telegram_instructions">1. Kirim pesan ke @BotFather di Telegram → /newbot → salin token\n2. Kirim pesan apa saja ke bot baru Anda\n3. Tempel token di bawah dan ketuk Validasi</string>
     <string name="bot_token_label">Token Bot</string>
     <string name="validate_save_action">Validasi &amp; Simpan</string>
     <string name="restore_from_telegram_label">Pulihkan dari Telegram</string>
-    <string name="connect_telegram_first">Hubungkan bot Telegram pribadi dulu (lihat Cadangan Telegram di atas).</string>
+    <string name="connect_telegram_first">Tautkan bot Telegram terlebih dahulu — Pengaturan → Koneksi → Telegram.</string>
     <string name="backups_in_chat_label">Cadangan di obrolan Anda:</string>
     <string name="scan_telegram_hint">Ketuk segarkan untuk memindai obrolan Telegram Anda untuk cadangan .db.</string>
-    <string name="no_telegram_configured">Telegram belum dikonfigurasi — siapkan dulu di Cadangkan &amp; Pulihkan.</string>
+    <string name="no_telegram_configured">Telegram belum tertaut — atur dulu di Pengaturan → Koneksi → Telegram.</string>
     <string name="sent_telegram_success">Terkirim via Telegram ✓</string>
     <string name="telegram_send_failed">Pengiriman Telegram gagal: %1$s</string>
+    <string name="tailscale_title">Tailscale — akses jarak jauh</string>
+    <string name="tailscale_title_short">Tailscale</string>
+    <string name="tailscale_desc">Tempatkan mobil di jaringan Tailscale pribadi Anda sendiri, agar web companion dan ADB bekerja dari mana saja — bukan hanya di rumah. Tidak ada yang diekspos ke internet dan tidak ada port yang dibuka di router Anda.</string>
+    <string name="tailscale_card_desc">Jangkau web companion dan ADB mobil dari mana saja</string>
+    <string name="tailscale_unavailable">Tidak tersedia di build ini (memerlukan unit kepala ARM 64-bit).</string>
+    <string name="tailscale_not_connected">Tidak terhubung.</string>
+    <string name="tailscale_starting">Memulai…</string>
+    <string name="tailscale_error">Terjadi kesalahan. Periksa petunjuk di bawah dan coba lagi.</string>
+    <string name="tailscale_connected">Terhubung sebagai %1$s</string>
+    <string name="tailscale_reachable_hint">Web companion: http://%1$s:8888 · ADB: adb connect %1$s:5555</string>
+    <string name="tailscale_needs_adb">Memerlukan otorisasi ADB satu kali terlebih dahulu — sama seperti yang digunakan telemetri instan. Atur di Manajemen Aplikasi, lalu kembali.</string>
+    <string name="tailscale_signin_phone">Masuk dengan ponsel Anda</string>
+    <string name="tailscale_scan_instructions">Pindai ini dengan kamera ponsel Anda, lalu masuk ke Tailscale di browser yang terbuka. Mobil bergabung ke jaringan Anda begitu Anda menyetujuinya — tidak ada yang perlu diketik di sini.</string>
+    <string name="tailscale_scan_qr_cd">Kode QR yang membuka halaman masuk Tailscale</string>
+    <string name="tailscale_waiting_for_signin">Menunggu Anda menyetujuinya… Anda boleh meninggalkan layar ini, proses tetap menunggu.</string>
+    <string name="tailscale_cancel_signin">Batalkan proses masuk</string>
+    <string name="tailscale_other_ways">Cara masuk lainnya</string>
+    <string name="tailscale_alt_adb_title">Ketik kunci dari komputer Anda (ADB)</string>
+    <string name="tailscale_alt_adb_body">Jika Anda sudah menggunakan ADB dengan mobil ini — dan Anda memang menggunakannya, karena Tailscale memerlukan otorisasi yang sama — ketuk kotak Auth key di bawah agar mendapat fokus, lalu jalankan ini dari komputer Anda dengan kunci menggantikan titik-titik. Kunci auth hanya berisi huruf, angka, dan tanda hubung, jadi tidak ada yang rusak.</string>
+    <string name="tailscale_alt_key_title">Tempel kunci auth</string>
+    <string name="tailscale_alt_key_body">Buat satu di konsol Tailscale di Settings → Keys (biarkan Ephemeral nonaktif), lalu tempel di sini. Enam puluh karakter terlalu banyak untuk diketik di layar mobil, itulah sebabnya ada QR di atas.</string>
+    <string name="tailscale_authkey_label">Kunci auth</string>
+    <string name="tailscale_connect">Hubungkan</string>
+    <string name="tailscale_disconnect">Putuskan dari Tailscale</string>
+    <string name="tailscale_how_to">Cara menyiapkan ini</string>
+    <string name="tailscale_step_1">1. Buat akun gratis di tailscale.com, jika belum punya.</string>
+    <string name="tailscale_step_2">2. Di konsol admin, buka Settings → Keys dan ketuk Generate auth key. Biarkan Ephemeral NONAKTIF — kunci ephemeral membuat mobil hilang dari jaringan Anda setiap kali tidur, dan alamatnya akan berubah setiap kali.</string>
+    <string name="tailscale_step_3">3. Salin kunci (dimulai dengan tskey-auth-) dan tempel di bawah, lalu ketuk Hubungkan. Mobil bergabung ke jaringan Anda dan mempertahankan alamat yang sama sejak saat itu.</string>
+    <string name="tailscale_step_4">4. Instal Tailscale di ponsel atau laptop Anda dan masuk ke akun yang sama. Apa pun yang masuk kemudian dapat menjangkau mobil — tidak ada yang lain.</string>
+    <string name="tailscale_console_warnings">Layak dilakukan sekali, di konsol admin: buka Machines → mobil Anda → Disable key expiry, jika tidak, ia akan lepas dari jaringan Anda dalam sekitar enam bulan dan hanya kunjungan ke mobil yang bisa memperbaikinya. Jangan setel exit node pada mobil (itu akan mengarahkan lalu lintas ABRP, MQTT, dan Telegram-nya melalui koneksi internet orang lain), dan jangan aktifkan Funnel (itu akan menaruh web companion di internet publik, hanya dilindungi PIN-nya).</string>
+    <string name="tailscale_di5_note">Pada DiLink-5, mobil menghentikan paksa setiap aplikasi saat Anda mematikannya, jadi akses jarak jauh berhenti bersama mobil dan kembali saat mobil menyala lagi.</string>
+    <string name="telegram_title_label">Telegram</string>
+    <string name="telegram_card_desc">Bot pribadi Anda sendiri — membawa cadangan dan notifikasi kendaraan</string>
+    <string name="status_not_connected_label">Tidak terhubung</string>
+    <string name="telegram_connection_desc">Tautkan bot Telegram pribadi di sini satu kali. Cadangan, notifikasi, diagnostik, dan ekspor perjalanan semuanya melewatinya, dan tidak ada yang dikirim ke tempat lain.</string>
+    <string name="telegram_connected_uses">Digunakan oleh Cadangan &amp; Pemulihan untuk cadangan basis data, oleh notifikasi di bawah, dan oleh tombol diagnostik serta ekspor perjalanan.</string>
+    <string name="telegram_setup_in_connections">Belum ada bot Telegram yang tertaut. Atur satu di Pengaturan → Koneksi → Telegram, lalu kembali ke sini untuk mengirim dan memulihkan cadangan.</string>
+    <string name="telegram_notify_needs_bot">Tautkan bot Telegram di atas untuk menggunakan notifikasi.</string>
+    <string name="telegram_notify_di5_warning">Pada DiLink-5, notifikasi yang bergantung pada mobil dimatikan belum tiba untuk saat ini: mobil Anda menghentikan paksa aplikasi saat kontak dimatikan, jadi perjalanan baru ditutup pada penyalaan berikutnya, dan pengisian daya saat parkir diisi belakangan — keduanya tidak dapat diumumkan saat kejadian. Apa pun yang terjadi saat mobil masih menyala tetap tiba, jadi mengetuk Berhenti untuk mengakhiri perjalanan sendiri sebelum mematikan akan memberi Anda ringkasannya.</string>
+    <string name="telegram_notify_label">Notifikasi Telegram</string>
+    <string name="telegram_notify_info">Peristiwa kendaraan dikirim ke bot yang sama — tanpa server, tanpa akun, tanpa aplikasi tambahan. Pesan diantrekan dan dicoba lagi jika mobil tidak memiliki koneksi saat peristiwa terjadi.</string>
+    <string name="telegram_notify_enable_label">Kirim notifikasi</string>
+    <string name="telegram_notify_trip_label">Ringkasan perjalanan</string>
+    <string name="telegram_notify_trip_desc">Sebuah kartu setelah setiap perjalanan, dengan angka yang sama seperti yang dicatat perjalanan itu sendiri: jarak, durasi, konsumsi terhadap rata-rata seumur hidup Anda, SoC terpakai, biaya, dan skor perjalanan.</string>
+    <string name="telegram_notify_charging_label">Pengisian daya selesai</string>
+    <string name="telegram_notify_charging_desc">Saat sesi pengisian daya berakhir — baik selesai maupun berhenti lebih awal, dan pada level berapa, dengan energi yang ditambahkan dan biayanya. Dikirim kapan pun terjadi, jadi pengisian daya semalaman yang selesai pukul 03:00 mengirim pada pukul 03:00. Nonaktif secara default.</string>
+    <string name="telegram_notify_imbalance_label">Peringatan ketidakseimbangan sel</string>
+    <string name="telegram_notify_imbalance_desc">Kirim juga peringatan ketidakseimbangan sel baterai Pro ke Telegram, bukan hanya ke layar mobil.</string>
+    <string name="telegram_notify_imbalance_pro">Termasuk dalam Pro, bersama peringatan ketidakseimbangan sel itu sendiri.</string>
+    <string name="telegram_notify_test_action">Kirim pesan uji</string>
+    <string name="telegram_notify_test_ok">Pesan uji terkirim ✓ — periksa chat Telegram Anda.</string>
+    <string name="telegram_notify_test_failed">Tidak dapat menghubungi Telegram. Periksa koneksi mobil dan coba lagi.</string>
+    <string name="telegram_notify_parked_note">Ringkasan dikirim saat perjalanan berakhir — yaitu ketika mobil sudah mati selama waktu berhenti otomatis yang diatur di Preferensi, jadi pengaturan yang lebih lama berarti pesan yang lebih lambat. Perjalanan yang hanya bisa ditutup aplikasi belakangan, karena tidak berjalan saat itu (pada DiLink-5 itu setiap perjalanan), dicatat secara normal tetapi tidak diumumkan, sehingga Anda tidak pernah diberi tahu tentang perjalanan kemarin saat berangkat hari ini. Peringatan tetap aktif saat parkir dalam mode latar belakang Selalu Aktif: unit kepala tetap menggunakan data seluler setelah mobil memutus Wi-Fi.</string>
 
     <!-- Trip Compare -->
     <string name="comparing_trips_label">Membandingkan %1$s perjalanan</string>
@@ -769,7 +822,7 @@
     <string name="compat_sending_label">Mengirim…</string>
     <string name="compat_email_qr_label">Email via kode QR</string>
     <string name="compat_uploading_label">Mengunggah…</string>
-    <string name="compat_telegram_not_configured">Telegram belum dikonfigurasi — siapkan dulu di Cadangkan &amp; Pulihkan.</string>
+    <string name="compat_telegram_not_configured">Telegram belum tertaut — atur dulu di Pengaturan → Koneksi → Telegram.</string>
     <string name="compat_sent_telegram">Terkirim via Telegram ✓</string>
     <string name="compat_telegram_failed">Pengiriman Telegram gagal: %1$s</string>
     <string name="compat_save_failed">Penyimpanan gagal: %1$s</string>
@@ -794,6 +847,33 @@
     <string name="web_server_failed">Gagal memulai: %1$s</string>
     <string name="web_server_waiting">Menunggu IP…</string>
     <string name="web_server_open_hint">Buka alamat ini di perangkat apa pun yang terhubung ke WiFi yang sama.</string>
+    <string name="web_url_label_lan">Di jaringan Anda</string>
+    <string name="web_url_label_tailscale">Lewat Tailscale — bekerja dari mana saja</string>
+    <string name="web_url_label_vpn">Lewat VPN Anda</string>
+    <string name="web_url_label_other">Jaringan lain</string>
+    <string name="web_url_label_mobile">Lewat data seluler</string>
+    <string name="web_url_label_tailscale_https">Lewat Tailscale, terenkripsi — bekerja dari mana saja</string>
+    <string name="web_https_available_hint">Ini adalah alamat http:// biasa. Untuk mengenkripsi yang Tailscale, aktifkan \"Sajikan melalui HTTPS\" pada kartu Tailscale di Pengaturan → Koneksi.</string>
+    <string name="tailscale_https_label">Sajikan melalui HTTPS</string>
+    <string name="tailscale_https_desc">Biarkan daemon Tailscale menangani TLS untuk web companion, memakai sertifikat asli untuk nama Tailscale mobil ini. Alamatnya menjadi https:// alih-alih http://, sehingga browser berhenti menyebutnya tidak aman — dan fitur yang hanya mereka izinkan di halaman aman, seperti notifikasi dan salin ke papan klip, mulai berfungsi.</string>
+    <string name="tailscale_https_requirement">Memerlukan MagicDNS dan HTTPS Certificates diaktifkan untuk tailnet Anda — keduanya adalah sakelar sekali pakai di konsol admin Tailscale di bagian DNS. Hanya alamat .ts.net yang dienkripsi; alamat WiFi tetap http://.</string>
+    <string name="tailscale_https_working">Terenkripsi di %1$s</string>
+    <string name="tailscale_https_no_port">Gunakan persis seperti yang ditampilkan — tanpa \":8888\" di akhir. Alamat terenkripsi memakai port HTTPS standar; hanya alamat http:// yang perlu port.</string>
+    <string name="tailscale_https_first_load">Pemuatan pertama bisa memakan beberapa detik saat sertifikat diterbitkan.</string>
+    <string name="tailscale_https_how_to">Cara mengaktifkan ini untuk jaringan Anda</string>
+    <string name="tailscale_https_step_1">1. Di ponsel atau komputer Anda, buka konsol admin Tailscale dan buka DNS — login.tailscale.com/admin/dns. Lakukan sekali; berlaku untuk setiap perangkat di jaringan Anda, bukan hanya mobil.</string>
+    <string name="tailscale_https_step_2">2. Periksa MagicDNS aktif. Membingungkan, ia AKTIF ketika tombolnya bertuliskan \"Disable MagicDNS…\" — tombol itu akan menonaktifkannya, jadi jangan disentuh. Jika sebaliknya Anda melihat \"Enable MagicDNS…\", klik.</string>
+    <string name="tailscale_https_step_3">3. Di HTTPS Certificates, klik \"Enable HTTPS…\" dan konfirmasikan. Inilah yang memungkinkan perangkat Anda mendapatkan sertifikat asli.</string>
+    <string name="tailscale_https_step_4">4. Kembali ke sini dan aktifkan Sajikan melalui HTTPS. Tidak ada yang perlu dimulai ulang.</string>
+    <string name="tailscale_https_step_5">5. Buka alamat https:// yang ditampilkan di sini — persis seperti yang ditampilkan, tanpa port di akhir. Pemuatan pertama memakan beberapa detik saat sertifikat diterbitkan, lalu langsung seketika.</string>
+    <string name="tailscale_https_free_note">Kedua pengaturan gratis dan berlaku untuk seluruh jaringan Tailscale Anda. Mengaktifkan HTTPS tidak mengekspos apa pun ke internet — sertifikat hanya membuktikan, kepada perangkat yang sudah ada di jaringan Anda, bahwa mobil itu memang seperti yang diklaim.</string>
+    <string name="tailnet_diag_label">Alamat Tailnet</string>
+    <string name="tailnet_installed_not_connected">Tailscale terinstal, tidak terhubung</string>
+    <string name="remote_access_label">Akses jarak jauh</string>
+    <string name="remote_access_connected">Mobil ini ada di tailnet Anda sebagai %1$s. Alamat di atas bekerja dari perangkat Tailscale mana pun milik Anda, di mana pun Anda berada — begitu juga ADB, di port 5555.</string>
+    <string name="remote_access_not_detected">Companion hanya dapat dijangkau di jaringan rumah Anda. Untuk menjangkaunya dari mana saja, instal aplikasi Tailscale di unit kepala dan di ponsel Anda lalu masuk keduanya ke akun yang sama — mobil kemudian mempertahankan alamat 100.x tetap yang bekerja lewat data seluler, termasuk saat parkir, ketika WiFi mati. Tidak ada yang ditambahkan ke aplikasi ini dan tidak ada port yang dibuka di router Anda.</string>
+    <string name="remote_access_tips">Tiga hal untuk diatur sekali, di konsol admin Tailscale: MATIKAN kedaluwarsa kunci untuk mobil (jika tidak, ia lepas dari tailnet setelah sekitar enam bulan dan hanya kunjungan ke mobil yang bisa memperbaikinya), JANGAN setel exit node pada mobil (itu akan mengarahkan lalu lintas ABRP, MQTT, dan Telegram-nya melalui koneksi internet orang lain), dan JANGAN aktifkan Funnel (itu akan menaruh companion ini di internet publik, hanya dilindungi PIN-nya).</string>
+    <string name="remote_access_di5_note">Pada DiLink-5, mobil Anda menghentikan paksa setiap aplikasi saat Anda mematikannya, termasuk Tailscale — jadi akses jarak jauh berhenti bersama mobil dan kembali saat mobil menyala lagi. Selama mobil menyala ia bekerja normal, yang tetap berguna untuk menjangkau companion atau ADB saat Anda jauh dari WiFi Anda sendiri.</string>
     <string name="web_copy_url_cd">Salin URL</string>
     <string name="chart_no_tyre_data">Tidak ada data tekanan ban terekam pada perjalanan ini</string>
 
@@ -880,15 +960,15 @@
     <string name="bg_minimal">Minimal</string>
     <string name="bg_deep_sleep">Tidur Nyenyak</string>
     <string name="bg_default_label">Bawaan</string>
-    <string name="bg_always_on_desc">Selalu Aktif (default yang disarankan): layanan telemetri terus berjalan setelah Anda parkir, mengambil sampel 12V/SoC secara terus-menerus ke riwayat baterai dan menangkap pengisian daya saat kondisi mati (mis. semalaman). Sedikit beban tambahan di atas konsumsi latar belakang bawaan pabrik BYD.\n\nCatatan: sebagian besar unit BYD memutus Wi-Fi ~15 mnt setelah mobil dimatikan. Jadi saat parkir, ADB melalui Wi-Fi, Web Companion (PWA), dan MQTT ke broker di jaringan rumah Anda berhenti sampai mobil menyala. MQTT ke broker yang dapat dijangkau dari internet (mis. HiveMQ Cloud) biasanya tetap menerbitkan, karena mobil tetap menggunakan data seluler. Opsi \"Jaga Wi-Fi tetap aktif saat parkir\" di bawah dapat menjaga Wi-Fi tetap terbuka pada unit yang didukung.</string>
+    <string name="bg_always_on_desc">Selalu Aktif (default yang disarankan): layanan telemetri terus berjalan setelah Anda parkir, mengambil sampel 12V/SoC secara terus-menerus ke riwayat baterai dan menangkap pengisian daya saat kondisi mati (mis. semalaman). Sedikit beban tambahan di atas konsumsi latar belakang bawaan pabrik BYD.\n\nCatatan: sebagian besar unit BYD memutus Wi-Fi ~15 mnt setelah mobil dimatikan. Jadi saat parkir, ADB melalui Wi-Fi, Web Companion (PWA), dan MQTT ke broker di jaringan rumah Anda berhenti sampai mobil menyala. MQTT ke broker yang dapat dijangkau dari internet (mis. HiveMQ Cloud) biasanya tetap menerbitkan, karena mobil tetap menggunakan data seluler. Opsi \"Jaga Wi-Fi tetap aktif saat mobil mati\" di bawah dapat menjaga Wi-Fi tetap terbuka pada unit yang didukung.</string>
     <string name="bg_minimal_desc">Minimal: layanan berhenti sendiri 5 mnt setelah mobil dimatikan, lalu alarm 90 mnt membangunkannya sebentar untuk cuplikan pengisian. Konsumsi lebih rendah, tapi sampel saat mati jarang, ADB tidak selalu aktif, Web Companion (PWA) hanya dapat dijangkau selama kedipan bangun singkat, dan MQTT diam di antara kedipan. Pengisian saat mati ditangkap dalam ~90 mnt, setelah itu menerbitkan untuk sisa pengisian.</string>
     <string name="bg_deep_sleep_desc">Tidur Nyenyak: layanan berhenti sendiri 5 mnt setelah mobil dimatikan tanpa bangun lagi. Memungkinkan ECU mobil mencapai tidur nyenyak penuh. Web Companion (PWA) tidak dapat dijangkau dan MQTT diam sepanjang waktu mobil diparkir; pengisian saat mati tidak ditangkap langsung — hanya direkonstruksi dari delta SoC saat mobil menyala berikutnya.</string>
     <string name="keepalive_never_fired">Alarm bangun Minimal: belum pernah terpicu%1$s. Jika ini tetap \"tidak pernah\" setelah mobil diparkir beberapa saat, unit Anda mati sepenuhnya saat parkir — Minimal kemudian berperilaku seperti Tidur Nyenyak, jadi gunakan Selalu Aktif untuk data saat parkir.</string>
     <string name="keepalive_fired">Alarm bangun Minimal: terakhir terpicu %1$s • total %2$s%3$s</string>
     <string name="keepalive_armed"> (terpasang)</string>
     <string name="keepalive_not_armed"> • tidak terpasang</string>
-    <string name="wifi_keepalive_label">Jaga Wi-Fi tetap aktif saat parkir</string>
-    <string name="wifi_keepalive_desc">Mengaktifkan kembali Wi-Fi jika mobil mematikannya setelah parkir, agar Web Companion dan alat lokal lainnya (jaringan rumah) tetap dapat dijangkau. Hanya bekerja saat mobil mati, dan mundur jika baterai 12V atau tingkat pengisian rendah. Menarik sedikit daya tambahan saat parkir.\n\nJika Anda juga menggunakan Electro, Overdrive, atau aplikasi lain yang menjaga Wi-Fi tetap aktif, aktifkan ini hanya di SALAH SATU saja dan nonaktifkan di yang lain — dua keepalive yang berjalan bersamaan dapat saling bertentangan dan memboroskan daya.</string>
+    <string name="wifi_keepalive_label">Jaga Wi-Fi tetap aktif saat mobil mati</string>
+    <string name="wifi_keepalive_desc">Menyalakan kembali Wi-Fi setelah mobil dimatikan — unit kepala mematikannya beberapa menit kemudian — agar Web Companion dan alat lokal lainnya (jaringan rumah) tetap dapat dijangkau. Hanya bekerja saat mobil mati, dan mundur jika baterai 12V atau tingkat pengisian rendah. Menarik sedikit daya tambahan selama mobil mati.\n\nJika Anda juga menggunakan Electro, Overdrive, atau aplikasi lain yang menjaga Wi-Fi tetap aktif, aktifkan ini hanya di SALAH SATU saja dan nonaktifkan di yang lain — dua keepalive yang berjalan bersamaan dapat saling bertentangan dan memboroskan daya.</string>
     <string name="wifi_keepalive_needs_setup">Memerlukan penyiapan ADB lanjutan (sama seperti telemetri instan). Selesaikan itu dulu untuk mengaktifkan ini.</string>
 
     <!-- Settings dialogs -->
@@ -938,6 +1018,7 @@
     <string name="web_companion_desc">Jelajahi perjalanan &amp; pengisian dari perangkat apa pun di WiFi yang sama.</string>
     <string name="web_companion_disabled_desc">Mulai server lokal agar Anda dapat membuka riwayat perjalanan di peramban.</string>
     <string name="web_companion_wifi_info">Disajikan lewat WiFi lokal Anda, jadi dapat dijangkau selama mobil menyala dan layanan telemetri hidup. Setelah parkir, kebanyakan unit BYD memutus WiFi ~15 mnt setelah mobil mati — setelah itu companion tidak dapat dijangkau (tidak ada cadangan data seluler untuk server lokal) sampai mobil menyala lagi, di setiap mode aktivitas latar.\nCatatan: aplikasi Electro punya opsi menjaga WiFi tetap hidup tanpa batas</string>
+    <string name="web_companion_files_info">Companion juga memiliki tab Berkas: unduh cadangan basis data, ekspor, dan log diagnostik langsung ke ponsel atau laptop Anda, dan unggah cadangan ke mobil tanpa mencolokkan apa pun. Ini hanya menampilkan folder milik aplikasi, bukan seluruh unit kepala.</string>
     <string name="port_field_label">Port</string>
     <string name="port_hint_text">Coba 8081, 8888, 9090 jika port diblokir. Perubahan memulai ulang server.</string>
     <string name="access_pin_label">PIN Akses</string>
@@ -961,7 +1042,6 @@
     <string name="mqtt_card_desc">Terbitkan telemetri langsung ke broker seperti HiveMQ atau HomeAssistant.</string>
     <string name="status_enabled_label">Status: Aktif</string>
     <string name="status_disabled_label">Status: Nonaktif</string>
-    <string name="open_connections_action">Buka Koneksi</string>
     <string name="back_to_overview_action">Kembali ke ringkasan</string>
 
     <!-- ABRP settings -->
@@ -1043,7 +1123,7 @@
     <string name="about_install_note">Tombol pasang akan tersedia saat parkir tanpa perjalanan atau pengisian aktif</string>
     <string name="about_install_now">Pasang sekarang</string>
     <string name="about_download_update">Unduh pembaruan</string>
-    <string name="about_update_manual_di5_instructions">Instalasi otomatis tidak tersedia di unit kepala ini. Di PC atau ponsel, unduh APK versi ini dari halaman rilis, lalu instal melalui ADB:</string>
+    <string name="about_update_manual_di5_instructions">Instalasi otomatis memerlukan koneksi helper, yang saat ini tidak tersedia. Di PC atau ponsel, unduh APK versi ini dari halaman rilis, lalu instal melalui ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Buka halaman rilis</string>
 
@@ -1154,6 +1234,7 @@
     <string name="autostart_dialog_title">⚠️ Tindakan Diperlukan — Mulai-otomatis</string>
     <string name="autostart_dialog_msg">Versi baru telah dipasang. Anda perlu mematikan „disable autostart” untuk aplikasi ini, yang memungkinkan layanan latar depan / latar belakang berjalan.\nDiperlukan mulai ulang mobil satu kali, dan hanya saat Anda pertama kali memasang aplikasi dan setelah mematikan „disable autostart”. Jika Anda memperbarui dari versi lama, Anda tidak perlu mulai ulang</string>
     <string name="autostart_got_it">Mengerti</string>
+    <string name="autostart_open_failed">Tidak dapat membuka layar autostart di unit ini. Buka dari Setelan mobil sendiri → Aplikasi → Autostart (atau Aplikasi latar belakang) dan pastikan Trip Stats diizinkan.</string>
     <string name="flavor_mismatch_title">⚠️ Build salah untuk mobil ini</string>
     <string name="flavor_mismatch_msg">Anda menginstal build %1$s, tetapi mobil ini adalah %2$s. Telemetri kendaraan mungkin tidak berfungsi dengan benar. Silakan instal build %2$s untuk kendaraan ini.</string>
     <string name="adb_connecting_title">Menghubungkan…</string>

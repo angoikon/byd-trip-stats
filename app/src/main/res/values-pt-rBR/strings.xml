@@ -269,7 +269,7 @@
     <string name="export_save_html">Salvar como visualizador HTML (duplo clique para abrir)</string>
     <string name="export_send_telegram">Enviar para bot do Telegram</string>
     <string name="export_telegram_not_configured">Enviar para bot do Telegram (não configurado)</string>
-    <string name="export_telegram_setup_hint">Configure o bot em Configurações → Backup &amp; Restauração.</string>
+    <string name="export_telegram_setup_hint">Vincule seu bot do Telegram em Configurações → Conexões → Telegram.</string>
     <string name="export_send_csv">Enviar CSV para o Telegram</string>
     <string name="export_send_json">Enviar JSON para o Telegram</string>
     <string name="export_send_html">Enviar visualizador HTML para o Telegram</string>
@@ -533,17 +533,70 @@
     <string name="wifi_only_desc">Os backups automáticos são executados apenas no Wi-Fi para economizar dados móveis</string>
     <string name="last_auto_backup_label">Último backup automático: %1$s</string>
     <string name="schedule_updated_msg">Agenda atualizada para %1$s. O próximo backup automático seguirá o novo intervalo.</string>
-    <string name="telegram_setup_info">Uma vez conectado, os backups podem ser enviados manualmente ou em uma agenda. Cada backup chega como um arquivo .db no seu chat privado, acessível de qualquer dispositivo com o Telegram.</string>
+    <string name="telegram_setup_info">Os backups podem ser enviados manualmente ou de forma agendada. Cada um chega como arquivo .db no seu chat privado, acessível de qualquer dispositivo com Telegram.</string>
     <string name="telegram_instructions">1. Envie uma mensagem ao @BotFather no Telegram → /newbot → copie o token\n2. Envie qualquer mensagem para o seu novo bot\n3. Cole o token abaixo e toque em Validar</string>
     <string name="bot_token_label">Token do bot</string>
     <string name="validate_save_action">Validar &amp; salvar</string>
     <string name="restore_from_telegram_label">Restaurar do Telegram</string>
-    <string name="connect_telegram_first">Conecte primeiro um bot privado do Telegram (ver Backup via Telegram acima).</string>
+    <string name="connect_telegram_first">Vincule primeiro um bot do Telegram — Configurações → Conexões → Telegram.</string>
     <string name="backups_in_chat_label">Backups no seu chat:</string>
     <string name="scan_telegram_hint">Toque em atualizar para procurar backups .db no seu chat do Telegram.</string>
-    <string name="no_telegram_configured">Telegram não configurado — configure em Backup &amp; Restauração primeiro.</string>
+    <string name="no_telegram_configured">Telegram não vinculado — configure-o primeiro em Configurações → Conexões → Telegram.</string>
     <string name="sent_telegram_success">Enviado via Telegram ✓</string>
     <string name="telegram_send_failed">Falha no envio pelo Telegram: %1$s</string>
+    <string name="tailscale_title">Tailscale — acesso remoto</string>
+    <string name="tailscale_title_short">Tailscale</string>
+    <string name="tailscale_desc">Coloque o carro na sua própria rede privada Tailscale, para que o web companion e o ADB funcionem de qualquer lugar — não apenas em casa. Nada é exposto à internet e nenhuma porta é aberta no seu roteador.</string>
+    <string name="tailscale_card_desc">Acesse o web companion e o ADB do carro de qualquer lugar</string>
+    <string name="tailscale_unavailable">Não disponível nesta versão (requer uma unidade ARM de 64 bits).</string>
+    <string name="tailscale_not_connected">Não conectado.</string>
+    <string name="tailscale_starting">Iniciando…</string>
+    <string name="tailscale_error">Algo deu errado. Confira as instruções abaixo e tente novamente.</string>
+    <string name="tailscale_connected">Conectado como %1$s</string>
+    <string name="tailscale_reachable_hint">Web companion: http://%1$s:8888 · ADB: adb connect %1$s:5555</string>
+    <string name="tailscale_needs_adb">Requer primeiro a autorização ADB única — a mesma que a telemetria instantânea usa. Configure-a no Gerenciamento do app e depois volte.</string>
+    <string name="tailscale_signin_phone">Entre com seu celular</string>
+    <string name="tailscale_scan_instructions">Escaneie isto com a câmera do seu celular e depois entre no Tailscale no navegador que abrir. O carro entra na sua rede assim que você aprovar — não há nada para digitar aqui.</string>
+    <string name="tailscale_scan_qr_cd">Código QR que abre a página de login do Tailscale</string>
+    <string name="tailscale_waiting_for_signin">Aguardando você aprovar… você pode sair desta tela, ela continua esperando.</string>
+    <string name="tailscale_cancel_signin">Cancelar login</string>
+    <string name="tailscale_other_ways">Outras formas de entrar</string>
+    <string name="tailscale_alt_adb_title">Digite a chave do seu computador (ADB)</string>
+    <string name="tailscale_alt_adb_body">Se você já usa ADB com este carro — e usa, já que o Tailscale exige a mesma autorização — toque na caixa Auth key abaixo para que fique em foco e depois execute isto do seu computador com a chave no lugar dos pontos. As chaves auth contêm apenas letras, dígitos e hifens, então nada é corrompido.</string>
+    <string name="tailscale_alt_key_title">Cole uma chave auth</string>
+    <string name="tailscale_alt_key_body">Gere uma no console do Tailscale em Settings → Keys (deixe Ephemeral desativado) e cole-a aqui. Sessenta caracteres são muitos para digitar na tela de um carro, por isso existe o QR acima.</string>
+    <string name="tailscale_authkey_label">Chave auth</string>
+    <string name="tailscale_connect">Conectar</string>
+    <string name="tailscale_disconnect">Desconectar do Tailscale</string>
+    <string name="tailscale_how_to">Como configurar isto</string>
+    <string name="tailscale_step_1">1. Crie uma conta gratuita em tailscale.com, se você não tiver uma.</string>
+    <string name="tailscale_step_2">2. No console de administração, abra Settings → Keys e toque em Generate auth key. Deixe Ephemeral DESATIVADO — uma chave efêmera faz o carro desaparecer da sua rede sempre que ele hiberna, e o endereço mudaria a cada vez.</string>
+    <string name="tailscale_step_3">3. Copie a chave (começa com tskey-auth-) e cole-a abaixo, depois toque em Conectar. O carro entra na sua rede e mantém o mesmo endereço a partir de então.</string>
+    <string name="tailscale_step_4">4. Instale o Tailscale no seu celular ou notebook e entre na mesma conta. Tudo que estiver conectado pode então alcançar o carro — nada mais consegue.</string>
+    <string name="tailscale_console_warnings">Vale a pena fazer uma vez, no console de administração: abra Machines → o seu carro → Disable key expiry, ou ele cai da sua rede em cerca de seis meses e só uma ida ao carro resolve. Não defina um exit node no carro (isso encaminharia o tráfego ABRP, MQTT e Telegram pela conexão de internet de outra pessoa) e não ative o Funnel (isso colocaria o web companion na internet pública, protegido apenas pelo PIN).</string>
+    <string name="tailscale_di5_note">No DiLink-5, o carro força o encerramento de todos os apps quando você desliga, então o acesso remoto para junto com o carro e volta quando ele acorda de novo.</string>
+    <string name="telegram_title_label">Telegram</string>
+    <string name="telegram_card_desc">Seu próprio bot privado — carrega backups e notificações do veículo</string>
+    <string name="status_not_connected_label">Não conectado</string>
+    <string name="telegram_connection_desc">Vincule aqui uma vez um bot privado do Telegram. Backups, notificações, diagnósticos e exportações de viagens passam todos por ele, e nada é enviado para outro lugar.</string>
+    <string name="telegram_connected_uses">Usado por Backup &amp; Restauração para backups do banco de dados, pelas notificações abaixo e pelos botões de diagnóstico e exportação de viagem.</string>
+    <string name="telegram_setup_in_connections">Nenhum bot do Telegram vinculado ainda. Configure um em Configurações → Conexões → Telegram e depois volte aqui para enviar e restaurar backups.</string>
+    <string name="telegram_notify_needs_bot">Vincule um bot do Telegram acima para usar as notificações.</string>
+    <string name="telegram_notify_di5_warning">No DiLink-5, as notificações que dependem de o carro ser desligado não chegam por enquanto: o seu carro força o encerramento do app ao desligar a ignição, então uma viagem só é fechada na próxima partida, e o carregamento estacionado é preenchido depois — nenhuma pode ser anunciada na hora. Tudo o que acontece enquanto o carro ainda está ligado chega, então tocar em Parar para encerrar você mesmo a viagem antes de desligar traz o resumo.</string>
+    <string name="telegram_notify_label">Notificações do Telegram</string>
+    <string name="telegram_notify_info">Eventos do veículo enviados para o mesmo bot — sem servidor, sem conta, sem app extra. As mensagens são colocadas em fila e repetidas se o carro não tiver conexão quando um evento acontece.</string>
+    <string name="telegram_notify_enable_label">Enviar notificações</string>
+    <string name="telegram_notify_trip_label">Resumo da viagem</string>
+    <string name="telegram_notify_trip_desc">Um cartão após cada viagem, com os mesmos valores que a própria viagem registra: distância, duração, consumo em relação à sua média de sempre, SoC usado, custo e pontuação da viagem.</string>
+    <string name="telegram_notify_charging_label">Carregamento concluído</string>
+    <string name="telegram_notify_charging_desc">Quando uma sessão de carregamento termina — quer tenha concluído ou parado antes, e em que nível, com a energia adicionada e quanto custou. Enviado quando acontece, então um carregamento noturno que conclui às 03:00 envia às 03:00. Desativado por padrão.</string>
+    <string name="telegram_notify_imbalance_label">Alerta de desequilíbrio de células</string>
+    <string name="telegram_notify_imbalance_desc">Envie também o alerta Pro de desequilíbrio das células da bateria para o Telegram, não apenas para a tela do carro.</string>
+    <string name="telegram_notify_imbalance_pro">Incluído no Pro, junto com o próprio alerta de desequilíbrio de células.</string>
+    <string name="telegram_notify_test_action">Enviar mensagem de teste</string>
+    <string name="telegram_notify_test_ok">Mensagem de teste enviada ✓ — verifique seu chat do Telegram.</string>
+    <string name="telegram_notify_test_failed">Não foi possível contatar o Telegram. Verifique a conexão do carro e tente novamente.</string>
+    <string name="telegram_notify_parked_note">Um resumo é enviado quando a viagem termina — ou seja, quando o carro ficou desligado pelo tempo de parada automática definido em Preferências, então uma configuração mais longa significa uma mensagem mais tardia. Uma viagem que o app só conseguiu fechar depois, porque não estava em execução na hora (no DiLink-5 isso é toda viagem), é registrada normalmente mas não anunciada, para que você nunca seja notificado da viagem de ontem ao partir para a de hoje. Os alertas continuam disparando estacionado no modo em segundo plano Sempre ativo: a unidade permanece nos dados móveis depois que o carro corta o Wi-Fi.</string>
 
     <!-- Trip Compare -->
     <string name="comparing_trips_label">Comparando %1$s viagens</string>
@@ -772,7 +825,7 @@
     <string name="compat_sending_label">Enviando…</string>
     <string name="compat_email_qr_label">E-mail via código QR</string>
     <string name="compat_uploading_label">Enviando…</string>
-    <string name="compat_telegram_not_configured">Telegram não configurado — configure-o primeiro em Backup &amp; Restore.</string>
+    <string name="compat_telegram_not_configured">Telegram não vinculado — configure-o primeiro em Configurações → Conexões → Telegram.</string>
     <string name="compat_sent_telegram">Enviado via Telegram ✓</string>
     <string name="compat_telegram_failed">Envio Telegram falhou: %1$s</string>
     <string name="compat_save_failed">Falha ao salvar: %1$s</string>
@@ -797,6 +850,33 @@
     <string name="web_server_failed">Falha ao iniciar: %1$s</string>
     <string name="web_server_waiting">Aguardando IP…</string>
     <string name="web_server_open_hint">Abra este endereço em qualquer dispositivo conectado ao mesmo WiFi.</string>
+    <string name="web_url_label_lan">Na sua rede</string>
+    <string name="web_url_label_tailscale">Via Tailscale — funciona de qualquer lugar</string>
+    <string name="web_url_label_vpn">Pela sua VPN</string>
+    <string name="web_url_label_other">Outra rede</string>
+    <string name="web_url_label_mobile">Por dados móveis</string>
+    <string name="web_url_label_tailscale_https">Via Tailscale, criptografado — funciona de qualquer lugar</string>
+    <string name="web_https_available_hint">Estes são endereços http:// simples. Para criptografar o do Tailscale, ative \"Servir por HTTPS\" no cartão Tailscale em Configurações → Conexões.</string>
+    <string name="tailscale_https_label">Servir por HTTPS</string>
+    <string name="tailscale_https_desc">Deixe o daemon do Tailscale cuidar do TLS do web companion, usando um certificado real para o nome Tailscale deste carro. O endereço passa a https:// em vez de http://, então os navegadores deixam de considerá-lo inseguro — e recursos que só permitem em uma página segura, como notificações e copiar para a área de transferência, passam a funcionar.</string>
+    <string name="tailscale_https_requirement">Requer MagicDNS e HTTPS Certificates ativados para o seu tailnet — ambos são interruptores únicos no console de administração do Tailscale, em DNS. Apenas o endereço .ts.net é criptografado; o endereço WiFi permanece http://.</string>
+    <string name="tailscale_https_working">Criptografado em %1$s</string>
+    <string name="tailscale_https_no_port">Use-o exatamente como mostrado — sem \":8888\" no fim. O endereço criptografado usa a porta HTTPS padrão; só os endereços http:// precisam de porta.</string>
+    <string name="tailscale_https_first_load">O primeiro carregamento pode levar alguns segundos enquanto o certificado é emitido.</string>
+    <string name="tailscale_https_how_to">Como ativar isto para a sua rede</string>
+    <string name="tailscale_https_step_1">1. No seu celular ou computador, abra o console de administração do Tailscale e vá em DNS — login.tailscale.com/admin/dns. Faça isto uma vez; vale para todos os dispositivos da sua rede, não só o carro.</string>
+    <string name="tailscale_https_step_2">2. Verifique se o MagicDNS está ligado. Curiosamente, está LIGADO quando o botão diz \"Disable MagicDNS…\" — esse botão o desligaria, então deixe-o em paz. Se em vez disso você vir \"Enable MagicDNS…\", clique nele.</string>
+    <string name="tailscale_https_step_3">3. Em HTTPS Certificates, clique em \"Enable HTTPS…\" e confirme. É isto que permite que seus dispositivos obtenham certificados reais.</string>
+    <string name="tailscale_https_step_4">4. Volte aqui e ative Servir por HTTPS. Não é preciso reiniciar nada.</string>
+    <string name="tailscale_https_step_5">5. Abra o endereço https:// mostrado aqui — exatamente como mostrado, sem porta no fim. O primeiro carregamento leva alguns segundos enquanto o certificado é emitido, depois é instantâneo.</string>
+    <string name="tailscale_https_free_note">Ambas as configurações são gratuitas e valem para toda a sua rede Tailscale. Ativar o HTTPS não expõe nada à internet — o certificado apenas prova, aos dispositivos já na sua rede, que o carro é quem diz ser.</string>
+    <string name="tailnet_diag_label">Endereço Tailnet</string>
+    <string name="tailnet_installed_not_connected">Tailscale instalado, não conectado</string>
+    <string name="remote_access_label">Acesso remoto</string>
+    <string name="remote_access_connected">Este carro está no seu tailnet como %1$s. O endereço acima funciona de qualquer um dos seus dispositivos Tailscale, onde quer que você esteja — e o ADB também, na porta 5555.</string>
+    <string name="remote_access_not_detected">O companion só fica acessível na sua rede doméstica. Para alcançá-lo de qualquer lugar, instale o app Tailscale na unidade e no seu celular e entre em ambos com a mesma conta — o carro mantém então um endereço 100.x fixo que funciona por dados móveis, mesmo estacionado, quando o WiFi está desligado. Nada é adicionado a este app e nenhuma porta é aberta no seu roteador.</string>
+    <string name="remote_access_tips">Três coisas para configurar uma vez, no console de administração do Tailscale: DESATIVE a expiração da chave para o carro (caso contrário cai do tailnet após cerca de seis meses e só uma ida ao carro resolve), NÃO defina um exit node no carro (isso encaminharia o tráfego ABRP, MQTT e Telegram pela conexão de internet de outra pessoa) e NÃO ative o Funnel (isso colocaria este companion na internet pública, protegido apenas pelo PIN).</string>
+    <string name="remote_access_di5_note">No DiLink-5, o seu carro força o encerramento de todos os apps quando você desliga, incluindo o Tailscale — então o acesso remoto para quando o carro para e volta quando ele acorda de novo. Enquanto o carro está ligado funciona normalmente, o que ainda é útil para alcançar o companion ou o ADB quando você está longe do seu próprio WiFi.</string>
     <string name="web_copy_url_cd">Copiar URL</string>
     <string name="chart_no_tyre_data">Nenhum dado de pressão dos pneus gravado nesta viagem</string>
 
@@ -883,15 +963,15 @@
     <string name="bg_minimal">Mínimo</string>
     <string name="bg_deep_sleep">Suspensão profunda</string>
     <string name="bg_default_label">Padrão</string>
-    <string name="bg_always_on_desc">Sempre ativo (padrão recomendado): o serviço de telemetria continua funcionando depois que você estaciona, coletando amostras contínuas de 12V/SoC no histórico da bateria e registrando o carregamento com o veículo desligado (por ex. durante a noite). Pequena carga adicional além do consumo em segundo plano de fábrica da BYD.\n\nObservação: a maioria das unidades BYD corta o Wi-Fi ~15 min depois que o carro é desligado. Por isso, enquanto estacionado, o ADB por Wi-Fi, o Web Companion (PWA) e o MQTT para um broker na sua rede doméstica param até o carro ligar. O MQTT para um broker acessível pela Internet (por ex. HiveMQ Cloud) normalmente continua publicando, porque o carro permanece nos dados móveis. A opção \"Manter o Wi-Fi ativo quando estacionado\" abaixo pode manter o Wi-Fi aberto em unidades compatíveis.</string>
+    <string name="bg_always_on_desc">Sempre ativo (padrão recomendado): o serviço de telemetria continua funcionando depois que você estaciona, coletando amostras contínuas de 12V/SoC no histórico da bateria e registrando o carregamento com o veículo desligado (por ex. durante a noite). Pequena carga adicional além do consumo em segundo plano de fábrica da BYD.\n\nObservação: a maioria das unidades BYD corta o Wi-Fi ~15 min depois que o carro é desligado. Por isso, enquanto estacionado, o ADB por Wi-Fi, o Web Companion (PWA) e o MQTT para um broker na sua rede doméstica param até o carro ligar. O MQTT para um broker acessível pela Internet (por ex. HiveMQ Cloud) normalmente continua publicando, porque o carro permanece nos dados móveis. A opção \"Manter o Wi-Fi ativo quando o carro está desligado\" abaixo pode manter o Wi-Fi aberto em unidades compatíveis.</string>
     <string name="bg_minimal_desc">Mínimo: o serviço para automaticamente 5 min após o carro desligar, depois um alarme de 90 min o acorda brevemente para uma captura de carregamento. Menor consumo, mas amostras em estado desligado são esparsas, ADB não está sempre ativo, o Web Companion (PWA) só é acessível durante o breve período de despertar, e MQTT fica inativo entre os períodos. O carregamento em estado desligado é capturado em ~90 min, após o que publica pelo resto da carga.</string>
     <string name="bg_deep_sleep_desc">Suspensão profunda: o serviço para automaticamente 5 min após o carro desligar sem novos despertares. Permite que as ECUs do carro atinjam a suspensão profunda completa. O Web Companion (PWA) fica inacessível e MQTT fica silencioso durante todo o tempo em que o carro está estacionado; o carregamento em estado desligado não é capturado ao vivo — apenas reconstruído a partir do delta de SoC quando o carro ligar novamente.</string>
     <string name="keepalive_never_fired">Alarme de despertar do Mínimo: ainda não foi acionado%1$s. Se continuar em \"nunca\" depois de o carro ficar estacionado por um tempo, sua unidade desliga completamente ao estacionar — o Mínimo se comporta então como Suspensão profunda, então use Sempre ativo para dados no estacionamento.</string>
     <string name="keepalive_fired">Alarme de despertar do Mínimo: acionado pela última vez %1$s • %2$s no total%3$s</string>
     <string name="keepalive_armed"> (armado)</string>
     <string name="keepalive_not_armed"> • não armado</string>
-    <string name="wifi_keepalive_label">Manter o Wi-Fi ativo quando estacionado</string>
-    <string name="wifi_keepalive_desc">Reativa o Wi-Fi se o carro o desligar após estacionar, para que o Web Companion e outras ferramentas locais (rede doméstica) continuem acessíveis. Só atua enquanto o carro está desligado e recua se a bateria de 12V ou o estado de carga ficar baixo. Consome um pouco de energia extra enquanto estacionado.\n\nSe você também usa o Electro, o Overdrive ou qualquer outro app que mantém o Wi-Fi ativo, ative isto em APENAS UM deles e desative nos outros — dois mecanismos rodando juntos podem entrar em conflito e desperdiçar energia.</string>
+    <string name="wifi_keepalive_label">Manter o Wi-Fi ativo quando o carro está desligado</string>
+    <string name="wifi_keepalive_desc">Liga o Wi-Fi novamente depois que o carro é desligado — a unidade o desliga alguns minutos depois — para que o Web Companion e outras ferramentas locais (rede doméstica) continuem acessíveis. Só atua enquanto o carro está desligado e recua se a bateria de 12V ou o estado de carga ficar baixo. Consome um pouco de energia extra enquanto o carro está desligado.\n\nSe você também usa o Electro, o Overdrive ou qualquer outro app que mantém o Wi-Fi ativo, ative isto em APENAS UM deles e desative nos outros — dois mecanismos rodando juntos podem entrar em conflito e desperdiçar energia.</string>
     <string name="wifi_keepalive_needs_setup">Requer a configuração ADB avançada (a mesma da telemetria instantânea). Conclua-a primeiro para ativar isto.</string>
 
     <!-- Settings dialogs -->
@@ -941,6 +1021,7 @@
     <string name="web_companion_desc">Consulte viagens &amp; carregamentos de qualquer dispositivo na mesma WiFi.</string>
     <string name="web_companion_disabled_desc">Inicie um servidor local para poder abrir o histórico de viagens em um navegador.</string>
     <string name="web_companion_wifi_info">Servido pela sua WiFi local, então acessível enquanto o carro está ligado e o serviço de telemetria está ativo. Uma vez estacionado, a maioria das unidades BYD corta o WiFi ~15 min após o carro desligar — depois disso o companion fica inacessível (sem fallback para dados móveis em um servidor local) até o carro ligar novamente, em todos os modos de atividade em segundo plano.\nNota: o aplicativo Electro tem uma opção para manter o WiFi ativo indefinidamente</string>
+    <string name="web_companion_files_info">O companion também tem uma aba Arquivos: baixe backups do banco de dados, exportações e o log de diagnóstico direto para o seu celular ou notebook, e envie um backup para o carro sem conectar nada. Mostra apenas as pastas do próprio app, não a unidade inteira.</string>
     <string name="port_field_label">Porta</string>
     <string name="port_hint_text">Tente 8081, 8888, 9090 se uma porta estiver bloqueada. Alterações reiniciam o servidor.</string>
     <string name="access_pin_label">PIN de acesso</string>
@@ -964,7 +1045,6 @@
     <string name="mqtt_card_desc">Publique telemetria ao vivo para um broker como HiveMQ ou HomeAssistant.</string>
     <string name="status_enabled_label">Status: Habilitado</string>
     <string name="status_disabled_label">Status: Desabilitado</string>
-    <string name="open_connections_action">Abrir conexões</string>
     <string name="back_to_overview_action">Voltar à visão geral</string>
 
     <!-- ABRP settings -->
@@ -1047,7 +1127,7 @@
     <string name="about_install_note">O botão de instalação ficará disponível quando estacionado sem viagem ativa nem carregamento</string>
     <string name="about_install_now">Instalar agora</string>
     <string name="about_download_update">Baixar atualização</string>
-    <string name="about_update_manual_di5_instructions">A instalação automática não está disponível nesta central multimídia. Em um PC ou celular, baixe o APK desta versão na página de versões e instale-o via ADB:</string>
+    <string name="about_update_manual_di5_instructions">A instalação automática precisa da conexão auxiliar, que não está disponível no momento. Em um PC ou celular, baixe o APK desta versão na página de versões e instale-o via ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Abrir página de versões</string>
 
@@ -1158,6 +1238,7 @@
     <string name="autostart_dialog_title">⚠️ Ação necessária — Início automático</string>
     <string name="autostart_dialog_msg">Uma nova versão foi instalada. Você precisa desativar o início automático deste app, o que permite a execução de serviços em primeiro plano / segundo plano.\nÉ necessário um reinício único do carro, e apenas quando você instala o app pela primeira vez e depois de desativar o início automático. Se você está atualizando de uma versão mais antiga, não precisa reiniciar</string>
     <string name="autostart_got_it">Entendido</string>
+    <string name="autostart_open_failed">Não foi possível abrir a tela de inicialização automática nesta unidade. Abra-a nas Configurações do próprio carro → Apps → Inicialização automática (ou Apps em segundo plano) e verifique se o Trip Stats está permitido.</string>
     <string name="flavor_mismatch_title">⚠️ Versão errada para este carro</string>
     <string name="flavor_mismatch_msg">Você instalou a versão %1$s, mas este carro é %2$s. A telemetria do veículo pode não funcionar corretamente. Instale a versão %2$s para este veículo.</string>
     <string name="adb_connecting_title">Conectando…</string>

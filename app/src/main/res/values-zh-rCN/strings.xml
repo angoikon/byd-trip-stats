@@ -269,7 +269,7 @@
     <string name="export_save_html">保存为 HTML 查看器（双击打开）</string>
     <string name="export_send_telegram">发送到 Telegram 机器人</string>
     <string name="export_telegram_not_configured">发送到 Telegram 机器人（未配置）</string>
-    <string name="export_telegram_setup_hint">请在设置 → 备份 &amp; 恢复中配置机器人。</string>
+    <string name="export_telegram_setup_hint">在 设置 → 连接 → Telegram 中关联你的 Telegram 机器人。</string>
     <string name="export_send_csv">通过 Telegram 发送 CSV</string>
     <string name="export_send_json">通过 Telegram 发送 JSON</string>
     <string name="export_send_html">通过 Telegram 发送 HTML 查看器</string>
@@ -533,17 +533,70 @@
     <string name="wifi_only_desc">自动备份仅在 Wi-Fi 下运行以节省移动数据</string>
     <string name="last_auto_backup_label">上次自动备份：%1$s</string>
     <string name="schedule_updated_msg">计划已更新为 %1$s。下次自动备份将按新间隔执行。</string>
-    <string name="telegram_setup_info">连接后，可手动或按计划发送备份。每次备份以 .db 文件形式保存在私聊中，可在任何设备的 Telegram 上访问。</string>
+    <string name="telegram_setup_info">备份可以手动发送或按计划发送。每个备份都会作为 .db 文件出现在你的私人聊天中，任何装有 Telegram 的设备都能访问。</string>
     <string name="telegram_instructions">1. 在 Telegram 上联系 @BotFather → /newbot → 复制 token\n2. 向您的新机器人发送任意消息\n3. 在下方粘贴 token 并点击验证</string>
     <string name="bot_token_label">机器人 Token</string>
     <string name="validate_save_action">验证 &amp; 保存</string>
     <string name="restore_from_telegram_label">从 Telegram 恢复</string>
-    <string name="connect_telegram_first">请先连接 Telegram 私人机器人（见上方 Telegram 备份）。</string>
+    <string name="connect_telegram_first">请先关联一个 Telegram 机器人——设置 → 连接 → Telegram。</string>
     <string name="backups_in_chat_label">聊天中的备份：</string>
     <string name="scan_telegram_hint">点击刷新以扫描您的 Telegram 聊天中的 .db 备份文件。</string>
-    <string name="no_telegram_configured">Telegram 未配置 — 请先在备份 &amp; 恢复中设置。</string>
+    <string name="no_telegram_configured">未关联 Telegram——请先在 设置 → 连接 → Telegram 中设置。</string>
     <string name="sent_telegram_success">已通过 Telegram 发送 ✓</string>
     <string name="telegram_send_failed">Telegram 发送失败：%1$s</string>
+    <string name="tailscale_title">Tailscale — 远程访问</string>
+    <string name="tailscale_title_short">Tailscale</string>
+    <string name="tailscale_desc">把车加入你自己的私有 Tailscale 网络，让 web companion 和 ADB 从任何地方都能用——不只是在家。不会向互联网暴露任何内容，也不会在路由器上开放端口。</string>
+    <string name="tailscale_card_desc">从任何地方访问车辆的 web companion 和 ADB</string>
+    <string name="tailscale_unavailable">此版本不可用（需要 64 位 ARM 车机）。</string>
+    <string name="tailscale_not_connected">未连接。</string>
+    <string name="tailscale_starting">正在启动…</string>
+    <string name="tailscale_error">出了点问题。请查看下方说明并重试。</string>
+    <string name="tailscale_connected">已作为 %1$s 连接</string>
+    <string name="tailscale_reachable_hint">Web companion：http://%1$s:8888 · ADB：adb connect %1$s:5555</string>
+    <string name="tailscale_needs_adb">需要先完成一次性的 ADB 授权——与即时遥测使用的相同。请在“应用管理”中设置好后再回来。</string>
+    <string name="tailscale_signin_phone">用手机登录</string>
+    <string name="tailscale_scan_instructions">用手机相机扫描它，然后在打开的浏览器中登录 Tailscale。你一批准，车辆就会加入你的网络——这里无需输入任何内容。</string>
+    <string name="tailscale_scan_qr_cd">打开 Tailscale 登录页面的二维码</string>
+    <string name="tailscale_waiting_for_signin">正在等待你批准…你可以离开此界面，它会继续等待。</string>
+    <string name="tailscale_cancel_signin">取消登录</string>
+    <string name="tailscale_other_ways">其他登录方式</string>
+    <string name="tailscale_alt_adb_title">从电脑输入密钥（ADB）</string>
+    <string name="tailscale_alt_adb_body">如果你已经在这辆车上使用 ADB——你确实在用，因为 Tailscale 需要相同的授权——请点按下方的 Auth key 输入框使其获得焦点，然后在电脑上用密钥替换那些点来运行这条命令。auth 密钥只包含字母、数字和连字符，因此不会有任何字符出错。</string>
+    <string name="tailscale_alt_key_title">粘贴 auth 密钥</string>
+    <string name="tailscale_alt_key_body">在 Tailscale 控制台的 Settings → Keys 中生成一个（Ephemeral 保持关闭），然后粘贴到这里。六十个字符在车机屏幕上输入太多了，所以上面才有二维码。</string>
+    <string name="tailscale_authkey_label">auth 密钥</string>
+    <string name="tailscale_connect">连接</string>
+    <string name="tailscale_disconnect">从 Tailscale 断开</string>
+    <string name="tailscale_how_to">如何设置</string>
+    <string name="tailscale_step_1">1. 如果还没有账号，请在 tailscale.com 上创建一个免费账号。</string>
+    <string name="tailscale_step_2">2. 在管理控制台中打开 Settings → Keys 并点按 Generate auth key。让 Ephemeral 保持关闭——临时密钥会让车辆每次休眠时从你的网络中消失，而且地址每次都会变。</string>
+    <string name="tailscale_step_3">3. 复制密钥（以 tskey-auth- 开头）并粘贴到下方，然后点按“连接”。车辆会加入你的网络，并从此保持同一地址。</string>
+    <string name="tailscale_step_4">4. 在你的手机或笔记本上安装 Tailscale，并登录同一账号。任何已登录的设备都能访问车辆——其他设备都不能。</string>
+    <string name="tailscale_console_warnings">值得在管理控制台里做一次：打开 Machines → 你的车 → Disable key expiry，否则大约六个月后它会掉出你的网络，且只能到车上才能修复。不要在车上设置 exit node（那会让它的 ABRP、MQTT 和 Telegram 流量经过别人的网络连接），也不要启用 Funnel（那会把 web companion 放到公共互联网上，仅靠其 PIN 保护）。</string>
+    <string name="tailscale_di5_note">在 DiLink-5 上，熄火时车辆会强制停止每个应用，因此远程访问会随车辆一起停止，并在车辆下次唤醒时恢复。</string>
+    <string name="telegram_title_label">Telegram</string>
+    <string name="telegram_card_desc">你自己的私人机器人——传送备份和车辆通知</string>
+    <string name="status_not_connected_label">未连接</string>
+    <string name="telegram_connection_desc">在这里关联一个私人 Telegram 机器人一次。备份、通知、诊断和行程导出都通过它进行，不会发送到任何其他地方。</string>
+    <string name="telegram_connected_uses">由“备份 &amp; 恢复”用于数据库备份、由下方的通知，以及由诊断和行程导出按钮使用。</string>
+    <string name="telegram_setup_in_connections">尚未关联 Telegram 机器人。请在 设置 → 连接 → Telegram 中设置一个，然后回到这里发送和恢复备份。</string>
+    <string name="telegram_notify_needs_bot">在上方关联一个 Telegram 机器人以使用通知。</string>
+    <string name="telegram_notify_di5_warning">在 DiLink-5 上，依赖车辆熄火的通知目前无法送达：熄火时你的车会强制停止应用，因此行程只在下次启动时才关闭，泊车期间的充电会在之后补录——两者都无法在发生时通知。车辆仍开着时发生的一切都能送达，所以在熄火前自己点按“停止”来结束行程，就能收到摘要。</string>
+    <string name="telegram_notify_label">Telegram 通知</string>
+    <string name="telegram_notify_info">车辆事件推送到同一个机器人——无服务器、无账号、无额外应用。若事件发生时车辆没有连接，消息会排队并重试。</string>
+    <string name="telegram_notify_enable_label">发送通知</string>
+    <string name="telegram_notify_trip_label">行程摘要</string>
+    <string name="telegram_notify_trip_desc">每次驾驶后一张卡片，包含行程本身记录的相同数据：里程、时长、相对你终身平均值的能耗、消耗的 SoC、费用和行程评分。</string>
+    <string name="telegram_notify_charging_label">充电完成</string>
+    <string name="telegram_notify_charging_desc">当一次充电会话结束时——无论是完成还是提前停止、在什么电量，附带充入的电量及花费。发生时即发送，所以在 03:00 完成的隔夜充电会在 03:00 发送。默认关闭。</string>
+    <string name="telegram_notify_imbalance_label">电芯失衡警报</string>
+    <string name="telegram_notify_imbalance_desc">将 Pro 电池电芯失衡警报也发送到 Telegram，而不仅仅显示在车机屏幕上。</string>
+    <string name="telegram_notify_imbalance_pro">随 Pro 提供，与电芯失衡警报本身一起。</string>
+    <string name="telegram_notify_test_action">发送测试消息</string>
+    <string name="telegram_notify_test_ok">测试消息已发送 ✓ — 请查看你的 Telegram 聊天。</string>
+    <string name="telegram_notify_test_failed">无法连接 Telegram。请检查车辆的连接并重试。</string>
+    <string name="telegram_notify_parked_note">摘要会在行程结束时发送——也就是车辆熄火达到“偏好设置”中设定的自动停止时间时，因此设置越长，消息越晚。应用只能在事后关闭的行程，因为当时它没有运行（在 DiLink-5 上这是每一段行程），会正常记录但不通知，这样你在今天出发时永远不会收到昨天那趟的提醒。在始终开启的后台模式下，泊车期间警报仍会触发：车辆切断 Wi-Fi 后车机仍保持移动数据。</string>
 
     <!-- Trip Compare -->
     <string name="comparing_trips_label">正在比较 %1$s 次行程</string>
@@ -772,7 +825,7 @@
     <string name="compat_sending_label">发送中…</string>
     <string name="compat_email_qr_label">通过二维码发送邮件</string>
     <string name="compat_uploading_label">上传中…</string>
-    <string name="compat_telegram_not_configured">Telegram 未配置 — 请先在备份 &amp; 恢复中设置。</string>
+    <string name="compat_telegram_not_configured">未关联 Telegram——请先在 设置 → 连接 → Telegram 中设置。</string>
     <string name="compat_sent_telegram">已通过 Telegram 发送 ✓</string>
     <string name="compat_telegram_failed">Telegram 发送失败：%1$s</string>
     <string name="compat_save_failed">保存失败：%1$s</string>
@@ -797,6 +850,33 @@
     <string name="web_server_failed">启动失败：%1$s</string>
     <string name="web_server_waiting">等待IP地址…</string>
     <string name="web_server_open_hint">在连接到同一WiFi的任何设备上打开此地址。</string>
+    <string name="web_url_label_lan">在你的网络上</string>
+    <string name="web_url_label_tailscale">通过 Tailscale — 从任何地方都能用</string>
+    <string name="web_url_label_vpn">通过你的 VPN</string>
+    <string name="web_url_label_other">其他网络</string>
+    <string name="web_url_label_mobile">通过移动数据</string>
+    <string name="web_url_label_tailscale_https">通过 Tailscale，加密 — 从任何地方都能用</string>
+    <string name="web_https_available_hint">这些是普通的 http:// 地址。要加密 Tailscale 的那个，请在 设置 → 连接 的 Tailscale 卡片上开启\"通过 HTTPS 提供\"。</string>
+    <string name="tailscale_https_label">通过 HTTPS 提供</string>
+    <string name="tailscale_https_desc">让 Tailscale 守护进程为 web companion 处理 TLS，使用本车 Tailscale 名称的真实证书。地址会从 http:// 变为 https://，浏览器不再称其不安全——而它们只在安全页面上允许的功能，如通知和复制到剪贴板，也开始工作。</string>
+    <string name="tailscale_https_requirement">需要为你的 tailnet 打开 MagicDNS 和 HTTPS Certificates——两者都是 Tailscale 管理控制台 DNS 下的一次性开关。只有 .ts.net 地址会被加密；WiFi 地址仍为 http://。</string>
+    <string name="tailscale_https_working">已在 %1$s 加密</string>
+    <string name="tailscale_https_no_port">完全按显示使用——末尾不要加 \":8888\"。加密地址使用标准 HTTPS 端口；只有 http:// 地址才需要端口。</string>
+    <string name="tailscale_https_first_load">证书签发期间，首次加载可能需要几秒钟。</string>
+    <string name="tailscale_https_how_to">如何为你的网络开启此功能</string>
+    <string name="tailscale_https_step_1">1. 在你的手机或电脑上，打开 Tailscale 管理控制台并进入 DNS — login.tailscale.com/admin/dns。做一次即可；它适用于你网络中的每台设备，而不仅仅是车。</string>
+    <string name="tailscale_https_step_2">2. 确认 MagicDNS 已开启。容易让人困惑的是，当按钮显示\"Disable MagicDNS…\"时它是开着的——那个按钮会将其关闭，所以别动它。如果你看到的是\"Enable MagicDNS…\"，请点击它。</string>
+    <string name="tailscale_https_step_3">3. 在 HTTPS Certificates 下，点击\"Enable HTTPS…\"并确认。这才让你的设备能获得真实证书。</string>
+    <string name="tailscale_https_step_4">4. 回到这里并开启 通过 HTTPS 提供。无需重启任何东西。</string>
+    <string name="tailscale_https_step_5">5. 打开这里显示的 https:// 地址——完全按显示，末尾不加端口。证书签发期间首次加载需要几秒钟，之后就是即时的。</string>
+    <string name="tailscale_https_free_note">两项设置都是免费的，适用于你的整个 Tailscale 网络。启用 HTTPS 不会向互联网暴露任何东西——证书只是向你网络中已有的设备证明这辆车确实是它所声称的身份。</string>
+    <string name="tailnet_diag_label">Tailnet 地址</string>
+    <string name="tailnet_installed_not_connected">已安装 Tailscale，未连接</string>
+    <string name="remote_access_label">远程访问</string>
+    <string name="remote_access_connected">这辆车在你的 tailnet 上的名称为 %1$s。上面的地址可从你任何一台 Tailscale 设备使用，无论你在哪里——ADB 也一样，在端口 5555。</string>
+    <string name="remote_access_not_detected">companion 只能在你的家庭网络上访问。要从任何地方访问它，请在车机和你的手机上安装 Tailscale 应用，并用同一账号登录两者——车辆随后会保持一个固定的 100.x 地址，通过移动数据即可使用，包括在 WiFi 关闭的泊车期间。不会向此应用添加任何东西，也不会在你的路由器上开放端口。</string>
+    <string name="remote_access_tips">在 Tailscale 管理控制台里一次性设置三件事：关闭该车的密钥过期（否则约六个月后它会掉出 tailnet，且只能到车上才能修复），不要在车上设置 exit node（那会让它的 ABRP、MQTT 和 Telegram 流量经过别人的网络连接），不要启用 Funnel（那会把这个 companion 放到公共互联网上，仅靠其 PIN 保护）。</string>
+    <string name="remote_access_di5_note">在 DiLink-5 上，熄火时你的车会强制停止每个应用，包括 Tailscale——因此远程访问会随车辆一起停止，并在车辆下次唤醒时恢复。车辆开着时它正常工作，当你不在自己的 WiFi 附近时，这对访问 companion 或 ADB 仍然有用。</string>
     <string name="web_copy_url_cd">复制URL</string>
     <string name="chart_no_tyre_data">本次行程未记录轮胎气压数据</string>
 
@@ -883,15 +963,15 @@
     <string name="bg_minimal">最小化</string>
     <string name="bg_deep_sleep">深度休眠</string>
     <string name="bg_default_label">默认</string>
-    <string name="bg_always_on_desc">始终开启（推荐默认）：泊车后遥测服务继续运行，持续将 12V/SoC 采样记录到电池历史，并捕获熄火状态（例如夜间）的充电。在 BYD 自身出厂后台耗电之上增加少量额外负载。\n\n注意：大多数 BYD 车机在熄火约 15 分钟后会切断 Wi-Fi。因此在泊车期间，通过 Wi-Fi 的 ADB、Web 伴侣（PWA）以及连接到家庭网络中代理的 MQTT 会停止，直到车辆通电。连接到可从互联网访问的代理（例如 HiveMQ Cloud）的 MQTT 通常会继续发布，因为车辆保持在移动数据上。下方的\"停车时保持 Wi-Fi 开启\"选项可在受支持的车机上保持 Wi-Fi 开启。</string>
+    <string name="bg_always_on_desc">始终开启（推荐默认）：泊车后遥测服务继续运行，持续将 12V/SoC 采样记录到电池历史，并捕获熄火状态（例如夜间）的充电。在 BYD 自身出厂后台耗电之上增加少量额外负载。\n\n注意：大多数 BYD 车机在熄火约 15 分钟后会切断 Wi-Fi。因此在泊车期间，通过 Wi-Fi 的 ADB、Web 伴侣（PWA）以及连接到家庭网络中代理的 MQTT 会停止，直到车辆通电。连接到可从互联网访问的代理（例如 HiveMQ Cloud）的 MQTT 通常会继续发布，因为车辆保持在移动数据上。下方的\"车辆熄火时保持 Wi-Fi 开启\"选项可在受支持的车机上保持 Wi-Fi 开启。</string>
     <string name="bg_minimal_desc">最小化：车辆关闭 5 分钟后服务自行停止，然后每 90 分钟触发一次简短唤醒以获取充电快照。耗电更低，但离线样本稀少，ADB 并非始终在线，Web 伴侣（PWA）仅在短暂唤醒期间可访问，MQTT 在两次唤醒间隔期间保持静默。离线充电将在约 90 分钟内被检测到，之后在充电结束前持续发布。</string>
     <string name="bg_deep_sleep_desc">深度休眠：车辆关闭 5 分钟后服务自行停止，且不再触发任何唤醒。允许车辆 ECU 进入完全深度休眠。Web 伴侣（PWA）无法访问，MQTT 在整个停车期间保持静默；离线充电不会实时捕获 — 仅在车辆下次启动时根据 SoC 差值重建。</string>
     <string name="keepalive_never_fired">最小化唤醒闹钟：尚未触发%1$s。如果车辆停放一段时间后仍显示\"从不\"，说明你的车机在泊车时会完全关闭——此时最小化的表现与深度休眠相同，因此泊车数据请使用始终开启。</string>
     <string name="keepalive_fired">最小化唤醒闹钟：上次触发 %1$s • 共 %2$s%3$s</string>
     <string name="keepalive_armed">（已激活）</string>
     <string name="keepalive_not_armed"> · 未激活</string>
-    <string name="wifi_keepalive_label">停车时保持 Wi-Fi 开启</string>
-    <string name="wifi_keepalive_desc">如果车辆在泊车后关闭 Wi-Fi，则重新启用它，让 Web 伴侣和其他本地（家庭网络）工具保持可访问。仅在车辆熄火时起作用，并在 12V 电池或电量偏低时自动退让。泊车期间会消耗少量额外电量。\n\n如果你还使用 Electro、Overdrive 或任何其他保持 Wi-Fi 的应用，请只在其中一个中开启此项，并在其他应用中关闭——两个保活机制同时运行可能会互相冲突并浪费电量。</string>
+    <string name="wifi_keepalive_label">车辆熄火时保持 Wi-Fi 开启</string>
+    <string name="wifi_keepalive_desc">在车辆熄火后重新打开 Wi-Fi——车机会在几分钟后将其关闭——让 Web 伴侣和其他本地（家庭网络）工具保持可访问。仅在车辆熄火时起作用，并在 12V 电池或电量偏低时自动退让。车辆熄火期间会消耗少量额外电量。\n\n如果你还使用 Electro、Overdrive 或任何其他保持 Wi-Fi 的应用，请只在其中一个中开启此项，并在其他应用中关闭——两个保活机制同时运行可能会互相冲突并浪费电量。</string>
     <string name="wifi_keepalive_needs_setup">需要高级 ADB 设置（与即时遥测相同）。请先完成该设置以启用此功能。</string>
 
     <!-- Settings dialogs -->
@@ -941,6 +1021,7 @@
     <string name="web_companion_desc">在同一 WiFi 网络的任何设备上浏览行程 &amp; 充电记录。</string>
     <string name="web_companion_disabled_desc">启动本地服务器，在浏览器中查看行程历史。</string>
     <string name="web_companion_wifi_info">通过本地 WiFi 提供服务，因此在车辆开启且遥测服务运行时可访问。停车后，大多数比亚迪车型在关闭约 15 分钟后会断开 WiFi — 之后在任何后台活动模式下，伴侣均无法访问（本地服务器无移动数据回退），直到车辆再次开启。\n注意：Electro 应用有选项可无限期保持 WiFi 连接</string>
+    <string name="web_companion_files_info">companion 还有一个 文件 标签页：将数据库备份、导出和诊断日志直接下载到你的手机或笔记本，并在不插任何东西的情况下把备份上传到车。它只显示应用自己的文件夹，而非整个车机。</string>
     <string name="port_field_label">端口</string>
     <string name="port_hint_text">如端口被封锁，请尝试 8081、8888、9090。更改端口将重启服务器。</string>
     <string name="access_pin_label">访问 PIN</string>
@@ -964,7 +1045,6 @@
     <string name="mqtt_card_desc">将实时遥测数据发布到 HiveMQ 或 HomeAssistant 等代理。</string>
     <string name="status_enabled_label">状态：已启用</string>
     <string name="status_disabled_label">状态：已禁用</string>
-    <string name="open_connections_action">打开连接</string>
     <string name="back_to_overview_action">返回概览</string>
 
     <!-- ABRP settings -->
@@ -1047,7 +1127,7 @@
     <string name="about_install_note">停车且无活跃行程或充电时，安装按钮将变为可用</string>
     <string name="about_install_now">立即安装</string>
     <string name="about_download_update">下载更新</string>
-    <string name="about_update_manual_di5_instructions">此车机不支持自动安装。请在电脑或手机上从发布页面下载此版本的 APK，然后通过 ADB 安装:</string>
+    <string name="about_update_manual_di5_instructions">自动安装需要辅助连接，但目前不可用。请在电脑或手机上从发布页面下载此版本的 APK，然后通过 ADB 安装:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">打开发布页面</string>
 
@@ -1158,6 +1238,7 @@
     <string name="autostart_dialog_title">⚠️ 需要操作 — 自动启动</string>
     <string name="autostart_dialog_msg">已安装新版本。您需要关闭此应用的自动启动，这样可以让前台 / 后台服务运行。\n只需在首次安装应用时以及关闭自动启动后重启一次车辆。如果您是从旧版本升级，则无需重启</string>
     <string name="autostart_got_it">知道了</string>
+    <string name="autostart_open_failed">无法在此车机上打开自启动界面。请从车辆自带的 设置 → 应用 → 自启动（或后台应用）中打开，并确保已允许 Trip Stats。</string>
     <string name="flavor_mismatch_title">⚠️ 此车型的版本有误</string>
     <string name="flavor_mismatch_msg">您安装的是 %1$s 版本，但此车为 %2$s。车辆遥测可能无法正常工作。请为此车辆安装 %2$s 版本。</string>
     <string name="adb_connecting_title">连接中…</string>

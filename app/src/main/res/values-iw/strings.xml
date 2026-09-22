@@ -266,7 +266,7 @@
     <string name="export_save_html">שמור כמציג HTML (לחיצה כפולה לפתיחה)</string>
     <string name="export_send_telegram">שלח לבוט Telegram</string>
     <string name="export_telegram_not_configured">שלח לבוט Telegram (לא מוגדר)</string>
-    <string name="export_telegram_setup_hint">הגדירו את הבוט בהגדרות ← גיבוי ושחזור.</string>
+    <string name="export_telegram_setup_hint">קשר את בוט ה-Telegram שלך בהגדרות ← חיבורים ← Telegram.</string>
     <string name="export_send_csv">שלח CSV ל-Telegram</string>
     <string name="export_send_json">שלח JSON ל-Telegram</string>
     <string name="export_send_html">שלח מציג HTML ל-Telegram</string>
@@ -530,17 +530,70 @@
     <string name="wifi_only_desc">גיבויים אוטומטיים פועלים רק ב-Wi-Fi כדי לחסוך בנתונים סלולריים</string>
     <string name="last_auto_backup_label">גיבוי אוטומטי אחרון: %1$s</string>
     <string name="schedule_updated_msg">התזמון עודכן ל-%1$s. הגיבוי האוטומטי הבא יפעל לפי התדירות החדשה.</string>
-    <string name="telegram_setup_info">לאחר חיבור, אפשר לשלוח גיבויים ידנית או לפי תזמון. כל גיבוי מגיע כקובץ .db לצ׳אט הפרטי שלכם, נגיש מכל מכשיר עם Telegram.</string>
+    <string name="telegram_setup_info">ניתן לשלוח גיבויים ידנית או לפי לוח זמנים. כל אחד מגיע כקובץ .db לצ\'אט הפרטי שלך, נגיש מכל מכשיר עם Telegram.</string>
     <string name="telegram_instructions">1. שלחו הודעה ל-@BotFather ב-Telegram ← /newbot ← העתיקו את הטוקן\n2. שלחו הודעה כלשהי לבוט החדש שלכם\n3. הדביקו את הטוקן למטה והקישו אימות</string>
     <string name="bot_token_label">טוקן בוט</string>
     <string name="validate_save_action">אמת ושמור</string>
     <string name="restore_from_telegram_label">שחזור מ-Telegram</string>
-    <string name="connect_telegram_first">חברו קודם בוט Telegram פרטי (ראו גיבוי Telegram למעלה).</string>
+    <string name="connect_telegram_first">קשר תחילה בוט Telegram — הגדרות ← חיבורים ← Telegram.</string>
     <string name="backups_in_chat_label">גיבויים בצ׳אט שלכם:</string>
     <string name="scan_telegram_hint">הקישו רענון כדי לסרוק את צ׳אט ה-Telegram אחר גיבויי .db.</string>
-    <string name="no_telegram_configured">Telegram לא מוגדר — הגדירו אותו קודם בגיבוי ושחזור.</string>
+    <string name="no_telegram_configured">Telegram לא מקושר — הגדר אותו תחילה בהגדרות ← חיבורים ← Telegram.</string>
     <string name="sent_telegram_success">נשלח דרך Telegram ✓</string>
     <string name="telegram_send_failed">שליחת Telegram נכשלה: %1$s</string>
+    <string name="tailscale_title">Tailscale — גישה מרחוק</string>
+    <string name="tailscale_title_short">Tailscale</string>
+    <string name="tailscale_desc">הוסף את הרכב לרשת ה-Tailscale הפרטית שלך, כך ש-web companion ו-ADB יעבדו מכל מקום — לא רק בבית. שום דבר לא נחשף לאינטרנט ולא נפתחות פורטים בנתב שלך.</string>
+    <string name="tailscale_card_desc">הגע ל-web companion ול-ADB של הרכב מכל מקום</string>
+    <string name="tailscale_unavailable">לא זמין בגרסה זו (נדרשת יחידת ARM 64-סיביות).</string>
+    <string name="tailscale_not_connected">לא מחובר.</string>
+    <string name="tailscale_starting">מתחיל…</string>
+    <string name="tailscale_error">משהו השתבש. בדוק את ההוראות למטה ונסה שוב.</string>
+    <string name="tailscale_connected">מחובר בתור %1$s</string>
+    <string name="tailscale_reachable_hint">Web companion: http://%1$s:8888 · ADB: adb connect %1$s:5555</string>
+    <string name="tailscale_needs_adb">נדרשת תחילה הרשאת ADB חד-פעמית — אותה אחת שהטלמטריה המיידית משתמשת בה. הגדר אותה בניהול האפליקציה ואז חזור.</string>
+    <string name="tailscale_signin_phone">היכנס עם הטלפון שלך</string>
+    <string name="tailscale_scan_instructions">סרוק זאת עם מצלמת הטלפון, ואז היכנס ל-Tailscale בדפדפן שנפתח. הרכב מצטרף לרשת שלך ברגע שתאשר אותו — אין צורך להקליד כאן דבר.</string>
+    <string name="tailscale_scan_qr_cd">קוד QR שפותח את דף ההתחברות של Tailscale</string>
+    <string name="tailscale_waiting_for_signin">ממתין לאישור שלך… אפשר לצאת מהמסך הזה, הוא ימשיך להמתין.</string>
+    <string name="tailscale_cancel_signin">בטל התחברות</string>
+    <string name="tailscale_other_ways">דרכים אחרות להתחבר</string>
+    <string name="tailscale_alt_adb_title">הקלד את המפתח מהמחשב שלך (ADB)</string>
+    <string name="tailscale_alt_adb_body">אם אתה כבר משתמש ב-ADB עם הרכב הזה — ואתה כן, מכיוון ש-Tailscale דורש את אותה הרשאה — הקש על תיבת ה-Auth key למטה כדי שתהיה בפוקוס, ואז הרץ את זה מהמחשב שלך עם המפתח במקום הנקודות. מפתחות auth מכילים רק אותיות, ספרות ומקפים, כך ששום דבר לא מתקלקל.</string>
+    <string name="tailscale_alt_key_title">הדבק מפתח auth</string>
+    <string name="tailscale_alt_key_body">צור אחד בקונסולת Tailscale תחת Settings → Keys (השאר את Ephemeral כבוי), ואז הדבק אותו כאן. שישים תווים זה הרבה להקלדה על מסך רכב, ולכן קיים קוד ה-QR למעלה.</string>
+    <string name="tailscale_authkey_label">מפתח auth</string>
+    <string name="tailscale_connect">התחבר</string>
+    <string name="tailscale_disconnect">התנתק מ-Tailscale</string>
+    <string name="tailscale_how_to">איך להגדיר את זה</string>
+    <string name="tailscale_step_1">1. צור חשבון חינמי ב-tailscale.com, אם אין לך.</string>
+    <string name="tailscale_step_2">2. בקונסולת הניהול, פתח Settings → Keys והקש על Generate auth key. השאר את Ephemeral כבוי — מפתח ארעי גורם לרכב להיעלם מהרשת שלך בכל פעם שהוא נכנס לשינה, וכתובתו הייתה משתנה בכל פעם.</string>
+    <string name="tailscale_step_3">3. העתק את המפתח (מתחיל ב-tskey-auth-) והדבק אותו למטה, ואז הקש התחבר. הרכב מצטרף לרשת שלך ושומר על אותה כתובת מאותו רגע.</string>
+    <string name="tailscale_step_4">4. התקן את Tailscale בטלפון או במחשב הנייד שלך והיכנס לאותו חשבון. כל דבר שמחובר יכול אז להגיע לרכב — שום דבר אחר לא.</string>
+    <string name="tailscale_console_warnings">כדאי לעשות פעם אחת בקונסולת הניהול: פתח Machines ← הרכב שלך ← Disable key expiry, אחרת הוא ייפול מהרשת שלך בעוד כחצי שנה ורק ביקור ברכב יתקן זאת. אל תגדיר exit node ברכב (זה יעביר את תעבורת ה-ABRP, MQTT ו-Telegram שלו דרך חיבור האינטרנט של מישהו אחר), ואל תפעיל Funnel (זה יציב את ה-web companion באינטרנט הציבורי, מוגן רק על ידי ה-PIN שלו).</string>
+    <string name="tailscale_di5_note">ב-DiLink-5 הרכב עוצר בכפייה כל אפליקציה כשמכבים אותו, כך שגישה מרחוק נפסקת כשהרכב נפסק וחוזרת כשהוא מתעורר בפעם הבאה.</string>
+    <string name="telegram_title_label">Telegram</string>
+    <string name="telegram_card_desc">הבוט הפרטי שלך — נושא גיבויים והתראות רכב</string>
+    <string name="status_not_connected_label">לא מחובר</string>
+    <string name="telegram_connection_desc">קשר כאן פעם אחת בוט Telegram פרטי. הגיבויים, ההתראות, האבחון וייצוא הנסיעות עוברים כולם דרכו, ושום דבר לא נשלח למקום אחר.</string>
+    <string name="telegram_connected_uses">בשימוש על ידי גיבוי &amp; שחזור עבור גיבויי מסד הנתונים, על ידי ההתראות שלמטה, ועל ידי כפתורי האבחון וייצוא הנסיעה.</string>
+    <string name="telegram_setup_in_connections">עדיין לא מקושר בוט Telegram. הגדר אחד בהגדרות ← חיבורים ← Telegram, ואז חזור לכאן כדי לשלוח ולשחזר גיבויים.</string>
+    <string name="telegram_notify_needs_bot">קשר בוט Telegram למעלה כדי להשתמש בהתראות.</string>
+    <string name="telegram_notify_di5_warning">ב-DiLink-5, התראות שתלויות בכיבוי הרכב אינן מגיעות בינתיים: הרכב שלך עוצר בכפייה את האפליקציה בעת כיבוי המנוע, כך שנסיעה נסגרת רק בהתנעה הבאה, וטעינה בזמן חניה מתמלאת בדיעבד — אף אחת מהן אינה יכולה להתפרסם ברגע ההתרחשות. כל מה שקורה בזמן שהרכב עדיין דולק אכן מגיע, ולכן הקשה על עצור כדי לסיים בעצמך את הנסיעה לפני הכיבוי מקנה לך את הסיכום.</string>
+    <string name="telegram_notify_label">התראות Telegram</string>
+    <string name="telegram_notify_info">אירועי רכב נשלחים לאותו בוט — ללא שרת, ללא חשבון, ללא אפליקציה נוספת. הודעות נכנסות לתור ומנוסות שוב אם לרכב אין חיבור כשמתרחש אירוע.</string>
+    <string name="telegram_notify_enable_label">שלח התראות</string>
+    <string name="telegram_notify_trip_label">סיכום נסיעה</string>
+    <string name="telegram_notify_trip_desc">כרטיס אחרי כל נסיעה, עם אותם נתונים שהנסיעה עצמה רושמת: מרחק, משך, צריכה מול הממוצע לכל החיים שלך, SoC שנוצל, עלות וציון נסיעה.</string>
+    <string name="telegram_notify_charging_label">הטעינה הושלמה</string>
+    <string name="telegram_notify_charging_desc">כאשר סשן טעינה מסתיים — בין אם הושלם ובין אם נעצר מוקדם, ובאיזו רמה, עם האנרגיה שנוספה והעלות. נשלח בכל פעם שזה קורה, כך שטעינת לילה שמסתיימת ב-03:00 נשלחת ב-03:00. כבוי כברירת מחדל.</string>
+    <string name="telegram_notify_imbalance_label">התראת חוסר איזון בתאים</string>
+    <string name="telegram_notify_imbalance_desc">שלח את התראת חוסר האיזון בתאי הסוללה של Pro גם ל-Telegram, לא רק למסך הרכב.</string>
+    <string name="telegram_notify_imbalance_pro">כלול ב-Pro, יחד עם התראת חוסר האיזון בתאים עצמה.</string>
+    <string name="telegram_notify_test_action">שלח הודעת בדיקה</string>
+    <string name="telegram_notify_test_ok">הודעת הבדיקה נשלחה ✓ — בדוק את צ\'אט ה-Telegram שלך.</string>
+    <string name="telegram_notify_test_failed">לא ניתן היה להגיע ל-Telegram. בדוק את החיבור של הרכב ונסה שוב.</string>
+    <string name="telegram_notify_parked_note">סיכום נשלח כשהנסיעה מסתיימת — כלומר כשהרכב היה כבוי למשך זמן העצירה האוטומטית שנקבע בהעדפות, כך שהגדרה ארוכה יותר משמעה הודעה מאוחרת יותר. נסיעה שהאפליקציה יכלה לסגור רק בדיעבד, מפני שלא פעלה באותו רגע (ב-DiLink-5 זו כל נסיעה), נרשמת כרגיל אך לא מוכרזת, כך שלעולם לא תקבל התראה על הנסיעה של אתמול כשאתה יוצא לזו של היום. ההתראות ממשיכות להישלח בזמן חניה במצב הרקע תמיד פעיל: היחידה נשארת על נתונים סלולריים אחרי שהרכב מנתק את ה-Wi-Fi.</string>
 
     <!-- Trip Compare -->
     <string name="comparing_trips_label">משווה %1$s נסיעות</string>
@@ -769,7 +822,7 @@
     <string name="compat_sending_label">שולח…</string>
     <string name="compat_email_qr_label">אימייל דרך קוד QR</string>
     <string name="compat_uploading_label">מעלה…</string>
-    <string name="compat_telegram_not_configured">Telegram לא מוגדר — הגדירו אותו קודם בגיבוי ושחזור.</string>
+    <string name="compat_telegram_not_configured">Telegram לא מקושר — הגדר אותו תחילה בהגדרות ← חיבורים ← Telegram.</string>
     <string name="compat_sent_telegram">נשלח דרך Telegram ✓</string>
     <string name="compat_telegram_failed">שליחת Telegram נכשלה: %1$s</string>
     <string name="compat_save_failed">השמירה נכשלה: %1$s</string>
@@ -794,6 +847,33 @@
     <string name="web_server_failed">ההפעלה נכשלה: %1$s</string>
     <string name="web_server_waiting">ממתין ל-IP…</string>
     <string name="web_server_open_hint">פתחו כתובת זו בכל מכשיר המחובר לאותה רשת WiFi.</string>
+    <string name="web_url_label_lan">ברשת שלך</string>
+    <string name="web_url_label_tailscale">דרך Tailscale — עובד מכל מקום</string>
+    <string name="web_url_label_vpn">דרך ה-VPN שלך</string>
+    <string name="web_url_label_other">רשת אחרת</string>
+    <string name="web_url_label_mobile">דרך נתונים סלולריים</string>
+    <string name="web_url_label_tailscale_https">דרך Tailscale, מוצפן — עובד מכל מקום</string>
+    <string name="web_https_available_hint">אלו כתובות http:// פשוטות. כדי להצפין את זו של Tailscale, הפעל את \"הגש דרך HTTPS\" בכרטיס Tailscale בהגדרות ← חיבורים.</string>
+    <string name="tailscale_https_label">הגש דרך HTTPS</string>
+    <string name="tailscale_https_desc">תן לדמון של Tailscale לטפל ב-TLS עבור ה-web companion, באמצעות תעודה אמיתית לשם ה-Tailscale של הרכב הזה. הכתובת הופכת ל-https:// במקום http://, כך שדפדפנים מפסיקים לכנות אותה לא מאובטחת — ותכונות שהם מאפשרים רק בדף מאובטח, כמו התראות והעתקה ללוח, מתחילות לעבוד.</string>
+    <string name="tailscale_https_requirement">נדרש ש-MagicDNS ו-HTTPS Certificates יהיו מופעלים עבור ה-tailnet שלך — שניהם מתגים חד-פעמיים בקונסולת הניהול של Tailscale תחת DNS. רק כתובת ה-.ts.net מוצפנת; כתובת ה-WiFi נשארת http://.</string>
+    <string name="tailscale_https_working">מוצפן ב-%1$s</string>
+    <string name="tailscale_https_no_port">השתמש בה בדיוק כפי שמוצג — בלי \":8888\" בסוף. הכתובת המוצפנת משתמשת ביציאת ה-HTTPS הסטנדרטית; רק כתובות http:// זקוקות ליציאה.</string>
+    <string name="tailscale_https_first_load">הטעינה הראשונה עשויה להימשך כמה שניות בזמן שהתעודה מונפקת.</string>
+    <string name="tailscale_https_how_to">איך להפעיל את זה לרשת שלך</string>
+    <string name="tailscale_https_step_1">1. בטלפון או במחשב שלך, פתח את קונסולת הניהול של Tailscale ועבור אל DNS — login.tailscale.com/admin/dns. עשה זאת פעם אחת; זה חל על כל מכשיר ברשת שלך, לא רק על הרכב.</string>
+    <string name="tailscale_https_step_2">2. ודא ש-MagicDNS מופעל. באופן מבלבל, הוא מופעל כאשר בכפתור כתוב \"Disable MagicDNS…\" — הכפתור הזה יכבה אותו, אז אל תיגע בו. אם במקום זאת אתה רואה \"Enable MagicDNS…\", לחץ עליו.</string>
+    <string name="tailscale_https_step_3">3. תחת HTTPS Certificates, לחץ על \"Enable HTTPS…\" ואשר. זה מה שמאפשר למכשירים שלך לקבל תעודות אמיתיות.</string>
+    <string name="tailscale_https_step_4">4. חזור לכאן והפעל את הגש דרך HTTPS. אין צורך להפעיל מחדש שום דבר.</string>
+    <string name="tailscale_https_step_5">5. פתח את כתובת ה-https:// שמוצגת כאן — בדיוק כפי שמוצג, בלי יציאה בסוף. הטעינה הראשונה נמשכת כמה שניות בזמן שהתעודה מונפקת, ואז זה מיידי.</string>
+    <string name="tailscale_https_free_note">שתי ההגדרות חינמיות וחלות על כל רשת ה-Tailscale שלך. הפעלת HTTPS אינה חושפת דבר לאינטרנט — התעודה פשוט מוכיחה, למכשירים שכבר ברשת שלך, שהרכב הוא מי שהוא טוען שהוא.</string>
+    <string name="tailnet_diag_label">כתובת Tailnet</string>
+    <string name="tailnet_installed_not_connected">Tailscale מותקן, לא מחובר</string>
+    <string name="remote_access_label">גישה מרחוק</string>
+    <string name="remote_access_connected">הרכב הזה נמצא ב-tailnet שלך בשם %1$s. הכתובת שלמעלה עובדת מכל מכשיר Tailscale שלך, בכל מקום שאתה נמצא — וכך גם ADB, ביציאה 5555.</string>
+    <string name="remote_access_not_detected">ה-companion נגיש רק ברשת הביתית שלך. כדי להגיע אליו מכל מקום, התקן את אפליקציית Tailscale ביחידה ובטלפון שלך והתחבר בשניהם לאותו חשבון — הרכב שומר אז על כתובת 100.x קבועה שעובדת דרך נתונים סלולריים, גם בזמן חניה, כשה-WiFi כבוי. שום דבר לא מתווסף לאפליקציה הזו ולא נפתחות פורטים בנתב שלך.</string>
+    <string name="remote_access_tips">שלושה דברים להגדיר פעם אחת בקונסולת הניהול של Tailscale: כבה את פקיעת המפתח עבור הרכב (אחרת הוא ייפול מה-tailnet בעוד כחצי שנה ורק ביקור ברכב יתקן זאת), אל תגדיר exit node ברכב (זה יעביר את תעבורת ה-ABRP, MQTT ו-Telegram שלו דרך חיבור האינטרנט של מישהו אחר), ואל תפעיל Funnel (זה יציב את ה-companion הזה באינטרנט הציבורי, מוגן רק על ידי ה-PIN שלו).</string>
+    <string name="remote_access_di5_note">ב-DiLink-5, הרכב שלך עוצר בכפייה כל אפליקציה כשמכבים אותו, כולל Tailscale — כך שגישה מרחוק נפסקת כשהרכב נפסק וחוזרת כשהרכב מתעורר בפעם הבאה. כשהרכב דולק זה עובד כרגיל, וזה עדיין שימושי כדי להגיע ל-companion או ל-ADB כשאתה רחוק מה-WiFi שלך.</string>
     <string name="web_copy_url_cd">העתק URL</string>
     <string name="chart_no_tyre_data">לא הוקלטו נתוני לחץ צמיגים בנסיעה זו</string>
 
@@ -880,15 +960,15 @@
     <string name="bg_minimal">מינימלי</string>
     <string name="bg_deep_sleep">שינה עמוקה</string>
     <string name="bg_default_label">ברירת מחדל</string>
-    <string name="bg_always_on_desc">תמיד פעיל (ברירת מחדל מומלצת): שירות הטלמטריה ממשיך לפעול לאחר החניה, דוגם ברציפות ערכי 12V/SoC להיסטוריית הסוללה ומתעד טעינה במצב כבוי (למשל בלילה). עומס נוסף קטן מעבר לצריכת הרקע היצרנית של BYD.\n\nהערה: רוב יחידות BYD מנתקות את ה-Wi-Fi כ-15 דקות לאחר כיבוי הרכב. לכן בזמן חניה, ADB דרך Wi-Fi, ה-Web Companion (PWA) ו-MQTT לברוקר ברשת הביתית שלך נעצרים עד שהרכב נדלק. MQTT לברוקר הנגיש מהאינטרנט (למשל HiveMQ Cloud) בדרך כלל ממשיך לפרסם, מכיוון שהרכב נשאר על נתונים סלולריים. האפשרות \"השאר את ה-Wi-Fi פעיל בחניה\" למטה יכולה להשאיר את ה-Wi-Fi פתוח ביחידות נתמכות.</string>
+    <string name="bg_always_on_desc">תמיד פעיל (ברירת מחדל מומלצת): שירות הטלמטריה ממשיך לפעול לאחר החניה, דוגם ברציפות ערכי 12V/SoC להיסטוריית הסוללה ומתעד טעינה במצב כבוי (למשל בלילה). עומס נוסף קטן מעבר לצריכת הרקע היצרנית של BYD.\n\nהערה: רוב יחידות BYD מנתקות את ה-Wi-Fi כ-15 דקות לאחר כיבוי הרכב. לכן בזמן חניה, ADB דרך Wi-Fi, ה-Web Companion (PWA) ו-MQTT לברוקר ברשת הביתית שלך נעצרים עד שהרכב נדלק. MQTT לברוקר הנגיש מהאינטרנט (למשל HiveMQ Cloud) בדרך כלל ממשיך לפרסם, מכיוון שהרכב נשאר על נתונים סלולריים. האפשרות \"השאר את ה-Wi-Fi פעיל כשהרכב כבוי\" למטה יכולה להשאיר את ה-Wi-Fi פתוח ביחידות נתמכות.</string>
     <string name="bg_minimal_desc">מינימלי: השירות עוצר את עצמו 5 דקות לאחר כיבוי הרכב, ואז שעון מעורר של 90 דקות מעיר אותו לרגע לצילום מצב טעינה. צריכה נמוכה יותר, אך דגימות מצב כבוי דלילות, ADB לא תמיד פעיל, ה-Web Companion (PWA) נגיש רק בהבזק ההתעוררות הקצר, ו-MQTT מושבת בין ההבזקים. טעינת מצב כבוי נלכדת בתוך ~90 דקות, ולאחר מכן מפרסמת לשארית הטעינה.</string>
     <string name="bg_deep_sleep_desc">שינה עמוקה: השירות עוצר את עצמו 5 דקות לאחר כיבוי הרכב ללא התעוררויות נוספות. מאפשר ליחידות ה-ECU של הרכב להגיע לשינה עמוקה מלאה. ה-Web Companion (PWA) בלתי נגיש ו-MQTT שקט כל זמן שהרכב חונה; טעינת מצב כבוי אינה נלכדת בשידור חי — רק משוחזרת מדלתת ה-SoC כשהרכב נדלק בפעם הבאה.</string>
     <string name="keepalive_never_fired">שעון מעורר של מינימלי: עדיין לא הופעל%1$s. אם זה נשאר \"אף פעם\" לאחר שהרכב חנה זמן מה, היחידה שלך נכבית לחלוטין בחניה — מינימלי מתנהג אז כמו שינה עמוקה, לכן השתמש בתמיד פעיל עבור נתוני חניה.</string>
     <string name="keepalive_fired">שעון מעורר של מינימלי: הופעל לאחרונה %1$s • %2$s בסך הכול%3$s</string>
     <string name="keepalive_armed"> (דרוך)</string>
     <string name="keepalive_not_armed"> • לא דרוך</string>
-    <string name="wifi_keepalive_label">השאר את ה-Wi-Fi פעיל בחניה</string>
-    <string name="wifi_keepalive_desc">מפעיל מחדש את ה-Wi-Fi אם הרכב מכבה אותו לאחר החניה, כדי ש-Web Companion וכלים מקומיים אחרים (ברשת הביתית) יישארו נגישים. פועל רק כשהרכב כבוי, ונסוג אם מתח סוללת ה-12V או מצב הטעינה יורד. צורך מעט אנרגיה נוספת בזמן חניה.\n\nאם אתה משתמש גם ב-Electro, ב-Overdrive או בכל אפליקציה אחרת ששומרת על Wi-Fi פעיל, הפעל זאת רק באחת מהן והשבת בשאר — שני מנגנוני שמירה הפועלים יחד עלולים להתנגש זה בזה ולבזבז אנרגיה.</string>
+    <string name="wifi_keepalive_label">השאר את ה-Wi-Fi פעיל כשהרכב כבוי</string>
+    <string name="wifi_keepalive_desc">מפעיל מחדש את ה-Wi-Fi לאחר שהרכב כובה — יחידת הראש מכבה אותו כמה דקות מאוחר יותר — כדי ש-Web Companion וכלים מקומיים אחרים (ברשת הביתית) יישארו נגישים. פועל רק כשהרכב כבוי, ונסוג אם מתח סוללת ה-12V או מצב הטעינה יורד. צורך מעט אנרגיה נוספת כל עוד הרכב כבוי.\n\nאם אתה משתמש גם ב-Electro, ב-Overdrive או בכל אפליקציה אחרת ששומרת על Wi-Fi פעיל, הפעל זאת רק באחת מהן והשבת בשאר — שני מנגנוני שמירה הפועלים יחד עלולים להתנגש זה בזה ולבזבז אנרגיה.</string>
     <string name="wifi_keepalive_needs_setup">מחייב את הגדרת ה-ADB המתקדמת (זהה לטלמטריה מיידית). השלם אותה תחילה כדי להפעיל זאת.</string>
 
     <!-- Settings dialogs -->
@@ -938,6 +1018,7 @@
     <string name="web_companion_desc">עיינו בנסיעות ובטעינות מכל מכשיר באותה רשת WiFi.</string>
     <string name="web_companion_disabled_desc">הפעילו שרת מקומי כדי לפתוח את היסטוריית הנסיעות בדפדפן.</string>
     <string name="web_companion_wifi_info">מוגש דרך ה-WiFi המקומי שלכם, ולכן נגיש כל עוד הרכב דלוק ושירות הטלמטריה חי. לאחר חנייה, רוב יחידות ה-BYD מנתקות WiFi ~15 דקות לאחר כיבוי הרכב — לאחר מכן ה-companion בלתי נגיש (אין גיבוי נתונים סלולריים לשרת מקומי) עד שהרכב נדלק שוב, בכל מצב פעילות רקע.\nהערה: לאפליקציית Electro יש אפשרות לשמור על WiFi פעיל ללא הגבלה</string>
+    <string name="web_companion_files_info">ל-companion יש גם לשונית קבצים: הורד גיבויים של מסד הנתונים, ייצוא ואת יומן האבחון ישירות לטלפון או למחשב הנייד שלך, והעלה גיבוי לרכב בלי לחבר כלום. הוא מציג רק את התיקיות של האפליקציה עצמה, לא את כל היחידה.</string>
     <string name="port_field_label">פורט</string>
     <string name="port_hint_text">נסו 8081, 8888, 9090 אם פורט חסום. שינויים מפעילים מחדש את השרת.</string>
     <string name="access_pin_label">קוד PIN לגישה</string>
@@ -961,7 +1042,6 @@
     <string name="mqtt_card_desc">פרסמו טלמטריה חיה לברוקר כמו HiveMQ או HomeAssistant.</string>
     <string name="status_enabled_label">מצב: מופעל</string>
     <string name="status_disabled_label">מצב: מושבת</string>
-    <string name="open_connections_action">פתח חיבורים</string>
     <string name="back_to_overview_action">חזרה לסקירה</string>
 
     <!-- ABRP settings -->
@@ -1043,7 +1123,7 @@
     <string name="about_install_note">כפתור ההתקנה יהפוך זמין בחנייה ללא נסיעה או טעינה פעילה</string>
     <string name="about_install_now">התקן עכשיו</string>
     <string name="about_download_update">הורד עדכון</string>
-    <string name="about_update_manual_di5_instructions">התקנה אוטומטית אינה זמינה ביחידת הראש הזו. במחשב או בטלפון, הורד את קובץ ה-APK של גרסה זו מדף הגרסאות, ולאחר מכן התקן אותו דרך ADB:</string>
+    <string name="about_update_manual_di5_instructions">התקנה אוטומטית דורשת את חיבור העזר, שאינו זמין כרגע. במחשב או בטלפון, הורד את קובץ ה-APK של גרסה זו מדף הגרסאות, ולאחר מכן התקן אותו דרך ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">פתח את דף הגרסאות</string>
 
@@ -1154,6 +1234,7 @@
     <string name="autostart_dialog_title">⚠️ נדרשת פעולה — הפעלה אוטומטית</string>
     <string name="autostart_dialog_msg">הותקנה גרסה חדשה. עליכם לכבות את \"disable autostart\" עבור אפליקציה זו, מה שמאפשר לשירותי חזית / רקע לפעול.\nנדרשת הפעלה מחדש חד-פעמית של הרכב, ורק כשאתם מתקינים את האפליקציה בפעם הראשונה ואחרי שכיביתם את \"disable autostart\". אם אתם מעדכנים מגרסה ישנה יותר, אין צורך להפעיל מחדש</string>
     <string name="autostart_got_it">הבנתי</string>
+    <string name="autostart_open_failed">לא ניתן היה לפתוח את מסך ההפעלה האוטומטית ביחידה זו. פתח אותו מההגדרות של הרכב עצמו ← אפליקציות ← הפעלה אוטומטית (או אפליקציות רקע) וודא ש-Trip Stats מותרת.</string>
     <string name="flavor_mismatch_title">⚠️ גרסה שגויה לרכב הזה</string>
     <string name="flavor_mismatch_msg">התקנת את גרסת %1$s, אך רכב זה הוא %2$s. ייתכן שהטלמטריה של הרכב לא תפעל כראוי. אנא התקן את גרסת %2$s עבור רכב זה.</string>
     <string name="adb_connecting_title">מתחבר…</string>

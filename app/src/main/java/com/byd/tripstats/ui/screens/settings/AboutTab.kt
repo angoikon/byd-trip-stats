@@ -44,6 +44,7 @@ internal fun AboutTab(viewModel: DashboardViewModel) {
     val downloadedApk     by viewModel.downloadedApk.collectAsState()
     val canInstallNow     by viewModel.canInstallNow.collectAsState()
     val isCheckingUpdate  by viewModel.isCheckingUpdate.collectAsState()
+    val shellInstallFailed by viewModel.shellInstallFailed.collectAsState()
 
     var easterEggClicks by remember { mutableStateOf(0) }
     var licenseClicks by remember { mutableStateOf(0) }
@@ -180,7 +181,9 @@ internal fun AboutTab(viewModel: DashboardViewModel) {
             downloadedApk    = downloadedApk,
             canInstallNow    = canInstallNow,
             isChecking       = isCheckingUpdate,
-            manualInstallOnly = com.byd.tripstats.sdk.DiLink5Platform.selfRestartUnsafe,
+            // Manual only when there is genuinely no way to install from in-app: a newer head unit
+            // AND no adb channel to install over — or a shell install that already failed.
+            manualInstallOnly = viewModel.manualInstallOnly || shellInstallFailed,
             onDownload       = { viewModel.downloadUpdate() },
             onInstall        = { viewModel.installUpdate() },
             onCancel         = { viewModel.cancelDownload() },

@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.byd.tripstats.adb.AdbPermissionManager
 import com.byd.tripstats.data.local.BydStatsDatabase
 import com.byd.tripstats.data.local.dao.TripSohSummary
 import com.byd.tripstats.data.analysis.CostAttribution
@@ -1908,15 +1909,35 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     // ── Update actions ────────────────────────────────────────────────────────
 
+    /**
+     * On head units where the silent [android.content.pm.PackageInstaller] session can't commit
+     * (unprivileged app, no installer dialog to fall back to), the update can still be installed
+     * over the local adb channel as uid 2000 — a privileged installer that needs no UI. Requires
+     * the adb setup to have completed; without it there is no channel and the manual
+     * `adb install -r` card is the only route.
+     *
+     * Verified end-to-end on a Sealion 7: the replace kills this process and `MY_PACKAGE_REPLACED`
+     * restarts the telemetry service by itself, with no boot loop — the OS does the kill and the
+     * restart, so this is not the self-kill+relaunch pattern that boot-loops DiLink-5.
+     */
+    private val canShellInstall: Boolean
+        get() = com.byd.tripstats.sdk.DiLink5Platform.selfRestartUnsafe &&
+            AdbPermissionManager.isSetupComplete(getApplication())
+
+    /** Set when a shell install was attempted and failed — the UI falls back to manual instructions. */
+    private val _shellInstallFailed = MutableStateFlow(false)
+    val shellInstallFailed: StateFlow<Boolean> = _shellInstallFailed.asStateFlow()
+
+    /** True when neither auto path is available, so only `adb install -r` remains. */
+    val manualInstallOnly: Boolean
+        get() = com.byd.tripstats.sdk.DiLink5Platform.selfRestartUnsafe && !canShellInstall
+
     fun downloadUpdate() {
-        // Anything newer than DiLink-3: the in-app download + silent PackageInstaller can't
-        // complete on the head unit (unprivileged, no installer UI), and the post-install
-        // self-relaunch is the same boot-loop hazard as every other self-restart — so this is
-        // gated on selfRestartUnsafe, not on DiLink-5 alone. A DiLink-100 is not a DiLink-5 by
-        // `ro.vehicle.type` and was still driving the silent installer until now. Updates there
-        // are delivered by manual `adb install -r` — see AboutTab's manual-update card. The
-        // badge/notice still shows (checkForUpdate keeps running); only the auto path is off.
-        if (com.byd.tripstats.sdk.DiLink5Platform.selfRestartUnsafe) return
+        // Newer than DiLink-3: the silent PackageInstaller can't complete (unprivileged, no
+        // installer UI). That no longer means "no in-app update" — the adb channel gives us a
+        // privileged `pm install`, so the download is allowed whenever that channel exists.
+        // Without it there is nothing to install with, so stay on the manual card.
+        if (com.byd.tripstats.sdk.DiLink5Platform.selfRestartUnsafe && !canShellInstall) return
         val info = updateInfo.value ?: return
         updateRepository.downloadUpdate(info)
         // Poll progress every second and push to our own StateFlow
@@ -1931,9 +1952,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun installUpdate() {
-        // Never drive the silent installer / self-relaunch on a head unit newer than
-        // DiLink-3 (see downloadUpdate). Those updates are sideloaded via `adb install -r`.
-        if (com.byd.tripstats.sdk.DiLink5Platform.selfRestartUnsafe) return
+        val shellInstall = com.byd.tripstats.sdk.DiLink5Platform.selfRestartUnsafe
+        // Newer head unit with no usable channel: nothing here can install, so don't pretend to.
+        if (shellInstall && !canShellInstall) return
         val apk = downloadedApk.value ?: return
         if (!canInstallNow.value) {
             Log.w(TAG, "installUpdate called but canInstallNow = false")
@@ -1946,7 +1967,15 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             } else {
                 Log.w(TAG, "Database backup failed before update install — continuing with install")
             }
-            updateRepository.installUpdate(apk)
+            if (shellInstall) {
+                // Never falls through to the PackageInstaller paths — both are known to fail on
+                // these units, so a second attempt would only produce a more confusing error.
+                // A failure surfaces the manual `adb install -r` card instead.
+                val ok = updateRepository.installUpdateViaShell(apk)
+                if (!ok) _shellInstallFailed.value = true
+            } else {
+                updateRepository.installUpdate(apk)
+            }
         }
     }
 

@@ -57,6 +57,167 @@ nav button {
 }
 nav button:hover { background: var(--panel-2); color: var(--text); }
 nav button.active { background: var(--panel-2); color: var(--accent); }
+/* ── Notifications (live mode only) ───────────────────────────────────────── */
+.bell-wrap { position: relative; }
+.bell-btn {
+  background: var(--panel-2); color: var(--text);
+  border: 1px solid var(--border); padding: 7px 11px;
+  border-radius: 8px; font-size: 15px; cursor: pointer; line-height: 1;
+}
+.bell-btn:hover { background: var(--border); }
+.bell-badge {
+  position: absolute; top: -6px; right: -6px;
+  min-width: 17px; height: 17px; padding: 0 4px;
+  border-radius: 9px; background: var(--accent); color: #fff;
+  font-size: 11px; font-weight: 700; line-height: 17px; text-align: center;
+}
+.notif-panel {
+  position: absolute; top: 44px; right: 0; width: 330px; max-width: 86vw;
+  max-height: 60vh; overflow-y: auto; z-index: 300;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+.notif-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+  font-size: 13px; font-weight: 600;
+}
+.notif-head button {
+  background: none; border: none; color: var(--muted);
+  font-size: 12px; cursor: pointer; padding: 2px 4px;
+}
+.notif-item { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.notif-item:last-child { border-bottom: none; }
+.notif-item.unseen { background: var(--panel-2); }
+.notif-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.notif-body { font-size: 12px; color: var(--muted); white-space: pre-line; line-height: 1.45; }
+.notif-time { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.notif-empty { padding: 18px 14px; font-size: 12px; color: var(--muted); text-align: center; }
+/* On a phone the bell sits mid-header, so a panel anchored to it runs off the left edge.
+   Below this width it detaches from the bell and spans the viewport with a margin instead. */
+@media (max-width: 640px) {
+  .notif-panel {
+    /* Clears the two-row phone header below, not the single-row one this used to sit under. */
+    position: fixed; top: 102px; left: 10px; right: 10px;
+    width: auto; max-width: none; max-height: 70vh;
+  }
+}
+/* Phone header: the brand, the bell and the Load DB button together already fill a phone's
+   width, and the three nav tabs used to push Load DB off the right edge entirely. Below this
+   width the nav drops onto its own full-width row underneath them. */
+@media (max-width: 640px) {
+  header { flex-wrap: wrap; row-gap: 10px; padding: 12px 14px; gap: 10px; }
+  .brand { flex: 1; min-width: 0; }
+  .brand span { overflow: hidden; text-overflow: ellipsis; }
+  /* The tabs get the full row to themselves and share it evenly, rather than bunching at the
+     left of an otherwise empty line. */
+  nav { order: 3; flex: 0 0 100%; gap: 6px; }
+  nav button { flex: 1; padding: 8px 0; }
+  .load-btn { padding: 6px 10px; font-size: 12px; }
+}
+/* Narrower still: the wordmark goes, the icon carries the branding. */
+@media (max-width: 420px) {
+  .brand span { display: none; }
+}
+/* ── Files (live mode only) ────────────────────────────────────────────────── */
+.file-crumbs {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  font-size: 13px; color: var(--muted); margin-bottom: 14px;
+}
+.file-crumbs button {
+  background: none; border: none; color: var(--accent);
+  font-size: 13px; cursor: pointer; padding: 0;
+}
+.file-path {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 11px; color: var(--muted); word-break: break-all;
+  margin-bottom: 14px;
+}
+.file-list { display: flex; flex-direction: column; gap: 1px; }
+.file-row {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 14px;
+}
+.file-row:hover { border-color: var(--accent); background: var(--panel-2); }
+.file-icon { font-size: 18px; line-height: 1; flex-shrink: 0; }
+.file-main { flex: 1; min-width: 0; }
+.file-name { font-size: 14px; word-break: break-all; }
+.file-name.link { color: var(--accent); cursor: pointer; }
+.file-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.file-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.file-actions a, .file-actions button {
+  background: var(--panel-2); border: 1px solid var(--border);
+  color: var(--text); padding: 5px 12px; border-radius: 20px;
+  font-size: 12px; cursor: pointer; text-decoration: none; white-space: nowrap;
+}
+.file-actions a:hover, .file-actions button:hover { border-color: var(--accent); }
+.file-actions .danger { color: var(--pink); }
+.file-actions .danger:hover { border-color: var(--pink); }
+/* ── Text-file viewer ──────────────────────────────────────────────────────── */
+.viewer {
+  position: fixed; inset: 0; z-index: 500;
+  background: var(--bg); display: flex; flex-direction: column;
+}
+.viewer[hidden] { display: none; }
+.viewer-bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; background: var(--panel);
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.viewer-close {
+  background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+  padding: 7px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; white-space: nowrap;
+}
+.viewer-close:hover { border-color: var(--accent); }
+.viewer-name {
+  flex: 1; min-width: 0;
+  font-size: 13px; color: var(--muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.viewer-copy.done { color: var(--green); border-color: rgba(6,214,160,0.4); }
+.viewer-copy.failed { color: var(--pink); border-color: rgba(247,37,133,0.4); }
+/* ── 12V / HV history ──────────────────────────────────────────────────────── */
+.battery-body {
+  flex: 1; min-height: 0; overflow: auto;
+  display: flex; flex-direction: column; gap: 12px; padding: 14px;
+}
+.battery-chips { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 8px; }
+.battery-chip {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 10px; min-width: 0;
+}
+.battery-chip .lbl { font-size: 11px; color: var(--muted); }
+.battery-chip .val { font-size: 15px; font-weight: 700; white-space: nowrap; }
+.battery-chart { flex: 1; min-height: 260px; position: relative; }
+.battery-note { font-size: 12px; color: var(--muted); }
+.viewer-scroll { flex: 1; overflow: auto; padding: 14px; }
+.viewer-scroll pre {
+  margin: 0; font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 11px; line-height: 1.5; color: var(--text);
+  white-space: pre-wrap; word-break: break-word;
+}
+.viewer-image {
+  display: block; margin: 0 auto; max-width: 100%;
+  border: 1px solid var(--border); border-radius: 8px;
+}
+.viewer-image[hidden], .viewer-scroll pre[hidden] { display: none; }
+.file-readonly {
+  background: rgba(255,209,102,0.08); border: 1px solid rgba(255,209,102,0.3);
+  border-radius: 10px; padding: 10px 12px; margin: 0 0 14px;
+  font-size: 12px; color: var(--amber); line-height: 1.5;
+}
+.file-readonly[hidden] { display: none; }
+.upload-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.upload-status { font-size: 12px; color: var(--muted); }
+.upload-status.error { color: var(--pink); }
+.upload-status.ok { color: var(--green); }
+/* On a phone the action buttons would squeeze a long file name to nothing, so they drop
+   onto their own line instead. */
+@media (max-width: 640px) {
+  .file-row { flex-wrap: wrap; }
+  .file-actions { width: 100%; justify-content: flex-end; }
+}
 .load-btn {
   background: var(--panel-2); color: var(--text);
   border: 1px solid var(--border); padding: 7px 14px;
@@ -64,7 +225,7 @@ nav button.active { background: var(--panel-2); color: var(--accent); }
   white-space: nowrap; transition: background 0.15s;
 }
 .load-btn:hover { background: #2a2f3b; }
-#file-input { display: none; }
+#file-input, #file-upload-input { display: none; }
 
 /* ── Loading overlay ─────────────────────────────────────────────────────── */
 #loading {
@@ -107,9 +268,16 @@ main { padding: 24px 20px; max-width: 1200px; margin: 0 auto; }
 .inline-link { color: var(--accent); cursor: pointer; text-decoration: underline; }
 
 /* ── List views ──────────────────────────────────────────────────────────── */
-.list-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
-.list-header h2 { font-size: 20px; font-weight: 600; }
-.summary-row { display: flex; gap: 20px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+/* Title above, totals on one line of their own beneath it. Sharing a row meant the totals were
+   the first thing to wrap once there were three of them. */
+.list-header { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+.list-header h2 { font-size: 22px; font-weight: 600; }
+.summary-row {
+  display: flex; gap: 8px; font-size: 13px; color: var(--muted);
+  white-space: nowrap; overflow-x: auto; scrollbar-width: none;
+}
+.summary-row::-webkit-scrollbar { display: none; }
+.summary-row .sep { opacity: 0.45; }
 .summary-row span strong { color: var(--text); }
 .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
 .empty { color: var(--muted); padding: 40px 0; text-align: center; }
@@ -154,17 +322,45 @@ span.star { cursor: default; }
 .fav-filter.active { color: var(--amber); border-color: rgba(255,209,102,0.4); background: rgba(255,209,102,0.08); }
 
 /* ── List controls (sort / filter) ──────────────────────────────────────────── */
+/* Two groups — sorting held left, filtering pushed to the right edge so the filter icons aren't
+   crowding the sort-direction icon. Grouping also means that when the row runs out of width it
+   breaks *between* them rather than orphaning whichever control happened to be last; a wrapped
+   line has a single item, which space-between aligns to the start. */
 .controls {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 10px 20px; justify-content: space-between;
   margin-bottom: 16px;
 }
+.ctl-group { display: flex; align-items: center; gap: 8px; }
 .controls .lbl-inline { font-size: 12px; color: var(--muted); }
 .controls select, .ctl-btn {
   background: var(--panel-2); border: 1px solid var(--border);
-  color: var(--text); padding: 5px 12px; border-radius: 20px;
+  color: var(--text); padding: 0 12px; border-radius: 20px;
   font-size: 13px; cursor: pointer; transition: all 0.15s;
 }
-.controls select { padding: 5px 8px; }
+.controls select { padding: 0 6px; }
+/* One explicit height across all three, so the native select can't sit a pixel or two proud of
+   the pills beside it. Kept apart from the rules above so .fav-filter keeps its muted colour. */
+.controls select, .ctl-btn, .fav-filter {
+  height: 32px; line-height: 1; box-sizing: border-box;
+  padding-top: 0; padding-bottom: 0;
+}
+/* Icon-only controls: square, so a row of them reads as a set of buttons rather than as pills of
+   random width. The label they lost lives in the title/aria-label. */
+.icon-btn {
+  position: relative;
+  width: 34px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 15px;
+}
+.ctl-btn.filtered { color: var(--accent); border-color: rgba(76,201,240,0.4); }
+.ctl-badge {
+  position: absolute; top: -5px; right: -5px;
+  min-width: 16px; height: 16px; padding: 0 4px; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent); color: #05202b;
+  border-radius: 8px; font-size: 10px; font-weight: 700; line-height: 1;
+}
 .ctl-btn:hover, .controls select:hover { border-color: var(--accent); }
 .ctl-btn.active { color: var(--accent); border-color: rgba(76,201,240,0.4); background: rgba(76,201,240,0.08); }
 .filter-panel {
@@ -297,9 +493,26 @@ span.star { cursor: default; }
   <nav id="nav" style="display:none">
     <button id="nav-trips"    onclick="navigate('trips')">Trips</button>
     <button id="nav-charges"  onclick="navigate('charges')">Charging</button>
+    <!-- Live mode only: there are no car files to browse when a .db was loaded by hand. -->
+    <button id="nav-files"    onclick="navigate('files')" style="display:none">Files</button>
   </nav>
+  <!-- Live mode only: the car is the source of these, so there is nothing to show
+       when the page was opened with a .db file instead. -->
+  <!-- Live mode only, like the bell: the 48 h voltage history is the car's own, not the .db's. -->
+  <button class="bell-btn" id="battery-btn" title="12V / HV battery — last 48 hours"
+          onclick="openBattery()" style="display:none">🔋</button>
+  <div class="bell-wrap" id="bell-wrap" style="display:none">
+    <button class="bell-btn" id="bell-btn" title="Notifications" onclick="toggleNotifications()">🔔<span id="bell-badge" class="bell-badge" style="display:none"></span></button>
+    <div class="notif-panel" id="notif-panel" style="display:none">
+      <div class="notif-head">
+        <span>Notifications</span>
+        <button onclick="markNotificationsSeen()">Mark all read</button>
+      </div>
+      <div id="notif-list"></div>
+    </div>
+  </div>
   <label class="load-btn" title="Load a .db backup file">
-    Load Database
+    Load DB
     <input id="file-input" type="file" accept=".db" />
   </label>
 </header>
@@ -326,18 +539,22 @@ span.star { cursor: default; }
       <div id="trip-summary" class="summary-row"></div>
     </div>
     <div class="controls">
-      <span class="lbl-inline">Sort</span>
-      <select id="trip-sort" onchange="tripSort.field=this.value; renderTripList()">
-        <option value="date">Date</option>
-        <option value="dist">Distance</option>
-        <option value="dur">Duration</option>
-        <option value="avgSpd">Avg Speed</option>
-        <option value="eff">Consumption</option>
-        <option value="energy">Energy</option>
-      </select>
-      <button class="ctl-btn" id="trip-dir" onclick="toggleSortDir('trip')" title="Toggle direction">↓ Desc</button>
-      <button class="fav-filter" onclick="toggleFavFilter()" title="Show favourites only">☆ Favourites</button>
-      <button class="ctl-btn" id="trip-filter-btn" onclick="toggleFilterPanel('trip')">⚲ Filters</button>
+      <div class="ctl-group">
+        <span class="lbl-inline">Sort</span>
+        <select id="trip-sort" onchange="tripSort.field=this.value; renderTripList()">
+          <option value="date">Date</option>
+          <option value="dist">Distance</option>
+          <option value="dur">Duration</option>
+          <option value="avgSpd">Avg Speed</option>
+          <option value="eff">Consumption</option>
+          <option value="energy">Energy</option>
+        </select>
+        <button class="ctl-btn icon-btn" id="trip-dir" onclick="toggleSortDir('trip')" title="Newest first — tap to reverse" aria-label="Sort direction">↓</button>
+      </div>
+      <div class="ctl-group">
+        <button class="fav-filter icon-btn" onclick="toggleFavFilter()" title="Show favourites only" aria-label="Favourites">☆</button>
+        <button class="ctl-btn icon-btn" id="trip-filter-btn" onclick="toggleFilterPanel('trip')" title="Filters" aria-label="Filters">⚲<span class="ctl-badge" id="trip-filter-badge" style="display:none"></span></button>
+      </div>
     </div>
     <div class="filter-panel" id="trip-filters" style="display:none">
       <div class="filter-row"><span class="frl">Distance (km)</span>
@@ -387,17 +604,21 @@ span.star { cursor: default; }
       <div id="charge-summary" class="summary-row"></div>
     </div>
     <div class="controls">
-      <span class="lbl-inline">Sort</span>
-      <select id="charge-sort" onchange="chargeSort.field=this.value; renderChargeList()">
-        <option value="date">Date</option>
-        <option value="dur">Duration</option>
-        <option value="kwh">kWh Added</option>
-        <option value="peak">Peak kW</option>
-        <option value="avg">Avg kW</option>
-      </select>
-      <button class="ctl-btn" id="charge-dir" onclick="toggleSortDir('charge')" title="Toggle direction">↓ Desc</button>
-      <button class="fav-filter" onclick="toggleFavFilter()" title="Show favourites only">☆ Favourites</button>
-      <button class="ctl-btn" id="charge-filter-btn" onclick="toggleFilterPanel('charge')">⚲ Filters</button>
+      <div class="ctl-group">
+        <span class="lbl-inline">Sort</span>
+        <select id="charge-sort" onchange="chargeSort.field=this.value; renderChargeList()">
+          <option value="date">Date</option>
+          <option value="dur">Duration</option>
+          <option value="kwh">kWh Added</option>
+          <option value="peak">Peak kW</option>
+          <option value="avg">Avg kW</option>
+        </select>
+        <button class="ctl-btn icon-btn" id="charge-dir" onclick="toggleSortDir('charge')" title="Newest first — tap to reverse" aria-label="Sort direction">↓</button>
+      </div>
+      <div class="ctl-group">
+        <button class="fav-filter icon-btn" onclick="toggleFavFilter()" title="Show favourites only" aria-label="Favourites">☆</button>
+        <button class="ctl-btn icon-btn" id="charge-filter-btn" onclick="toggleFilterPanel('charge')" title="Filters" aria-label="Filters">⚲<span class="ctl-badge" id="charge-filter-badge" style="display:none"></span></button>
+      </div>
     </div>
     <div class="filter-panel" id="charge-filters" style="display:none">
       <div class="filter-row"><span class="frl">kWh added</span>
@@ -430,7 +651,54 @@ span.star { cursor: default; }
     </div>
   </section>
 
+  <!-- ── Files (live mode only) ────────────────────────────────────── -->
+  <section class="view" id="view-files">
+    <div class="list-header">
+      <h2>Files</h2>
+      <div class="summary-row"><span id="file-summary"></span></div>
+    </div>
+    <div class="file-crumbs" id="file-crumbs"></div>
+    <div class="file-path" id="file-location"></div>
+    <p class="file-readonly" id="file-readonly" hidden></p>
+    <div class="upload-row" id="file-upload-row" style="display:none">
+      <label class="load-btn" title="Copy a file from this device to the car">
+        Upload file
+        <input id="file-upload-input" type="file" onchange="uploadFile(this)" />
+      </label>
+      <span class="upload-status" id="file-upload-status"></span>
+    </div>
+    <div class="file-list" id="file-list"></div>
+  </section>
+
 </main>
+
+<!-- 12V / HV history. Covers the page like the file viewer, for the same reason: a chart needs
+     the room, and a dropdown under the header wouldn't give it any. -->
+<div class="viewer" id="battery-view" hidden>
+  <div class="viewer-bar">
+    <button class="viewer-close" onclick="closeBattery()">← Back</button>
+    <span class="viewer-name">HV / 12V Batteries — last 48 hours</span>
+  </div>
+  <div class="battery-body">
+    <div class="battery-chips" id="battery-chips"></div>
+    <div class="battery-chart"><canvas id="chart-battery"></canvas></div>
+    <p class="battery-note" id="battery-note"></p>
+  </div>
+</div>
+
+<!-- Text-file viewer. Lives outside <main> because it covers the whole page. -->
+<div class="viewer" id="viewer" hidden>
+  <div class="viewer-bar">
+    <button class="viewer-close" onclick="closeViewer()">← Back</button>
+    <span class="viewer-name" id="viewer-name"></span>
+    <button class="viewer-close viewer-copy" id="viewer-copy" onclick="copyViewer()"
+            title="Copy what's shown to the clipboard">⧉ Copy</button>
+  </div>
+  <div class="viewer-scroll" id="viewer-scroll">
+    <pre id="viewer-body"></pre>
+    <img class="viewer-image" id="viewer-image" alt="" hidden />
+  </div>
+</div>
 
 <script>
 'use strict';
@@ -491,10 +759,453 @@ async function ensureSql() {
     if (r.ok) {
       liveMode = true;
       document.getElementById('nav').style.display = 'flex';
+      document.getElementById('nav-files').style.display = '';
+      document.getElementById('battery-btn').style.display = '';
+      document.getElementById('bell-wrap').style.display = 'block';
+      startNotifications();
       showView('trips');
     }
   } catch (_) { /* file-upload mode — drop zone stays visible */ }
 })();
+
+// ── Notifications ──────────────────────────────────────────────────────────────
+// The car records what it does — a trip finished, a charge finished, a battery alert —
+// and this polls that list and shows it here.
+//
+// Deliberately a feed rather than a push. Web Push and the Notification API both require
+// a secure context, and the companion is served over plain HTTP from the car's own LAN
+// address, where the browser blocks both (that is also why the service worker below only
+// registers on https). So the events are pulled while the page is open; where the page IS
+// served securely — a tunnel, or the GitHub Pages copy pointed at the car — a real system
+// notification is raised too, which is strictly extra rather than something to rely on.
+let notifications   = [];
+let notifSeenTs     = +(localStorage.getItem('notifSeenTs') || 0);
+let notifPollTimer  = null;
+let notifKnownKeys  = new Set();
+
+function startNotifications() {
+  loadNotifications(true);
+  clearInterval(notifPollTimer);
+  notifPollTimer = setInterval(() => loadNotifications(false), 60000);
+  document.addEventListener('click', e => {
+    const wrap = document.getElementById('bell-wrap');
+    if (wrap && !wrap.contains(e.target)) document.getElementById('notif-panel').style.display = 'none';
+  });
+}
+
+async function loadNotifications(first) {
+  try {
+    const list = await fetchJson('/api/notifications');
+    const fresh = list.filter(n => !notifKnownKeys.has(n.key));
+    notifications = list;
+    list.forEach(n => notifKnownKeys.add(n.key));
+    // Don't replay the backlog as system notifications on the first load of a session.
+    if (!first) fresh.filter(n => n.timestamp > notifSeenTs).forEach(raiseSystemNotification);
+    renderNotifications();
+  } catch (_) { /* offline or logged out — keep whatever is already shown */ }
+}
+
+function renderNotifications() {
+  const unseen = notifications.filter(n => n.timestamp > notifSeenTs).length;
+  const badge  = document.getElementById('bell-badge');
+  badge.textContent   = unseen > 9 ? '9+' : String(unseen);
+  badge.style.display = unseen ? 'block' : 'none';
+
+  const list = document.getElementById('notif-list');
+  if (!notifications.length) {
+    list.innerHTML = '<div class="notif-empty">Nothing yet. Finished trips, charges and battery alerts show up here.</div>';
+    return;
+  }
+  list.innerHTML = notifications.map(n => `
+    <div class="notif-item${n.timestamp > notifSeenTs ? ' unseen' : ''}">
+      <div class="notif-title">${esc(n.title)}</div>
+      <div class="notif-body">${esc(n.body)}</div>
+      <div class="notif-time">${fmtDate(n.timestamp)}</div>
+    </div>`).join('');
+}
+
+function toggleNotifications() {
+  const panel = document.getElementById('notif-panel');
+  const open  = panel.style.display !== 'block';
+  panel.style.display = open ? 'block' : 'none';
+  if (open) {
+    loadNotifications(false);
+    requestSystemNotifications();
+  }
+}
+
+function markNotificationsSeen() {
+  notifSeenTs = Date.now();
+  localStorage.setItem('notifSeenTs', String(notifSeenTs));
+  renderNotifications();
+}
+
+/** Only possible in a secure context; a no-op everywhere else, by design. */
+function requestSystemNotifications() {
+  if (!('Notification' in window) || !window.isSecureContext) return;
+  if (Notification.permission === 'default') Notification.requestPermission().catch(() => {});
+}
+
+function raiseSystemNotification(n) {
+  if (!('Notification' in window) || !window.isSecureContext) return;
+  if (Notification.permission !== 'granted') return;
+  try { new Notification(n.title, { body: n.body, tag: n.key }); } catch (_) {}
+}
+
+// ── Files (live mode only) ─────────────────────────────────────────────────────
+// A small browser over the folders the car is willing to show — app files, backups on
+// internal storage and the SD card. Deliberately not the whole filesystem: the server
+// decides the roots, this only renders what it returns. Wider access lives in ADB.
+let fileState = { roots: [], path: '', label: '', writable: false };
+
+/**
+ * Why a folder is read-only, where that is something the user can fix.
+ *
+ * "writeBlocked" means the car meant to allow writes here and the filesystem refused — in practice
+ * the Storage permission, which is granted separately from the read one, so the folder lists fine
+ * and every delete fails. Saying so beats a bare "read-only".
+ */
+function rootReadOnlyNote(root) {
+  if (root.writable) return '';
+  return root.writeBlocked
+    ? ' · read-only — needs the Storage permission on the car'
+    : ' · read-only';
+}
+
+async function loadFiles(path = '') {
+  const listEl = document.getElementById('file-list');
+  listEl.innerHTML = '<div class="empty">Loading…</div>';
+  setUploadStatus('');
+  try {
+    fileState = await fetchJson('/api/files?p=' + encodeURIComponent(path));
+    renderFiles();
+  } catch (err) {
+    listEl.innerHTML = `<div class="empty">Could not read the car's files — ${esc(err.message)}</div>`;
+  }
+}
+
+function renderFiles() {
+  const atRoot = !fileState.path;
+  const crumbs = document.getElementById('file-crumbs');
+  const listEl = document.getElementById('file-list');
+
+  crumbs.innerHTML = atRoot
+    ? '<span>Choose a folder</span>'
+    : `<button onclick="navigate('files','')">All folders</button><span>›</span>` +
+      `<span>${esc(fileState.path.split('/').join(' › '))}</span>` +
+      (fileState.parent
+        ? ` <button onclick="navigate('files','${encodeURIComponent(fileState.parent)}')">↑ Up</button>` : '');
+
+  document.getElementById('file-location').textContent = atRoot ? '' : (fileState.location || '');
+  document.getElementById('file-upload-row').style.display = (!atRoot && fileState.writable) ? 'flex' : 'none';
+  // A folder the car can't write to says why, rather than silently losing Upload and Delete.
+  const blocked = document.getElementById('file-readonly');
+  blocked.textContent = (!atRoot && fileState.writeBlocked)
+    ? 'This folder is read-only: the app needs the Storage permission on the car. Grant it in Android Settings → Apps → BYD Trip Stats → Permissions, or re-run the ADB setup in Settings → App Management.'
+    : '';
+  blocked.hidden = !blocked.textContent;
+
+  if (atRoot) {
+    document.getElementById('file-summary').textContent = '';
+    listEl.innerHTML = (fileState.roots || []).map(r => `
+      <div class="file-row">
+        <div class="file-icon">📁</div>
+        <div class="file-main">
+          <div class="file-name link" onclick="navigate('files','${encodeURIComponent(r.id)}')">${esc(r.label)}</div>
+          <div class="file-meta">${esc(r.hint)}${rootReadOnlyNote(r)}</div>
+        </div>
+      </div>`).join('') || '<div class="empty">No folders available.</div>';
+    return;
+  }
+
+  const entries = fileState.entries || [];
+  const files = entries.filter(e => !e.dir);
+  document.getElementById('file-summary').innerHTML =
+    `<strong>${files.length}</strong> file${files.length === 1 ? '' : 's'}` +
+    (files.length ? ` · <strong>${fmtBytes(files.reduce((a, e) => a + e.size, 0))}</strong>` : '');
+
+  listEl.innerHTML = entries.map(e => {
+    const p = encodeURIComponent(e.path);
+    const name = e.dir
+      ? `<div class="file-name link" onclick="navigate('files','${p}')">${esc(e.name)}</div>`
+      : `<div class="file-name">${esc(e.name)}</div>`;
+    const meta = e.dir ? 'Folder' : `${fmtBytes(e.size)} · ${fmtDate(e.modified)}`;
+    const actions = e.dir ? '' : `
+      <div class="file-actions">
+        ${e.viewable ? `<button onclick="viewFile('${p}')">View</button>` : ''}
+        <a href="/files/download?p=${p}">Download</a>
+        ${fileState.writable ? `<button class="danger" onclick="deleteFile('${p}')">Delete</button>` : ''}
+      </div>`;
+    const icon = e.dir ? '📁' : (e.viewKind === 'image' ? '🖼️' : '📄');
+    return `<div class="file-row">
+      <div class="file-icon">${icon}</div>
+      <div class="file-main">${name}<div class="file-meta">${esc(meta)}</div></div>
+      ${actions}
+    </div>`;
+  }).join('') || '<div class="empty">This folder is empty.</div>';
+}
+
+async function uploadFile(input) {
+  const file = input.files && input.files[0];
+  input.value = '';                       // so picking the same file again still fires onchange
+  if (!file || !fileState.path) return;
+
+  setUploadStatus(`Uploading ${file.name}…`);
+  const form = new FormData();
+  form.append('file', file, file.name);
+  try {
+    const r = await fetch('/api/files/upload?p=' + encodeURIComponent(fileState.path),
+                          { method: 'POST', body: form });
+    const res = await r.json().catch(() => ({}));
+    if (!r.ok || !res.ok) throw new Error(res.error || `Server returned ${r.status}`);
+    setUploadStatus(`Uploaded ${res.name}`, 'ok');
+    loadFiles(fileState.path);
+  } catch (err) {
+    setUploadStatus(err.message, 'error');
+  }
+}
+
+// ── 12V / HV history (live mode only) ──────────────────────────────────────────
+// The same 48-hour window the app's HV / 12V card opens, plotting the same two series against
+// each other: 12V on the left axis, SoC on the right, with charging samples shaded. SoC is
+// resolved server-side against the Panel/BMS preference so the two screens agree.
+async function openBattery() {
+  document.getElementById('battery-view').hidden = false;
+  document.body.style.overflow = 'hidden';
+  document.getElementById('battery-note').textContent = 'Loading…';
+  try {
+    renderBattery(await fetchJson('/api/battery'));
+  } catch (err) {
+    document.getElementById('battery-chips').innerHTML = '';
+    destroyChart('chart-battery');
+    document.getElementById('battery-note').textContent =
+      `Could not read the battery history — ${err.message}`;
+  }
+}
+
+function closeBattery() {
+  document.getElementById('battery-view').hidden = true;
+  document.body.style.overflow = '';
+  destroyChart('chart-battery');
+}
+
+function renderBattery(data) {
+  const pts   = data.points || [];
+  const chips = document.getElementById('battery-chips');
+  const note  = document.getElementById('battery-note');
+
+  if (!pts.length) {
+    chips.innerHTML = '';
+    destroyChart('chart-battery');
+    note.textContent = 'No 12V history recorded yet — the car stores a sample about once a minute while the app is running.';
+    return;
+  }
+
+  const v12    = pts.map(p => p.v12);
+  const latest = pts[pts.length - 1];
+  const delta  = pts.length >= 2 ? latest.v12 - pts[0].v12 : null;
+
+  chips.innerHTML = [
+    ['Latest', latest.v12.toFixed(2) + ' V'],
+    ['Min',    Math.min.apply(null, v12).toFixed(2) + ' V'],
+    ['Max',    Math.max.apply(null, v12).toFixed(2) + ' V'],
+    ['Δ',      delta == null ? '—' : (delta >= 0 ? '+' : '') + delta.toFixed(2) + ' V'],
+    ['HV now', latest.hv > 0 ? latest.hv + ' V' : '—'],
+  ].map(([lbl, val]) =>
+    `<div class="battery-chip"><div class="lbl">${esc(lbl)}</div><div class="val">${esc(val)}</div></div>`
+  ).join('');
+
+  // The window always ends at "now", so a gap at the right edge reads as "the app wasn't
+  // running", which is the honest picture rather than a line stretched to the present.
+  const now   = Math.max(latest.t, Date.now());
+  const start = now - (data.windowMs || 48 * 3600 * 1000);
+  const shown = pts.filter(p => p.t >= start);
+  const socLabel = 'SoC (%) — ' + (data.socSource === 'PANEL' ? 'panel' : 'BMS');
+
+  note.textContent =
+    `${shown.length.toLocaleString()} samples over the last 48 hours. ` +
+    `Gaps are stretches where the app wasn't running, so nothing was recorded.`;
+
+  mkChart('chart-battery', {
+    type: 'line',
+    data: { datasets: [
+      // Drawn first and filled to the axis floor, so charging periods read as a background band.
+      { label: 'Charging', order: 3, yAxisID: 'y',
+        data: shown.map(p => ({ x: p.t, y: p.charging ? 14 : null })),
+        borderWidth: 0, pointRadius: 0, stepped: true, spanGaps: false,
+        fill: 'start', backgroundColor: 'rgba(76,175,80,0.14)' },
+      { label: '12V (V)', order: 1, yAxisID: 'y',
+        data: shown.map(p => ({ x: p.t, y: p.v12 })),
+        borderColor: '#2196F3', borderWidth: 2, pointRadius: 0, tension: 0.25, fill: false },
+      { label: socLabel, order: 2, yAxisID: 'y2',
+        data: shown.map(p => ({ x: p.t, y: p.soc > 0 ? p.soc : null })),
+        borderColor: C.violet, borderWidth: 1.5, pointRadius: 0, tension: 0.25,
+        borderDash: [6, 4], fill: false, spanGaps: true },
+    ]},
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      plugins: pluginBase,
+      scales: {
+        x: { ...xAxis, min: start, max: now,
+             // Two days of "HH:mm" alone would be ambiguous, so the weekday comes along.
+             time: { tooltipFormat: 'EEE HH:mm', displayFormats: { minute: 'EEE HH:mm', hour: 'EEE HH:mm' } } },
+        // Fixed 12–14 V, as in the app: an auto scale would turn ordinary noise into a cliff.
+        y:  { ...yAxisLeft('12V', '#2196F3'), min: 12, max: 14 },
+        y2: { ...yAxisRight('SoC %', C.violet), min: 0, max: 100 },
+      }
+    }
+  });
+}
+
+/**
+ * Shows a text file inside the page rather than in a new tab.
+ *
+ * A new tab has no way back on an installed PWA — iOS opens it chromeless, and the only exit was
+ * a back-swipe — so the viewer is an overlay this page owns, with its own Close.
+ */
+async function viewFile(encodedPath) {
+  const path  = decodeURIComponent(encodedPath);
+  const entry = (fileState.entries || []).find(e => e.path === path);
+  const name  = entry ? entry.name : path;
+  const isImage = entry && entry.viewKind === 'image';
+
+  const body = document.getElementById('viewer-body');
+  const img  = document.getElementById('viewer-image');
+  document.getElementById('viewer-name').textContent = name;
+  document.getElementById('viewer').hidden = false;
+  // Copying a screenshot as text would produce nothing worth pasting.
+  document.getElementById('viewer-copy').hidden = isImage;
+  document.body.style.overflow = 'hidden';
+
+  if (isImage) {
+    body.hidden = true;
+    img.hidden = false;
+    img.src = '/files/view?p=' + encodedPath;
+    document.getElementById('viewer-scroll').scrollTop = 0;
+    return;
+  }
+
+  img.hidden = true;
+  img.removeAttribute('src');      // stops a previous image still downloading
+  body.hidden = false;
+  body.textContent = 'Loading…';
+  try {
+    const r = await fetch('/files/view?p=' + encodedPath);
+    if (!r.ok) throw new Error(`Server returned ${r.status}`);
+    body.textContent = await r.text();
+    document.getElementById('viewer-scroll').scrollTop = 0;
+  } catch (err) {
+    body.textContent = `Could not read the file — ${err.message}`;
+  }
+}
+
+function closeViewer() {
+  document.getElementById('viewer').hidden = true;
+  document.getElementById('viewer-image').removeAttribute('src');
+  document.body.style.overflow = '';
+}
+
+async function copyViewer() {
+  const btn = document.getElementById('viewer-copy');
+  const ok  = await copyText(document.getElementById('viewer-body').textContent);
+  btn.textContent = ok ? '✓ Copied' : '✕ Copy failed';
+  btn.classList.toggle('done', ok);
+  btn.classList.toggle('failed', !ok);
+  setTimeout(() => {
+    btn.textContent = '⧉ Copy';
+    btn.classList.remove('done', 'failed');
+  }, 1800);
+}
+
+/**
+ * Copies text to the clipboard, on this origin as well as a secure one.
+ *
+ * navigator.clipboard only exists in a secure context, and the companion is served over plain
+ * HTTP from the car's own address — the same gate that keeps web push out — so the old
+ * execCommand path is not a legacy fallback here, it is the one that actually runs.
+ */
+async function copyText(text) {
+  if (window.isSecureContext && navigator.clipboard) {
+    try { await navigator.clipboard.writeText(text); return true; } catch (_) { /* fall through */ }
+  }
+
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;';
+  document.body.appendChild(ta);
+
+  const sel   = window.getSelection();
+  const saved = sel && sel.rangeCount ? sel.getRangeAt(0) : null;
+  try {
+    // iOS Safari ignores select() on a readonly textarea; selecting a Range over it works.
+    const range = document.createRange();
+    range.selectNodeContents(ta);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    ta.setSelectionRange(0, text.length);
+    return document.execCommand('copy');
+  } catch (_) {
+    return false;
+  } finally {
+    document.body.removeChild(ta);
+    if (saved && sel) { sel.removeAllRanges(); sel.addRange(saved); }
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  closeViewer();
+  closeBattery();
+});
+// Navigating away must not leave an overlay covering the page it lands on.
+window.addEventListener('hashchange', () => { closeViewer(); closeBattery(); });
+
+// The path comes back through the DOM already encoded, so the name is looked up from the loaded
+// listing rather than passed through the onclick attribute — no quoting to get wrong.
+async function deleteFile(encodedPath) {
+  const path  = decodeURIComponent(encodedPath);
+  const entry = (fileState.entries || []).find(e => e.path === path);
+  const name  = entry ? entry.name : path;
+  if (!confirm(`Delete ${name}?\n\nThis cannot be undone.`)) return;
+
+  setUploadStatus(`Deleting ${name}…`);
+  try {
+    const r   = await fetch('/api/files/delete?p=' + encodedPath, { method: 'POST' });
+    const res = await r.json().catch(() => ({}));
+    if (!r.ok || !res.ok) throw new Error(res.error || `Server returned ${r.status}`);
+    await loadFiles(fileState.path);
+    setUploadStatus(`Deleted ${name}`, 'ok');
+  } catch (err) {
+    setUploadStatus(err.message, 'error');
+  }
+}
+
+function setUploadStatus(text, kind = '') {
+  const el = document.getElementById('file-upload-status');
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'upload-status' + (kind ? ' ' + kind : '');
+}
+
+/** "471 trips · 10,124 km · 1,954 kWh" — one line, dot-separated, values emphasised. */
+function summaryLine(parts) {
+  return parts
+    .map(([value, label]) => `<span><strong>${esc(value)}</strong> ${esc(label)}</span>`)
+    .join('<span class="sep">·</span>');
+}
+
+function fmtBytes(n) {
+  if (!n) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let i = 0, v = n;
+  while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
+  return `${v < 10 && i > 0 ? v.toFixed(1) : Math.round(v)} ${units[i]}`;
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
 
 async function fetchJson(url) {
   const r = await fetch(url);
@@ -537,7 +1248,7 @@ async function loadFile(file) {
 }
 
 // ── Routing ────────────────────────────────────────────────────────────────────
-const VIEWS = ['drop', 'trips', 'trip', 'charges', 'charge'];
+const VIEWS = ['drop', 'trips', 'trip', 'charges', 'charge', 'files'];
 const TRIP_CHARTS = ['chart-speed','chart-rpm','chart-power','chart-energy','chart-soc','chart-altitude','chart-voltage','chart-tyre','chart-instant'];
 
 function showView(view, id) {
@@ -548,6 +1259,7 @@ function showView(view, id) {
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
   if (view === 'trips' || view === 'trip') document.getElementById('nav-trips')?.classList.add('active');
   if (view === 'charges' || view === 'charge') document.getElementById('nav-charges')?.classList.add('active');
+  if (view === 'files') document.getElementById('nav-files')?.classList.add('active');
   // Destroy charts when leaving detail views
   if (view !== 'trip') TRIP_CHARTS.forEach(destroyChart);
   if (view !== 'charge') destroyChart('chart-charge');
@@ -559,6 +1271,8 @@ function showView(view, id) {
   if (view === 'trip')    renderTripDetail(+id);
   if (view === 'charges') renderChargeList();
   if (view === 'charge')  renderChargeDetail(+id);
+  // Safari hands back an already-decoded location.hash, so a second decode has to be tolerated.
+  if (view === 'files')   loadFiles(id ? (() => { try { return decodeURIComponent(id); } catch (_) { return id; } })() : '');
 }
 
 // ── Favourites ───────────────────────────────────────────────────────────────────
@@ -595,7 +1309,8 @@ function toggleFavFilter() {
   favOnly = !favOnly;
   document.querySelectorAll('.fav-filter').forEach(b => {
     b.classList.toggle('active', favOnly);
-    b.textContent = (favOnly ? '★' : '☆') + ' Favourites';
+    b.textContent = favOnly ? '★' : '☆';
+    b.title = favOnly ? 'Showing favourites only — tap to show all' : 'Show favourites only';
   });
   if (currentListView === 'charges') renderChargeList(); else renderTripList();
 }
@@ -611,14 +1326,31 @@ const inRange = (v, min, max) => (min == null || v >= min) && (max == null || v 
 const tripDurMs   = t => t.endTime ? (+t.endTime - +t.startTime - (+t.offStateDurationMs || 0)) : 0;
 const chargeDurMs = s => s.endTime ? (+s.endTime - +s.startTime) : 0;
 
-function setTripFilter(k, v)   { tripFilters[k]   = numOrNull(v); renderTripList(); }
-function setChargeFilter(k, v) { chargeFilters[k] = numOrNull(v); renderChargeList(); }
+function setTripFilter(k, v)   { tripFilters[k]   = numOrNull(v); updateFilterBadge('trip');   renderTripList(); }
+function setChargeFilter(k, v) { chargeFilters[k] = numOrNull(v); updateFilterBadge('charge'); renderChargeList(); }
 
 function toggleSortDir(kind) {
-  const s = kind === 'trip' ? tripSort : chargeSort;
+  const s   = kind === 'trip' ? tripSort : chargeSort;
+  const btn = document.getElementById(kind + '-dir');
   s.dir = s.dir === 'desc' ? 'asc' : 'desc';
-  document.getElementById(kind + '-dir').textContent = s.dir === 'desc' ? '↓ Desc' : '↑ Asc';
+  // Icon only, so the direction has to live in the tooltip rather than a label beside it.
+  btn.textContent = s.dir === 'desc' ? '↓' : '↑';
+  btn.title = s.dir === 'desc' ? 'Descending — tap to reverse' : 'Ascending — tap to reverse';
   if (kind === 'trip') renderTripList(); else renderChargeList();
+}
+
+/**
+ * How many filters are set, shown as a badge on the Filters button. Without the word "Filters"
+ * next to it there is otherwise nothing to say a list is being filtered.
+ */
+function updateFilterBadge(kind) {
+  const store = kind === 'trip' ? tripFilters : chargeFilters;
+  const count = Object.values(store).filter(v => v != null).length;
+  const badge = document.getElementById(kind + '-filter-badge');
+  if (!badge) return;
+  badge.textContent = count;
+  badge.style.display = count ? 'flex' : 'none';
+  document.getElementById(kind + '-filter-btn')?.classList.toggle('filtered', count > 0);
 }
 
 function toggleFilterPanel(kind) {
@@ -632,6 +1364,7 @@ function clearFilters(kind) {
   const store = kind === 'trip' ? tripFilters : chargeFilters;
   Object.keys(store).forEach(k => delete store[k]);
   document.querySelectorAll('#' + kind + '-filters input').forEach(i => i.value = '');
+  updateFilterBadge(kind);
   if (kind === 'trip') renderTripList(); else renderChargeList();
 }
 
@@ -680,6 +1413,9 @@ function parseHash() {
   else if (h.startsWith('trip/'))       showView('trip',   h.split('/')[1]);
   else if (h === 'charges')             showView('charges');
   else if (h.startsWith('charge/'))     showView('charge', h.split('/')[1]);
+  // Everything after "files/" is one encoded path, so it is taken whole rather than split.
+  else if (h === 'files')               showView('files');
+  else if (h.startsWith('files/'))      showView('files', h.slice(6));
   else                                  showView('trips');
 }
 
@@ -750,10 +1486,11 @@ async function _renderTripList() {
 
   const totalDist   = shown.reduce((a, t) => a + (+t.dist   || 0), 0);
   const totalEnergy = shown.reduce((a, t) => a + (+t.energy || 0), 0);
-  document.getElementById('trip-summary').innerHTML =
-    `<span><strong>${shown.length}</strong> trips</span>` +
-    `<span><strong>${totalDist.toFixed(0)}</strong> km total</span>` +
-    `<span><strong>${totalEnergy.toFixed(1)}</strong> kWh used</span>`;
+  document.getElementById('trip-summary').innerHTML = summaryLine([
+    [shown.length, shown.length === 1 ? 'trip' : 'trips'],
+    [Math.round(totalDist).toLocaleString(), 'km'],
+    [Math.round(totalEnergy).toLocaleString(), 'kWh']
+  ]);
 
   if (!shown.length) {
     document.getElementById('trip-cards').innerHTML =
@@ -992,9 +1729,10 @@ async function _renderChargeList() {
   const shown = applyChargeControls(sessions);
 
   const totalKwh = shown.reduce((a, s) => a + (+s.kwhAdded || 0), 0);
-  document.getElementById('charge-summary').innerHTML =
-    `<span><strong>${shown.length}</strong> sessions</span>` +
-    `<span><strong>${totalKwh.toFixed(1)}</strong> kWh total</span>`;
+  document.getElementById('charge-summary').innerHTML = summaryLine([
+    [shown.length, shown.length === 1 ? 'session' : 'sessions'],
+    [Math.round(totalKwh).toLocaleString(), 'kWh']
+  ]);
 
   if (!shown.length) {
     document.getElementById('charge-cards').innerHTML =

@@ -3,6 +3,7 @@ package com.byd.tripstats.data.repository
 import android.content.Context
 import android.util.Log
 import androidx.room.withTransaction
+import com.byd.tripstats.data.analysis.CostAttribution
 import com.byd.tripstats.data.local.BydStatsDatabase
 import com.byd.tripstats.data.local.dao.TripSohSummary
 import com.byd.tripstats.data.local.entity.LatLng
@@ -14,6 +15,7 @@ import com.byd.tripstats.data.local.entity.TripStatsEntity
 import com.byd.tripstats.data.local.entity.TripTagCrossRef
 import com.byd.tripstats.data.local.entity.TAG_PALETTE_SIZE
 import com.byd.tripstats.data.model.VehicleTelemetry
+import com.byd.tripstats.data.notify.VehicleEvents
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.util.DiagLog
 import kotlinx.coroutines.*
@@ -130,6 +132,14 @@ sealed class MergeResult {
 private enum class TripState { IDLE, ACTIVE }
 
 private const val KEY_LAST_TELEMETRY_JSON = "last_telemetry_json"
+
+/**
+ * The one [TripRepository.doEndTrip] reason that is not a live close: the trip is finalised on
+ * the next cold start from what the DB holds, with its end values back-dated. Named rather than
+ * spelled inline because the Telegram trip summary keys off it — diag.log alone would not have
+ * made that dependency visible at the call site.
+ */
+private const val REASON_COLD_START_RECOVERY = "cold-start-recovery"
 
 // ── Repository ────────────────────────────────────────────────────────────────
 
@@ -1160,7 +1170,7 @@ class TripRepository private constructor(context: Context) {
             // tripMinSoc (seeded above) instead of storing a stale 0 as the end SoC.
             val lastPanelSoc = dataPoints.lastOrNull { it.socPanel > 0 }?.socPanel?.toDouble()
             doEndTrip(
-                reason                 = "cold-start-recovery",
+                reason                 = REASON_COLD_START_RECOVERY,
                 overrideEndTime        = storedOffSince?.let { it + carOffTimeoutMs() }
                                             ?: validPoint?.timestamp
                                             ?: lastPoint?.timestamp,
@@ -1566,9 +1576,55 @@ class TripRepository private constructor(context: Context) {
             Log.e(TAG, "Stats calculation failed for trip $tripId", e)
         }
 
+        // Trip-finished event (Telegram push + the web companion's feed). Read the row back
+        // rather than reusing `trip`: the
+        // copy above is the pre-close snapshot, so its end values — the whole content of
+        // the summary — are still null. Stats are fetched after calculateTripStats so the
+        // card can carry average speed and the trip score. Off by default and a no-op
+        // without a bot, and the notifier does the composing and the network hop on its
+        // own scope, so nothing here can delay the close.
+        try {
+            tripDao.getTripById(tripId)?.let { closedTrip ->
+                VehicleEvents.getInstance(appContext).onTripFinished(
+                    trip = closedTrip,
+                    stats = statsDao.getStatsForTrip(tripId),
+                    // Lifetime average, this trip included — the row is already written.
+                    fleetAvgEfficiency = tripDao.getAverageEfficiency(),
+                    // The same FIFO cost-basis rate the trip screen prices this drive with.
+                    // Computed the app's way (all trips + all charges + the tariff) rather
+                    // than as energy × tariff, which disagrees with the app for anyone who
+                    // has ever priced a charge individually. Null when nothing can price it.
+                    energyRatePerKwh = resolveTripEnergyRate(tripId),
+                    // The close path itself decides whether this is news: every reason but
+                    // cold-start-recovery means the app was running when the trip ended, so
+                    // the push lands while it is still the drive the user just did. Recovery
+                    // finalises a trip on the NEXT start — every DiLink-5 trip — and would
+                    // otherwise announce yesterday's drive at today's ignition.
+                    liveClose = reason != REASON_COLD_START_RECOVERY,
+                )
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Trip-finished event failed for trip $tripId: ${e.message}")
+        }
+
         resetTripState()
         Log.i(TAG, "Trip ended id=$tripId")
     }
+
+    /**
+     * The trip's effective electricity rate (currency/kWh) exactly as the app derives it for
+     * display: FIFO cost-basis over every charge and trip, not the flat tariff. Null when no
+     * price signal exists at all, which is the app's "hide the cost" case.
+     *
+     * Reads the full trip and charge tables — the same inputs the dashboard flow uses — but
+     * only once, at trip close, and only when a summary is actually going out.
+     */
+    private suspend fun resolveTripEnergyRate(tripId: Long): Double? =
+        CostAttribution.blendedTripRates(
+            trips = tripDao.getAllTripsSync(),
+            sessions = database.chargingSessionDao().getAllSessionsSync(),
+            tariff = prefsManager.getCachedElectricityPrice(),
+        )[tripId]
 
     private fun resetTripState() {
         cachedCurrentTrip     = null

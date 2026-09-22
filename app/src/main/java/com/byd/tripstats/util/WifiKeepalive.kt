@@ -6,7 +6,7 @@ import com.byd.tripstats.adb.AdbPermissionManager
 import com.byd.tripstats.data.preferences.PreferencesManager
 
 /**
- * Bridges the "keep Wi-Fi alive when parked" preference to the privileged UID-2000 telemetry
+ * Bridges the "keep Wi-Fi alive when car is off" preference to the privileged UID-2000 telemetry
  * daemon that actually enforces it (see [TelemetryDaemonMain.startWifiKeepalive]).
  *
  * The daemon and the app run as different UIDs, so the toggle can't be shared through the app's

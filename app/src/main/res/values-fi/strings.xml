@@ -269,7 +269,7 @@
     <string name="export_save_html">Tallenna HTML-katselimena (avaa kaksoisnapsauttamalla)</string>
     <string name="export_send_telegram">Lähetä Telegram-botille</string>
     <string name="export_telegram_not_configured">Lähetä Telegram-botille (ei konfiguroitu)</string>
-    <string name="export_telegram_setup_hint">Aseta botti Asetukset → Varmuuskopio &amp; Palautus.</string>
+    <string name="export_telegram_setup_hint">Linkitä Telegram-bottisi kohdassa Asetukset → Yhteydet → Telegram.</string>
     <string name="export_send_csv">Lähetä CSV Telegramiin</string>
     <string name="export_send_json">Lähetä JSON Telegramiin</string>
     <string name="export_send_html">Lähetä HTML-katselin Telegramiin</string>
@@ -533,17 +533,70 @@
     <string name="wifi_only_desc">Automaattiset varmuuskopiot toimivat vain Wi-Fissä mobiilidatan säästämiseksi</string>
     <string name="last_auto_backup_label">Viimeisin automaattinen varmuuskopio: %1$s</string>
     <string name="schedule_updated_msg">Aikataulu päivitetty: %1$s. Seuraava automaattinen varmuuskopio noudattaa uutta väliä.</string>
-    <string name="telegram_setup_info">Kun yhteys on muodostettu, varmuuskopioita voidaan lähettää manuaalisesti tai aikataulun mukaan. Jokainen varmuuskopio saapuu .db-tiedostona yksityiseen chattiisi, joka on käytettävissä mistä tahansa Telegram-laitteesta.</string>
+    <string name="telegram_setup_info">Varmuuskopiot voi lähettää manuaalisesti tai aikataulun mukaan. Kukin saapuu .db-tiedostona yksityiseen keskusteluusi, joka on käytettävissä miltä tahansa Telegram-laitteelta.</string>
     <string name="telegram_instructions">1. Lähetä viesti @BotFatherille Telegramissa → /newbot → kopioi token\n2. Lähetä mikä tahansa viesti uudelle botillesi\n3. Liitä token alla olevaan kenttään ja napauta Vahvista</string>
     <string name="bot_token_label">Botin token</string>
     <string name="validate_save_action">Vahvista &amp; tallenna</string>
     <string name="restore_from_telegram_label">Palauta Telegramista</string>
-    <string name="connect_telegram_first">Yhdistä ensin Telegram-yksityisbotti (katso Telegram-varmuuskopio yllä).</string>
+    <string name="connect_telegram_first">Linkitä ensin Telegram-botti — Asetukset → Yhteydet → Telegram.</string>
     <string name="backups_in_chat_label">Varmuuskopiot chatissasi:</string>
     <string name="scan_telegram_hint">Napauta päivitä skannатaksesi Telegram-chattisi .db-varmuuskopioiden varalta.</string>
-    <string name="no_telegram_configured">Telegramia ei ole konfiguroitu — aseta se ensin Varmuuskopio &amp; Palautus -osiossa.</string>
+    <string name="no_telegram_configured">Telegramia ei ole linkitetty — määritä se ensin kohdassa Asetukset → Yhteydet → Telegram.</string>
     <string name="sent_telegram_success">Lähetetty Telegramilla ✓</string>
     <string name="telegram_send_failed">Telegram-lähetys epäonnistui: %1$s</string>
+    <string name="tailscale_title">Tailscale — etäkäyttö</string>
+    <string name="tailscale_title_short">Tailscale</string>
+    <string name="tailscale_desc">Liitä auto omaan yksityiseen Tailscale-verkkoosi, jotta web companion ja ADB toimivat mistä tahansa — eivät vain kotona. Mitään ei altisteta internetiin eikä reitittimeesi avata portteja.</string>
+    <string name="tailscale_card_desc">Tavoita auton web companion ja ADB mistä tahansa</string>
+    <string name="tailscale_unavailable">Ei käytettävissä tässä versiossa (vaatii 64-bittisen ARM-pääyksikön).</string>
+    <string name="tailscale_not_connected">Ei yhdistetty.</string>
+    <string name="tailscale_starting">Käynnistetään…</string>
+    <string name="tailscale_error">Jokin meni pieleen. Tarkista alla olevat ohjeet ja yritä uudelleen.</string>
+    <string name="tailscale_connected">Yhdistetty nimellä %1$s</string>
+    <string name="tailscale_reachable_hint">Web companion: http://%1$s:8888 · ADB: adb connect %1$s:5555</string>
+    <string name="tailscale_needs_adb">Vaatii ensin kertaluontoisen ADB-valtuutuksen — saman, jota välitön telemetria käyttää. Määritä se kohdassa Sovellusten hallinta ja palaa sitten.</string>
+    <string name="tailscale_signin_phone">Kirjaudu puhelimellasi</string>
+    <string name="tailscale_scan_instructions">Skannaa tämä puhelimesi kameralla ja kirjaudu sitten Tailscaleen avautuvassa selaimessa. Auto liittyy verkkoosi heti kun hyväksyt sen — tähän ei tarvitse kirjoittaa mitään.</string>
+    <string name="tailscale_scan_qr_cd">QR-koodi, joka avaa Tailscalen kirjautumissivun</string>
+    <string name="tailscale_waiting_for_signin">Odotetaan hyväksyntääsi… voit poistua tästä näkymästä, odotus jatkuu.</string>
+    <string name="tailscale_cancel_signin">Peruuta kirjautuminen</string>
+    <string name="tailscale_other_ways">Muut kirjautumistavat</string>
+    <string name="tailscale_alt_adb_title">Kirjoita avain tietokoneeltasi (ADB)</string>
+    <string name="tailscale_alt_adb_body">Jos käytät jo ADB:tä tämän auton kanssa — ja käytät, koska Tailscale vaatii saman valtuutuksen — napauta alla olevaa Auth key -kenttää, jotta se on aktiivinen, ja suorita sitten tämä tietokoneeltasi avaimella pisteiden tilalla. Auth-avaimet sisältävät vain kirjaimia, numeroita ja väliviivoja, joten mikään ei mene sekaisin.</string>
+    <string name="tailscale_alt_key_title">Liitä auth-avain</string>
+    <string name="tailscale_alt_key_body">Luo sellainen Tailscale-konsolissa kohdassa Settings → Keys (jätä Ephemeral pois päältä) ja liitä se tähän. Kuusikymmentä merkkiä on paljon kirjoitettavaksi auton näytöllä, siksi yllä on QR-koodi.</string>
+    <string name="tailscale_authkey_label">Auth-avain</string>
+    <string name="tailscale_connect">Yhdistä</string>
+    <string name="tailscale_disconnect">Katkaise Tailscale-yhteys</string>
+    <string name="tailscale_how_to">Näin määrität tämän</string>
+    <string name="tailscale_step_1">1. Luo ilmainen tili osoitteessa tailscale.com, jos sinulla ei ole sellaista.</string>
+    <string name="tailscale_step_2">2. Avaa hallintakonsolissa Settings → Keys ja napauta Generate auth key. Jätä Ephemeral POIS PÄÄLTÄ — tilapäinen avain saa auton katoamaan verkostasi aina, kun se menee lepotilaan, ja sen osoite muuttuisi joka kerta.</string>
+    <string name="tailscale_step_3">3. Kopioi avain (alkaa tskey-auth-) ja liitä se alle, napauta sitten Yhdistä. Auto liittyy verkkoosi ja säilyttää saman osoitteen siitä eteenpäin.</string>
+    <string name="tailscale_step_4">4. Asenna Tailscale puhelimeesi tai kannettavaan ja kirjaudu samalle tilille. Kaikki, mikä on kirjautuneena, tavoittaa auton — mikään muu ei.</string>
+    <string name="tailscale_console_warnings">Kannattaa tehdä kerran hallintakonsolissa: avaa Machines → autosi → Disable key expiry, muuten se putoaa verkostasi noin puolen vuoden kuluttua ja vain käynti auton luona korjaa sen. Älä aseta autoon exit nodea (se ohjaisi sen ABRP-, MQTT- ja Telegram-liikenteen jonkun toisen internetyhteyden kautta), äläkä ota Funnelia käyttöön (se asettaisi web companionin julkiseen internetiin, suojanaan vain sen PIN).</string>
+    <string name="tailscale_di5_note">DiLink-5:ssä auto pysäyttää pakotetusti jokaisen sovelluksen, kun sammutat sen, joten etäkäyttö loppuu auton mukana ja palaa, kun auto seuraavan kerran herää.</string>
+    <string name="telegram_title_label">Telegram</string>
+    <string name="telegram_card_desc">Oma yksityinen bottisi — kuljettaa varmuuskopiot ja ajoneuvon ilmoitukset</string>
+    <string name="status_not_connected_label">Ei yhdistetty</string>
+    <string name="telegram_connection_desc">Linkitä tähän kerran yksityinen Telegram-botti. Varmuuskopiot, ilmoitukset, diagnostiikka ja matkavienti kulkevat kaikki sen kautta, eikä mitään lähetetä muualle.</string>
+    <string name="telegram_connected_uses">Käyttävät Varmuuskopiointi &amp; Palautus tietokantavarmuuskopioihin, alla olevat ilmoitukset sekä diagnostiikka- ja matkavientipainikkeet.</string>
+    <string name="telegram_setup_in_connections">Telegram-bottia ei ole vielä linkitetty. Määritä sellainen kohdassa Asetukset → Yhteydet → Telegram ja palaa sitten tänne lähettämään ja palauttamaan varmuuskopioita.</string>
+    <string name="telegram_notify_needs_bot">Linkitä Telegram-botti yllä käyttääksesi ilmoituksia.</string>
+    <string name="telegram_notify_di5_warning">DiLink-5:ssä auton sammuttamisesta riippuvat ilmoitukset eivät toistaiseksi saavu: autosi pysäyttää sovelluksen pakotetusti virran katkaisussa, joten matka suljetaan vasta seuraavassa käynnistyksessä ja pysäköinnin aikainen lataus täydennetään jälkikäteen — kumpaakaan ei voi ilmoittaa tapahtumahetkellä. Kaikki, mikä tapahtuu auton ollessa vielä päällä, saapuu, joten napauttamalla Pysäytä lopettaaksesi matkan itse ennen sammuttamista saat yhteenvedon.</string>
+    <string name="telegram_notify_label">Telegram-ilmoitukset</string>
+    <string name="telegram_notify_info">Ajoneuvon tapahtumat lähetetään samalle botille — ei palvelinta, ei tiliä, ei ylimääräistä sovellusta. Viestit asetetaan jonoon ja yritetään uudelleen, jos autolla ei ole yhteyttä tapahtuman sattuessa.</string>
+    <string name="telegram_notify_enable_label">Lähetä ilmoituksia</string>
+    <string name="telegram_notify_trip_label">Matkan yhteenveto</string>
+    <string name="telegram_notify_trip_desc">Kortti jokaisen ajon jälkeen samoilla luvuilla, jotka matka itse tallentaa: matka, kesto, kulutus verrattuna elinikäiseen keskiarvoosi, käytetty SoC, kustannus ja matkan pisteet.</string>
+    <string name="telegram_notify_charging_label">Lataus valmis</string>
+    <string name="telegram_notify_charging_desc">Kun lataustapahtuma päättyy — joko valmistui tai keskeytyi, ja millä tasolla, lisätyn energian ja hinnan kanssa. Lähetetään silloin kun se tapahtuu, joten yön yli tapahtuva lataus, joka valmistuu klo 03:00, lähtee klo 03:00. Oletuksena pois päältä.</string>
+    <string name="telegram_notify_imbalance_label">Kennojen epätasapainon hälytys</string>
+    <string name="telegram_notify_imbalance_desc">Lähetä Pro-akkukennojen epätasapainon hälytys myös Telegramiin, ei vain auton näytölle.</string>
+    <string name="telegram_notify_imbalance_pro">Sisältyy Pro-versioon yhdessä itse kennojen epätasapainon hälytyksen kanssa.</string>
+    <string name="telegram_notify_test_action">Lähetä testiviesti</string>
+    <string name="telegram_notify_test_ok">Testiviesti lähetetty ✓ — tarkista Telegram-keskustelusi.</string>
+    <string name="telegram_notify_test_failed">Telegramiin ei saatu yhteyttä. Tarkista auton yhteys ja yritä uudelleen.</string>
+    <string name="telegram_notify_parked_note">Yhteenveto lähetetään, kun matka päättyy — eli kun auto on ollut sammuksissa Asetuksissa määritetyn automaattipysäytysajan, joten pidempi asetus tarkoittaa myöhempää viestiä. Matka, jonka sovellus pystyi sulkemaan vasta jälkikäteen, koska se ei ollut käynnissä tuolloin (DiLink-5:ssä tämä on jokainen matka), tallennetaan normaalisti mutta siitä ei ilmoiteta, jotta et koskaan saa ilmoitusta eilisestä matkasta lähtiessäsi tämän päivän matkalle. Hälytykset laukeavat edelleen pysäköitynä Aina päällä -taustatilassa: pääyksikkö pysyy mobiilidatassa sen jälkeen, kun auto katkaisee Wi-Fin.</string>
 
     <!-- Trip Compare -->
     <string name="comparing_trips_label">Vertaillaan %1$s matkaa</string>
@@ -772,7 +825,7 @@
     <string name="compat_sending_label">Lähetetään…</string>
     <string name="compat_email_qr_label">Sähköposti QR-koodilla</string>
     <string name="compat_uploading_label">Ladataan…</string>
-    <string name="compat_telegram_not_configured">Telegram ei ole määritetty — määritä se ensin kohdassa Backup &amp; Restore.</string>
+    <string name="compat_telegram_not_configured">Telegramia ei ole linkitetty — määritä se ensin kohdassa Asetukset → Yhteydet → Telegram.</string>
     <string name="compat_sent_telegram">Lähetetty Telegramilla ✓</string>
     <string name="compat_telegram_failed">Telegram-lähetys epäonnistui: %1$s</string>
     <string name="compat_save_failed">Tallennus epäonnistui: %1$s</string>
@@ -797,6 +850,33 @@
     <string name="web_server_failed">Käynnistys epäonnistui: %1$s</string>
     <string name="web_server_waiting">Odotetaan IP-osoitetta…</string>
     <string name="web_server_open_hint">Avaa tämä osoite millä tahansa laitteella, joka on yhdistettynä samaan WiFi-verkkoon.</string>
+    <string name="web_url_label_lan">Verkossasi</string>
+    <string name="web_url_label_tailscale">Tailscalen kautta — toimii mistä tahansa</string>
+    <string name="web_url_label_vpn">VPN:si kautta</string>
+    <string name="web_url_label_other">Muu verkko</string>
+    <string name="web_url_label_mobile">Mobiilidatan kautta</string>
+    <string name="web_url_label_tailscale_https">Tailscalen kautta, salattu — toimii mistä tahansa</string>
+    <string name="web_https_available_hint">Nämä ovat pelkkiä http://-osoitteita. Salataksesi Tailscale-osoitteen ota käyttöön \"Tarjoa HTTPS:n kautta\" Tailscale-kortissa kohdassa Asetukset → Yhteydet.</string>
+    <string name="tailscale_https_label">Tarjoa HTTPS:n kautta</string>
+    <string name="tailscale_https_desc">Anna Tailscale-daemonin hoitaa TLS web companionille käyttäen aitoa varmennetta tämän auton Tailscale-nimelle. Osoitteesta tulee https:// eikä http://, joten selaimet eivät enää pidä sitä turvattomana — ja toiminnot, jotka ne sallivat vain suojatulla sivulla, kuten ilmoitukset ja leikepöydälle kopiointi, alkavat toimia.</string>
+    <string name="tailscale_https_requirement">Vaatii, että MagicDNS ja HTTPS Certificates on kytketty päälle tailnetillesi — molemmat ovat kertaluontoisia kytkimiä Tailscalen hallintakonsolissa kohdassa DNS. Vain .ts.net-osoite salataan; WiFi-osoite pysyy http://.</string>
+    <string name="tailscale_https_working">Salattu osoitteessa %1$s</string>
+    <string name="tailscale_https_no_port">Käytä sitä täsmälleen näytetyssä muodossa — ilman \":8888\" lopussa. Salattu osoite käyttää vakio-HTTPS-porttia; vain http://-osoitteet tarvitsevat portin.</string>
+    <string name="tailscale_https_first_load">Ensimmäinen lataus voi kestää muutaman sekunnin, kun varmenne myönnetään.</string>
+    <string name="tailscale_https_how_to">Näin otat tämän käyttöön verkollesi</string>
+    <string name="tailscale_https_step_1">1. Avaa puhelimessasi tai tietokoneellasi Tailscalen hallintakonsoli ja siirry kohtaan DNS — login.tailscale.com/admin/dns. Tee tämä kerran; se koskee jokaista verkkosi laitetta, ei vain autoa.</string>
+    <string name="tailscale_https_step_2">2. Tarkista, että MagicDNS on päällä. Hämäävästi se on PÄÄLLÄ, kun painikkeessa lukee \"Disable MagicDNS…\" — se painike kytkisi sen pois, joten älä koske siihen. Jos sen sijaan näet \"Enable MagicDNS…\", napsauta sitä.</string>
+    <string name="tailscale_https_step_3">3. Napsauta kohdassa HTTPS Certificates \"Enable HTTPS…\" ja vahvista. Tämä mahdollistaa aitojen varmenteiden saamisen laitteillesi.</string>
+    <string name="tailscale_https_step_4">4. Palaa tänne ja ota käyttöön Tarjoa HTTPS:n kautta. Mitään ei tarvitse käynnistää uudelleen.</string>
+    <string name="tailscale_https_step_5">5. Avaa tässä näkyvä https://-osoite — täsmälleen näytetyssä muodossa, ilman porttia lopussa. Ensimmäinen lataus kestää muutaman sekunnin, kun varmenne myönnetään, sen jälkeen se on välitön.</string>
+    <string name="tailscale_https_free_note">Molemmat asetukset ovat ilmaisia ja koskevat koko Tailscale-verkkoasi. HTTPS:n käyttöönotto ei altista mitään internetiin — varmenne todistaa vain verkossasi jo oleville laitteille, että auto on se, joka se väittää olevansa.</string>
+    <string name="tailnet_diag_label">Tailnet-osoite</string>
+    <string name="tailnet_installed_not_connected">Tailscale asennettu, ei yhdistetty</string>
+    <string name="remote_access_label">Etäkäyttö</string>
+    <string name="remote_access_connected">Tämä auto on tailnetissäsi nimellä %1$s. Yllä oleva osoite toimii miltä tahansa Tailscale-laitteeltasi, olitpa missä tahansa — samoin ADB, portissa 5555.</string>
+    <string name="remote_access_not_detected">Companion on tavoitettavissa vain kotiverkossasi. Tavoittaaksesi sen mistä tahansa, asenna Tailscale-sovellus pääyksikköön ja puhelimeesi ja kirjaudu molemmat samalle tilille — auto pitää tällöin kiinteän 100.x-osoitteen, joka toimii mobiilidatalla, myös pysäköitynä, kun WiFi on pois. Tähän sovellukseen ei lisätä mitään eikä reitittimeesi avata portteja.</string>
+    <string name="remote_access_tips">Kolme kertaluontoista asetusta Tailscalen hallintakonsolissa: kytke auton avaimen vanheneminen POIS (muuten se putoaa tailnetistä noin puolen vuoden kuluttua ja vain käynti auton luona korjaa sen), ÄLÄ aseta autoon exit nodea (se ohjaisi sen ABRP-, MQTT- ja Telegram-liikenteen jonkun toisen internetyhteyden kautta), äläkä ota Funnelia käyttöön (se asettaisi tämän companionin julkiseen internetiin, suojanaan vain sen PIN).</string>
+    <string name="remote_access_di5_note">DiLink-5:ssä autosi pysäyttää pakotetusti jokaisen sovelluksen, kun sammutat sen, Tailscale mukaan lukien — joten etäkäyttö loppuu auton mukana ja palaa, kun auto seuraavan kerran herää. Auton ollessa päällä se toimii normaalisti, mistä on silti hyötyä companionin tai ADB:n tavoittamiseen, kun olet poissa omasta WiFistäsi.</string>
     <string name="web_copy_url_cd">Kopioi URL</string>
     <string name="chart_no_tyre_data">Ei rengaspainetietoja tallennettu tällä matkalla</string>
 
@@ -883,15 +963,15 @@
     <string name="bg_minimal">Minimaalinen</string>
     <string name="bg_deep_sleep">Syvä lepo</string>
     <string name="bg_default_label">Oletus</string>
-    <string name="bg_always_on_desc">Aina päällä (suositeltu oletus): telemetriapalvelu jatkaa toimintaansa pysäköinnin jälkeen, ottaa jatkuvasti 12V/SoC-näytteitä akkuhistoriaan ja tallentaa lataamisen sammutetussa tilassa (esim. yön yli). Pieni lisäkuormitus BYD:n tehdasasetusten mukaisen taustavirrankulutuksen päälle.\n\nHuomautus: useimmat BYD-yksiköt katkaisevat Wi-Fin ~15 min auton sammuttamisen jälkeen. Pysäköitynä ADB Wi-Fin kautta, Web Companion (PWA) ja MQTT kotiverkkosi brokeriin pysähtyvät, kunnes auto käynnistetään. MQTT internetistä tavoitettavaan brokeriin (esim. HiveMQ Cloud) yleensä jatkaa julkaisemista, koska auto pysyy mobiilidatassa. Alla oleva \"Pidä Wi-Fi aktiivisena pysäköitäessä\" -asetus voi pitää Wi-Fin auki tuetuissa yksiköissä.</string>
+    <string name="bg_always_on_desc">Aina päällä (suositeltu oletus): telemetriapalvelu jatkaa toimintaansa pysäköinnin jälkeen, ottaa jatkuvasti 12V/SoC-näytteitä akkuhistoriaan ja tallentaa lataamisen sammutetussa tilassa (esim. yön yli). Pieni lisäkuormitus BYD:n tehdasasetusten mukaisen taustavirrankulutuksen päälle.\n\nHuomautus: useimmat BYD-yksiköt katkaisevat Wi-Fin ~15 min auton sammuttamisen jälkeen. Pysäköitynä ADB Wi-Fin kautta, Web Companion (PWA) ja MQTT kotiverkkosi brokeriin pysähtyvät, kunnes auto käynnistetään. MQTT internetistä tavoitettavaan brokeriin (esim. HiveMQ Cloud) yleensä jatkaa julkaisemista, koska auto pysyy mobiilidatassa. Alla oleva \"Pidä Wi-Fi aktiivisena, kun auto on sammutettu\" -asetus voi pitää Wi-Fin auki tuetuissa yksiköissä.</string>
     <string name="bg_minimal_desc">Minimaalinen: palvelu pysähtyy itsestään 5 min auton sammumisen jälkeen, sitten 90 min hälytys herättää sen lyhyesti lataustilanneotosta varten. Pienempi tyhjennys, mutta sammutustilan näytteet ovat harvalukuisia, ADB ei ole aina päällä, Web Companion (PWA) on saavutettavissa vain lyhyen heräämisvälähdyksen aikana ja MQTT on passiivisena välähdysten välillä. Sammutustilan lataus havaitaan ~90 min sisällä, jonka jälkeen se julkaisee loppulatauksen ajan.</string>
     <string name="bg_deep_sleep_desc">Syvä lepo: palvelu pysähtyy itsestään 5 min auton sammumisen jälkeen ilman lisäheräytyksiä. Antaa auton ECU:iden saavuttaa täyden syvän levon. Web Companion (PWA) ei ole saavutettavissa ja MQTT on hiljaa koko ajan auton ollessa pysäköitynä; sammutustilan latausta ei kaapata livenä — se rekonstruoidaan vain SoC-deltasta auton seuraavan käynnistyksen yhteydessä.</string>
     <string name="keepalive_never_fired">Minimaalinen-herätys: ei ole vielä lauennut%1$s. Jos tämä pysyy \"ei koskaan\" auton oltua pysäköitynä jonkin aikaa, yksikkösi sammuu pysäköitäessä kokonaan — Minimaalinen käyttäytyy silloin kuin Syvä lepo, joten käytä pysäköintitietoihin Aina päällä -tilaa.</string>
     <string name="keepalive_fired">Minimaalinen-herätys: viimeksi lauennut %1$s • %2$s yhteensä%3$s</string>
     <string name="keepalive_armed"> (viritetty)</string>
     <string name="keepalive_not_armed"> · ei viritetty</string>
-    <string name="wifi_keepalive_label">Pidä Wi-Fi aktiivisena pysäköitäessä</string>
-    <string name="wifi_keepalive_desc">Ottaa Wi-Fin uudelleen käyttöön, jos auto sammuttaa sen pysäköinnin jälkeen, jotta Web Companion ja muut paikalliset työkalut (kotiverkko) pysyvät tavoitettavina. Toimii vain auton ollessa sammutettuna ja vetäytyy, jos 12V-akku tai varaustaso laskee. Kuluttaa hieman lisävirtaa pysäköitäessä.\n\nJos käytät myös Electroa, Overdrivea tai muuta sovellusta, joka pitää Wi-Fin aktiivisena, ota tämä käyttöön vain YHDESSÄ niistä ja poista se käytöstä muissa — kaksi yhtä aikaa toimivaa pitomekanismia voivat haitata toisiaan ja tuhlata virtaa.</string>
+    <string name="wifi_keepalive_label">Pidä Wi-Fi aktiivisena, kun auto on sammutettu</string>
+    <string name="wifi_keepalive_desc">Kytkee Wi-Fin takaisin päälle auton sammuttamisen jälkeen — pääyksikkö katkaisee sen muutaman minuutin kuluttua — jotta Web Companion ja muut paikalliset työkalut (kotiverkko) pysyvät tavoitettavina. Toimii vain auton ollessa sammutettuna ja vetäytyy, jos 12V-akku tai varaustaso laskee. Kuluttaa hieman lisävirtaa niin kauan kuin auto on sammutettuna.\n\nJos käytät myös Electroa, Overdrivea tai muuta sovellusta, joka pitää Wi-Fin aktiivisena, ota tämä käyttöön vain YHDESSÄ niistä ja poista se käytöstä muissa — kaksi yhtä aikaa toimivaa pitomekanismia voivat haitata toisiaan ja tuhlata virtaa.</string>
     <string name="wifi_keepalive_needs_setup">Vaatii edistyneen ADB-määrityksen (sama kuin välittömässä telemetriassa). Tee se ensin, jotta voit ottaa tämän käyttöön.</string>
 
     <!-- Settings dialogs -->
@@ -941,6 +1021,7 @@
     <string name="web_companion_desc">Selaa matkoja &amp; latauksia mistä tahansa samaan WiFiin yhdistetystä laitteesta.</string>
     <string name="web_companion_disabled_desc">Käynnistä paikallinen palvelin avataksesi matkahistorian selaimessa.</string>
     <string name="web_companion_wifi_info">Tarjoillaan paikallisen WiFin kautta, joten se on saavutettavissa auton ollessa päällä ja telemetriapalvelun ollessa toiminnassa. Pysäköinnin jälkeen suurin osa BYD:n yksiköistä katkaisee WiFin ~15 min auton sammumisen jälkeen — sen jälkeen companion ei ole saavutettavissa (paikalliselle palvelimelle ei ole mobiiliverkkofallbackia) kunnes auto käynnistyy, missä tahansa taustatoimintatilassa.\nHuom.: Electro-sovelluksessa on vaihtoehto pitää WiFi päällä loputtomasti</string>
+    <string name="web_companion_files_info">Companionissa on myös Tiedostot-välilehti: lataa tietokantavarmuuskopiot, viennit ja diagnostiikkaloki suoraan puhelimeesi tai kannettavaan ja lähetä varmuuskopio autoon liittämättä mitään. Se näyttää vain sovelluksen omat kansiot, ei koko pääyksikköä.</string>
     <string name="port_field_label">Portti</string>
     <string name="port_hint_text">Kokeile 8081, 8888, 9090 jos portti on estetty. Muutokset käynnistävät palvelimen uudelleen.</string>
     <string name="access_pin_label">Pääsy-PIN</string>
@@ -964,7 +1045,6 @@
     <string name="mqtt_card_desc">Julkaise live-telemetriaa brokerille kuten HiveMQ tai HomeAssistant.</string>
     <string name="status_enabled_label">Tila: Käytössä</string>
     <string name="status_disabled_label">Tila: Pois käytöstä</string>
-    <string name="open_connections_action">Avaa yhteydet</string>
     <string name="back_to_overview_action">Takaisin yleiskatsaukseen</string>
 
     <!-- ABRP settings -->
@@ -1047,7 +1127,7 @@
     <string name="about_install_note">Asennuspainike tulee saataville kun pysäköitynä ilman aktiivista matkaa tai latausta</string>
     <string name="about_install_now">Asenna nyt</string>
     <string name="about_download_update">Lataa päivitys</string>
-    <string name="about_update_manual_di5_instructions">Automaattinen asennus ei ole käytettävissä tässä pääyksikössä. Lataa tämän version APK julkaisusivulta tietokoneella tai puhelimella ja asenna se sitten ADB:n kautta:</string>
+    <string name="about_update_manual_di5_instructions">Automaattinen asennus vaatii apuyhteyden, joka ei ole juuri nyt käytettävissä. Lataa tämän version APK julkaisusivulta tietokoneella tai puhelimella ja asenna se sitten ADB:n kautta:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Avaa julkaisusivu</string>
 
@@ -1158,6 +1238,7 @@
     <string name="autostart_dialog_title">⚠️ Toiminto vaaditaan — Autostart</string>
     <string name="autostart_dialog_msg">Uusi versio on asennettu. Sinun täytyy poistaa automaattinen käynnistys käytöstä tässä sovelluksessa, mikä mahdollistaa etualan / taustan palvelujen suorittamisen.\nAuton kertaluontoinen uudelleenkäynnistys tarvitaan vain, kun asennat sovelluksen ensimmäisen kerran ja kun olet poistanut automaattisen käynnistyksen käytöstä. Jos päivität vanhemmasta versiosta, uudelleenkäynnistystä ei tarvita</string>
     <string name="autostart_got_it">Selvä</string>
+    <string name="autostart_open_failed">Automaattikäynnistysnäyttöä ei voitu avata tässä yksikössä. Avaa se auton omista Asetuksista → Sovellukset → Automaattikäynnistys (tai Taustasovellukset) ja varmista, että Trip Stats on sallittu.</string>
     <string name="flavor_mismatch_title">⚠️ Väärä versio tälle autolle</string>
     <string name="flavor_mismatch_msg">Asensit %1$s-version, mutta tämä auto on %2$s. Ajoneuvon telemetria ei ehkä toimi oikein. Asenna %2$s-versio tälle ajoneuvolle.</string>
     <string name="adb_connecting_title">Yhdistetään…</string>

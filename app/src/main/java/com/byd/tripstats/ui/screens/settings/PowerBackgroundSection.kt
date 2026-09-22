@@ -3,7 +3,6 @@ package com.byd.tripstats.ui.screens.settings
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material3.*
@@ -15,20 +14,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.byd.tripstats.R
+import com.byd.tripstats.ui.components.BrandSwitch
 import com.byd.tripstats.adb.AdbPermissionManager
 import com.byd.tripstats.data.preferences.OffStateMode
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.receiver.OffStateKeepaliveReceiver
 import com.byd.tripstats.sdk.DiLink5Platform
 import com.byd.tripstats.service.VehicleTelemetryService
-import com.byd.tripstats.ui.theme.ToggleUncheckedTrack
 import com.byd.tripstats.util.WifiKeepalive
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 /**
  * "Power & background" settings: the off-state background-activity mode (Always On / Minimal /
- * Deep Sleep) and the parked Wi-Fi keepalive. These are system/vehicle behaviours rather than
+ * Deep Sleep) and the Wi-Fi keepalive that runs while the car is off. These are system/vehicle behaviours rather than
  * display preferences, so they live on the App Management tab (alongside backups, diagnostics and
  * the web companion) rather than in Preferences.
  */
@@ -41,7 +40,7 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
     val wifiKeepalive by preferencesManager.wifiKeepaliveWhenOff.collectAsState(
         initial = preferencesManager.getCachedWifiKeepaliveWhenOff()
     )
-    // The parked Wi-Fi keepalive runs in the privileged UID-2000 daemon (DiLink-3 only) and needs the
+    // The Wi-Fi keepalive (while the car is off) runs in the privileged UID-2000 daemon (DiLink-3 only) and needs the
     // adb setup complete; without it there is nothing to enforce the toggle.
     val wifiKeepaliveSetupOk = remember { AdbPermissionManager.isSetupComplete(context) }
 
@@ -100,7 +99,11 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                                 }
                             }
                         },
-                        modifier = Modifier.weight(1f),
+                        // Fixed height rather than letting content set it: only Always On has
+                        // a second line, so without this the other two would either be shorter
+                        // pills or need a blank line — and a blank line pushes their label off
+                        // centre, which is what it used to do.
+                        modifier = Modifier.weight(1f).height(56.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (offStateMode == mode)
                                 MaterialTheme.colorScheme.primary
@@ -112,14 +115,16 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                                 MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     ) {
+                        // A Button centres its content, so a lone label sits in the middle of
+                        // the pill while Always On's pair straddles it.
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(label, fontWeight = FontWeight.Bold)
-                            // Empty second line on the other two keeps all buttons the
-                            // same height while marking Always On as the default.
-                            Text(
-                                if (mode == OffStateMode.ENABLED) stringResource(R.string.bg_default_label) else "",
-                                style = MaterialTheme.typography.labelSmall
-                            )
+                            if (mode == OffStateMode.ENABLED) {
+                                Text(
+                                    stringResource(R.string.bg_default_label),
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            }
                         }
                     }
                 }
@@ -164,8 +169,8 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                 )
             }
 
-            // Parked Wi-Fi keepalive (DiLink-3, privileged daemon). Keeps the head unit
-            // reachable on the LAN after park by re-enabling Wi-Fi when the MCU cuts it.
+            // Wi-Fi keepalive while the car is off (DiLink-3, privileged daemon). Keeps the head unit
+            // reachable on the LAN after the car is switched off by re-enabling Wi-Fi when the MCU cuts it.
             if (!DiLink5Platform.isDiLink5) {
                 HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f))
                 Row(
@@ -192,7 +197,7 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                         )
                     }
                     Spacer(Modifier.width(12.dp))
-                    Switch(
+                    BrandSwitch(
                         checked = wifiKeepalive,
                         enabled = wifiKeepaliveSetupOk,
                         onCheckedChange = { enabled ->
@@ -201,20 +206,6 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                                 WifiKeepalive.apply(context, enabled)
                             }
                         },
-                        thumbContent = if (!wifiKeepalive) {
-                            {
-                                Box(
-                                    modifier = Modifier
-                                        .size(12.dp)
-                                        .background(ToggleUncheckedTrack, CircleShape)
-                                )
-                            }
-                        } else null,
-                        colors = SwitchDefaults.colors(
-                            uncheckedThumbColor = Color.White,
-                            uncheckedTrackColor = ToggleUncheckedTrack,
-                            uncheckedBorderColor = ToggleUncheckedTrack,
-                        ),
                     )
                 }
             }

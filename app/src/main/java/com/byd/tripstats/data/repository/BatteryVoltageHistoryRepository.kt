@@ -71,7 +71,7 @@ class BatteryVoltageHistoryRepository private constructor(context: Context) {
     companion object {
         private const val TAG = "BatteryVoltageHistory"
         private const val HISTORY_FILE_NAME = "battery_voltage_history.json"
-        private const val HISTORY_WINDOW_MS = 48L * 60L * 60L * 1000L
+        const val HISTORY_WINDOW_MS = 48L * 60L * 60L * 1000L
         private const val MIN_SAMPLE_INTERVAL_MS = 60_000L
         private const val MIN_VOLTAGE_DELTA_V = 0.02
 

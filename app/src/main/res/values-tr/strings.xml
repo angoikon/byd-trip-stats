@@ -269,7 +269,7 @@
     <string name="export_save_html">HTML görüntüleyici olarak kaydet (açmak için çift tıklayın)</string>
     <string name="export_send_telegram">Telegram botuna gönder</string>
     <string name="export_telegram_not_configured">Telegram botuna gönder (yapılandırılmadı)</string>
-    <string name="export_telegram_setup_hint">Ayarlar → Yedekleme &amp; Geri Yükleme\'de botu kurun.</string>
+    <string name="export_telegram_setup_hint">Telegram botunuzu Ayarlar → Bağlantılar → Telegram bölümünde bağlayın.</string>
     <string name="export_send_csv">CSV\'yi Telegram\'a gönder</string>
     <string name="export_send_json">JSON\'u Telegram\'a gönder</string>
     <string name="export_send_html">HTML görüntüleyiciyi Telegram\'a gönder</string>
@@ -533,17 +533,70 @@
     <string name="wifi_only_desc">Otomatik yedeklemeler mobil veriden tasarruf için yalnızca Wi-Fi\'de çalışır</string>
     <string name="last_auto_backup_label">Son otomatik yedek: %1$s</string>
     <string name="schedule_updated_msg">Program %1$s olarak güncellendi. Sonraki otomatik yedek yeni aralığı takip edecek.</string>
-    <string name="telegram_setup_info">Bağlandıktan sonra yedekler manuel olarak veya bir programa göre gönderilebilir. Her yedek, Telegram\'dan herhangi bir cihazda erişilebilen özel sohbetinizde .db dosyası olarak yer alır.</string>
+    <string name="telegram_setup_info">Yedekler manuel olarak veya bir zamanlamayla gönderilebilir. Her biri, Telegram olan herhangi bir cihazdan erişilebilen özel sohbetinize .db dosyası olarak gelir.</string>
     <string name="telegram_instructions">1. Telegram\'da @BotFather\'a mesaj atın → /newbot → token\'ı kopyalayın\n2. Yeni botunuza herhangi bir mesaj gönderin\n3. Token\'ı aşağıya yapıştırın ve Doğrula\'ya dokunun</string>
     <string name="bot_token_label">Bot Token</string>
     <string name="validate_save_action">Doğrula &amp; Kaydet</string>
     <string name="restore_from_telegram_label">Telegram\'dan geri yükle</string>
-    <string name="connect_telegram_first">Önce bir Telegram özel botu bağlayın (yukarıdaki Telegram Yedekleme\'ye bakın).</string>
+    <string name="connect_telegram_first">Önce bir Telegram botu bağlayın — Ayarlar → Bağlantılar → Telegram.</string>
     <string name="backups_in_chat_label">Sohbetinizdeki yedekler:</string>
     <string name="scan_telegram_hint">.db yedekleri için Telegram sohbetinizi taramak üzere yenile\'ye dokunun.</string>
-    <string name="no_telegram_configured">Telegram yapılandırılmadı — önce Yedekleme &amp; Geri Yükleme\'de kurun.</string>
+    <string name="no_telegram_configured">Telegram bağlı değil — önce Ayarlar → Bağlantılar → Telegram bölümünden ayarlayın.</string>
     <string name="sent_telegram_success">Telegram aracılığıyla gönderildi ✓</string>
     <string name="telegram_send_failed">Telegram gönderimi başarısız: %1$s</string>
+    <string name="tailscale_title">Tailscale — uzaktan erişim</string>
+    <string name="tailscale_title_short">Tailscale</string>
+    <string name="tailscale_desc">Aracı kendi özel Tailscale ağınıza ekleyin; böylece web companion ve ADB her yerden çalışır — yalnızca evde değil. İnternete hiçbir şey açılmaz ve yönlendiricinizde port açılmaz.</string>
+    <string name="tailscale_card_desc">Aracın web companion ve ADB\'sine her yerden erişin</string>
+    <string name="tailscale_unavailable">Bu sürümde kullanılamaz (64 bit ARM ana ünite gerektirir).</string>
+    <string name="tailscale_not_connected">Bağlı değil.</string>
+    <string name="tailscale_starting">Başlatılıyor…</string>
+    <string name="tailscale_error">Bir şeyler ters gitti. Aşağıdaki talimatları kontrol edip tekrar deneyin.</string>
+    <string name="tailscale_connected">%1$s olarak bağlandı</string>
+    <string name="tailscale_reachable_hint">Web companion: http://%1$s:8888 · ADB: adb connect %1$s:5555</string>
+    <string name="tailscale_needs_adb">Önce tek seferlik ADB yetkilendirmesi gerekir — anlık telemetrinin kullandığının aynısı. Uygulama Yönetimi bölümünde ayarlayın, sonra geri dönün.</string>
+    <string name="tailscale_signin_phone">Telefonunuzla oturum açın</string>
+    <string name="tailscale_scan_instructions">Bunu telefonunuzun kamerasıyla tarayın, ardından açılan tarayıcıda Tailscale\'e giriş yapın. Onayladığınız anda araç ağınıza katılır — buraya bir şey yazmanıza gerek yok.</string>
+    <string name="tailscale_scan_qr_cd">Tailscale oturum açma sayfasını açan QR kodu</string>
+    <string name="tailscale_waiting_for_signin">Onaylamanız bekleniyor… bu ekrandan çıkabilirsiniz, beklemeye devam eder.</string>
+    <string name="tailscale_cancel_signin">Oturum açmayı iptal et</string>
+    <string name="tailscale_other_ways">Diğer oturum açma yolları</string>
+    <string name="tailscale_alt_adb_title">Anahtarı bilgisayarınızdan yazın (ADB)</string>
+    <string name="tailscale_alt_adb_body">Bu araçla zaten ADB kullanıyorsanız — ve kullanıyorsunuz, çünkü Tailscale aynı yetkilendirmeyi gerektirir — aşağıdaki Auth key kutusuna dokunup odaklanmasını sağlayın, ardından bunu bilgisayarınızdan noktaların yerine anahtarla çalıştırın. Auth anahtarları yalnızca harf, rakam ve tire içerir, bu yüzden hiçbir şey bozulmaz.</string>
+    <string name="tailscale_alt_key_title">Bir auth anahtarı yapıştırın</string>
+    <string name="tailscale_alt_key_body">Tailscale konsolunda Settings → Keys altında bir tane oluşturun (Ephemeral kapalı kalsın), sonra buraya yapıştırın. Altmış karakteri bir araç ekranında yazmak zordur, yukarıdaki QR bu yüzden var.</string>
+    <string name="tailscale_authkey_label">Auth anahtarı</string>
+    <string name="tailscale_connect">Bağlan</string>
+    <string name="tailscale_disconnect">Tailscale bağlantısını kes</string>
+    <string name="tailscale_how_to">Bunu nasıl kurarsınız</string>
+    <string name="tailscale_step_1">1. Yoksa tailscale.com\'da ücretsiz bir hesap oluşturun.</string>
+    <string name="tailscale_step_2">2. Yönetim konsolunda Settings → Keys bölümünü açın ve Generate auth key\'e dokunun. Ephemeral\'i KAPALI bırakın — geçici bir anahtar, araç her uykuya daldığında ağınızdan kaybolmasına neden olur ve adresi her seferinde değişir.</string>
+    <string name="tailscale_step_3">3. Anahtarı kopyalayın (tskey-auth- ile başlar) ve aşağıya yapıştırın, ardından Bağlan\'a dokunun. Araç ağınıza katılır ve o andan itibaren aynı adresi korur.</string>
+    <string name="tailscale_step_4">4. Telefonunuza veya dizüstünüze Tailscale kurun ve aynı hesaba giriş yapın. Giriş yapmış olan her şey araca erişebilir — başka hiçbir şey erişemez.</string>
+    <string name="tailscale_console_warnings">Yönetim konsolunda bir kez yapmaya değer: Machines → aracınız → Disable key expiry\'yi açın, yoksa yaklaşık altı ay içinde ağınızdan düşer ve bunu yalnızca araca gitmek düzeltir. Araçta bir exit node ayarlamayın (bu, ABRP, MQTT ve Telegram trafiğini başkasının internet bağlantısı üzerinden geçirir) ve Funnel\'i etkinleştirmeyin (bu, web companion\'ı yalnızca PIN\'iyle korunacak şekilde herkese açık internete koyar).</string>
+    <string name="tailscale_di5_note">DiLink-5\'te araç kapattığınızda her uygulamayı zorla durdurur, bu yüzden uzaktan erişim araçla birlikte durur ve araç bir sonraki uyanışında geri döner.</string>
+    <string name="telegram_title_label">Telegram</string>
+    <string name="telegram_card_desc">Kendi özel botunuz — yedekleri ve araç bildirimlerini taşır</string>
+    <string name="status_not_connected_label">Bağlı değil</string>
+    <string name="telegram_connection_desc">Buraya bir kez özel bir Telegram botu bağlayın. Yedekler, bildirimler, tanılama ve yolculuk dışa aktarımları hepsi onun üzerinden geçer ve başka hiçbir yere bir şey gönderilmez.</string>
+    <string name="telegram_connected_uses">Veritabanı yedekleri için Yedekleme &amp; Geri Yükleme tarafından, aşağıdaki bildirimler ve tanılama ile yolculuk dışa aktarma düğmeleri tarafından kullanılır.</string>
+    <string name="telegram_setup_in_connections">Henüz bağlı bir Telegram botu yok. Ayarlar → Bağlantılar → Telegram bölümünde bir tane ayarlayın, ardından yedekleri göndermek ve geri yüklemek için buraya dönün.</string>
+    <string name="telegram_notify_needs_bot">Bildirimleri kullanmak için yukarıda bir Telegram botu bağlayın.</string>
+    <string name="telegram_notify_di5_warning">DiLink-5\'te, aracın kapanmasına bağlı bildirimler şimdilik gelmez: aracınız kontağı kapatınca uygulamayı zorla durdurur, bu yüzden bir yolculuk ancak bir sonraki çalıştırmada kapanır ve park hâlindeki şarj sonradan doldurulur — hiçbiri o anda bildirilemez. Araç hâlâ açıkken olan her şey gelir, bu yüzden kapatmadan önce yolculuğu kendiniz bitirmek için Durdur\'a dokunursanız özeti alırsınız.</string>
+    <string name="telegram_notify_label">Telegram Bildirimleri</string>
+    <string name="telegram_notify_info">Araç olayları aynı bota gönderilir — sunucu yok, hesap yok, ekstra uygulama yok. Bir olay olduğunda aracın bağlantısı yoksa mesajlar kuyruğa alınır ve yeniden denenir.</string>
+    <string name="telegram_notify_enable_label">Bildirim gönder</string>
+    <string name="telegram_notify_trip_label">Yolculuk özeti</string>
+    <string name="telegram_notify_trip_desc">Her sürüşten sonra, yolculuğun kendisinin kaydettiği aynı değerleri içeren bir kart: mesafe, süre, ömür boyu ortalamanıza göre tüketim, kullanılan SoC, maliyet ve yolculuk puanı.</string>
+    <string name="telegram_notify_charging_label">Şarj tamamlandı</string>
+    <string name="telegram_notify_charging_desc">Bir şarj oturumu bittiğinde — ister tamamlanmış ister erken durmuş olsun, hangi seviyede, eklenen enerji ve maliyetiyle birlikte. Gerçekleştiği anda gönderilir, yani 03:00\'te tamamlanan gece şarjı 03:00\'te gönderir. Varsayılan olarak kapalı.</string>
+    <string name="telegram_notify_imbalance_label">Hücre dengesizliği uyarısı</string>
+    <string name="telegram_notify_imbalance_desc">Pro pil hücresi dengesizliği uyarısını yalnızca aracın ekranına değil, Telegram\'a da gönderin.</string>
+    <string name="telegram_notify_imbalance_pro">Hücre dengesizliği uyarısının kendisiyle birlikte Pro\'ya dahildir.</string>
+    <string name="telegram_notify_test_action">Test mesajı gönder</string>
+    <string name="telegram_notify_test_ok">Test mesajı gönderildi ✓ — Telegram sohbetinizi kontrol edin.</string>
+    <string name="telegram_notify_test_failed">Telegram\'a ulaşılamadı. Aracın bağlantısını kontrol edip tekrar deneyin.</string>
+    <string name="telegram_notify_parked_note">Yolculuk bittiğinde bir özet gönderilir — yani araç, Tercihler\'de ayarlanan otomatik durdurma süresi kadar kapalı kaldığında; dolayısıyla daha uzun bir ayar, daha geç bir mesaj demektir. Uygulamanın ancak sonradan kapatabildiği bir yolculuk, çünkü o sırada çalışmıyordu (DiLink-5\'te bu her yolculuktur), normal şekilde kaydedilir ama duyurulmaz, böylece bugünkü yolculuğa çıkarken dünküyle ilgili asla bildirim almazsınız. Uyarılar, Her Zaman Açık arka plan modunda park hâlindeyken de tetiklenmeye devam eder: araç Wi-Fi\'yi kestikten sonra ünite mobil veride kalır.</string>
 
     <!-- Trip Compare -->
     <string name="comparing_trips_label">%1$s seyahat karşılaştırılıyor</string>
@@ -772,7 +825,7 @@
     <string name="compat_sending_label">Gönderiliyor…</string>
     <string name="compat_email_qr_label">QR koduyla e-posta</string>
     <string name="compat_uploading_label">Yükleniyor…</string>
-    <string name="compat_telegram_not_configured">Telegram yapılandırılmamış — önce Backup &amp; Restore altında kurun.</string>
+    <string name="compat_telegram_not_configured">Telegram bağlı değil — önce Ayarlar → Bağlantılar → Telegram bölümünden ayarlayın.</string>
     <string name="compat_sent_telegram">Telegram ile gönderildi ✓</string>
     <string name="compat_telegram_failed">Telegram gönderimi başarısız: %1$s</string>
     <string name="compat_save_failed">Kaydetme başarısız: %1$s</string>
@@ -797,6 +850,33 @@
     <string name="web_server_failed">Başlatma başarısız: %1$s</string>
     <string name="web_server_waiting">IP adresi bekleniyor…</string>
     <string name="web_server_open_hint">Bu adresi aynı WiFi\'ye bağlı herhangi bir cihazda açın.</string>
+    <string name="web_url_label_lan">Ağınızda</string>
+    <string name="web_url_label_tailscale">Tailscale üzerinden — her yerden çalışır</string>
+    <string name="web_url_label_vpn">VPN\'iniz üzerinden</string>
+    <string name="web_url_label_other">Diğer ağ</string>
+    <string name="web_url_label_mobile">Mobil veri üzerinden</string>
+    <string name="web_url_label_tailscale_https">Tailscale üzerinden, şifreli — her yerden çalışır</string>
+    <string name="web_https_available_hint">Bunlar düz http:// adresleridir. Tailscale adresini şifrelemek için Ayarlar → Bağlantılar bölümündeki Tailscale kartında \"HTTPS üzerinden sun\" seçeneğini açın.</string>
+    <string name="tailscale_https_label">HTTPS üzerinden sun</string>
+    <string name="tailscale_https_desc">Tailscale arka plan hizmetinin, bu aracın Tailscale adı için gerçek bir sertifika kullanarak web companion için TLS\'yi üstlenmesine izin verin. Adres http:// yerine https:// olur, böylece tarayıcılar onu güvensiz saymayı bırakır — ve yalnızca güvenli bir sayfada izin verdikleri bildirimler ile panoya kopyalama gibi özellikler çalışmaya başlar.</string>
+    <string name="tailscale_https_requirement">Tailnet\'iniz için MagicDNS ve HTTPS Certificates açık olmalıdır — ikisi de Tailscale yönetim konsolunda DNS altında tek seferlik anahtarlardır. Yalnızca .ts.net adresi şifrelenir; WiFi adresi http:// olarak kalır.</string>
+    <string name="tailscale_https_working">%1$s adresinde şifreli</string>
+    <string name="tailscale_https_no_port">Tam olarak gösterildiği gibi kullanın — sonunda \":8888\" olmadan. Şifreli adres standart HTTPS bağlantı noktasını kullanır; yalnızca http:// adresleri bir bağlantı noktası gerektirir.</string>
+    <string name="tailscale_https_first_load">Sertifika verilirken ilk yükleme birkaç saniye sürebilir.</string>
+    <string name="tailscale_https_how_to">Bunu ağınız için nasıl açarsınız</string>
+    <string name="tailscale_https_step_1">1. Telefonunuzda veya bilgisayarınızda Tailscale yönetim konsolunu açın ve DNS bölümüne gidin — login.tailscale.com/admin/dns. Bunu bir kez yapın; ağınızdaki her cihaz için geçerlidir, yalnızca araç için değil.</string>
+    <string name="tailscale_https_step_2">2. MagicDNS\'in açık olduğunu kontrol edin. Kafa karıştırıcı biçimde, düğmede \"Disable MagicDNS…\" yazıyorsa AÇIKTIR — o düğme onu kapatır, bu yüzden dokunmayın. Bunun yerine \"Enable MagicDNS…\" görüyorsanız tıklayın.</string>
+    <string name="tailscale_https_step_3">3. HTTPS Certificates altında \"Enable HTTPS…\"e tıklayın ve onaylayın. Cihazlarınızın gerçek sertifika almasını sağlayan budur.</string>
+    <string name="tailscale_https_step_4">4. Buraya dönün ve HTTPS üzerinden sun seçeneğini açın. Hiçbir şeyin yeniden başlatılması gerekmez.</string>
+    <string name="tailscale_https_step_5">5. Burada gösterilen https:// adresini açın — tam olarak gösterildiği gibi, sonunda bağlantı noktası olmadan. İlk yükleme, sertifika verilirken birkaç saniye sürer, sonra anındadır.</string>
+    <string name="tailscale_https_free_note">Her iki ayar da ücretsizdir ve tüm Tailscale ağınız için geçerlidir. HTTPS\'i etkinleştirmek internete hiçbir şey açmaz — sertifika yalnızca, ağınızda zaten bulunan cihazlara aracın iddia ettiği kişi olduğunu kanıtlar.</string>
+    <string name="tailnet_diag_label">Tailnet adresi</string>
+    <string name="tailnet_installed_not_connected">Tailscale kurulu, bağlı değil</string>
+    <string name="remote_access_label">Uzaktan erişim</string>
+    <string name="remote_access_connected">Bu araç tailnet\'inizde %1$s olarak yer alıyor. Yukarıdaki adres, nerede olursanız olun herhangi bir Tailscale cihazınızdan çalışır — ADB de öyle, 5555 numaralı bağlantı noktasında.</string>
+    <string name="remote_access_not_detected">Companion yalnızca ev ağınızda erişilebilir. Ona her yerden erişmek için Tailscale uygulamasını ana üniteye ve telefonunuza kurun ve ikisini de aynı hesaba bağlayın — araç böylece mobil veri üzerinden çalışan sabit bir 100.x adresi tutar; park hâlindeyken de, WiFi kapalıyken de. Bu uygulamaya hiçbir şey eklenmez ve yönlendiricinizde port açılmaz.</string>
+    <string name="remote_access_tips">Tailscale yönetim konsolunda bir kez ayarlanacak üç şey: araç için anahtar süre dolumunu KAPATIN (yoksa yaklaşık altı ay sonra tailnet\'ten düşer ve bunu yalnızca araca gitmek düzeltir), araçta bir exit node AYARLAMAYIN (bu, ABRP, MQTT ve Telegram trafiğini başkasının internet bağlantısı üzerinden geçirir) ve Funnel\'i ETKİNLEŞTİRMEYİN (bu, bu companion\'ı yalnızca PIN\'iyle korunacak şekilde herkese açık internete koyar).</string>
+    <string name="remote_access_di5_note">DiLink-5\'te aracınız kapattığınızda Tailscale dahil her uygulamayı zorla durdurur — bu yüzden uzaktan erişim araçla birlikte durur ve araç bir sonraki uyanışında geri döner. Araç açıkken normal çalışır; bu, kendi WiFi\'nizden uzaktayken companion\'a veya ADB\'ye erişmek için yine de yararlıdır.</string>
     <string name="web_copy_url_cd">URL\'yi kopyala</string>
     <string name="chart_no_tyre_data">Bu seyahatte lastik basıncı verisi kaydedilmedi</string>
 
@@ -883,15 +963,15 @@
     <string name="bg_minimal">Minimum</string>
     <string name="bg_deep_sleep">Derin Uyku</string>
     <string name="bg_default_label">Varsayılan</string>
-    <string name="bg_always_on_desc">Her Zaman Açık (önerilen varsayılan): telemetri hizmeti park ettikten sonra çalışmaya devam eder, pil geçmişine sürekli 12V/SoC örnekleri alır ve kapalı durumdaki (ör. gece boyunca) şarjı kaydeder. BYD\'nin kendi fabrika arka plan tüketiminin üzerine küçük bir ek yük.\n\nNot: çoğu BYD ünitesi araç kapatıldıktan ~15 dk sonra Wi-Fi\'yi keser. Bu yüzden park hâlindeyken Wi-Fi üzerinden ADB, Web Arkadaşı (PWA) ve ev ağınızdaki bir broker\'a giden MQTT, araç açılana kadar durur. İnternetten erişilebilen bir broker\'a (ör. HiveMQ Cloud) giden MQTT genellikle yayınlamaya devam eder, çünkü araç mobil veride kalır. Aşağıdaki \"Park hâlindeyken Wi-Fi\'yi açık tut\" seçeneği, desteklenen ünitelerde Wi-Fi\'yi açık tutabilir.</string>
+    <string name="bg_always_on_desc">Her Zaman Açık (önerilen varsayılan): telemetri hizmeti park ettikten sonra çalışmaya devam eder, pil geçmişine sürekli 12V/SoC örnekleri alır ve kapalı durumdaki (ör. gece boyunca) şarjı kaydeder. BYD\'nin kendi fabrika arka plan tüketiminin üzerine küçük bir ek yük.\n\nNot: çoğu BYD ünitesi araç kapatıldıktan ~15 dk sonra Wi-Fi\'yi keser. Bu yüzden park hâlindeyken Wi-Fi üzerinden ADB, Web Arkadaşı (PWA) ve ev ağınızdaki bir broker\'a giden MQTT, araç açılana kadar durur. İnternetten erişilebilen bir broker\'a (ör. HiveMQ Cloud) giden MQTT genellikle yayınlamaya devam eder, çünkü araç mobil veride kalır. Aşağıdaki \"Araç kapalıyken Wi-Fi\'yi açık tut\" seçeneği, desteklenen ünitelerde Wi-Fi\'yi açık tutabilir.</string>
     <string name="bg_minimal_desc">Minimum: hizmet araç kapandıktan 5 dk sonra kendiliğinden durur, ardından 90 dakikalık bir alarm kısa süreliğine uyandırarak şarj anlık görüntüsü alır. Daha düşük tüketim, ancak kapalı durum örnekleri seyrek olur, ADB her zaman açık değildir, Web Arkadaşı (PWA) yalnızca kısa uyandırma süresi boyunca erişilebilirdir ve MQTT aralarda sessizdir. Kapalı durum şarjı ~90 dk içinde yakalanır, ardından şarjın geri kalanı boyunca yayınlar.</string>
     <string name="bg_deep_sleep_desc">Derin Uyku: hizmet araç kapandıktan 5 dk sonra kendiliğinden durur ve başka uyandırma yapmaz. Aracın ECU\'larının tam derin uykuya geçmesine izin verir. Web Arkadaşı (PWA) erişilemez durumdadır ve MQTT araç park halindeyken boyunca sessizdir; kapalı durum şarjı canlı olarak yakalanmaz — yalnızca araç bir sonraki açılışında SoC deltasından yeniden oluşturulur.</string>
     <string name="keepalive_never_fired">Minimum uyandırma alarmı: henüz hiç tetiklenmedi%1$s. Araç bir süre park hâlinde kaldıktan sonra bu \"asla\" olarak kalırsa, üniteniz parkta tamamen kapanır — Minimum bu durumda Derin Uyku gibi davranır, bu yüzden park verileri için Her Zaman Açık kullanın.</string>
     <string name="keepalive_fired">Minimum uyandırma alarmı: son tetiklenme %1$s • toplam %2$s%3$s</string>
     <string name="keepalive_armed"> (etkin)</string>
     <string name="keepalive_not_armed"> · etkin değil</string>
-    <string name="wifi_keepalive_label">Park hâlindeyken Wi-Fi\'yi açık tut</string>
-    <string name="wifi_keepalive_desc">Araç park ettikten sonra Wi-Fi\'yi kapatırsa yeniden etkinleştirir; böylece Web Arkadaşı ve diğer yerel (ev ağı) araçlar erişilebilir kalır. Yalnızca araç kapalıyken çalışır ve 12V akü ya da şarj durumu düşerse geri çekilir. Park hâlindeyken biraz fazladan güç harcar.\n\nWi-Fi\'yi açık tutan Electro, Overdrive veya başka bir uygulama da kullanıyorsanız, bunu yalnızca BİRİNDE açın ve diğerlerinde kapatın — aynı anda çalışan iki keepalive birbiriyle çakışıp güç israf edebilir.</string>
+    <string name="wifi_keepalive_label">Araç kapalıyken Wi-Fi\'yi açık tut</string>
+    <string name="wifi_keepalive_desc">Araç kapatıldıktan sonra Wi-Fi\'yi tekrar açar — ana ünite birkaç dakika sonra kapatır — böylece Web Arkadaşı ve diğer yerel (ev ağı) araçlar erişilebilir kalır. Yalnızca araç kapalıyken çalışır ve 12V akü ya da şarj durumu düşerse geri çekilir. Araç kapalı olduğu sürece biraz fazladan güç harcar.\n\nWi-Fi\'yi açık tutan Electro, Overdrive veya başka bir uygulama da kullanıyorsanız, bunu yalnızca BİRİNDE açın ve diğerlerinde kapatın — aynı anda çalışan iki keepalive birbiriyle çakışıp güç israf edebilir.</string>
     <string name="wifi_keepalive_needs_setup">Gelişmiş ADB kurulumunu gerektirir (anlık telemetriyle aynı). Bunu etkinleştirmek için önce onu tamamlayın.</string>
 
     <!-- Settings dialogs -->
@@ -941,6 +1021,7 @@
     <string name="web_companion_desc">Seyahatlere &amp; şarjlara aynı WiFi\'daki herhangi bir cihazdan göz atın.</string>
     <string name="web_companion_disabled_desc">Bir tarayıcıda seyahat geçmişini açmak için yerel bir sunucu başlatın.</string>
     <string name="web_companion_wifi_info">Yerel WiFi üzerinden sunulur, bu nedenle araç açıkken ve telemetri hizmeti etkinken erişilebilir. Park edildikten sonra çoğu BYD birimi araç kapandıktan ~15 dk sonra WiFi\'ı keser — bundan sonra arka plan etkinlik modundan bağımsız olarak araç yeniden açılana kadar arkadaşa erişilemez (yerel sunucu için mobil veri yedeklemesi yoktur).\nNot: Electro uygulamasının WiFi\'ı süresiz açık tutma seçeneği vardır</string>
+    <string name="web_companion_files_info">Companion\'da ayrıca bir Dosyalar sekmesi var: veritabanı yedeklerini, dışa aktarımları ve tanılama günlüğünü doğrudan telefonunuza veya dizüstünüze indirin ve hiçbir şey bağlamadan araca bir yedek yükleyin. Yalnızca uygulamanın kendi klasörlerini gösterir, tüm ana üniteyi değil.</string>
     <string name="port_field_label">Port</string>
     <string name="port_hint_text">Bir port engelliyse 8081, 8888, 9090\'ı deneyin. Değişiklikler sunucuyu yeniden başlatır.</string>
     <string name="access_pin_label">Erişim PIN</string>
@@ -964,7 +1045,6 @@
     <string name="mqtt_card_desc">HiveMQ veya HomeAssistant gibi bir aracıya canlı telemetri yayınlayın.</string>
     <string name="status_enabled_label">Durum: Etkin</string>
     <string name="status_disabled_label">Durum: Devre Dışı</string>
-    <string name="open_connections_action">Bağlantıları Aç</string>
     <string name="back_to_overview_action">Genel bakışa dön</string>
 
     <!-- ABRP settings -->
@@ -1047,7 +1127,7 @@
     <string name="about_install_note">Yükleme düğmesi, park edilmiş ve etkin seyahat veya şarj yokken kullanılabilir olacak</string>
     <string name="about_install_now">Şimdi yükle</string>
     <string name="about_download_update">Güncellemeyi indir</string>
-    <string name="about_update_manual_di5_instructions">Otomatik yükleme bu ana ünitede kullanılamaz. Bir PC veya telefonda, bu sürümün APK\'sını sürümler sayfasından indirin, ardından ADB ile yükleyin:</string>
+    <string name="about_update_manual_di5_instructions">Otomatik yükleme, şu anda kullanılamayan yardımcı bağlantıyı gerektirir. Bir PC veya telefonda, bu sürümün APK\'sını sürümler sayfasından indirin, ardından ADB ile yükleyin:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Sürümler sayfasını aç</string>
 
@@ -1158,6 +1238,7 @@
     <string name="autostart_dialog_title">⚠️ Eylem Gerekli — Otomatik Başlatma</string>
     <string name="autostart_dialog_msg">Yeni bir sürüm yüklendi. Bu uygulama için otomatik başlatmayı kapatman gerekiyor; bu, ön plan / arka plan hizmetlerinin çalışmasını sağlar.\nAracın bir kez yeniden başlatılması gerekir; yalnızca uygulamayı ilk kez yüklediğinde ve otomatik başlatmayı kapattıktan sonra. Daha eski bir sürümden güncelliyorsan yeniden başlatmana gerek yok</string>
     <string name="autostart_got_it">Anlaşıldı</string>
+    <string name="autostart_open_failed">Otomatik başlatma ekranı bu ünitede açılamadı. Aracın kendi Ayarlar → Uygulamalar → Otomatik başlatma (veya Arka plan uygulamaları) menüsünden açın ve Trip Stats\'a izin verildiğinden emin olun.</string>
     <string name="flavor_mismatch_title">⚠️ Bu araç için yanlış sürüm</string>
     <string name="flavor_mismatch_msg">%1$s sürümünü yüklediniz, ancak bu araç %2$s. Araç telemetrisi düzgün çalışmayabilir. Lütfen bu araç için %2$s sürümünü yükleyin.</string>
     <string name="adb_connecting_title">Bağlanıyor…</string>

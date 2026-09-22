@@ -38,15 +38,17 @@ The file will appear in the car's file manager and can be copied to a USB drive 
 
 Sends the backup file to a private Telegram chat. Accessible from any device with Telegram installed. Supports both manual and automatic scheduled backups, and **restoring directly from within the app** — no PC or ADB needed.
 
-**Setup (first time only):**
+**Setup (first time only):** the bot is linked in **Settings → Connections**, with the other connections — one bot serves backups, notifications, diagnostics and trip exports alike.
 
 1. Open Telegram and message **@BotFather**
 2. Send `/newbot` and follow the prompts to create a bot
 3. Copy the token BotFather gives you (format: `123456789:ABCdefGHI...`)
 4. **Send any message to your new bot** (required so the app can find your chat ID automatically)
-5. Open the app → **Settings** → **Backup & Restore** → *Telegram Backup*
+5. Open the app → **Settings** → **Connections** → *Telegram*
 6. Paste the token and tap **Validate & Save**
 7. The app contacts Telegram, confirms the token, and saves your chat ID automatically
+
+Everything below then happens in **Settings → Data → Backup & Restore**.
 
 **Manual backup:**
 1. Tap **Send Backup Now**
@@ -81,7 +83,27 @@ Key behaviours to be aware of:
 
 The *Last auto-backup* timestamp shown in Settings confirms when the most recent automatic run completed.
 
-> To disconnect, tap **Disconnect bot**. This cancels the automatic schedule and clears all saved credentials. Your previous backups in Telegram and the registry file in Download are unaffected.
+> To disconnect, tap **Disconnect bot** in *Settings → Connections*. This cancels the automatic schedule and clears all saved credentials. Your previous backups in Telegram and the registry file in Download are unaffected.
+
+**Notifications through the same bot:**
+
+Configured in **Settings → Connections**, directly under the bot itself. It is **off by default**; switch on *Send notifications*, then pick which you want:
+
+- **Trip summary** — after every drive: distance, duration, average speed, energy used and consumption measured against your lifetime average, state of charge used, cost, and the trip score. Every figure is read back from the recorded trip and priced exactly as the trip's own screen prices it, so the two always agree.
+- **Charging finished** — when a charging session ends: whether it completed or stopped short and at what level, the energy added, how long it ran, the power it managed and what it cost. **Off by default**, because it is the one event whose timing you don't choose — an overnight charge that completes at 03:00 sends at 03:00. That is why it has its own switch, separate from trip summaries.
+- **Cell imbalance alert** (**Pro**) — the battery warning, which otherwise only appears on the car's own screen.
+
+**Send test message** confirms the whole path before you rely on it.
+
+*When a summary is sent.* It goes out **when the trip ends**, which is not the moment you park: a trip ends once the car has been off for the **auto-stop time** in *Settings → Preferences* (3 minutes by default). Set that to 45 minutes and the summary arrives 45 minutes after you park — that is the trip genuinely ending, not a delay. On **DiLink-3** in the default **Always On** background mode the app is still running then, so this is the normal case.
+
+A trip the app could only close **afterwards** is recorded in full but **not announced**. On **DiLink-5** the car force-stops the app at ignition-off, so a trip left to close on its own is closed at the next start, and a notification then would be about yesterday's drive arriving as you set off on today's. Tapping **Stop** to end the trip before you switch the car off closes it live, and that one does send a summary.
+
+Alerts that are not tied to a trip keep firing while parked in **Always On**, because the head unit stays on **mobile data** after the car cuts Wi-Fi. In **Minimal** mode the app is woken every 90 minutes, and in **Deep Sleep** not until the next drive.
+
+The same events also appear in the **web companion**, under the bell in its header, whether or not a bot is linked — see the notes there. That feed is the car's own history; Telegram is a copy pushed to your phone.
+
+If the car has no connection when an event happens, the message is **queued and retried** — the queue survives the app being killed — and is dropped only once it is more than a day old, by which point it is history rather than an alert.
 
 ---
 
@@ -123,6 +145,8 @@ Download/BydTripStats/byd_stats_settings_v2.15.2_2026-09-07_14-30.json
 ```
 
 It is a couple of kilobytes of plain JSON, written to the same places as the database backup (Download, the private ADB directory, the SD card) and sent to Telegram with it — including on the automatic schedule. The two files share the same timestamp, which is how the app pairs them at restore time.
+
+> Telegram is the one exception to "always written": the settings file goes to your chat **only when the database goes with it**. A database over Telegram's 50 MB limit is skipped, and the settings file is skipped with it, so a message in your chat always means a real backup. Export settings by hand from the card described below when that happens — the local copy is written regardless of database size.
 
 **Credentials.** By default the file carries the secrets it needs to be useful: the MQTT password, the ABRP and Telegram tokens, the web companion PIN and the Pro code. That file sits in your own car's Download folder, next to your trip database. If you plan to share it — to copy a configuration to another car, or to attach it to a bug report — turn **Include credentials** off in *Settings → App → Backup & Restore → Settings backup & restore* first; everything else is still exported, and the connections come back configured but need their passwords re-entered.
 

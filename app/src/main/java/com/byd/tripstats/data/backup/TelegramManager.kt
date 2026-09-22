@@ -24,6 +24,7 @@ import java.io.FileInputStream
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import java.net.URLEncoder
 
 /**
  * Handles Telegram private Bot API backup.
@@ -67,6 +68,9 @@ class TelegramManager private constructor(private val context: Context) {
         // before the rejection arrives. We pre-check against this constant on every
         // sendFile() path to short-circuit before any bytes go on the wire.
         const val TELEGRAM_MAX_FILE_SIZE_BYTES = 50L * 1024 * 1024
+
+        /** Bot API cap for a single sendMessage body. Longer text is rejected outright. */
+        const val TELEGRAM_MAX_MESSAGE_CHARS = 4096
 
         @Volatile private var INSTANCE: TelegramManager? = null
 
@@ -402,6 +406,39 @@ class TelegramManager private constructor(private val context: Context) {
     }
 
 
+    /**
+     * Sends a short text message to the configured chat (`sendMessage`, HTML parse mode).
+     *
+     * Used by the event notifications — trip summary, charging stopped early, cell
+     * imbalance — which is why it deliberately leaves [state] alone: those fire from the
+     * telemetry service at any moment, and hijacking the banner the Backup & Restore
+     * screen is using to report a backup would be a lie about what just happened.
+     * The caller gets the outcome as the return value instead.
+     *
+     * @return true only when Telegram acknowledged the message (`ok: true`).
+     */
+    suspend fun sendMessage(text: String): Boolean = withContext(Dispatchers.IO) {
+        val cfg = _config.value ?: return@withContext false
+        try {
+            val json = postForm(
+                "$BASE_URL${cfg.token}/sendMessage",
+                mapOf(
+                    "chat_id" to cfg.chatId,
+                    "text" to text.take(TELEGRAM_MAX_MESSAGE_CHARS),
+                    "parse_mode" to "HTML",
+                    "disable_web_page_preview" to "true",
+                )
+            )
+            val ok = json.optBoolean("ok", false)
+            if (!ok) Log.w(TAG, "sendMessage rejected: ${json.optString("description")}")
+            ok
+        } catch (e: Exception) {
+            // No network is the expected failure while parked on a cut Wi-Fi link,
+            // so this is a warning, not an error — TelegramNotifier queues and retries.
+            Log.w(TAG, "sendMessage failed: ${e.message}")
+            false
+        }
+    }
 
     // ── Local sent-file registry ──────────────────────────────────────────────
 
@@ -746,6 +783,37 @@ class TelegramManager private constructor(private val context: Context) {
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    /**
+     * POSTs a form-encoded body. Message text goes in the body rather than the query
+     * string so a long summary can't blow the URL length, and so the encoding is UTF-8
+     * end to end (emoji in the card, € in the cost line).
+     */
+    private fun postForm(urlString: String, params: Map<String, String>): JSONObject {
+        val body = params.entries.joinToString("&") { (k, v) ->
+            "${URLEncoder.encode(k, "UTF-8")}=${URLEncoder.encode(v, "UTF-8")}"
+        }.toByteArray(Charsets.UTF_8)
+
+        val conn = (URL(urlString).openConnection() as HttpURLConnection).apply {
+            requestMethod = "POST"
+            doOutput = true
+            connectTimeout = 10_000
+            readTimeout = 15_000
+            setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+            setFixedLengthStreamingMode(body.size)
+        }
+        val responseBody = try {
+            conn.outputStream.use { it.write(body) }
+            if (conn.responseCode in 200..299) {
+                conn.inputStream.bufferedReader().readText()
+            } else {
+                conn.errorStream?.bufferedReader()?.readText() ?: """{"ok":false}"""
+            }
+        } finally {
+            conn.disconnect()
+        }
+        return JSONObject(responseBody)
+    }
 
     private fun getRequest(urlString: String): JSONObject {
         val conn = (URL(urlString).openConnection() as HttpURLConnection).apply {

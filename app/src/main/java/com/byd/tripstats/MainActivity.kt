@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -371,15 +372,40 @@ class MainActivity : ComponentActivity() {
         showAutostartReminder.value = false
     }
 
+    /**
+     * Open BYD's own auto-start / background-restriction screen.
+     *
+     * Two routes, because the OEM action isn't published everywhere. DiLink-3 resolves
+     * `BYD_APPSTARTMANAGEMENT`; on DiLink-5 it resolves to nothing ("unable to resolve Intent",
+     * verified on a Sealion 7) even though the same system app is installed — there it is only
+     * reachable by explicit component. The action is tried first so we keep using whatever the
+     * platform actually advertises, and fall back to the component only when it isn't there.
+     *
+     * The fallback may still be refused if that activity isn't exported (a shell `am start`
+     * bypasses the export check, so its success on a head unit doesn't prove an app can do it) —
+     * hence the failure is now *surfaced* rather than swallowed. Before this, a DiLink-5 user
+     * tapping "Got it" got a dialog that closed and did nothing at all, with the reason visible
+     * only in a log they can't read.
+     */
     private fun openAutostartManagementDialog() {
         dismissAutostartReminder()
-        val intent = Intent("android.intent.action.BYD_APPSTARTMANAGEMENT").apply {
-            addCategory(Intent.CATEGORY_DEFAULT)
+        val routes = listOf(
+            Intent("android.intent.action.BYD_APPSTARTMANAGEMENT")
+                .addCategory(Intent.CATEGORY_DEFAULT),
+            Intent().setClassName(
+                "com.byd.appstartmanagement",
+                "com.byd.appstartmanagement.StartupAppManageActivity",
+            ),
+        )
+        val opened = routes.any { intent ->
+            runCatching { startActivity(intent) }
+                .onFailure { Log.w(TAG, "autostart screen route failed: ${it.message}") }
+                .isSuccess
         }
-        runCatching { startActivity(intent) }
-            .onFailure { error ->
-                Log.w(TAG, "Unable to launch BYD autostart management", error)
-            }
+        if (!opened) {
+            Log.w(TAG, "Unable to launch BYD autostart management by action or component")
+            Toast.makeText(this, R.string.autostart_open_failed, Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun checkSetupRequired() {

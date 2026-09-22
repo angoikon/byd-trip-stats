@@ -36,6 +36,7 @@ import com.byd.tripstats.R
 import com.byd.tripstats.data.config.CarConfig
 import com.byd.tripstats.data.entitlement.EntitlementManager
 import com.byd.tripstats.data.model.VehicleTelemetry
+import com.byd.tripstats.data.notify.TelegramNotifier
 import com.byd.tripstats.data.preferences.OffStateMode
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.data.repository.BatteryVoltageHistoryRepository
@@ -275,6 +276,19 @@ class VehicleTelemetryService : Service() {
         abrpConnectionManager = AbrpConnectionManager(applicationContext)
         mqttConnectionManager = MqttConnectionManager(applicationContext)
         cellImbalanceMonitor = CellImbalanceMonitor(applicationContext)
+
+        // Retry any event push that couldn't go out last time (no network while parked,
+        // or the process died with the queue unsent). The service starting is the best
+        // available proxy for "the car is awake and the link is likely back".
+        TelegramNotifier.getInstance(applicationContext).flushPending()
+
+        // Bring the tailnet back up if the user enabled it. This is the app's "the car woke up"
+        // moment, and a head-unit reboot wipes /data/local/tmp — daemon, state directory and all —
+        // so without this, remote access would silently stay down until someone opened Settings.
+        serviceScope.launch {
+            runCatching { com.byd.tripstats.util.TailscaleManager.restoreIfEnabled(applicationContext) }
+                .onFailure { Log.w(TAG, "Tailscale restore failed: ${it.message}") }
+        }
 
         // Start telemetry loop IMMEDIATELY using the synchronous SharedPreferences
         // cache — do NOT wait for DataStore async emit. The notification already

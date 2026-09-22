@@ -14,6 +14,7 @@ import com.byd.tripstats.MainActivity
 import com.byd.tripstats.R
 import com.byd.tripstats.data.entitlement.EntitlementManager
 import com.byd.tripstats.data.model.VehicleTelemetry
+import com.byd.tripstats.data.notify.VehicleEvents
 import com.byd.tripstats.data.preferences.PreferencesManager
 import kotlin.math.roundToInt
 
@@ -52,6 +53,12 @@ class CellImbalanceMonitor(private val context: Context) {
     }
 
     private fun notifyImbalance(spreadV: Double, thresholdV: Double, soc: Double) {
+        // Publish to the other channels first, and deliberately outside the POST_NOTIFICATIONS
+        // check below: the head-unit notification is only visible to someone sitting in the car,
+        // so the Telegram push and the companion feed are the halves that matter when the grant
+        // is missing.
+        VehicleEvents.getInstance(context).onCellImbalance(spreadV, thresholdV, soc)
+
         // Android 13+ requires the runtime POST_NOTIFICATIONS grant for a non-foreground
         // notify(). Skip silently if it hasn't been granted rather than crash.
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)

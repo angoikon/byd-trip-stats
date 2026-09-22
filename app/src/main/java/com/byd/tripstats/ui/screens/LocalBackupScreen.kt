@@ -9,12 +9,12 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.core.content.ContextCompat
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.*
@@ -27,20 +27,24 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.widget.Toast
 import androidx.compose.ui.res.stringResource
 import com.byd.tripstats.R
+import com.byd.tripstats.ui.components.BrandSwitch
 import com.byd.tripstats.data.backup.LocalBackupManager
 import com.byd.tripstats.data.backup.TelegramManager
 import com.byd.tripstats.data.entitlement.EntitlementManager
+import com.byd.tripstats.data.notify.TelegramNotifier
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.ui.components.BrandNavigationBar
 import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import com.byd.tripstats.util.AppRestart
 import com.byd.tripstats.worker.DatabaseTrimmer
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -101,12 +105,6 @@ fun LocalBackupScreen(
             scope.launch { manager.backupDatabaseToSdCard() }
         }
     }
-    // Hoisted out of item{} so it survives LazyColumn recycling
-    var tokenInput by remember { mutableStateOf("") }
-    LaunchedEffect(telegramConfig) {
-        tokenInput = telegramConfig?.token ?: ""
-    }
-
     // ── Auto-dismiss Success banners after 4 seconds ──────────────────────────
     LaunchedEffect(backupState) {
         if (backupState is LocalBackupManager.BackupState.Success &&
@@ -424,6 +422,12 @@ fun LocalBackupScreen(
             item {
                 GroupSection(title = stringResource(R.string.app_mgmt_telegram_label), icon = Icons.AutoMirrored.Filled.Send) {
                     SectionCard(title = stringResource(R.string.telegram_backup_label), icon = Icons.AutoMirrored.Filled.Send) {
+                Text(
+                    stringResource(R.string.telegram_setup_info),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(8.dp))
                 // Telegram status banner
                 when (val s = telegramState) {
                     is TelegramManager.TelegramState.InProgress -> StatusBanner(
@@ -499,24 +503,9 @@ fun LocalBackupScreen(
                             style    = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.weight(1f)
                         )
-                        Switch(
+                        BrandSwitch(
                             checked         = telegramAuto,
                             onCheckedChange = { telegramManager.setAutoEnabled(it) },
-                            thumbContent = if (!telegramAuto) {
-                                {
-                                    // Donut effect: white outer thumb + coloured inner circle
-                                    Box(
-                                        modifier = Modifier
-                                            .size(12.dp)
-                                            .background(ToggleUncheckedTrack, CircleShape)
-                                    )
-                                }
-                            } else null,
-                            colors = SwitchDefaults.colors(
-                                uncheckedThumbColor  = Color.White,
-                                uncheckedTrackColor  = ToggleUncheckedTrack,
-                                uncheckedBorderColor = ToggleUncheckedTrack
-                            )
                         )
                     }
 
@@ -593,23 +582,9 @@ fun LocalBackupScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                            Switch(
+                            BrandSwitch(
                                 checked         = telegramWifiOnly,
                                 onCheckedChange = { telegramManager.setWifiOnly(it) },
-                                thumbContent = if (!telegramWifiOnly) {
-                                    {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(12.dp)
-                                                .background(ToggleUncheckedTrack, CircleShape)
-                                        )
-                                    }
-                                } else null,
-                                colors = SwitchDefaults.colors(
-                                    uncheckedThumbColor  = Color.White,
-                                    uncheckedTrackColor  = ToggleUncheckedTrack,
-                                    uncheckedBorderColor = ToggleUncheckedTrack
-                                )
                             )
                         }
                     }
@@ -638,69 +613,17 @@ fun LocalBackupScreen(
                         Text(if (telegramBusy) stringResource(R.string.sending) else stringResource(R.string.send_backup_now_action))
                     }
 
-                    Spacer(Modifier.height(4.dp))
-
-                    TextButton(
-                        onClick  = { telegramManager.clearConfig() },
-                        enabled  = !telegramBusy,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            stringResource(R.string.disconnect_bot_action),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-
                 } else {
-                    // ── Setup state ───────────────────────────────────────
-
+                    // ── Not linked yet ────────────────────────────────────
+                    // The bot is a connection, and connections are set up on the Connections
+                    // tab — including this one, which several features share. Backup only
+                    // says where to go rather than offering a second place to paste a token.
                     StatusBanner(
-                        text = stringResource(R.string.telegram_setup_info),
+                        text = stringResource(R.string.telegram_setup_in_connections),
                         color = MaterialTheme.colorScheme.primaryContainer,
                         icon = Icons.Filled.Info,
                         iconTint = MaterialTheme.colorScheme.primary
                     )
-
-                    Spacer(Modifier.height(10.dp))
-
-                    Text(
-                        stringResource(R.string.telegram_instructions),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Spacer(Modifier.height(10.dp))
-
-                    OutlinedTextField(
-                        value         = tokenInput,
-                        onValueChange = { tokenInput = it },
-                        label         = { Text(stringResource(R.string.bot_token_label)) },
-                        placeholder   = { Text("123456789:ABCdef…") },
-                        singleLine    = true,
-                        modifier      = Modifier.fillMaxWidth(),
-                        enabled       = !telegramBusy
-                    )
-
-                    Spacer(Modifier.height(8.dp))
-
-                    Button(
-                        onClick  = { scope.launch { telegramManager.validateAndSave(tokenInput) } },
-                        enabled  = tokenInput.isNotBlank() && !telegramBusy,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        if (telegramBusy) {
-                            CircularProgressIndicator(
-                                modifier    = Modifier.size(18.dp),
-                                strokeWidth = 2.dp,
-                                color       = MaterialTheme.colorScheme.onPrimary
-                            )
-                        } else {
-                            Icon(Icons.Filled.Check, null, modifier = Modifier.size(20.dp))
-                        }
-                        Spacer(Modifier.width(8.dp))
-                        Text(if (telegramBusy) stringResource(R.string.uploading) else stringResource(R.string.validate_save_action))
-                    }
                 }
             }
                     Spacer(Modifier.height(8.dp))

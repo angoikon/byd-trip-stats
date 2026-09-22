@@ -25,6 +25,10 @@ interface ChargingSessionDao {
     @Query("SELECT * FROM charging_sessions ORDER BY startTime DESC")
     fun getAllSessions(): Flow<List<ChargingSessionEntity>>
 
+    /** One-shot read of [getAllSessions], for the FIFO cost attribution run at trip close. */
+    @Query("SELECT * FROM charging_sessions ORDER BY startTime DESC")
+    suspend fun getAllSessionsSync(): List<ChargingSessionEntity>
+
     @Query("SELECT * FROM charging_sessions WHERE id = :sessionId")
     suspend fun getSessionById(sessionId: Long): ChargingSessionEntity?
 

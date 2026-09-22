@@ -10,6 +10,8 @@ import com.byd.tripstats.data.local.BydStatsDatabase
 import com.byd.tripstats.data.local.entity.ChargingDataPointEntity
 import com.byd.tripstats.data.local.entity.ChargingSessionEntity
 import com.byd.tripstats.data.model.VehicleTelemetry
+import com.byd.tripstats.data.notify.VehicleEvents
+import com.byd.tripstats.data.preferences.PreferencesManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -18,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -44,6 +47,7 @@ class ChargingRepository private constructor(context: Context) {
 
     private val TAG = "ChargingRepository"
 
+    private val appContext = context.applicationContext
     private val database   = BydStatsDatabase.getDatabase(context)
     private val sessionDao = database.chargingSessionDao()
     private val scope      = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -301,7 +305,7 @@ class ChargingRepository private constructor(context: Context) {
             return
         }
         val dataPoints = sessionDao.getDataPointsForSessionSync(session.id)
-        closePersistedActiveSession(session, dataPoints, carConfig)
+        val closed = closePersistedActiveSession(session, dataPoints, carConfig)
 
         // Arm post-charge settle top-up for a near-full off-state charge: the session is
         // already closed (activeSessionId clears immediately, as callers expect), but the
@@ -323,6 +327,33 @@ class ChargingRepository private constructor(context: Context) {
         lastChargingSeenAtMs = 0L
         _activeSessionId.value = null
         _isCharging.value = false
+
+        // "Charging finished" event, from the live close path only — the orphan
+        // recovery close above finalises a session that ended while the app was dead, and
+        // announcing it the next morning would report a present-tense event that is over.
+        // null means the row was dropped as a phantom or a charger-handshake flap.
+        closed?.let { notifyChargingFinished(it.id, settleArmed = settleSessionId == it.id) }
+    }
+
+    /**
+     * Announces a closed session, after the post-charge settle window when one is armed: for a
+     * near-full off-state charge the BMS keeps revising SoC upward for minutes after current
+     * stops, and a message saying 98% about a session the app then stores (and shows) as 100%
+     * is the kind of small disagreement that costs trust in every other number in it. The row
+     * is re-read at the end of the wait so whatever settled is what gets sent.
+     */
+    private fun notifyChargingFinished(sessionId: Long, settleArmed: Boolean) {
+        scope.launch {
+            if (settleArmed) delay(SETTLE_GRACE_MS + SETTLE_SEND_MARGIN_MS)
+            val row = sessionDao.getSessionById(sessionId) ?: return@launch
+            val prefs = PreferencesManager(appContext)
+            VehicleEvents.getInstance(appContext).onChargingSessionClosed(
+                session = row,
+                // The charging screen's own rule: the session's price when it has one (0.0 is a
+                // valid "free"), otherwise the global tariff, and no cost at all without either.
+                ratePerKwh = row.pricePerKwh ?: prefs.getCachedElectricityPrice().takeIf { it > 0.0 },
+            )
+        }
     }
 
     /**
@@ -356,15 +387,16 @@ class ChargingRepository private constructor(context: Context) {
         Log.i(TAG, "Post-charge settle: session $sid end SoC revised to ${"%.1f".format(cur)}%")
     }
 
+    /** @return the closed row, or null when the session was dropped as a phantom or a flap. */
     private suspend fun closePersistedActiveSession(
         session: ChargingSessionEntity,
         dataPoints: List<ChargingDataPointEntity>,
         carConfig: CarConfig?
-    ) {
+    ): ChargingSessionEntity? {
         if (dataPoints.isEmpty()) {
             sessionDao.deleteSession(session)
             Log.i(TAG, "Phantom session ${session.id} deleted (0 data points)")
-            return
+            return null
         }
 
         val lastPoint = dataPoints.last()
@@ -391,7 +423,7 @@ class ChargingRepository private constructor(context: Context) {
             sessionDao.deleteDataPointsForSession(session.id)
             sessionDao.deleteSession(session)
             Log.i(TAG, "Transient charging flap ${session.id} deleted (${dataPoints.size} points, ${durationMs}ms)")
-            return
+            return null
         }
 
         val closed = session.copy(
@@ -407,6 +439,7 @@ class ChargingRepository private constructor(context: Context) {
         )
         sessionDao.updateSession(closed)
         Log.i(TAG, "Charging session ${session.id} closed — ${session.socStart}% → $endSoc%  ${dataPoints.size} points")
+        return closed
     }
 
     // ── SoC-delta reconstruction (car-off charging) ───────────────────────────
@@ -564,6 +597,8 @@ class ChargingRepository private constructor(context: Context) {
         // current stops so the BMS's SoC recalibration to 100% is captured. Comfortably
         // within the service's 5-min car-off self-stop window.
         private const val SETTLE_GRACE_MS = 4 * 60_000L
+        /** Small extra wait so the last settle tick is stored before the row is read back. */
+        private const val SETTLE_SEND_MARGIN_MS = 15_000L
         private const val SETTLE_NEAR_FULL_PCT = 90.0
         private const val SETTLE_MAX_RISE_PCT = 4.0
         private const val MIN_COMPLETED_SESSION_DURATION_MS = 90_000L

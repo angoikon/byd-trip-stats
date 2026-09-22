@@ -139,6 +139,18 @@ internal object RtDispatch {
      * attempt succeeds and this returns before the loop runs once.
      */
     suspend fun launchWatchingForChannel(context: Context): Boolean {
+        // FIRST, before anything tries to use the channel: BYD clears Android's adb-debugging
+        // settings at shutdown on DiLink 5, which is why the port is dead at every cold boot. We
+        // hold WRITE_SECURE_SETTINGS from the adb setup, so we can switch them back on in-process —
+        // no shell needed, which is the essential part: the channel cannot be used to enable the
+        // channel.
+        //
+        // Gated on the port actually being shut so a healthy unit is never written to at all —
+        // DiLink 3 keeps its channel open and therefore never reaches this, which matters because
+        // `adb_wifi_enabled` may not even exist there and we have no reason to create it.
+        if (!sockOpen()) {
+            DiagLog.event(context, TAG, "adb assert: ${AdbPermissionManager.ensureAdbEnabled(context)} ${bootAge()}")
+        }
         if (launch(context)) return true
         // No point burning a 20-minute watch on a device that has no grants to use anyway —
         // launch() has already logged why.
@@ -176,8 +188,28 @@ internal object RtDispatch {
         val conn = prop("sys.connect.adb.wiress")
         return "port=[$port] sock=${if (sockOpen()) "open" else "closed"} " +
             "wiress=[$wiress] conn=[$conn] wifi=${if (wifiUp(context)) "up" else "down"} " +
-            "rcv=${bootReceiverState(context)}"
+            "rcv=${bootReceiverState(context)} adbEnabled=${adbEnabled(context)}"
     }
+
+    /**
+     * `Settings.Global.adb_enabled` — on DiLink 5 this, not the `wiress` properties, appears to be
+     * what actually gates adbd: a tester's unit had all three `*.wiress.*`/`service.adb.tcp.port`
+     * properties empty while adbd was nonetheless listening on 5555, and the one control that
+     * turns it on in BYD's own engineering screen just flips this setting (`AdbUtil.a()`).
+     *
+     * Logged because the decisive unknown is what it reads *after a cold boot, before anyone
+     * touches the head unit*. If it survives as 1 and adb is still dead, this isn't the gate. If
+     * it comes back 0, something clears it at shutdown — and then we can put it back ourselves:
+     * WRITE_SECURE_SETTINGS is already declared in our manifest and is `development`-level, so
+     * `pm grant` over the channel we already use would let the app restore it in-process at every
+     * boot, with no shell needed at the moment it matters. Reading needs no permission at all,
+     * which is why this costs nothing to collect from every unit.
+     *
+     * -1 = unreadable.
+     */
+    private fun adbEnabled(context: Context): Int = runCatching {
+        android.provider.Settings.Global.getInt(context.contentResolver, "adb_enabled", -1)
+    }.getOrDefault(-1)
 
     /**
      * Enabled state of our own BOOT_COMPLETED receiver — the exact bit BYD's "auto-start"

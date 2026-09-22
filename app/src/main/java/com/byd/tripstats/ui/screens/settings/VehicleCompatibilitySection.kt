@@ -9,7 +9,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
@@ -30,10 +29,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.byd.tripstats.R
+import com.byd.tripstats.ui.components.BrandSwitch
 import com.byd.tripstats.data.backup.TelegramManager
 import com.byd.tripstats.sdk.VehicleCompatibilityProbe
 import com.byd.tripstats.ui.theme.BydElectricAzure
-import com.byd.tripstats.ui.theme.ToggleUncheckedTrack
 import com.byd.tripstats.util.QrCodeGenerator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -131,25 +130,11 @@ internal fun VehicleCompatibilitySection(context: Context, scope: CoroutineScope
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                Switch(
+                BrandSwitch(
                     checked = isEnabled,
                     onCheckedChange = { next ->
                         VehicleCompatibilityProbe.setEnabled(next)
                     },
-                    thumbContent = if (!isEnabled) {
-                        {
-                            Box(
-                                modifier = Modifier
-                                    .size(12.dp)
-                                    .background(ToggleUncheckedTrack, CircleShape)
-                            )
-                        }
-                    } else null,
-                    colors = SwitchDefaults.colors(
-                        uncheckedThumbColor = Color.White,
-                        uncheckedTrackColor = ToggleUncheckedTrack,
-                        uncheckedBorderColor = ToggleUncheckedTrack
-                    )
                 )
             }
 

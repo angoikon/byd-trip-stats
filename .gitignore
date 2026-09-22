@@ -26,3 +26,4 @@ app/libs/private-telemetry.jar
 .vscode
 graphify-out
 AGENTS.md
+*.apk

@@ -7,6 +7,7 @@ import com.byd.tripstats.connections.AbrpConnectionStore
 import com.byd.tripstats.connections.MqttConnectionStore
 import com.byd.tripstats.data.config.CarCatalog
 import com.byd.tripstats.data.entitlement.EntitlementManager
+import com.byd.tripstats.data.notify.TelegramNotifier
 import com.byd.tripstats.data.preferences.DashboardCardId
 import com.byd.tripstats.data.preferences.DashboardLayout
 import com.byd.tripstats.data.preferences.OffStateMode
@@ -15,6 +16,7 @@ import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.data.preferences.SocSource
 import com.byd.tripstats.data.preferences.ThemeMode
 import com.byd.tripstats.data.preferences.UnitSystem
+import com.byd.tripstats.util.TailscaleManager
 import com.byd.tripstats.ui.screens.settings.AppDiagnosticsMonitor
 import com.byd.tripstats.util.LocaleHelper
 import kotlinx.coroutines.Dispatchers
@@ -161,15 +163,33 @@ object SettingsBackup {
             })
 
             val telegram = TelegramManager.getInstance(app)
+            val notifier = TelegramNotifier.getInstance(app)
             root.put("telegram", JSONObject().apply {
                 put("schedule",    telegram.schedule.value.name)
                 put("autoEnabled", telegram.autoEnabled.value)
                 put("wifiOnly",    telegram.wifiOnly.value)
+                // Event pushes ride in the same section as the bot they are sent through.
+                put("notifyEnabled",       notifier.enabled.value)
+                put("notifyTripSummary",   notifier.tripSummaryEnabled.value)
+                put("notifyCharging",      notifier.chargingFinishedEnabled.value)
+                put("notifyCellImbalance", notifier.cellImbalanceEnabled.value)
                 if (includeCredentials) telegram.config.value?.let { cfg ->
                     put("botToken", cfg.token)
                     put("chatId",   cfg.chatId)
                     put("botName",  cfg.botName)
                     put("botId",    cfg.botId)
+                }
+            })
+
+            // Tailscale: the auth key is a credential like the MQTT password, so it only travels
+            // when the user asked for credentials to be included. Without it a restored install is
+            // configured but signed out, which is the same contract the other connections have.
+            root.put("tailscale", JSONObject().apply {
+                put("enabled", TailscaleManager.isEnabled(app))
+                put("hostname", TailscaleManager.hostname(app))
+                if (includeCredentials) {
+                    TailscaleManager.savedAuthKey(app).takeIf { it.isNotBlank() }
+                        ?.let { put("authKey", it) }
                 }
             })
 
@@ -259,6 +279,21 @@ object SettingsBackup {
                 ))
             }.onSuccess { applied += "ABRP" }
                 .onFailure { Log.w(TAG, "ABRP section failed: ${it.message}") }
+        }
+
+        root.optJSONObject("tailscale")?.let { t ->
+            runCatching {
+                t.optString("hostname").takeIf { it.isNotBlank() }
+                    ?.let { TailscaleManager.saveHostname(app, it) }
+                // Deliberately NOT started here: joining a tailnet is a network action with a
+                // credential, and a restore should not silently put a car on a network. The key is
+                // kept so Settings → Connections can connect with one tap.
+                t.optString("authKey").takeIf { it.isNotBlank() }?.let { key ->
+                    app.getSharedPreferences("tailscale_prefs", Context.MODE_PRIVATE)
+                        .edit().putString("auth_key", key).apply()
+                }
+            }.onSuccess { applied += "Tailscale" }
+                .onFailure { Log.w(TAG, "Tailscale section failed: ${it.message}") }
         }
 
         root.optJSONObject("telegram")?.let { t ->
@@ -388,6 +423,14 @@ object SettingsBackup {
             ?.let { telegram.setSchedule(it) }
         if (t.has("wifiOnly")) telegram.setWifiOnly(t.getBoolean("wifiOnly"))
         if (t.has("autoEnabled")) telegram.setAutoEnabled(t.getBoolean("autoEnabled"))
+
+        val notifier = TelegramNotifier.getInstance(context)
+        if (t.has("notifyTripSummary")) notifier.setTripSummaryEnabled(t.getBoolean("notifyTripSummary"))
+        if (t.has("notifyCharging")) notifier.setChargingFinishedEnabled(t.getBoolean("notifyCharging"))
+        if (t.has("notifyCellImbalance")) notifier.setCellImbalanceEnabled(t.getBoolean("notifyCellImbalance"))
+        // Master switch last: turning it on flushes the outbox, which is pointless until
+        // the per-event gates and the bot it sends through are both back in place.
+        if (t.has("notifyEnabled")) notifier.setEnabled(t.getBoolean("notifyEnabled"))
     }
 
     // ── JSON helpers ──────────────────────────────────────────────────────────

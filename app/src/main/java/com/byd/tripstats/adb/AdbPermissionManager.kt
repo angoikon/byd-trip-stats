@@ -2,6 +2,7 @@ package com.byd.tripstats.adb
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.provider.Settings
 import android.util.Log
 import com.byd.tripstats.runtimebridge.RuntimeExtensionBridge
 import dadb.AdbKeyPair
@@ -39,11 +40,32 @@ object AdbPermissionManager {
     // don't silently re-write the global setting on every launch (only re-apply when missing/reset).
     private val EXEMPTION_TOKENS = listOf("Lcom/ts/", "Ldalvik/system/")
 
+    // The two Settings.Global keys BYD clears at shutdown on DiLink 5. `adb_wifi_enabled` is the
+    // operative one — it drives the wireless-debugging TCP listener that dadb reaches on
+    // 127.0.0.1:5555. Loopback, so no Wi-Fi network is needed; this works with the radio off.
+    // (That also corrects an earlier reading of ours: we wrote Android-11 wireless debugging off
+    // because this key read 0 and the ROM has no pairing UI — but it reads 0 simply because nothing
+    // had set it, and loopback needs no pairing.)
+    private const val ADB_WIFI_ENABLED = "adb_wifi_enabled"
+    private const val ADB_ENABLED = "adb_enabled"
+
     // Permissions that require elevated user-approved grant flow.
     private val REQUIRED_PERMISSIONS = listOf(
         "android.permission.WRITE_SECURE_SETTINGS",
         "android.permission.READ_LOGS",
         "android.permission.ACCESS_BACKGROUND_LOCATION",
+    )
+
+    // Ordinary runtime permissions the user can also grant from Android Settings, taken here as a
+    // convenience while the shell is open. Deliberately NOT in REQUIRED_PERMISSIONS: that list is
+    // also the "is setup complete?" test, so adding to it would make every existing install look
+    // un-set-up until it ran setup again.
+    //
+    // WRITE_EXTERNAL_STORAGE is what puts the app in the sdcard_rw group. Without it, shared
+    // storage lists fine and every delete fails, because READ is granted separately — which is
+    // exactly what the web companion's Files tab ran into.
+    private val BEST_EFFORT_PERMISSIONS = listOf(
+        "android.permission.WRITE_EXTERNAL_STORAGE",
     )
 
     // ── DiLink-5 vehicle-API access ──────────────────────────────────────────────
@@ -144,6 +166,46 @@ object AdbPermissionManager {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .edit().putBoolean(PREF_HIDDEN_API_PROMPTED, true).apply()
     }
+
+    /**
+     * Re-assert Android's `adb_enabled` setting, which BYD switches **off** at shutdown on
+     * DiLink 5 — the single reason the local channel is dead after every cold boot.
+     *
+     * Confirmed on a Sealion 7 (2026-09-18): at `sinceBoot=18s` the app read `adbEnabled=0` with
+     * `sock=closed`, and across every sample in that unit's log the two track exactly — `0` always
+     * with a closed port, `1` always with an open one. Decompiling BYD's own engineering screen
+     * says the same thing from the other side: the button the owner presses to turn wireless adb
+     * back on does nothing but `Settings.Global.putInt("adb_enabled", 1)` (`AdbUtil.a()`), so this
+     * setting *is* the gate on this platform — not the `persist.sys.adb.wiress.*` properties, which
+     * read empty there and are SELinux-denied to us anyway.
+     *
+     * We can write it because [REQUIRED_PERMISSIONS] already includes `WRITE_SECURE_SETTINGS` and
+     * [isSetupComplete] verifies it is really held — so this needs **no shell at the moment it
+     * matters**, which is the whole point: the channel can't be used to turn the channel on.
+     *
+     * No-op where it's already 1 (DiLink 3 keeps it set), so this costs one settings read there.
+     *
+     * @return a short status for the log: `already-on`, `turned-on`, `denied`, `no-setup`, or an
+     *         error tag. Never throws — a revoked permission surfaces as `denied`, not a crash.
+     */
+    fun ensureAdbEnabled(context: Context): String = runCatching {
+        val resolver = context.contentResolver
+        // Without the grant the writes throw; check first so the common case logs a clear reason.
+        if (!isSetupComplete(context)) return@runCatching "no-setup"
+
+        val wifiBefore = Settings.Global.getInt(resolver, ADB_WIFI_ENABLED, -1)
+        val adbBefore = Settings.Global.getInt(resolver, ADB_ENABLED, -1)
+        // Wireless knob FIRST: it is the one that drives the loopback TCP listener, and writing it
+        // is what actually reopens the port. `adb_enabled` alone is necessary, not sufficient.
+        if (wifiBefore != 1) Settings.Global.putInt(resolver, ADB_WIFI_ENABLED, 1)
+        if (adbBefore != 1) Settings.Global.putInt(resolver, ADB_ENABLED, 1)
+        // Read both back rather than trusting the writes: this is the claim the whole fix rests on,
+        // and a silently-ignored write would otherwise look identical to a working one.
+        val wifiAfter = Settings.Global.getInt(resolver, ADB_WIFI_ENABLED, -1)
+        val adbAfter = Settings.Global.getInt(resolver, ADB_ENABLED, -1)
+        val verdict = if (wifiAfter == 1 && adbAfter == 1) "ok" else "FAILED"
+        "$verdict wifi=$wifiBefore→$wifiAfter adb=$adbBefore→$adbAfter"
+    }.getOrElse { "denied(${it.javaClass.simpleName})" }
 
     /** True if all required permissions are already granted — skip setup entirely. */
     fun isSetupComplete(context: Context): Boolean {
@@ -366,6 +428,16 @@ object AdbPermissionManager {
                 if (!ok) allGranted = false
             }
 
+            // Best-effort: a failure here never fails setup, since the user can grant these from
+            // Android Settings and nothing core depends on them.
+            BEST_EFFORT_PERMISSIONS.forEach { perm ->
+                runCatching {
+                    val result = dadb.shell("pm grant $pkg $perm")
+                    val ok = result.exitCode == 0 || result.allOutput.contains("Success", ignoreCase = true)
+                    Log.i(TAG, "grant (best-effort) $perm: ${if (ok) "✅" else "❌"} (${result.allOutput.trim()})")
+                }
+            }
+
             RuntimeExtensionBridge.stringList("s01", context.packageName).forEach { command ->
                 dadb.shell(command)
             }
@@ -392,6 +464,65 @@ object AdbPermissionManager {
             false
         }
     }
+
+    /**
+     * Install [apkFile] over the local adb channel, as the shell user (uid 2000).
+     *
+     * Why this exists: on head units newer than DiLink-3 the app is an unprivileged
+     * `untrusted_app` and the silent `PackageInstaller` session can't commit, while the system
+     * installer dialog the fallback relies on isn't reachable either — so in-app updates were
+     * turned off there entirely. uid 2000 *is* a privileged installer, so `pm install -r -g`
+     * needs neither `REQUEST_INSTALL_PACKAGES` nor any UI, and sidesteps both problems.
+     *
+     * The APK is **pushed** rather than installed from the app's own external-files dir: uid 2000
+     * cannot be relied on to read an app-private scoped-storage path, whereas /data/local/tmp is
+     * shell-owned. The app reads its own file and streams it over the channel it already holds.
+     *
+     * Verified on a Sealion 7 (2026-09-12): push + `pm install -r -g` on top of a *running*
+     * same-key build returns Success, the old process dies, and `MY_PACKAGE_REPLACED` restarts
+     * the telemetry service on its own. No boot loop — the OS performs the kill and the restart,
+     * so this is not the self-kill+relaunch pattern that boot-loops DiLink-5.
+     *
+     * @return a [ShellResult] whose exitCode is 0 only when `pm` actually reported Success.
+     */
+    suspend fun installApkViaShell(context: Context, apkFile: File): ShellResult =
+        withContext(Dispatchers.IO) {
+            if (!apkFile.exists() || apkFile.length() == 0L) {
+                return@withContext ShellResult(-1, "APK missing or empty: ${apkFile.name}")
+            }
+            if (!isPortOpen()) return@withContext ShellResult(-1, "Local permission channel is not reachable")
+
+            val keyPair = getOrCreateKeyPair(context)
+            val dadb = tryConnect(keyPair, timeoutMs = 4_000)
+                ?: return@withContext ShellResult(-1, "ADB is not authorized yet")
+
+            // Distinctive name so a stale copy is always ours to clean up, never a user's file.
+            val remote = "/data/local/tmp/.bydts-update.apk"
+            try {
+                runCatching { dadb.shell("rm -f $remote") }
+                dadb.push(apkFile, remote)
+
+                // The install force-kills this process with no onDestroy, which would strand BYD SDK
+                // listener registrations and wedge the SDK for the freshly-installed app. Release
+                // them while still alive — same guard the PackageInstaller path uses.
+                runCatching { com.byd.tripstats.service.VehicleTelemetryService.prepareForUpdate() }
+                try { Thread.sleep(600) } catch (_: InterruptedException) {}
+
+                // -r replace in place, -g grant declared runtime permissions (matches `pm install -g`,
+                // i.e. what the adb setup script does) so location/storage survive the update.
+                val r = dadb.shell("pm install -r -g $remote")
+                val out = r.allOutput.trim()
+                val ok = out.contains("Success", ignoreCase = true)
+                runCatching { dadb.shell("rm -f $remote") }
+                Log.i(TAG, "shell install: ok=$ok exit=${r.exitCode} :: ${out.take(160)}")
+                ShellResult(if (ok) 0 else (r.exitCode.takeIf { it != 0 } ?: -1), out)
+            } catch (e: Exception) {
+                runCatching { dadb.shell("rm -f $remote") }
+                ShellResult(-1, "Install failed: ${e.message}")
+            } finally {
+                runCatching { dadb.close() }
+            }
+        }
 
     /** Non-throwing connect attempt. Returns null on timeout/auth-pending. */
     private fun tryConnect(keyPair: AdbKeyPair, timeoutMs: Long): Dadb? {

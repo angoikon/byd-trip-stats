@@ -266,7 +266,7 @@
     <string name="export_save_html">Uložit jako HTML prohlížeč (otevřete dvojklikem)</string>
     <string name="export_send_telegram">Odeslat Telegram botovi</string>
     <string name="export_telegram_not_configured">Odeslat Telegram botovi (nenastaveno)</string>
-    <string name="export_telegram_setup_hint">Nastavte bota v Nastavení → Záloha a obnovení.</string>
+    <string name="export_telegram_setup_hint">Propojte svého Telegram bota v Nastavení → Připojení → Telegram.</string>
     <string name="export_send_csv">Odeslat CSV na Telegram</string>
     <string name="export_send_json">Odeslat JSON na Telegram</string>
     <string name="export_send_html">Odeslat HTML prohlížeč na Telegram</string>
@@ -530,17 +530,70 @@
     <string name="wifi_only_desc">Automatické zálohy běží pouze přes Wi-Fi kvůli úspoře mobilních dat</string>
     <string name="last_auto_backup_label">Poslední autozáloha: %1$s</string>
     <string name="schedule_updated_msg">Plán změněn na %1$s. Další autozáloha bude podle nového intervalu.</string>
-    <string name="telegram_setup_info">Po připojení lze zálohy odesílat ručně nebo podle plánu. Každá záloha dorazí jako soubor .db do vašeho soukromého chatu, dostupného z každého zařízení s Telegramem.</string>
+    <string name="telegram_setup_info">Zálohy lze odesílat ručně nebo podle plánu. Každá dorazí jako soubor .db do vašeho soukromého chatu, přístupného z libovolného zařízení s Telegramem.</string>
     <string name="telegram_instructions">1. Napište @BotFather na Telegramu → /newbot → zkopírujte token\n2. Pošlete svému novému botovi libovolnou zprávu\n3. Vložte token níže a klepněte na Ověřit</string>
     <string name="bot_token_label">Token bota</string>
     <string name="validate_save_action">Ověřit a uložit</string>
     <string name="restore_from_telegram_label">Obnovit z Telegramu</string>
-    <string name="connect_telegram_first">Nejprve připojte soukromého Telegram bota (viz Záloha na Telegram výše).</string>
+    <string name="connect_telegram_first">Nejprve propojte Telegram bota — Nastavení → Připojení → Telegram.</string>
     <string name="backups_in_chat_label">Zálohy ve vašem chatu:</string>
     <string name="scan_telegram_hint">Klepnutím na obnovit prohledáte chat Telegramu na zálohy .db.</string>
-    <string name="no_telegram_configured">Telegram není nastaven — nejprve ho nastavte v Záloze a obnovení.</string>
+    <string name="no_telegram_configured">Telegram není propojen — nejprve jej nastavte v Nastavení → Připojení → Telegram.</string>
     <string name="sent_telegram_success">Odesláno přes Telegram ✓</string>
     <string name="telegram_send_failed">Odeslání na Telegram se nezdařilo: %1$s</string>
+    <string name="tailscale_title">Tailscale — vzdálený přístup</string>
+    <string name="tailscale_title_short">Tailscale</string>
+    <string name="tailscale_desc">Přidejte auto do vlastní soukromé sítě Tailscale, aby web companion a ADB fungovaly odkudkoli — nejen doma. Nic není vystaveno internetu a na routeru se neotevírají žádné porty.</string>
+    <string name="tailscale_card_desc">Dostaňte se k web companion a ADB auta odkudkoli</string>
+    <string name="tailscale_unavailable">V tomto sestavení není k dispozici (vyžaduje 64bitovou ARM jednotku).</string>
+    <string name="tailscale_not_connected">Nepřipojeno.</string>
+    <string name="tailscale_starting">Spouštění…</string>
+    <string name="tailscale_error">Něco se pokazilo. Zkontrolujte pokyny níže a zkuste to znovu.</string>
+    <string name="tailscale_connected">Připojeno jako %1$s</string>
+    <string name="tailscale_reachable_hint">Web companion: http://%1$s:8888 · ADB: adb connect %1$s:5555</string>
+    <string name="tailscale_needs_adb">Nejprve vyžaduje jednorázovou autorizaci ADB — stejnou, jakou používá okamžitá telemetrie. Nastavte ji ve Správě aplikace a poté se vraťte.</string>
+    <string name="tailscale_signin_phone">Přihlaste se telefonem</string>
+    <string name="tailscale_scan_instructions">Naskenujte to fotoaparátem telefonu a poté se v otevřeném prohlížeči přihlaste do Tailscale. Auto se připojí k vaší síti, jakmile ho schválíte — zde není nutné nic psát.</string>
+    <string name="tailscale_scan_qr_cd">QR kód, který otevře přihlašovací stránku Tailscale</string>
+    <string name="tailscale_waiting_for_signin">Čekání na vaše schválení… tuto obrazovku můžete opustit, čekání pokračuje.</string>
+    <string name="tailscale_cancel_signin">Zrušit přihlášení</string>
+    <string name="tailscale_other_ways">Další způsoby přihlášení</string>
+    <string name="tailscale_alt_adb_title">Zadejte klíč z počítače (ADB)</string>
+    <string name="tailscale_alt_adb_body">Pokud s tímto autem už používáte ADB — a používáte, protože Tailscale vyžaduje stejnou autorizaci — klepněte na pole Auth key níže, aby mělo fokus, a poté toto spusťte z počítače s klíčem místo teček. Auth klíče obsahují jen písmena, číslice a pomlčky, takže se nic nepoškodí.</string>
+    <string name="tailscale_alt_key_title">Vložte auth klíč</string>
+    <string name="tailscale_alt_key_body">Vygenerujte jej v konzoli Tailscale v Settings → Keys (Ephemeral nechte vypnuté) a poté ho sem vložte. Šedesát znaků je hodně na psaní na obrazovce auta, proto je výše QR kód.</string>
+    <string name="tailscale_authkey_label">Auth klíč</string>
+    <string name="tailscale_connect">Připojit</string>
+    <string name="tailscale_disconnect">Odpojit od Tailscale</string>
+    <string name="tailscale_how_to">Jak to nastavit</string>
+    <string name="tailscale_step_1">1. Vytvořte si zdarma účet na tailscale.com, pokud ho nemáte.</string>
+    <string name="tailscale_step_2">2. V administrátorské konzoli otevřete Settings → Keys a klepněte na Generate auth key. Ephemeral nechte VYPNUTÉ — dočasný klíč způsobí, že auto zmizí z vaší sítě pokaždé, když usne, a jeho adresa by se pokaždé změnila.</string>
+    <string name="tailscale_step_3">3. Zkopírujte klíč (začíná na tskey-auth-) a vložte ho níže, poté klepněte na Připojit. Auto se připojí k vaší síti a od té chvíle si ponechá stejnou adresu.</string>
+    <string name="tailscale_step_4">4. Nainstalujte Tailscale do telefonu nebo notebooku a přihlaste se ke stejnému účtu. Vše přihlášené se pak dostane k autu — nic jiného ne.</string>
+    <string name="tailscale_console_warnings">Vyplatí se to udělat jednou v administrátorské konzoli: otevřete Machines → vaše auto → Disable key expiry, jinak asi za šest měsíců vypadne z vaší sítě a napraví to jen cesta k autu. Nenastavujte na autě exit node (to by směrovalo jeho provoz ABRP, MQTT a Telegram přes internetové připojení někoho jiného) a nezapínejte Funnel (to by umístilo web companion na veřejný internet, chráněný pouze jeho PINem).</string>
+    <string name="tailscale_di5_note">U DiLink-5 auto při vypnutí vynuceně ukončí každou aplikaci, takže vzdálený přístup se zastaví spolu s autem a vrátí se, až se auto příště probudí.</string>
+    <string name="telegram_title_label">Telegram</string>
+    <string name="telegram_card_desc">Váš vlastní soukromý bot — přenáší zálohy a oznámení vozidla</string>
+    <string name="status_not_connected_label">Nepřipojeno</string>
+    <string name="telegram_connection_desc">Propojte zde jednou soukromého Telegram bota. Zálohy, oznámení, diagnostika a exporty jízd procházejí přes něj a nic se neposílá jinam.</string>
+    <string name="telegram_connected_uses">Používá se v Zálohování &amp; Obnovení pro zálohy databáze, v oznámeních níže a v tlačítkách diagnostiky a exportu jízdy.</string>
+    <string name="telegram_setup_in_connections">Zatím není propojen žádný Telegram bot. Nastavte jednoho v Nastavení → Připojení → Telegram a poté se sem vraťte pro odesílání a obnovu záloh.</string>
+    <string name="telegram_notify_needs_bot">Propojte výše Telegram bota, abyste mohli používat oznámení.</string>
+    <string name="telegram_notify_di5_warning">U DiLink-5 oznámení závislá na vypnutí auta zatím nedorazí: vaše auto při vypnutí vynuceně ukončí aplikaci, takže jízda se uzavře až při dalším startu a nabíjení při parkování se doplní dodatečně — ani jedno nelze oznámit v okamžiku, kdy k němu dojde. Vše, co se stane, když je auto ještě zapnuté, dorazí, takže když před vypnutím sami klepnete na Zastavit pro ukončení jízdy, souhrn dostanete.</string>
+    <string name="telegram_notify_label">Oznámení Telegram</string>
+    <string name="telegram_notify_info">Události vozidla se posílají stejnému botovi — žádný server, žádný účet, žádná další aplikace. Zprávy se řadí do fronty a opakují, pokud auto v okamžiku události nemá připojení.</string>
+    <string name="telegram_notify_enable_label">Odesílat oznámení</string>
+    <string name="telegram_notify_trip_label">Souhrn jízdy</string>
+    <string name="telegram_notify_trip_desc">Karta po každé jízdě se stejnými údaji, jaké zaznamenává sama jízda: vzdálenost, doba trvání, spotřeba oproti vašemu celoživotnímu průměru, využité SoC, náklady a skóre jízdy.</string>
+    <string name="telegram_notify_charging_label">Nabíjení dokončeno</string>
+    <string name="telegram_notify_charging_desc">Když nabíjecí relace skončí — ať už se dokončila, nebo skončila předčasně, a na jaké úrovni, s přidanou energií a cenou. Odesílá se, kdykoli k tomu dojde, takže noční nabíjení dokončené ve 03:00 odešle ve 03:00. Ve výchozím nastavení vypnuto.</string>
+    <string name="telegram_notify_imbalance_label">Upozornění na nevyváženost článků</string>
+    <string name="telegram_notify_imbalance_desc">Odesílejte Pro upozornění na nevyváženost článků baterie také do Telegramu, nejen na obrazovku auta.</string>
+    <string name="telegram_notify_imbalance_pro">Součást Pro, spolu se samotným upozorněním na nevyváženost článků.</string>
+    <string name="telegram_notify_test_action">Odeslat testovací zprávu</string>
+    <string name="telegram_notify_test_ok">Testovací zpráva odeslána ✓ — zkontrolujte svůj chat na Telegramu.</string>
+    <string name="telegram_notify_test_failed">Nepodařilo se spojit s Telegramem. Zkontrolujte připojení auta a zkuste to znovu.</string>
+    <string name="telegram_notify_parked_note">Souhrn se odešle, když jízda skončí — tedy když je auto vypnuté po dobu automatického zastavení nastavenou v Předvolbách, takže delší nastavení znamená pozdější zprávu. Jízda, kterou aplikace mohla uzavřít až dodatečně, protože v danou chvíli neběžela (u DiLink-5 je to každá jízda), se zaznamená normálně, ale neoznámí, abyste nikdy nedostali upozornění na včerejší jízdu, když vyrážíte na dnešní. Upozornění se při parkování stále spouštějí v režimu na pozadí Vždy zapnuto: jednotka zůstává na mobilních datech poté, co auto vypne Wi-Fi.</string>
 
     <!-- Trip Compare -->
     <string name="comparing_trips_label">Porovnávání %1$s jízd</string>
@@ -769,7 +822,7 @@
     <string name="compat_sending_label">Odesílání…</string>
     <string name="compat_email_qr_label">E-mail přes QR kód</string>
     <string name="compat_uploading_label">Nahrávání…</string>
-    <string name="compat_telegram_not_configured">Telegram není nastaven — nejprve ho nastavte v Záloze a obnovení.</string>
+    <string name="compat_telegram_not_configured">Telegram není propojen — nejprve jej nastavte v Nastavení → Připojení → Telegram.</string>
     <string name="compat_sent_telegram">Odesláno přes Telegram ✓</string>
     <string name="compat_telegram_failed">Odeslání na Telegram se nezdařilo: %1$s</string>
     <string name="compat_save_failed">Uložení se nezdařilo: %1$s</string>
@@ -794,6 +847,33 @@
     <string name="web_server_failed">Spuštění se nezdařilo: %1$s</string>
     <string name="web_server_waiting">Čekání na IP…</string>
     <string name="web_server_open_hint">Otevřete tuto adresu na libovolném zařízení ve stejné WiFi síti.</string>
+    <string name="web_url_label_lan">Ve vaší síti</string>
+    <string name="web_url_label_tailscale">Přes Tailscale — funguje odkudkoli</string>
+    <string name="web_url_label_vpn">Přes vaši VPN</string>
+    <string name="web_url_label_other">Jiná síť</string>
+    <string name="web_url_label_mobile">Přes mobilní data</string>
+    <string name="web_url_label_tailscale_https">Přes Tailscale, šifrované — funguje odkudkoli</string>
+    <string name="web_https_available_hint">Toto jsou prosté adresy http://. Chcete-li zašifrovat tu Tailscale, zapněte \"Poskytovat přes HTTPS\" na kartě Tailscale v Nastavení → Připojení.</string>
+    <string name="tailscale_https_label">Poskytovat přes HTTPS</string>
+    <string name="tailscale_https_desc">Nechte démona Tailscale zpracovávat TLS pro web companion pomocí skutečného certifikátu pro název Tailscale tohoto auta. Adresa se změní na https:// místo http://, takže ji prohlížeče přestanou označovat za nezabezpečenou — a funkce, které povolují jen na zabezpečené stránce, jako oznámení a kopírování do schránky, začnou fungovat.</string>
+    <string name="tailscale_https_requirement">Vyžaduje zapnuté MagicDNS a HTTPS Certificates pro váš tailnet — obojí jsou jednorázové přepínače v administrátorské konzoli Tailscale v části DNS. Šifruje se pouze adresa .ts.net; adresa WiFi zůstává http://.</string>
+    <string name="tailscale_https_working">Šifrováno na %1$s</string>
+    <string name="tailscale_https_no_port">Použijte ji přesně tak, jak je zobrazena — bez \":8888\" na konci. Šifrovaná adresa používá standardní port HTTPS; port potřebují jen adresy http://.</string>
+    <string name="tailscale_https_first_load">První načtení může trvat několik sekund, než se vystaví certifikát.</string>
+    <string name="tailscale_https_how_to">Jak to zapnout pro vaši síť</string>
+    <string name="tailscale_https_step_1">1. V telefonu nebo počítači otevřete administrátorskou konzoli Tailscale a přejděte do DNS — login.tailscale.com/admin/dns. Udělejte to jednou; platí pro každé zařízení ve vaší síti, nejen pro auto.</string>
+    <string name="tailscale_https_step_2">2. Zkontrolujte, že je MagicDNS zapnuté. Matoucí je, že je ZAPNUTÉ, když tlačítko říká \"Disable MagicDNS…\" — to tlačítko by ho vypnulo, takže ho nechte být. Pokud místo toho vidíte \"Enable MagicDNS…\", klikněte na něj.</string>
+    <string name="tailscale_https_step_3">3. V části HTTPS Certificates klikněte na \"Enable HTTPS…\" a potvrďte. Právě to umožní vašim zařízením získat skutečné certifikáty.</string>
+    <string name="tailscale_https_step_4">4. Vraťte se sem a zapněte Poskytovat přes HTTPS. Nic není třeba restartovat.</string>
+    <string name="tailscale_https_step_5">5. Otevřete adresu https:// zobrazenou zde — přesně jak je zobrazena, bez portu na konci. První načtení trvá několik sekund, než se vystaví certifikát, poté je okamžité.</string>
+    <string name="tailscale_https_free_note">Obě nastavení jsou zdarma a platí pro celou vaši síť Tailscale. Zapnutí HTTPS nic nevystaví na internet — certifikát pouze zařízením, která už jsou ve vaší síti, dokazuje, že auto je tím, za co se vydává.</string>
+    <string name="tailnet_diag_label">Adresa Tailnet</string>
+    <string name="tailnet_installed_not_connected">Tailscale nainstalováno, nepřipojeno</string>
+    <string name="remote_access_label">Vzdálený přístup</string>
+    <string name="remote_access_connected">Toto auto je ve vašem tailnetu jako %1$s. Výše uvedená adresa funguje z libovolného vašeho zařízení Tailscale, ať jste kdekoli — a stejně tak ADB, na portu 5555.</string>
+    <string name="remote_access_not_detected">Companion je dostupný pouze ve vaší domácí síti. Chcete-li se k němu dostat odkudkoli, nainstalujte aplikaci Tailscale do jednotky a do telefonu a přihlaste obojí ke stejnému účtu — auto pak drží pevnou adresu 100.x, která funguje přes mobilní data, i při parkování, když je WiFi vypnuté. Do této aplikace se nic nepřidává a na routeru se neotevírají žádné porty.</string>
+    <string name="remote_access_tips">Tři věci, které jednou nastavte v administrátorské konzoli Tailscale: VYPNĚTE vypršení klíče pro auto (jinak asi za šest měsíců vypadne z tailnetu a napraví to jen cesta k autu), NENASTAVUJTE na autě exit node (to by směrovalo jeho provoz ABRP, MQTT a Telegram přes internetové připojení někoho jiného) a NEZAPÍNEJTE Funnel (to by umístilo tohoto companiona na veřejný internet, chráněného pouze jeho PINem).</string>
+    <string name="remote_access_di5_note">U DiLink-5 vaše auto při vypnutí vynuceně ukončí každou aplikaci, včetně Tailscale — takže vzdálený přístup se zastaví spolu s autem a vrátí se, až se auto příště probudí. Dokud je auto zapnuté, funguje normálně, což se stále hodí pro přístup ke companionovi nebo ADB, když jste mimo vlastní WiFi.</string>
     <string name="web_copy_url_cd">Kopírovat URL</string>
     <string name="chart_no_tyre_data">V této jízdě nejsou data tlaku pneumatik</string>
 
@@ -880,15 +960,15 @@
     <string name="bg_minimal">Minimální</string>
     <string name="bg_deep_sleep">Hluboký spánek</string>
     <string name="bg_default_label">Výchozí</string>
-    <string name="bg_always_on_desc">Vždy zapnuto (doporučené výchozí nastavení): služba telemetrie po zaparkování běží dál, průběžně zaznamenává vzorky 12V/SoC do historie baterie a zachycuje nabíjení ve vypnutém stavu (např. přes noc). Malá dodatečná zátěž nad rámec tovární spotřeby BYD na pozadí.\n\nPoznámka: většina jednotek BYD vypne Wi-Fi ~15 min po vypnutí auta. Během parkování se proto ADB přes Wi-Fi, Web Companion (PWA) a MQTT k brokeru ve vaší domácí síti zastaví, dokud se auto nezapne. MQTT k brokeru dostupnému z internetu (např. HiveMQ Cloud) obvykle publikuje dál, protože auto zůstává na mobilních datech. Možnost \"Udržovat Wi-Fi aktivní při zaparkování\" níže může udržet Wi-Fi otevřené na podporovaných jednotkách.</string>
+    <string name="bg_always_on_desc">Vždy zapnuto (doporučené výchozí nastavení): služba telemetrie po zaparkování běží dál, průběžně zaznamenává vzorky 12V/SoC do historie baterie a zachycuje nabíjení ve vypnutém stavu (např. přes noc). Malá dodatečná zátěž nad rámec tovární spotřeby BYD na pozadí.\n\nPoznámka: většina jednotek BYD vypne Wi-Fi ~15 min po vypnutí auta. Během parkování se proto ADB přes Wi-Fi, Web Companion (PWA) a MQTT k brokeru ve vaší domácí síti zastaví, dokud se auto nezapne. MQTT k brokeru dostupnému z internetu (např. HiveMQ Cloud) obvykle publikuje dál, protože auto zůstává na mobilních datech. Možnost \"Udržovat Wi-Fi aktivní, když je auto vypnuté\" níže může udržet Wi-Fi otevřené na podporovaných jednotkách.</string>
     <string name="bg_minimal_desc">Minimální: služba se sama zastaví 5 min po vypnutí vozu, poté ji 90minutový budík krátce probudí pro snímek nabíjení. Nižší spotřeba, ale vzorky při vypnutém voze jsou řídké, ADB není vždy dostupné, Web Companion (PWA) je dosažitelný jen během krátkého probuzení a MQTT mezi probuzeními mlčí. Nabíjení při vypnutém voze se zachytí do ~90 min, poté se publikuje po zbytek nabíjení.</string>
     <string name="bg_deep_sleep_desc">Hluboký spánek: služba se sama zastaví 5 min po vypnutí vozu bez dalších probuzení. Umožňuje ECU vozu dosáhnout plného hlubokého spánku. Web Companion (PWA) je nedostupný a MQTT mlčí po celou dobu parkování; nabíjení při vypnutém voze se nezachycuje živě — pouze se rekonstruuje z delty SoC při dalším zapnutí vozu.</string>
     <string name="keepalive_never_fired">Budík režimu Minimální: dosud se nespustil%1$s. Pokud zůstane \"nikdy\" i po delším zaparkování, vaše jednotka se při parkování zcela vypne — Minimální se pak chová jako Hluboký spánek, proto pro data při parkování použijte Vždy zapnuto.</string>
     <string name="keepalive_fired">Budík režimu Minimální: naposledy spuštěn %1$s • %2$s celkem%3$s</string>
     <string name="keepalive_armed"> (aktivován)</string>
     <string name="keepalive_not_armed"> • neaktivován</string>
-    <string name="wifi_keepalive_label">Udržovat Wi-Fi aktivní při zaparkování</string>
-    <string name="wifi_keepalive_desc">Znovu zapne Wi-Fi, pokud ho auto po zaparkování vypne, aby Web Companion a další místní nástroje (v domácí síti) zůstaly dostupné. Působí pouze, když je auto vypnuté, a ustoupí, pokud se 12V baterie nebo stav nabití sníží. Během parkování spotřebuje trochu energie navíc.\n\nPokud používáte také Electro, Overdrive nebo jinou aplikaci, která udržuje Wi-Fi aktivní, zapněte to jen v JEDNÉ z nich a v ostatních to vypněte — dva současně běžící mechanismy si mohou navzájem překážet a plýtvat energií.</string>
+    <string name="wifi_keepalive_label">Udržovat Wi-Fi aktivní, když je auto vypnuté</string>
+    <string name="wifi_keepalive_desc">Znovu zapne Wi-Fi po vypnutí auta — jednotka ho o pár minut později vypne — aby Web Companion a další místní nástroje (v domácí síti) zůstaly dostupné. Působí pouze, když je auto vypnuté, a ustoupí, pokud se 12V baterie nebo stav nabití sníží. Spotřebuje trochu energie navíc, dokud je auto vypnuté.\n\nPokud používáte také Electro, Overdrive nebo jinou aplikaci, která udržuje Wi-Fi aktivní, zapněte to jen v JEDNÉ z nich a v ostatních to vypněte — dva současně běžící mechanismy si mohou navzájem překážet a plýtvat energií.</string>
     <string name="wifi_keepalive_needs_setup">Vyžaduje pokročilé nastavení ADB (stejné jako u okamžité telemetrie). Nejprve je dokončete, abyste to povolili.</string>
 
     <!-- Settings dialogs -->
@@ -938,6 +1018,7 @@
     <string name="web_companion_desc">Procházejte jízdy a nabíjení z libovolného zařízení ve stejné WiFi.</string>
     <string name="web_companion_disabled_desc">Spusťte lokální server, abyste mohli otevřít historii jízd v prohlížeči.</string>
     <string name="web_companion_wifi_info">Běží přes vaši lokální WiFi, takže je dosažitelný, dokud je vůz zapnutý a telemetrická služba běží. Po zaparkování většina jednotek BYD odpojí WiFi ~15 min po vypnutí — poté je companion nedostupný (pro lokální server neexistuje záloha přes mobilní data), dokud se vůz znovu nezapne, a to v každém režimu aktivity na pozadí.\nPoznámka: aplikace Electro má možnost udržet WiFi zapnuté neomezeně</string>
+    <string name="web_companion_files_info">Companion má také kartu Soubory: stáhněte zálohy databáze, exporty a diagnostický protokol přímo do telefonu nebo notebooku a nahrajte zálohu do auta bez připojování čehokoli. Zobrazuje pouze vlastní složky aplikace, ne celou jednotku.</string>
     <string name="port_field_label">Port</string>
     <string name="port_hint_text">Zkuste 8081, 8888, 9090, pokud je port blokován. Změny restartují server.</string>
     <string name="access_pin_label">Přístupový PIN</string>
@@ -961,7 +1042,6 @@
     <string name="mqtt_card_desc">Publikujte živou telemetrii brokeru, jako je HiveMQ nebo HomeAssistant.</string>
     <string name="status_enabled_label">Stav: Zapnuto</string>
     <string name="status_disabled_label">Stav: Vypnuto</string>
-    <string name="open_connections_action">Otevřít Připojení</string>
     <string name="back_to_overview_action">Zpět na přehled</string>
 
     <!-- ABRP settings -->
@@ -1043,7 +1123,7 @@
     <string name="about_install_note">Tlačítko instalace bude dostupné při parkování bez aktivní jízdy nebo nabíjení</string>
     <string name="about_install_now">Nainstalovat nyní</string>
     <string name="about_download_update">Stáhnout aktualizaci</string>
-    <string name="about_update_manual_di5_instructions">Automatická instalace není na této jednotce dostupná. V počítači nebo telefonu si stáhněte APK této verze ze stránky vydání a poté ho nainstalujte přes ADB:</string>
+    <string name="about_update_manual_di5_instructions">Automatická instalace vyžaduje pomocné připojení, které právě není k dispozici. V počítači nebo telefonu si stáhněte APK této verze ze stránky vydání a poté ho nainstalujte přes ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Otevřít stránku vydání</string>
 
@@ -1154,6 +1234,7 @@
     <string name="autostart_dialog_title">⚠️ Vyžadována akce — Autostart</string>
     <string name="autostart_dialog_msg">Byla nainstalována nová verze. Musíte pro tuto aplikaci vypnout „disable autostart”, což umožní běh služeb na popředí / na pozadí.\nJednorázový restart vozu je potřeba pouze při první instalaci aplikace a po vypnutí „disable autostart”. Pokud aktualizujete ze starší verze, restart není nutný</string>
     <string name="autostart_got_it">Rozumím</string>
+    <string name="autostart_open_failed">Obrazovku automatického spuštění se na této jednotce nepodařilo otevřít. Otevřete ji v Nastavení vozu → Aplikace → Automatické spuštění (nebo Aplikace na pozadí) a ujistěte se, že je Trip Stats povolen.</string>
     <string name="flavor_mismatch_title">⚠️ Nesprávná verze pro toto auto</string>
     <string name="flavor_mismatch_msg">Nainstalovali jste verzi %1$s, ale toto auto je %2$s. Telemetrie vozidla nemusí fungovat správně. Nainstalujte prosím verzi %2$s pro toto vozidlo.</string>
     <string name="adb_connecting_title">Připojování…</string>

@@ -271,7 +271,7 @@
     <string name="export_save_html">Save as HTML viewer (double-click to open)</string>
     <string name="export_send_telegram">Send to Telegram bot</string>
     <string name="export_telegram_not_configured">Send to Telegram bot (not configured)</string>
-    <string name="export_telegram_setup_hint">Set up the bot in Settings → Backup &amp; Restore.</string>
+    <string name="export_telegram_setup_hint">Link your Telegram bot in Settings → Connections → Telegram.</string>
     <string name="export_send_csv">Send CSV to Telegram</string>
     <string name="export_send_json">Send JSON to Telegram</string>
     <string name="export_send_html">Send HTML viewer to Telegram</string>
@@ -546,17 +546,76 @@
     <string name="wifi_only_desc">Auto-backups run only on Wi-Fi to save mobile data</string>
     <string name="last_auto_backup_label">Last auto-backup: %1$s</string>
     <string name="schedule_updated_msg">Schedule updated to %1$s. Next auto-backup will follow the new interval.</string>
-    <string name="telegram_setup_info">Once connected, backups can be sent manually or on a schedule. Each backup lands as a .db file in your private chat, accessible from any device with Telegram.</string>
+    <string name="telegram_setup_info">Backups can be sent manually or on a schedule. Each one lands as a .db file in your private chat, accessible from any device with Telegram.</string>
     <string name="telegram_instructions">1. Message @BotFather on Telegram → /newbot → copy the token\n2. Send any message to your new bot\n3. Paste the token below and tap Validate</string>
     <string name="bot_token_label">Bot Token</string>
     <string name="validate_save_action">Validate &amp; Save</string>
     <string name="restore_from_telegram_label">Restore from Telegram</string>
-    <string name="connect_telegram_first">Connect a Telegram private bot first (see Telegram Backup above).</string>
+    <string name="connect_telegram_first">Link a Telegram bot first — Settings → Connections → Telegram.</string>
     <string name="backups_in_chat_label">Backups in your chat:</string>
     <string name="scan_telegram_hint">Tap refresh to scan your Telegram chat for .db backups.</string>
-    <string name="no_telegram_configured">Telegram not configured — set it up under Backup &amp; Restore first.</string>
+    <string name="no_telegram_configured">Telegram not linked — set it up under Settings → Connections → Telegram first.</string>
     <string name="sent_telegram_success">Sent via Telegram ✓</string>
     <string name="telegram_send_failed">Telegram send failed: %1$s</string>
+
+    <!-- Tailscale remote access (Settings → Connections) -->
+    <string name="tailscale_title">Tailscale — remote access</string>
+    <string name="tailscale_title_short">Tailscale</string>
+    <string name="tailscale_desc">Put the car on your own private Tailscale network, so the web companion and ADB work from anywhere — not just at home. Nothing is exposed to the internet and no ports are opened on your router.</string>
+    <string name="tailscale_card_desc">Reach the car\'s web companion and ADB from anywhere</string>
+    <string name="tailscale_unavailable">Not available in this build (needs a 64-bit ARM head unit).</string>
+    <string name="tailscale_not_connected">Not connected.</string>
+    <string name="tailscale_starting">Starting…</string>
+    <string name="tailscale_error">Something went wrong. Check the instructions below and try again.</string>
+    <string name="tailscale_connected">Connected as %1$s</string>
+    <string name="tailscale_reachable_hint">Web companion: http://%1$s:8888 · ADB: adb connect %1$s:5555</string>
+    <string name="tailscale_needs_adb">Needs the one-time ADB authorisation first — the same one instant telemetry uses. Set that up in App Management, then come back.</string>
+    <string name="tailscale_signin_phone">Sign in with your phone</string>
+    <string name="tailscale_scan_instructions">Scan this with your phone\'s camera, then sign into Tailscale in the browser it opens. The car joins your network as soon as you approve it — nothing to type here.</string>
+    <string name="tailscale_scan_qr_cd">QR code that opens the Tailscale sign-in page</string>
+    <string name="tailscale_waiting_for_signin">Waiting for you to approve it… you can leave this screen, it keeps waiting.</string>
+    <string name="tailscale_cancel_signin">Cancel sign-in</string>
+    <string name="tailscale_other_ways">Other ways to sign in</string>
+    <string name="tailscale_alt_adb_title">Type the key from your computer (ADB)</string>
+    <string name="tailscale_alt_adb_body">If you already use ADB with this car — and you do, since Tailscale needs the same authorisation — tap the Auth key box below so it has focus, then run this from your computer with the key in place of the dots. Auth keys contain only letters, digits and hyphens, so nothing gets mangled.</string>
+    <string name="tailscale_alt_key_title">Paste an auth key</string>
+    <string name="tailscale_alt_key_body">Generate one in the Tailscale console under Settings → Keys (leave Ephemeral off), then paste it here. Sixty characters is a lot to type on a car screen, which is why the QR above exists.</string>
+    <string name="tailscale_authkey_label">Auth key</string>
+    <string name="tailscale_connect">Connect</string>
+    <string name="tailscale_disconnect">Disconnect from Tailscale</string>
+    <string name="tailscale_how_to">How to set this up</string>
+    <string name="tailscale_step_1">1. Create a free account at tailscale.com, if you don\'t have one.</string>
+    <string name="tailscale_step_2">2. In the admin console, open Settings → Keys and tap Generate auth key. Leave Ephemeral OFF — an ephemeral key makes the car disappear from your network whenever it sleeps, and its address would change every time.</string>
+    <string name="tailscale_step_3">3. Copy the key (it starts with tskey-auth-) and paste it below, then tap Connect. The car joins your network and keeps the same address from then on.</string>
+    <string name="tailscale_step_4">4. Install Tailscale on your phone or laptop and sign into the same account. Anything signed in can then reach the car — nothing else can.</string>
+    <string name="tailscale_console_warnings">Worth doing once, in the admin console: open Machines → your car → Disable key expiry, or it drops off your network in about six months and only a trip to the car can fix it. Do not set an exit node on the car (that would push its ABRP, MQTT and Telegram traffic through someone else\'s internet connection), and do not enable Funnel (that would put the web companion on the public internet, behind nothing but its PIN).</string>
+    <string name="tailscale_di5_note">On DiLink-5 the car force-stops every app when you switch off, so remote access stops when the car does and returns when it next wakes.</string>
+
+    <!-- Telegram connection (Settings → Connections) -->
+    <string name="telegram_title_label">Telegram</string>
+    <string name="telegram_card_desc">Your own private bot — carries backups and vehicle notifications</string>
+    <string name="status_not_connected_label">Not connected</string>
+    <string name="telegram_connection_desc">Link a private Telegram bot once here. Backups, notifications, diagnostics and trip exports all go through it, and nothing is sent anywhere else.</string>
+    <string name="telegram_connected_uses">Used by Backup &amp; Restore for database backups, by the notifications below, and by the diagnostics and trip export buttons.</string>
+    <string name="telegram_setup_in_connections">No Telegram bot linked yet. Set one up in Settings → Connections → Telegram, then come back here to send and restore backups.</string>
+    <string name="telegram_notify_needs_bot">Link a Telegram bot above to use notifications.</string>
+    <string name="telegram_notify_di5_warning">On DiLink-5, notifications that depend on the car being switched off don\'t arrive for now: your car force-stops the app at ignition-off, so a trip is only closed at the next start, and charging while parked is filled in afterwards — neither can be announced as it happens. Anything that happens while the car is still on does arrive, so tapping Stop to end the trip yourself before you switch off gets you the summary.</string>
+
+    <!-- Telegram notifications -->
+    <string name="telegram_notify_label">Telegram Notifications</string>
+    <string name="telegram_notify_info">Vehicle events pushed to the same bot — no server, no account, no extra app. Messages are queued and retried if the car has no connection when an event happens.</string>
+    <string name="telegram_notify_enable_label">Send notifications</string>
+    <string name="telegram_notify_trip_label">Trip summary</string>
+    <string name="telegram_notify_trip_desc">A card after every drive, with the same figures the trip itself records: distance, duration, consumption against your lifetime average, SoC used, cost and trip score.</string>
+    <string name="telegram_notify_charging_label">Charging finished</string>
+    <string name="telegram_notify_charging_desc">When a charging session ends — whether it completed or stopped short, and at what level, with the energy added and what it cost. Sent whenever it happens, so an overnight charge that completes at 03:00 sends at 03:00. Off by default.</string>
+    <string name="telegram_notify_imbalance_label">Cell imbalance alert</string>
+    <string name="telegram_notify_imbalance_desc">Also send the Pro battery cell-imbalance alert to Telegram, not just to the car\'s screen.</string>
+    <string name="telegram_notify_imbalance_pro">Included with Pro, together with the cell-imbalance alert itself.</string>
+    <string name="telegram_notify_test_action">Send test message</string>
+    <string name="telegram_notify_test_ok">Test message sent ✓ — check your Telegram chat.</string>
+    <string name="telegram_notify_test_failed">Could not reach Telegram. Check the car\'s connection and try again.</string>
+    <string name="telegram_notify_parked_note">A summary is sent when the trip ends — which is when the car has been off for the auto-stop time set in Preferences, so a longer setting means a later message. A trip the app could only close afterwards, because it was not running at the time (on DiLink-5 that is every trip), is recorded normally but not announced, so you are never buzzed about yesterday\'s drive as you set off on today\'s. Alerts keep firing while parked in the Always On background mode: the head unit stays on mobile data after the car cuts Wi-Fi.</string>
 
     <!-- Trip Compare -->
     <string name="comparing_trips_label">Comparing %1$s trips</string>
@@ -785,7 +844,7 @@
     <string name="compat_sending_label">Sending…</string>
     <string name="compat_email_qr_label">Email via QR code</string>
     <string name="compat_uploading_label">Uploading…</string>
-    <string name="compat_telegram_not_configured">Telegram not configured — set it up under Backup &amp; Restore first.</string>
+    <string name="compat_telegram_not_configured">Telegram not linked — set it up under Settings → Connections → Telegram first.</string>
     <string name="compat_sent_telegram">Sent via Telegram ✓</string>
     <string name="compat_telegram_failed">Telegram send failed: %1$s</string>
     <string name="compat_save_failed">Save failed: %1$s</string>
@@ -810,6 +869,36 @@
     <string name="web_server_failed">Failed to start: %1$s</string>
     <string name="web_server_waiting">Waiting for IP…</string>
     <string name="web_server_open_hint">Open this address on any device connected to the same WiFi.</string>
+
+    <!-- Web companion addresses + remote access over a tailnet -->
+    <string name="web_url_label_lan">On your network</string>
+    <string name="web_url_label_tailscale">Over Tailscale — works from anywhere</string>
+    <string name="web_url_label_vpn">Over your VPN</string>
+    <string name="web_url_label_other">Other network</string>
+    <string name="web_url_label_mobile">Over mobile data</string>
+    <string name="web_url_label_tailscale_https">Over Tailscale, encrypted — works from anywhere</string>
+    <string name="web_https_available_hint">These are plain http:// addresses. To encrypt the Tailscale one, turn on \"Serve over HTTPS\" on the Tailscale card in Settings → Connections.</string>
+    <!-- Tailscale HTTPS (tailscale serve) -->
+    <string name="tailscale_https_label">Serve over HTTPS</string>
+    <string name="tailscale_https_desc">Let the Tailscale daemon terminate TLS for the web companion, using a real certificate for this car\'s Tailscale name. The address becomes https:// instead of http://, so browsers stop calling it insecure — and features they only allow on a secure page, like notifications and copy-to-clipboard, start working.</string>
+    <string name="tailscale_https_requirement">Needs MagicDNS and HTTPS Certificates switched on for your tailnet — both are one-time toggles in the Tailscale admin console under DNS. Only the .ts.net address gets encrypted; the WiFi address stays http://.</string>
+    <string name="tailscale_https_working">Encrypted at %1$s</string>
+    <string name="tailscale_https_no_port">Use it exactly as shown — no \":8888\" on the end. The encrypted address uses the standard HTTPS port; only the http:// addresses need a port.</string>
+    <string name="tailscale_https_first_load">The first load can take a few seconds while the certificate is issued.</string>
+    <string name="tailscale_https_how_to">How to turn this on for your network</string>
+    <string name="tailscale_https_step_1">1. On your phone or computer, open the Tailscale admin console and go to DNS — login.tailscale.com/admin/dns. Do this once; it applies to every device on your network, not just the car.</string>
+    <string name="tailscale_https_step_2">2. Check MagicDNS is on. Confusingly, it is ON when the button reads \"Disable MagicDNS…\" — that button would turn it off, so leave it alone. If instead you see \"Enable MagicDNS…\", click it.</string>
+    <string name="tailscale_https_step_3">3. Under HTTPS Certificates, click \"Enable HTTPS…\" and confirm. This is what lets your devices get real certificates.</string>
+    <string name="tailscale_https_step_4">4. Come back here and switch Serve over HTTPS on. Nothing needs restarting.</string>
+    <string name="tailscale_https_step_5">5. Open the https:// address shown here — exactly as shown, with no port on the end. The first load takes a few seconds while the certificate is issued, then it is instant.</string>
+    <string name="tailscale_https_free_note">Both settings are free and apply to your whole Tailscale network. Enabling HTTPS does not expose anything to the internet — the certificate simply proves the car is who it says it is, to devices already on your network.</string>
+    <string name="tailnet_diag_label">Tailnet address</string>
+    <string name="tailnet_installed_not_connected">Tailscale installed, not connected</string>
+    <string name="remote_access_label">Remote access</string>
+    <string name="remote_access_connected">This car is on your tailnet as %1$s. The address above works from any of your Tailscale devices, wherever you are — and so does ADB, at port 5555.</string>
+    <string name="remote_access_not_detected">The companion is reachable on your home network only. To reach it from anywhere, install the Tailscale app on the head unit and on your phone and sign both into the same account — the car then keeps a fixed 100.x address that works over mobile data, including while parked, when WiFi is off. Nothing is added to this app and no ports are opened on your router.</string>
+    <string name="remote_access_tips">Three things to set once, in the Tailscale admin console: turn OFF key expiry for the car (otherwise it drops off the tailnet after about six months and only a visit to the car can fix it), do NOT set an exit node on the car (that would push its ABRP, MQTT and Telegram traffic through someone else\'s internet connection), and do NOT enable Funnel (that would put this companion on the public internet behind nothing but its PIN).</string>
+    <string name="remote_access_di5_note">On DiLink-5, your car force-stops every app when you switch off, Tailscale included — so remote access stops when the car does and returns when the car next wakes. While the car is on it works normally, which is still useful for reaching the companion or ADB when you are away from your own WiFi.</string>
     <string name="web_copy_url_cd">Copy URL</string>
     <string name="chart_no_tyre_data">No tyre pressure data recorded on this trip</string>
 
@@ -896,15 +985,15 @@
     <string name="bg_minimal">Minimal</string>
     <string name="bg_deep_sleep">Deep Sleep</string>
     <string name="bg_default_label">Default</string>
-    <string name="bg_always_on_desc">Always On (recommended default): the telemetry service keeps running after you park, taking continuous 12V/SoC samples into battery history and capturing off-state (e.g. overnight) charging. Small additional load on top of BYD\'s own stock background drain.\n\nNote: most BYD units cut Wi-Fi ~15 min after the car is switched off. So while parked, ADB-over-Wi-Fi, the Web Companion (PWA) and MQTT to a broker on your home network stop until the car powers on. MQTT to an internet-reachable broker (e.g. HiveMQ Cloud) usually keeps publishing, because the car stays on mobile data. The \"Keep Wi-Fi alive when parked\" option below can hold Wi-Fi open on supported units.</string>
+    <string name="bg_always_on_desc">Always On (recommended default): the telemetry service keeps running after you park, taking continuous 12V/SoC samples into battery history and capturing off-state (e.g. overnight) charging. Small additional load on top of BYD\'s own stock background drain.\n\nNote: most BYD units cut Wi-Fi ~15 min after the car is switched off. So while parked, ADB-over-Wi-Fi, the Web Companion (PWA) and MQTT to a broker on your home network stop until the car powers on. MQTT to an internet-reachable broker (e.g. HiveMQ Cloud) usually keeps publishing, because the car stays on mobile data. The \"Keep Wi-Fi alive when car is off\" option below can hold Wi-Fi open on supported units.</string>
     <string name="bg_minimal_desc">Minimal: service self-stops 5 min after the car turns off, then a 90-min alarm briefly wakes it for a charging snapshot. Lower drain, but off-state samples are sparse, ADB is not always on, the Web Companion (PWA) is only reachable during the brief wake blip, and MQTT is idle between blips. Off-state charging is caught within ~90 min, after which it publishes for the rest of the charge.</string>
     <string name="bg_deep_sleep_desc">Deep Sleep: service self-stops 5 min after the car turns off with no further wakeups. Allows the car\'s ECUs to reach full deep sleep. The Web Companion (PWA) is unreachable and MQTT is silent the whole time the car is parked; off-state charging is not captured live — only reconstructed from the SoC delta when the car next turns on.</string>
     <string name="keepalive_never_fired">Minimal wake-alarm: never fired yet%1$s. If this stays \"never\" after the car has been parked a while, your head unit powers off fully at park — Minimal then behaves like Deep Sleep, so use Always On for parked data.</string>
     <string name="keepalive_fired">Minimal wake-alarm: last fired %1$s • %2$s total%3$s</string>
     <string name="keepalive_armed"> (armed)</string>
     <string name="keepalive_not_armed"> • not armed</string>
-    <string name="wifi_keepalive_label">Keep Wi-Fi alive when parked</string>
-    <string name="wifi_keepalive_desc">Re-enables Wi-Fi if the car switches it off after parking, so the Web Companion and other local (home-network) tools stay reachable. Only acts while the car is off, and backs off if the 12V battery or state of charge gets low. Draws a little extra power while parked.\n\nIf you also use Electro, Overdrive or any other app that keeps Wi-Fi alive, turn this on in only ONE of them and disable it in the others — two keepalives running together can fight each other and waste power.</string>
+    <string name="wifi_keepalive_label">Keep Wi-Fi alive when car is off</string>
+    <string name="wifi_keepalive_desc">Turns Wi-Fi back on after the car is switched off — the head unit drops it a few minutes later — so the Web Companion and other local (home-network) tools stay reachable. Only acts while the car is off, and backs off if the 12V battery or state of charge gets low. Draws a little extra power while the car is off.\n\nIf you also use Electro, Overdrive or any other app that keeps Wi-Fi alive, turn this on in only ONE of them and disable it in the others — two keepalives running together can fight each other and waste power.</string>
     <string name="wifi_keepalive_needs_setup">Requires the advanced ADB setup (same as instant telemetry). Complete that first to enable this.</string>
 
     <!-- Settings dialogs -->
@@ -954,6 +1043,7 @@
     <string name="web_companion_desc">Browse trips &amp; charging from any device on the same WiFi.</string>
     <string name="web_companion_disabled_desc">Start a local server so you can open trip history in a browser.</string>
     <string name="web_companion_wifi_info">Served over your local WiFi, so it\'s reachable while the car is on and the telemetry service is alive. Once parked, most BYD units cut WiFi ~15 min after the car is off — after that the companion is unreachable (there\'s no mobile-data fallback for a local server) until the car powers on again, in every Background activity mode.\nNote: Electro app has an option to keep WiFi alive indefinitely</string>
+    <string name="web_companion_files_info">The companion also has a Files tab: download database backups, exports and the diagnostics log straight to your phone or laptop, and upload a backup to the car without plugging anything in. It shows the app\'s own folders only, not the whole head unit.</string>
     <string name="port_field_label">Port</string>
     <string name="port_hint_text">Try 8081, 8888, 9090 if a port is blocked. Changes restart the server.</string>
     <string name="access_pin_label">Access PIN</string>
@@ -977,7 +1067,6 @@
     <string name="mqtt_card_desc">Publish live telemetry to a broker such as HiveMQ or HomeAssistant.</string>
     <string name="status_enabled_label">Status: Enabled</string>
     <string name="status_disabled_label">Status: Disabled</string>
-    <string name="open_connections_action">Open Connections</string>
     <string name="back_to_overview_action">Back to overview</string>
 
     <!-- ABRP settings -->
@@ -1060,7 +1149,7 @@
     <string name="about_install_note">Install button will become available when parked with no active trip or charging</string>
     <string name="about_install_now">Install now</string>
     <string name="about_download_update">Download update</string>
-    <string name="about_update_manual_di5_instructions">Automatic install isn\'t available on this head unit. On a PC or phone, download this version\'s APK from the releases page, then install it over ADB:</string>
+    <string name="about_update_manual_di5_instructions">Automatic install needs the helper connection, which isn\'t available right now. On a PC or phone, download this version\'s APK from the releases page, then install it over ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Open releases page</string>
 
@@ -1171,6 +1260,7 @@
     <string name="autostart_dialog_title">⚠️ Action Required — Autostart</string>
     <string name="autostart_dialog_msg">A new version was installed. You need to toggle-off disable autostart for this app, which enables foreground / background services to run.\nA one-time reboot of the car is needed and only when you first install the app and after you toggle-off disable autostart. If you are updating from an older version, you don\'t have to reboot</string>
     <string name="autostart_got_it">Got it</string>
+    <string name="autostart_open_failed">Couldn\'t open the autostart screen on this head unit. Open it from the car\'s own Settings → Apps → Autostart (or Background apps) and make sure Trip Stats is allowed.</string>
     <string name="flavor_mismatch_title">⚠️ Wrong build for this car</string>
     <string name="flavor_mismatch_msg">You installed the %1$s build, but this car is %2$s. Vehicle telemetry may not work correctly. Please install the %2$s build for this vehicle.</string>
     <string name="adb_connecting_title">Connecting…</string>

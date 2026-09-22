@@ -269,7 +269,7 @@
     <string name="export_save_html">Opslaan als HTML-viewer (dubbelklik om te openen)</string>
     <string name="export_send_telegram">Sturen naar Telegram-bot</string>
     <string name="export_telegram_not_configured">Sturen naar Telegram-bot (niet geconfigureerd)</string>
-    <string name="export_telegram_setup_hint">Stel de bot in via Instellingen → Back-up &amp; Herstellen.</string>
+    <string name="export_telegram_setup_hint">Koppel je Telegram-bot in Instellingen → Verbindingen → Telegram.</string>
     <string name="export_send_csv">CSV naar Telegram sturen</string>
     <string name="export_send_json">JSON naar Telegram sturen</string>
     <string name="export_send_html">HTML-viewer naar Telegram sturen</string>
@@ -533,17 +533,70 @@
     <string name="wifi_only_desc">Automatische back-ups draaien alleen op wifi om mobiele data te besparen</string>
     <string name="last_auto_backup_label">Laatste automatische back-up: %1$s</string>
     <string name="schedule_updated_msg">Schema bijgewerkt naar %1$s. De volgende automatische back-up volgt het nieuwe interval.</string>
-    <string name="telegram_setup_info">Eenmaal verbonden kunnen back-ups handmatig of op schema worden verzonden. Elke back-up komt aan als een .db-bestand in je privéchat, toegankelijk vanaf elk apparaat met Telegram.</string>
+    <string name="telegram_setup_info">Back-ups kunnen handmatig of volgens een schema worden verzonden. Elke back-up komt als .db-bestand in je privéchat terecht, bereikbaar vanaf elk apparaat met Telegram.</string>
     <string name="telegram_instructions">1. Stuur een bericht naar @BotFather op Telegram → /newbot → kopieer het token\n2. Stuur een bericht naar je nieuwe bot\n3. Plak het token hieronder en tik op Valideren</string>
     <string name="bot_token_label">Bot-token</string>
     <string name="validate_save_action">Valideren &amp; opslaan</string>
     <string name="restore_from_telegram_label">Herstellen vanuit Telegram</string>
-    <string name="connect_telegram_first">Verbind eerst een Telegram-privébot (zie Telegram-back-up hierboven).</string>
+    <string name="connect_telegram_first">Koppel eerst een Telegram-bot — Instellingen → Verbindingen → Telegram.</string>
     <string name="backups_in_chat_label">Back-ups in je chat:</string>
     <string name="scan_telegram_hint">Tik op vernieuwen om je Telegram-chat te scannen op .db-back-ups.</string>
-    <string name="no_telegram_configured">Telegram niet geconfigureerd — stel het in onder Back-up &amp; herstellen eerst.</string>
+    <string name="no_telegram_configured">Telegram niet gekoppeld — stel het eerst in via Instellingen → Verbindingen → Telegram.</string>
     <string name="sent_telegram_success">Verzonden via Telegram ✓</string>
     <string name="telegram_send_failed">Telegram verzenden mislukt: %1$s</string>
+    <string name="tailscale_title">Tailscale — externe toegang</string>
+    <string name="tailscale_title_short">Tailscale</string>
+    <string name="tailscale_desc">Zet de auto op je eigen privé Tailscale-netwerk, zodat de webcompanion en ADB overal werken — niet alleen thuis. Er wordt niets aan het internet blootgesteld en er worden geen poorten op je router geopend.</string>
+    <string name="tailscale_card_desc">Bereik de webcompanion en ADB van de auto overal</string>
+    <string name="tailscale_unavailable">Niet beschikbaar in deze build (vereist een 64-bits ARM-head-unit).</string>
+    <string name="tailscale_not_connected">Niet verbonden.</string>
+    <string name="tailscale_starting">Bezig met starten…</string>
+    <string name="tailscale_error">Er ging iets mis. Bekijk de instructies hieronder en probeer het opnieuw.</string>
+    <string name="tailscale_connected">Verbonden als %1$s</string>
+    <string name="tailscale_reachable_hint">Webcompanion: http://%1$s:8888 · ADB: adb connect %1$s:5555</string>
+    <string name="tailscale_needs_adb">Vereist eerst de eenmalige ADB-autorisatie — dezelfde die directe telemetrie gebruikt. Stel die in bij App-beheer en kom dan terug.</string>
+    <string name="tailscale_signin_phone">Aanmelden met je telefoon</string>
+    <string name="tailscale_scan_instructions">Scan dit met de camera van je telefoon en meld je dan aan bij Tailscale in de browser die opent. De auto sluit zich bij je netwerk aan zodra je het goedkeurt — hier hoef je niets te typen.</string>
+    <string name="tailscale_scan_qr_cd">QR-code die de Tailscale-aanmeldpagina opent</string>
+    <string name="tailscale_waiting_for_signin">Wachten tot je het goedkeurt… je kunt dit scherm verlaten, het blijft wachten.</string>
+    <string name="tailscale_cancel_signin">Aanmelden annuleren</string>
+    <string name="tailscale_other_ways">Andere manieren om aan te melden</string>
+    <string name="tailscale_alt_adb_title">Typ de sleutel vanaf je computer (ADB)</string>
+    <string name="tailscale_alt_adb_body">Als je al ADB met deze auto gebruikt — en dat doe je, want Tailscale vereist dezelfde autorisatie — tik dan op het veld Auth key hieronder zodat het focus heeft, en voer dit vervolgens vanaf je computer uit met de sleutel op de plek van de puntjes. Auth-sleutels bevatten alleen letters, cijfers en koppeltekens, dus er raakt niets verminkt.</string>
+    <string name="tailscale_alt_key_title">Plak een auth-sleutel</string>
+    <string name="tailscale_alt_key_body">Genereer er een in de Tailscale-console onder Settings → Keys (laat Ephemeral uit) en plak hem hier. Zestig tekens is veel om op een autoscherm te typen, daarom staat de QR hierboven.</string>
+    <string name="tailscale_authkey_label">Auth-sleutel</string>
+    <string name="tailscale_connect">Verbinden</string>
+    <string name="tailscale_disconnect">Verbinding met Tailscale verbreken</string>
+    <string name="tailscale_how_to">Zo stel je dit in</string>
+    <string name="tailscale_step_1">1. Maak een gratis account aan op tailscale.com als je er nog geen hebt.</string>
+    <string name="tailscale_step_2">2. Open in de beheerconsole Settings → Keys en tik op Generate auth key. Laat Ephemeral UIT — een tijdelijke sleutel laat de auto uit je netwerk verdwijnen zodra hij slaapt, en zijn adres zou telkens veranderen.</string>
+    <string name="tailscale_step_3">3. Kopieer de sleutel (begint met tskey-auth-) en plak hem hieronder, tik dan op Verbinden. De auto sluit zich bij je netwerk aan en houdt vanaf dan hetzelfde adres.</string>
+    <string name="tailscale_step_4">4. Installeer Tailscale op je telefoon of laptop en meld je aan bij hetzelfde account. Alles wat is aangemeld, kan dan de auto bereiken — niets anders.</string>
+    <string name="tailscale_console_warnings">Eén keer de moeite waard, in de beheerconsole: open Machines → je auto → Disable key expiry, anders valt hij na ongeveer zes maanden van je netwerk en alleen een bezoek aan de auto lost dat op. Stel geen exit node in op de auto (dat zou zijn ABRP-, MQTT- en Telegram-verkeer via iemands anders internetverbinding leiden), en schakel Funnel niet in (dat zou de webcompanion op het openbare internet zetten, met alleen zijn pincode als bescherming).</string>
+    <string name="tailscale_di5_note">Op DiLink-5 stopt de auto elke app geforceerd wanneer je uitschakelt, dus externe toegang stopt zodra de auto dat doet en keert terug wanneer de auto weer ontwaakt.</string>
+    <string name="telegram_title_label">Telegram</string>
+    <string name="telegram_card_desc">Je eigen privébot — draagt back-ups en voertuigmeldingen</string>
+    <string name="status_not_connected_label">Niet verbonden</string>
+    <string name="telegram_connection_desc">Koppel hier eenmalig een privé Telegram-bot. Back-ups, meldingen, diagnostiek en rit-exports gaan er allemaal doorheen, en er wordt niets ergens anders heen gestuurd.</string>
+    <string name="telegram_connected_uses">Wordt gebruikt door Back-up &amp; Herstel voor databaseback-ups, door de meldingen hieronder, en door de knoppen voor diagnostiek en rit-export.</string>
+    <string name="telegram_setup_in_connections">Nog geen Telegram-bot gekoppeld. Stel er een in via Instellingen → Verbindingen → Telegram en kom dan hier terug om back-ups te verzenden en te herstellen.</string>
+    <string name="telegram_notify_needs_bot">Koppel hierboven een Telegram-bot om meldingen te gebruiken.</string>
+    <string name="telegram_notify_di5_warning">Op DiLink-5 komen meldingen die afhangen van het uitschakelen van de auto voorlopig niet aan: je auto stopt de app geforceerd bij het uitzetten, dus een rit wordt pas bij de volgende start afgesloten, en laden tijdens het parkeren wordt achteraf ingevuld — geen van beide kan op het moment zelf worden gemeld. Alles wat gebeurt terwijl de auto nog aan staat, komt wel aan, dus door op Stop te tikken om de rit zelf te beëindigen voordat je uitschakelt, krijg je de samenvatting.</string>
+    <string name="telegram_notify_label">Telegram-meldingen</string>
+    <string name="telegram_notify_info">Voertuiggebeurtenissen worden naar dezelfde bot gepusht — geen server, geen account, geen extra app. Berichten worden in de wachtrij gezet en opnieuw geprobeerd als de auto geen verbinding heeft wanneer er iets gebeurt.</string>
+    <string name="telegram_notify_enable_label">Meldingen verzenden</string>
+    <string name="telegram_notify_trip_label">Ritsamenvatting</string>
+    <string name="telegram_notify_trip_desc">Een kaart na elke rit, met dezelfde cijfers die de rit zelf vastlegt: afstand, duur, verbruik ten opzichte van je gemiddelde over de hele levensduur, gebruikte SoC, kosten en ritscore.</string>
+    <string name="telegram_notify_charging_label">Opladen voltooid</string>
+    <string name="telegram_notify_charging_desc">Wanneer een laadsessie eindigt — of die nu voltooid is of vroegtijdig gestopt, en op welk niveau, met de toegevoegde energie en wat het kostte. Wordt verzonden wanneer het gebeurt, dus een nachtelijke lading die om 03:00 klaar is, verstuurt om 03:00. Standaard uit.</string>
+    <string name="telegram_notify_imbalance_label">Waarschuwing voor celonbalans</string>
+    <string name="telegram_notify_imbalance_desc">Stuur de Pro-waarschuwing voor onbalans van accucellen ook naar Telegram, niet alleen naar het scherm van de auto.</string>
+    <string name="telegram_notify_imbalance_pro">Inbegrepen bij Pro, samen met de celonbalanswaarschuwing zelf.</string>
+    <string name="telegram_notify_test_action">Testbericht verzenden</string>
+    <string name="telegram_notify_test_ok">Testbericht verzonden ✓ — controleer je Telegram-chat.</string>
+    <string name="telegram_notify_test_failed">Kan Telegram niet bereiken. Controleer de verbinding van de auto en probeer het opnieuw.</string>
+    <string name="telegram_notify_parked_note">Een samenvatting wordt verzonden als de rit eindigt — dat is wanneer de auto uit is voor de auto-stoptijd die is ingesteld bij Voorkeuren, dus een langere instelling betekent een later bericht. Een rit die de app pas achteraf kon afsluiten, omdat hij op dat moment niet draaide (op DiLink-5 is dat elke rit), wordt normaal geregistreerd maar niet gemeld, zodat je nooit een melding over de rit van gisteren krijgt terwijl je aan die van vandaag begint. Meldingen blijven afgaan tijdens het parkeren in de achtergrondmodus Altijd aan: de head-unit blijft op mobiele data nadat de auto het Wi-Fi heeft afgesloten.</string>
 
     <!-- Trip Compare -->
     <string name="comparing_trips_label">%1$s ritten vergelijken</string>
@@ -772,7 +825,7 @@
     <string name="compat_sending_label">Verzenden…</string>
     <string name="compat_email_qr_label">E-mail via QR-code</string>
     <string name="compat_uploading_label">Uploaden…</string>
-    <string name="compat_telegram_not_configured">Telegram niet geconfigureerd — stel het eerst in via Backup &amp; Restore.</string>
+    <string name="compat_telegram_not_configured">Telegram niet gekoppeld — stel het eerst in via Instellingen → Verbindingen → Telegram.</string>
     <string name="compat_sent_telegram">Verzonden via Telegram ✓</string>
     <string name="compat_telegram_failed">Telegram verzending mislukt: %1$s</string>
     <string name="compat_save_failed">Opslaan mislukt: %1$s</string>
@@ -797,6 +850,33 @@
     <string name="web_server_failed">Starten mislukt: %1$s</string>
     <string name="web_server_waiting">Wachten op IP-adres…</string>
     <string name="web_server_open_hint">Open dit adres op elk apparaat dat verbonden is met hetzelfde WiFi-netwerk.</string>
+    <string name="web_url_label_lan">Op je netwerk</string>
+    <string name="web_url_label_tailscale">Via Tailscale — werkt overal</string>
+    <string name="web_url_label_vpn">Via je VPN</string>
+    <string name="web_url_label_other">Ander netwerk</string>
+    <string name="web_url_label_mobile">Via mobiele data</string>
+    <string name="web_url_label_tailscale_https">Via Tailscale, versleuteld — werkt overal</string>
+    <string name="web_https_available_hint">Dit zijn gewone http://-adressen. Om het Tailscale-adres te versleutelen, zet je \"Via HTTPS aanbieden\" aan op de Tailscale-kaart in Instellingen → Verbindingen.</string>
+    <string name="tailscale_https_label">Via HTTPS aanbieden</string>
+    <string name="tailscale_https_desc">Laat de Tailscale-daemon TLS afhandelen voor de webcompanion, met een echt certificaat voor de Tailscale-naam van deze auto. Het adres wordt https:// in plaats van http://, dus browsers noemen het niet langer onveilig — en functies die ze alleen op een beveiligde pagina toestaan, zoals meldingen en kopiëren naar klembord, gaan werken.</string>
+    <string name="tailscale_https_requirement">Vereist dat MagicDNS en HTTPS Certificates zijn ingeschakeld voor je tailnet — beide zijn eenmalige schakelaars in de Tailscale-beheerconsole onder DNS. Alleen het .ts.net-adres wordt versleuteld; het WiFi-adres blijft http://.</string>
+    <string name="tailscale_https_working">Versleuteld op %1$s</string>
+    <string name="tailscale_https_no_port">Gebruik het precies zoals weergegeven — zonder \":8888\" aan het eind. Het versleutelde adres gebruikt de standaard HTTPS-poort; alleen de http://-adressen hebben een poort nodig.</string>
+    <string name="tailscale_https_first_load">De eerste keer laden kan een paar seconden duren terwijl het certificaat wordt uitgegeven.</string>
+    <string name="tailscale_https_how_to">Zo schakel je dit in voor je netwerk</string>
+    <string name="tailscale_https_step_1">1. Open op je telefoon of computer de Tailscale-beheerconsole en ga naar DNS — login.tailscale.com/admin/dns. Doe dit één keer; het geldt voor elk apparaat in je netwerk, niet alleen de auto.</string>
+    <string name="tailscale_https_step_2">2. Controleer of MagicDNS aan staat. Verwarrend genoeg staat het AAN als de knop \"Disable MagicDNS…\" zegt — die knop zou het uitzetten, dus laat hem met rust. Zie je in plaats daarvan \"Enable MagicDNS…\", klik er dan op.</string>
+    <string name="tailscale_https_step_3">3. Klik onder HTTPS Certificates op \"Enable HTTPS…\" en bevestig. Dit is wat je apparaten echte certificaten laat krijgen.</string>
+    <string name="tailscale_https_step_4">4. Kom hier terug en zet Via HTTPS aanbieden aan. Er hoeft niets opnieuw te worden opgestart.</string>
+    <string name="tailscale_https_step_5">5. Open het hier getoonde https://-adres — precies zoals weergegeven, zonder poort aan het eind. De eerste keer laden duurt een paar seconden terwijl het certificaat wordt uitgegeven, daarna gaat het meteen.</string>
+    <string name="tailscale_https_free_note">Beide instellingen zijn gratis en gelden voor je hele Tailscale-netwerk. HTTPS inschakelen stelt niets bloot aan het internet — het certificaat bewijst simpelweg, aan apparaten die al op je netwerk zitten, dat de auto is wie hij zegt te zijn.</string>
+    <string name="tailnet_diag_label">Tailnet-adres</string>
+    <string name="tailnet_installed_not_connected">Tailscale geïnstalleerd, niet verbonden</string>
+    <string name="remote_access_label">Externe toegang</string>
+    <string name="remote_access_connected">Deze auto staat op je tailnet als %1$s. Het adres hierboven werkt vanaf elk van je Tailscale-apparaten, waar je ook bent — en ADB ook, op poort 5555.</string>
+    <string name="remote_access_not_detected">De companion is alleen bereikbaar op je thuisnetwerk. Om hem overal te bereiken, installeer de Tailscale-app op de head-unit en op je telefoon en meld beide aan met hetzelfde account — de auto houdt dan een vast 100.x-adres dat werkt via mobiele data, ook tijdens het parkeren, wanneer WiFi uit is. Er wordt niets aan deze app toegevoegd en er worden geen poorten op je router geopend.</string>
+    <string name="remote_access_tips">Drie dingen om één keer in te stellen, in de Tailscale-beheerconsole: zet de sleutelvervaldatum voor de auto UIT (anders valt hij na ongeveer zes maanden van het tailnet en alleen een bezoek aan de auto lost dat op), stel GEEN exit node in op de auto (dat zou zijn ABRP-, MQTT- en Telegram-verkeer via iemands anders internetverbinding leiden), en schakel Funnel NIET in (dat zou deze companion op het openbare internet zetten, met alleen zijn pincode als bescherming).</string>
+    <string name="remote_access_di5_note">Op DiLink-5 stopt je auto elke app geforceerd wanneer je uitschakelt, Tailscale inbegrepen — dus externe toegang stopt zodra de auto dat doet en keert terug wanneer de auto weer ontwaakt. Terwijl de auto aan staat werkt het normaal, wat nog steeds handig is om de companion of ADB te bereiken wanneer je weg bent van je eigen WiFi.</string>
     <string name="web_copy_url_cd">URL kopiëren</string>
     <string name="chart_no_tyre_data">Geen bandenspanningsgegevens opgenomen voor deze rit</string>
 
@@ -883,15 +963,15 @@
     <string name="bg_minimal">Minimaal</string>
     <string name="bg_deep_sleep">Diepe slaap</string>
     <string name="bg_default_label">Standaard</string>
-    <string name="bg_always_on_desc">Altijd aan (aanbevolen standaard): de telemetrieservice blijft actief nadat je hebt geparkeerd, neemt continu 12V/SoC-metingen op in de accugeschiedenis en legt het laden in uitgeschakelde toestand vast (bijv. \'s nachts). Kleine extra belasting bovenop het standaard achtergrondverbruik van BYD.\n\nOpmerking: de meeste BYD-units schakelen Wi-Fi ~15 min na het uitschakelen van de auto uit. Tijdens het parkeren stoppen daarom ADB-via-Wi-Fi, de Webcompanion (PWA) en MQTT naar een broker op je thuisnetwerk totdat de auto wordt ingeschakeld. MQTT naar een via internet bereikbare broker (bijv. HiveMQ Cloud) blijft meestal publiceren, omdat de auto op mobiele data blijft. De optie \"Wi-Fi actief houden tijdens parkeren\" hieronder kan Wi-Fi open houden op ondersteunde units.</string>
+    <string name="bg_always_on_desc">Altijd aan (aanbevolen standaard): de telemetrieservice blijft actief nadat je hebt geparkeerd, neemt continu 12V/SoC-metingen op in de accugeschiedenis en legt het laden in uitgeschakelde toestand vast (bijv. \'s nachts). Kleine extra belasting bovenop het standaard achtergrondverbruik van BYD.\n\nOpmerking: de meeste BYD-units schakelen Wi-Fi ~15 min na het uitschakelen van de auto uit. Tijdens het parkeren stoppen daarom ADB-via-Wi-Fi, de Webcompanion (PWA) en MQTT naar een broker op je thuisnetwerk totdat de auto wordt ingeschakeld. MQTT naar een via internet bereikbare broker (bijv. HiveMQ Cloud) blijft meestal publiceren, omdat de auto op mobiele data blijft. De optie \"Wi-Fi actief houden als de auto uit is\" hieronder kan Wi-Fi open houden op ondersteunde units.</string>
     <string name="bg_minimal_desc">Minimaal: service stopt zelf 5 min nadat de auto uitschakelt, daarna wekt een alarm van 90 min het kort voor een laadmomentopname. Lager verbruik, maar niet-actieve monsters zijn schaars, ADB is niet altijd aan, de webcompanion (PWA) is alleen bereikbaar tijdens het korte wekblip en MQTT is inactief tussen blips. Niet-actief opladen wordt binnen ~90 min geregistreerd, waarna het voor de rest van de lading publiceert.</string>
     <string name="bg_deep_sleep_desc">Diepe slaap: service stopt zelf 5 min nadat de auto uitschakelt zonder verdere wekups. Hierdoor kunnen de ECU\'s van de auto volledige diepe slaap bereiken. De webcompanion (PWA) is onbereikbaar en MQTT is stil gedurende de hele tijd dat de auto geparkeerd is; niet-actief opladen wordt niet live geregistreerd — alleen gereconstrueerd uit de SoC-delta wanneer de auto volgende keer inschakelt.</string>
     <string name="keepalive_never_fired">Minimaal-wekalarm: nog nooit geactiveerd%1$s. Als dit \"nooit\" blijft nadat de auto een tijdje geparkeerd staat, schakelt je unit bij het parkeren volledig uit — Minimaal gedraagt zich dan als Diepe slaap, gebruik dus Altijd aan voor parkeergegevens.</string>
     <string name="keepalive_fired">Minimaal-wekalarm: laatst geactiveerd %1$s • %2$s totaal%3$s</string>
     <string name="keepalive_armed"> (gewapend)</string>
     <string name="keepalive_not_armed"> • niet gewapend</string>
-    <string name="wifi_keepalive_label">Wi-Fi actief houden tijdens parkeren</string>
-    <string name="wifi_keepalive_desc">Schakelt Wi-Fi opnieuw in als de auto het na het parkeren uitschakelt, zodat de Webcompanion en andere lokale tools (thuisnetwerk) bereikbaar blijven. Werkt alleen terwijl de auto uit staat en trekt zich terug als de 12V-accu of de laadstatus laag wordt. Verbruikt tijdens het parkeren wat extra stroom.\n\nAls je ook Electro, Overdrive of een andere app gebruikt die Wi-Fi actief houdt, schakel dit dan in slechts ÉÉN daarvan in en zet het in de andere uit — twee keepalives die samen draaien kunnen elkaar tegenwerken en stroom verspillen.</string>
+    <string name="wifi_keepalive_label">Wi-Fi actief houden als de auto uit is</string>
+    <string name="wifi_keepalive_desc">Schakelt Wi-Fi weer in nadat de auto is uitgeschakeld — de head-unit zet het een paar minuten later uit — zodat de Webcompanion en andere lokale tools (thuisnetwerk) bereikbaar blijven. Werkt alleen terwijl de auto uit staat en trekt zich terug als de 12V-accu of de laadstatus laag wordt. Verbruikt wat extra stroom zolang de auto uit staat.\n\nAls je ook Electro, Overdrive of een andere app gebruikt die Wi-Fi actief houdt, schakel dit dan in slechts ÉÉN daarvan in en zet het in de andere uit — twee keepalives die samen draaien kunnen elkaar tegenwerken en stroom verspillen.</string>
     <string name="wifi_keepalive_needs_setup">Vereist de geavanceerde ADB-configuratie (dezelfde als voor directe telemetrie). Voltooi die eerst om dit in te schakelen.</string>
 
     <!-- Settings dialogs -->
@@ -941,6 +1021,7 @@
     <string name="web_companion_desc">Bekijk ritten &amp; opladen vanaf elk apparaat op hetzelfde WiFi-netwerk.</string>
     <string name="web_companion_disabled_desc">Start een lokale server zodat je ritgeschiedenis in een browser kunt openen.</string>
     <string name="web_companion_wifi_info">Bediend via je lokale WiFi, dus bereikbaar terwijl de auto aan is en de telemetrieservice actief is. Eenmaal geparkeerd snijden de meeste BYD-eenheden WiFi ~15 min nadat de auto uit is af — daarna is de companion onbereikbaar (er is geen mobiele-data-fallback voor een lokale server) totdat de auto inschakelt, in elke achtergrondactiviteitsmodus.\nNoot: de Electro-app heeft een optie om WiFi onbeperkt actief te houden</string>
+    <string name="web_companion_files_info">De companion heeft ook een tabblad Bestanden: download databaseback-ups, exports en het diagnoselogboek rechtstreeks naar je telefoon of laptop, en upload een back-up naar de auto zonder iets aan te sluiten. Het toont alleen de eigen mappen van de app, niet de hele head-unit.</string>
     <string name="port_field_label">Poort</string>
     <string name="port_hint_text">Probeer 8081, 8888, 9090 als een poort geblokkeerd is. Wijzigingen herstarten de server.</string>
     <string name="access_pin_label">Toegangs-PIN</string>
@@ -964,7 +1045,6 @@
     <string name="mqtt_card_desc">Publiceer live telemetrie naar een broker zoals HiveMQ of HomeAssistant.</string>
     <string name="status_enabled_label">Status: Ingeschakeld</string>
     <string name="status_disabled_label">Status: Uitgeschakeld</string>
-    <string name="open_connections_action">Verbindingen openen</string>
     <string name="back_to_overview_action">Terug naar overzicht</string>
 
     <!-- ABRP settings -->
@@ -1047,7 +1127,7 @@
     <string name="about_install_note">Installatieknop wordt beschikbaar wanneer geparkeerd zonder actieve rit of opladen</string>
     <string name="about_install_now">Nu installeren</string>
     <string name="about_download_update">Update downloaden</string>
-    <string name="about_update_manual_di5_instructions">Automatische installatie is niet beschikbaar op deze head-unit. Download op een pc of telefoon de APK van deze versie van de releasespagina en installeer deze vervolgens via ADB:</string>
+    <string name="about_update_manual_di5_instructions">Automatische installatie vereist de helper-verbinding, die op dit moment niet beschikbaar is. Download op een pc of telefoon de APK van deze versie van de releasespagina en installeer deze vervolgens via ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Releasespagina openen</string>
 
@@ -1158,6 +1238,7 @@
     <string name="autostart_dialog_title">⚠️ Actie vereist — Autostart</string>
     <string name="autostart_dialog_msg">Er is een nieuwe versie geïnstalleerd. Je moet autostart uitschakelen voor deze app, wat voorgrond-/achtergronddiensten laat draaien.\nEen eenmalige herstart van de auto is nodig, en alleen wanneer je de app voor het eerst installeert en nadat je autostart hebt uitgeschakeld. Als je bijwerkt vanaf een oudere versie, hoef je niet te herstarten</string>
     <string name="autostart_got_it">Begrepen</string>
+    <string name="autostart_open_failed">Kan het autostart-scherm op deze unit niet openen. Open het via de Instellingen van de auto zelf → Apps → Autostart (of Achtergrond-apps) en zorg dat Trip Stats is toegestaan.</string>
     <string name="flavor_mismatch_title">⚠️ Verkeerde build voor deze auto</string>
     <string name="flavor_mismatch_msg">Je hebt de %1$s-build geïnstalleerd, maar deze auto is %2$s. De voertuigtelemetrie werkt mogelijk niet correct. Installeer de %2$s-build voor dit voertuig.</string>
     <string name="adb_connecting_title">Verbinden…</string>

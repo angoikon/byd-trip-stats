@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -24,11 +23,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.byd.tripstats.R
+import com.byd.tripstats.ui.components.BrandSwitch
 import com.byd.tripstats.data.entitlement.EntitlementManager
 import com.byd.tripstats.data.entitlement.RedeemResult
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.ui.theme.BydElectricAzure
-import com.byd.tripstats.ui.theme.ToggleUncheckedTrack
 import kotlinx.coroutines.launch
 
 /**
@@ -169,25 +168,11 @@ internal fun ProTab(preferencesManager: PreferencesManager) {
                         )
                     }
                     if (isPro) {
-                        Switch(
+                        BrandSwitch(
                             checked = cellImbalanceAlertEnabled,
                             onCheckedChange = {
                                 scope.launch { preferencesManager.saveCellImbalanceAlertEnabled(it) }
                             },
-                            thumbContent = if (!cellImbalanceAlertEnabled) {
-                                {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(12.dp)
-                                            .background(ToggleUncheckedTrack, CircleShape)
-                                    )
-                                }
-                            } else null,
-                            colors = SwitchDefaults.colors(
-                                uncheckedThumbColor = Color.White,
-                                uncheckedTrackColor = ToggleUncheckedTrack,
-                                uncheckedBorderColor = ToggleUncheckedTrack
-                            )
                         )
                     } else {
                         IconButton(onClick = { showLicenseDialog = true }) {

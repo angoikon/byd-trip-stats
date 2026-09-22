@@ -266,7 +266,7 @@
     <string name="export_save_html">Salvează ca vizualizator HTML (dublu clic pentru a deschide)</string>
     <string name="export_send_telegram">Trimite botului Telegram</string>
     <string name="export_telegram_not_configured">Trimite botului Telegram (neconfigurat)</string>
-    <string name="export_telegram_setup_hint">Configurați botul în Setări → Backup și restaurare.</string>
+    <string name="export_telegram_setup_hint">Conectează botul tău de Telegram în Setări → Conexiuni → Telegram.</string>
     <string name="export_send_csv">Trimite CSV pe Telegram</string>
     <string name="export_send_json">Trimite JSON pe Telegram</string>
     <string name="export_send_html">Trimite vizualizatorul HTML pe Telegram</string>
@@ -530,17 +530,70 @@
     <string name="wifi_only_desc">Backupurile automate rulează doar pe Wi-Fi pentru a economisi date mobile</string>
     <string name="last_auto_backup_label">Ultimul backup automat: %1$s</string>
     <string name="schedule_updated_msg">Programare schimbată la %1$s. Următorul backup automat va urma noul interval.</string>
-    <string name="telegram_setup_info">Odată conectat, backupurile pot fi trimise manual sau programat. Fiecare backup ajunge ca fișier .db în chatul dvs. privat, accesibil de pe orice dispozitiv cu Telegram.</string>
+    <string name="telegram_setup_info">Copiile de rezervă pot fi trimise manual sau după un program. Fiecare ajunge ca fișier .db în conversația ta privată, accesibilă de pe orice dispozitiv cu Telegram.</string>
     <string name="telegram_instructions">1. Scrieți lui @BotFather pe Telegram → /newbot → copiați tokenul\n2. Trimiteți orice mesaj noului dvs. bot\n3. Lipiți tokenul mai jos și atingeți Validează</string>
     <string name="bot_token_label">Token bot</string>
     <string name="validate_save_action">Validează și salvează</string>
     <string name="restore_from_telegram_label">Restaurează de pe Telegram</string>
-    <string name="connect_telegram_first">Conectați mai întâi un bot Telegram privat (vezi Backup Telegram mai sus).</string>
+    <string name="connect_telegram_first">Mai întâi conectează un bot Telegram — Setări → Conexiuni → Telegram.</string>
     <string name="backups_in_chat_label">Backupuri în chatul dvs.:</string>
     <string name="scan_telegram_hint">Atingeți reîmprospătare pentru a scana chatul Telegram după backupuri .db.</string>
-    <string name="no_telegram_configured">Telegram neconfigurat — configurați-l mai întâi în Backup și restaurare.</string>
+    <string name="no_telegram_configured">Telegram neconectat — configurează-l mai întâi în Setări → Conexiuni → Telegram.</string>
     <string name="sent_telegram_success">Trimis prin Telegram ✓</string>
     <string name="telegram_send_failed">Trimiterea pe Telegram a eșuat: %1$s</string>
+    <string name="tailscale_title">Tailscale — acces la distanță</string>
+    <string name="tailscale_title_short">Tailscale</string>
+    <string name="tailscale_desc">Pune mașina în propria ta rețea privată Tailscale, astfel încât web companion și ADB să funcționeze de oriunde — nu doar acasă. Nimic nu este expus pe internet și nu se deschid porturi pe routerul tău.</string>
+    <string name="tailscale_card_desc">Accesează web companion și ADB al mașinii de oriunde</string>
+    <string name="tailscale_unavailable">Nu este disponibil în această versiune (necesită o unitate ARM pe 64 de biți).</string>
+    <string name="tailscale_not_connected">Neconectat.</string>
+    <string name="tailscale_starting">Se pornește…</string>
+    <string name="tailscale_error">Ceva n-a mers bine. Verifică instrucțiunile de mai jos și încearcă din nou.</string>
+    <string name="tailscale_connected">Conectat ca %1$s</string>
+    <string name="tailscale_reachable_hint">Web companion: http://%1$s:8888 · ADB: adb connect %1$s:5555</string>
+    <string name="tailscale_needs_adb">Necesită mai întâi autorizarea ADB unică — aceeași folosită de telemetria instantanee. Configureaz-o în Gestionarea aplicației, apoi revino.</string>
+    <string name="tailscale_signin_phone">Conectează-te cu telefonul</string>
+    <string name="tailscale_scan_instructions">Scanează asta cu camera telefonului, apoi conectează-te la Tailscale în browserul care se deschide. Mașina se alătură rețelei tale imediat ce o aprobi — nu ai nimic de tastat aici.</string>
+    <string name="tailscale_scan_qr_cd">Cod QR care deschide pagina de conectare Tailscale</string>
+    <string name="tailscale_waiting_for_signin">Se așteaptă aprobarea ta… poți părăsi acest ecran, va continua să aștepte.</string>
+    <string name="tailscale_cancel_signin">Anulează conectarea</string>
+    <string name="tailscale_other_ways">Alte moduri de conectare</string>
+    <string name="tailscale_alt_adb_title">Tastează cheia de pe computer (ADB)</string>
+    <string name="tailscale_alt_adb_body">Dacă folosești deja ADB cu această mașină — și o faci, deoarece Tailscale necesită aceeași autorizare — atinge caseta Auth key de mai jos ca să aibă focus, apoi rulează asta de pe computer cu cheia în locul punctelor. Cheile auth conțin doar litere, cifre și cratime, așa că nimic nu se strică.</string>
+    <string name="tailscale_alt_key_title">Lipește o cheie auth</string>
+    <string name="tailscale_alt_key_body">Generează una în consola Tailscale la Settings → Keys (lasă Ephemeral dezactivat), apoi lipește-o aici. Șaizeci de caractere sunt multe de tastat pe ecranul unei mașini, de aceea există codul QR de mai sus.</string>
+    <string name="tailscale_authkey_label">Cheie auth</string>
+    <string name="tailscale_connect">Conectează</string>
+    <string name="tailscale_disconnect">Deconectează de la Tailscale</string>
+    <string name="tailscale_how_to">Cum să configurezi asta</string>
+    <string name="tailscale_step_1">1. Creează un cont gratuit pe tailscale.com, dacă nu ai unul.</string>
+    <string name="tailscale_step_2">2. În consola de administrare, deschide Settings → Keys și atinge Generate auth key. Lasă Ephemeral DEZACTIVAT — o cheie efemeră face ca mașina să dispară din rețea de fiecare dată când intră în repaus, iar adresa ei s-ar schimba de fiecare dată.</string>
+    <string name="tailscale_step_3">3. Copiază cheia (începe cu tskey-auth-) și lipește-o mai jos, apoi atinge Conectează. Mașina se alătură rețelei tale și păstrează aceeași adresă de atunci înainte.</string>
+    <string name="tailscale_step_4">4. Instalează Tailscale pe telefon sau laptop și conectează-te la același cont. Orice este conectat poate ajunge apoi la mașină — nimic altceva nu poate.</string>
+    <string name="tailscale_console_warnings">Merită făcut o dată, în consola de administrare: deschide Machines → mașina ta → Disable key expiry, altfel dispare din rețea în aproximativ șase luni și doar o vizită la mașină rezolvă asta. Nu seta un exit node pe mașină (asta i-ar trimite traficul ABRP, MQTT și Telegram prin conexiunea la internet a altcuiva) și nu activa Funnel (asta ar pune web companion pe internetul public, protejat doar de PIN-ul său).</string>
+    <string name="tailscale_di5_note">Pe DiLink-5, mașina oprește forțat fiecare aplicație când o oprești, așa că accesul la distanță se oprește odată cu mașina și revine la următoarea trezire.</string>
+    <string name="telegram_title_label">Telegram</string>
+    <string name="telegram_card_desc">Propriul tău bot privat — transportă copii de rezervă și notificări ale vehiculului</string>
+    <string name="status_not_connected_label">Neconectat</string>
+    <string name="telegram_connection_desc">Conectează aici o dată un bot Telegram privat. Copiile de rezervă, notificările, diagnosticarea și exporturile curselor trec toate prin el, și nimic nu este trimis în altă parte.</string>
+    <string name="telegram_connected_uses">Este folosit de Backup &amp; Restaurare pentru copiile bazei de date, de notificările de mai jos și de butoanele de diagnosticare și export al cursei.</string>
+    <string name="telegram_setup_in_connections">Niciun bot Telegram conectat încă. Configurează unul în Setări → Conexiuni → Telegram, apoi revino aici pentru a trimite și restaura copii de rezervă.</string>
+    <string name="telegram_notify_needs_bot">Conectează un bot Telegram mai sus pentru a folosi notificările.</string>
+    <string name="telegram_notify_di5_warning">Pe DiLink-5, notificările care depind de oprirea mașinii nu ajung deocamdată: mașina ta oprește forțat aplicația la oprirea contactului, așa că o cursă se închide abia la următoarea pornire, iar încărcarea în parcare este completată ulterior — niciuna nu poate fi anunțată în momentul respectiv. Tot ce se întâmplă cât timp mașina este încă pornită ajunge, așa că atingând Oprește pentru a încheia singur cursa înainte să oprești, primești rezumatul.</string>
+    <string name="telegram_notify_label">Notificări Telegram</string>
+    <string name="telegram_notify_info">Evenimente ale vehiculului trimise către același bot — fără server, fără cont, fără aplicație suplimentară. Mesajele sunt puse în coadă și reîncercate dacă mașina nu are conexiune când are loc un eveniment.</string>
+    <string name="telegram_notify_enable_label">Trimite notificări</string>
+    <string name="telegram_notify_trip_label">Rezumatul cursei</string>
+    <string name="telegram_notify_trip_desc">Un card după fiecare cursă, cu aceleași cifre pe care le înregistrează cursa însăși: distanță, durată, consum față de media ta pe toată durata, SoC folosit, cost și scorul cursei.</string>
+    <string name="telegram_notify_charging_label">Încărcare terminată</string>
+    <string name="telegram_notify_charging_desc">Când o sesiune de încărcare se termină — fie s-a finalizat, fie s-a oprit devreme, și la ce nivel, cu energia adăugată și cât a costat. Se trimite în momentul în care se întâmplă, așa că o încărcare peste noapte care se termină la 03:00 trimite la 03:00. Dezactivat implicit.</string>
+    <string name="telegram_notify_imbalance_label">Alertă de dezechilibru al celulelor</string>
+    <string name="telegram_notify_imbalance_desc">Trimite alerta Pro de dezechilibru al celulelor bateriei și către Telegram, nu doar pe ecranul mașinii.</string>
+    <string name="telegram_notify_imbalance_pro">Inclus în Pro, împreună cu alerta de dezechilibru al celulelor în sine.</string>
+    <string name="telegram_notify_test_action">Trimite mesaj de test</string>
+    <string name="telegram_notify_test_ok">Mesaj de test trimis ✓ — verifică-ți conversația Telegram.</string>
+    <string name="telegram_notify_test_failed">Nu s-a putut contacta Telegram. Verifică conexiunea mașinii și încearcă din nou.</string>
+    <string name="telegram_notify_parked_note">Un rezumat este trimis când cursa se termină — adică atunci când mașina a fost oprită pentru timpul de oprire automată setat în Preferințe, deci o setare mai lungă înseamnă un mesaj mai târziu. O cursă pe care aplicația a putut-o închide doar ulterior, pentru că nu rula în acel moment (pe DiLink-5 asta e fiecare cursă), este înregistrată normal, dar nu anunțată, ca să nu primești niciodată o notificare despre cursa de ieri când pornești în cea de azi. Alertele continuă să se declanșeze cât e parcat în modul de fundal Mereu pornit: unitatea rămâne pe date mobile după ce mașina oprește Wi-Fi.</string>
 
     <!-- Trip Compare -->
     <string name="comparing_trips_label">Se compară %1$s călătorii</string>
@@ -769,7 +822,7 @@
     <string name="compat_sending_label">Se trimite…</string>
     <string name="compat_email_qr_label">Email prin cod QR</string>
     <string name="compat_uploading_label">Se încarcă…</string>
-    <string name="compat_telegram_not_configured">Telegram neconfigurat — configurați-l mai întâi în Backup și restaurare.</string>
+    <string name="compat_telegram_not_configured">Telegram neconectat — configurează-l mai întâi în Setări → Conexiuni → Telegram.</string>
     <string name="compat_sent_telegram">Trimis prin Telegram ✓</string>
     <string name="compat_telegram_failed">Trimiterea pe Telegram a eșuat: %1$s</string>
     <string name="compat_save_failed">Salvarea a eșuat: %1$s</string>
@@ -794,6 +847,33 @@
     <string name="web_server_failed">Pornirea a eșuat: %1$s</string>
     <string name="web_server_waiting">Se așteaptă IP…</string>
     <string name="web_server_open_hint">Deschideți această adresă pe orice dispozitiv conectat la aceeași rețea WiFi.</string>
+    <string name="web_url_label_lan">În rețeaua ta</string>
+    <string name="web_url_label_tailscale">Prin Tailscale — funcționează de oriunde</string>
+    <string name="web_url_label_vpn">Prin VPN-ul tău</string>
+    <string name="web_url_label_other">Altă rețea</string>
+    <string name="web_url_label_mobile">Prin date mobile</string>
+    <string name="web_url_label_tailscale_https">Prin Tailscale, criptat — funcționează de oriunde</string>
+    <string name="web_https_available_hint">Acestea sunt adrese http:// simple. Pentru a o cripta pe cea Tailscale, activează \"Servește prin HTTPS\" pe cardul Tailscale din Setări → Conexiuni.</string>
+    <string name="tailscale_https_label">Servește prin HTTPS</string>
+    <string name="tailscale_https_desc">Lasă daemonul Tailscale să gestioneze TLS pentru web companion, folosind un certificat real pentru numele Tailscale al acestei mașini. Adresa devine https:// în loc de http://, așa că browserele nu o mai consideră nesigură — iar funcții pe care le permit doar pe o pagină securizată, precum notificările și copierea în clipboard, încep să funcționeze.</string>
+    <string name="tailscale_https_requirement">Necesită MagicDNS și HTTPS Certificates activate pentru tailnet-ul tău — ambele sunt comutatoare unice în consola de administrare Tailscale, la DNS. Doar adresa .ts.net este criptată; adresa WiFi rămâne http://.</string>
+    <string name="tailscale_https_working">Criptat la %1$s</string>
+    <string name="tailscale_https_no_port">Folosește-o exact așa cum e afișată — fără \":8888\" la final. Adresa criptată folosește portul HTTPS standard; doar adresele http:// au nevoie de port.</string>
+    <string name="tailscale_https_first_load">Prima încărcare poate dura câteva secunde cât timp se emite certificatul.</string>
+    <string name="tailscale_https_how_to">Cum să activezi asta pentru rețeaua ta</string>
+    <string name="tailscale_https_step_1">1. Pe telefon sau computer, deschide consola de administrare Tailscale și mergi la DNS — login.tailscale.com/admin/dns. Fă asta o dată; se aplică fiecărui dispozitiv din rețeaua ta, nu doar mașinii.</string>
+    <string name="tailscale_https_step_2">2. Verifică dacă MagicDNS este pornit. În mod confuz, este PORNIT când butonul afișează \"Disable MagicDNS…\" — acel buton l-ar opri, așa că nu-l atinge. Dacă în schimb vezi \"Enable MagicDNS…\", dă clic.</string>
+    <string name="tailscale_https_step_3">3. La HTTPS Certificates, dă clic pe \"Enable HTTPS…\" și confirmă. Asta este ce permite dispozitivelor tale să obțină certificate reale.</string>
+    <string name="tailscale_https_step_4">4. Revino aici și activează Servește prin HTTPS. Nu trebuie repornit nimic.</string>
+    <string name="tailscale_https_step_5">5. Deschide adresa https:// afișată aici — exact cum e afișată, fără port la final. Prima încărcare durează câteva secunde cât se emite certificatul, apoi e instantanee.</string>
+    <string name="tailscale_https_free_note">Ambele setări sunt gratuite și se aplică întregii tale rețele Tailscale. Activarea HTTPS nu expune nimic pe internet — certificatul doar dovedește dispozitivelor deja aflate în rețeaua ta că mașina este cine spune că este.</string>
+    <string name="tailnet_diag_label">Adresă Tailnet</string>
+    <string name="tailnet_installed_not_connected">Tailscale instalat, neconectat</string>
+    <string name="remote_access_label">Acces la distanță</string>
+    <string name="remote_access_connected">Această mașină este pe tailnet-ul tău ca %1$s. Adresa de mai sus funcționează de pe oricare dintre dispozitivele tale Tailscale, oriunde ai fi — la fel și ADB, pe portul 5555.</string>
+    <string name="remote_access_not_detected">Companion este accesibil doar în rețeaua ta de acasă. Pentru a-l atinge de oriunde, instalează aplicația Tailscale pe unitate și pe telefon și conectează-le pe amândouă la același cont — mașina păstrează apoi o adresă 100.x fixă care funcționează prin date mobile, inclusiv în parcare, când WiFi este oprit. Nimic nu se adaugă la această aplicație și nu se deschid porturi pe routerul tău.</string>
+    <string name="remote_access_tips">Trei lucruri de setat o dată, în consola de administrare Tailscale: dezactivează expirarea cheii pentru mașină (altfel dispare din tailnet după aproximativ șase luni și doar o vizită la mașină rezolvă asta), NU seta un exit node pe mașină (asta i-ar trimite traficul ABRP, MQTT și Telegram prin conexiunea la internet a altcuiva) și NU activa Funnel (asta ar pune acest companion pe internetul public, protejat doar de PIN-ul său).</string>
+    <string name="remote_access_di5_note">Pe DiLink-5, mașina ta oprește forțat fiecare aplicație când o oprești, inclusiv Tailscale — așa că accesul la distanță se oprește odată cu mașina și revine la următoarea trezire. Cât timp mașina e pornită funcționează normal, ceea ce este util pentru a ajunge la companion sau la ADB când ești departe de propriul WiFi.</string>
     <string name="web_copy_url_cd">Copiază URL</string>
     <string name="chart_no_tyre_data">Nicio dată de presiune a anvelopelor în această călătorie</string>
 
@@ -880,15 +960,15 @@
     <string name="bg_minimal">Minimal</string>
     <string name="bg_deep_sleep">Somn profund</string>
     <string name="bg_default_label">Implicit</string>
-    <string name="bg_always_on_desc">Mereu pornit (setare implicită recomandată): serviciul de telemetrie continuă să ruleze după ce parchezi, preluând continuu eșantioane 12V/SoC în istoricul bateriei și înregistrând încărcarea cu vehiculul oprit (de ex. peste noapte). Sarcină suplimentară mică, peste consumul de fundal din fabrică al BYD.\n\nNotă: majoritatea unităților BYD întrerup Wi-Fi la ~15 min după oprirea mașinii. Așadar, cât timp e parcată, ADB prin Wi-Fi, Web Companion (PWA) și MQTT către un broker din rețeaua ta de acasă se opresc până când mașina pornește. MQTT către un broker accesibil de pe internet (de ex. HiveMQ Cloud) de obicei continuă să publice, deoarece mașina rămâne pe date mobile. Opțiunea \"Menține Wi-Fi activ când e parcat\" de mai jos poate menține Wi-Fi deschis pe unitățile compatibile.</string>
+    <string name="bg_always_on_desc">Mereu pornit (setare implicită recomandată): serviciul de telemetrie continuă să ruleze după ce parchezi, preluând continuu eșantioane 12V/SoC în istoricul bateriei și înregistrând încărcarea cu vehiculul oprit (de ex. peste noapte). Sarcină suplimentară mică, peste consumul de fundal din fabrică al BYD.\n\nNotă: majoritatea unităților BYD întrerup Wi-Fi la ~15 min după oprirea mașinii. Așadar, cât timp e parcată, ADB prin Wi-Fi, Web Companion (PWA) și MQTT către un broker din rețeaua ta de acasă se opresc până când mașina pornește. MQTT către un broker accesibil de pe internet (de ex. HiveMQ Cloud) de obicei continuă să publice, deoarece mașina rămâne pe date mobile. Opțiunea \"Menține Wi-Fi activ când mașina e oprită\" de mai jos poate menține Wi-Fi deschis pe unitățile compatibile.</string>
     <string name="bg_minimal_desc">Minimal: serviciul se oprește singur la 5 min după oprirea mașinii, apoi o alarmă de 90 min îl trezește scurt pentru un instantaneu de încărcare. Consum mai mic, dar mostrele cu mașina oprită sunt rare, ADB nu e mereu pornit, Web Companion (PWA) e accesibil doar în scurtul moment de trezire, iar MQTT e inactiv între treziri. Încărcarea cu mașina oprită e prinsă în ~90 min, după care publică pentru restul încărcării.</string>
     <string name="bg_deep_sleep_desc">Somn profund: serviciul se oprește singur la 5 min după oprirea mașinii, fără alte treziri. Permite ECU-urilor mașinii să atingă somnul profund complet. Web Companion (PWA) e inaccesibil și MQTT tace tot timpul cât mașina e parcată; încărcarea cu mașina oprită nu e capturată live — doar reconstruită din delta SoC la următoarea pornire.</string>
     <string name="keepalive_never_fired">Alarmă de trezire Minimal: încă nu s-a declanșat%1$s. Dacă rămâne \"niciodată\" după ce mașina a stat parcată o vreme, unitatea ta se oprește complet la parcare — Minimal se comportă atunci ca Somn profund, așa că folosește Mereu pornit pentru datele la parcare.</string>
     <string name="keepalive_fired">Alarmă de trezire Minimal: ultima declanșare %1$s • %2$s în total%3$s</string>
     <string name="keepalive_armed"> (armat)</string>
     <string name="keepalive_not_armed"> • nearmat</string>
-    <string name="wifi_keepalive_label">Menține Wi-Fi activ când e parcat</string>
-    <string name="wifi_keepalive_desc">Reactivează Wi-Fi dacă mașina îl oprește după parcare, astfel încât Web Companion și alte instrumente locale (rețea de acasă) să rămână accesibile. Acționează doar când mașina e oprită și se retrage dacă bateria de 12V sau nivelul de încărcare scade. Consumă puțină energie în plus cât e parcată.\n\nDacă folosești și Electro, Overdrive sau orice altă aplicație care menține Wi-Fi activ, activează asta într-o SINGURĂ dintre ele și dezactiveaz-o în celelalte — două mecanisme care rulează împreună se pot bloca reciproc și irosi energie.</string>
+    <string name="wifi_keepalive_label">Menține Wi-Fi activ când mașina e oprită</string>
+    <string name="wifi_keepalive_desc">Reactivează Wi-Fi după oprirea mașinii — unitatea îl oprește câteva minute mai târziu — astfel încât Web Companion și alte instrumente locale (rețea de acasă) să rămână accesibile. Acționează doar când mașina e oprită și se retrage dacă bateria de 12V sau nivelul de încărcare scade. Consumă puțină energie în plus cât timp mașina e oprită.\n\nDacă folosești și Electro, Overdrive sau orice altă aplicație care menține Wi-Fi activ, activează asta într-o SINGURĂ dintre ele și dezactiveaz-o în celelalte — două mecanisme care rulează împreună se pot bloca reciproc și irosi energie.</string>
     <string name="wifi_keepalive_needs_setup">Necesită configurarea ADB avansată (aceeași ca la telemetria instantanee). Finalizeaz-o mai întâi pentru a activa asta.</string>
 
     <!-- Settings dialogs -->
@@ -938,6 +1018,7 @@
     <string name="web_companion_desc">Răsfoiți călătoriile și încărcările de pe orice dispozitiv din aceeași rețea WiFi.</string>
     <string name="web_companion_disabled_desc">Porniți un server local ca să deschideți istoricul călătoriilor într-un browser.</string>
     <string name="web_companion_wifi_info">Servit prin WiFi-ul local, deci accesibil cât timp mașina e pornită și serviciul de telemetrie e activ. Odată parcat, majoritatea unităților BYD taie WiFi ~15 min după oprirea mașinii — apoi companion-ul e inaccesibil (nu există rezervă pe date mobile pentru un server local) până când mașina repornește, în orice mod de activitate în fundal.\nNotă: aplicația Electro are o opțiune de a menține WiFi activ nelimitat</string>
+    <string name="web_companion_files_info">Companion are și o filă Fișiere: descarcă copiile bazei de date, exporturile și jurnalul de diagnosticare direct pe telefon sau laptop și încarcă o copie de rezervă pe mașină fără să conectezi nimic. Afișează doar folderele proprii ale aplicației, nu întreaga unitate.</string>
     <string name="port_field_label">Port</string>
     <string name="port_hint_text">Încercați 8081, 8888, 9090 dacă un port e blocat. Modificările repornesc serverul.</string>
     <string name="access_pin_label">PIN de acces</string>
@@ -961,7 +1042,6 @@
     <string name="mqtt_card_desc">Publicați telemetrie live către un broker precum HiveMQ sau HomeAssistant.</string>
     <string name="status_enabled_label">Stare: Activat</string>
     <string name="status_disabled_label">Stare: Dezactivat</string>
-    <string name="open_connections_action">Deschide Conexiuni</string>
     <string name="back_to_overview_action">Înapoi la prezentare</string>
 
     <!-- ABRP settings -->
@@ -1043,7 +1123,7 @@
     <string name="about_install_note">Butonul de instalare va deveni disponibil parcat, fără călătorie sau încărcare activă</string>
     <string name="about_install_now">Instalează acum</string>
     <string name="about_download_update">Descarcă actualizarea</string>
-    <string name="about_update_manual_di5_instructions">Instalarea automată nu este disponibilă pe această unitate. Pe un PC sau telefon, descarcă APK-ul acestei versiuni de pe pagina de versiuni, apoi instalează-l prin ADB:</string>
+    <string name="about_update_manual_di5_instructions">Instalarea automată necesită conexiunea de asistență, care nu este disponibilă momentan. Pe un PC sau telefon, descarcă APK-ul acestei versiuni de pe pagina de versiuni, apoi instalează-l prin ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Deschide pagina de versiuni</string>
 
@@ -1154,6 +1234,7 @@
     <string name="autostart_dialog_title">⚠️ Acțiune necesară — Autostart</string>
     <string name="autostart_dialog_msg">A fost instalată o versiune nouă. Trebuie să dezactivați „disable autostart” pentru această aplicație, ceea ce permite rularea serviciilor din prim-plan / fundal.\nEste necesară o repornire unică a mașinii, doar la prima instalare a aplicației și după ce dezactivați „disable autostart”. Dacă actualizați de la o versiune mai veche, nu trebuie să reporniți</string>
     <string name="autostart_got_it">Am înțeles</string>
+    <string name="autostart_open_failed">Ecranul de pornire automată nu a putut fi deschis pe această unitate. Deschide-l din Setările mașinii → Aplicații → Pornire automată (sau Aplicații în fundal) și asigură-te că Trip Stats este permis.</string>
     <string name="flavor_mismatch_title">⚠️ Versiune greșită pentru această mașină</string>
     <string name="flavor_mismatch_msg">Ai instalat versiunea %1$s, dar această mașină este %2$s. Telemetria vehiculului ar putea să nu funcționeze corect. Te rugăm să instalezi versiunea %2$s pentru acest vehicul.</string>
     <string name="adb_connecting_title">Se conectează…</string>

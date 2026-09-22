@@ -212,7 +212,7 @@ class PreferencesManager(private val context: Context) {
         cache.edit().putBoolean("keep_service_alive_when_off", enabled).apply()
     }
 
-    // ── Wi-Fi keepalive when parked ──────────────────────────────────────────
+    // ── Wi-Fi keepalive when car is off ──────────────────────────────────────
     // Opt-in (default false): while the car is OFF, a privileged (UID-2000) loop re-runs
     // `svc wifi enable` when Wi-Fi drops, so the head unit stays reachable on the LAN
     // (web companion / adb / LAN MQTT) instead of the MCU cutting Wi-Fi minutes after park.

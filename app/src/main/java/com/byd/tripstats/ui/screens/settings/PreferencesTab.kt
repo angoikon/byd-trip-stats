@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.byd.tripstats.R
+import com.byd.tripstats.ui.components.BrandSwitch
 import com.byd.tripstats.adb.AdbPermissionManager
 import com.byd.tripstats.sdk.DiLink5Platform
 import com.byd.tripstats.util.LocaleHelper
@@ -40,7 +40,6 @@ import com.byd.tripstats.data.preferences.consumptionUnit
 import com.byd.tripstats.data.preferences.distanceUnit
 import com.byd.tripstats.data.preferences.toKilometers
 import com.byd.tripstats.ui.theme.BydElectricAzure
-import com.byd.tripstats.ui.theme.ToggleUncheckedTrack
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import kotlinx.coroutines.launch
 
@@ -397,27 +396,13 @@ internal fun AppPreferencesTab(
                         )
                     }
                     Spacer(Modifier.width(12.dp))
-                    Switch(
+                    BrandSwitch(
                         checked = dashboardIconsEnabled,
                         onCheckedChange = { enabled ->
                             scope.launch {
                                 preferencesManager.saveDashboardAnimationsEnabled(enabled)
                             }
                         },
-                        thumbContent = if (!dashboardIconsEnabled) {
-                            {
-                                Box(
-                                    modifier = Modifier
-                                        .size(12.dp)
-                                        .background(ToggleUncheckedTrack, CircleShape)
-                                )
-                            }
-                        } else null,
-                        colors = SwitchDefaults.colors(
-                            uncheckedThumbColor = Color.White,
-                            uncheckedTrackColor = ToggleUncheckedTrack,
-                            uncheckedBorderColor = ToggleUncheckedTrack
-                        )
                     )
                 }
             }

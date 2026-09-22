@@ -7,14 +7,21 @@ import com.byd.tripstats.data.analysis.TripReport
 import com.byd.tripstats.data.local.BydStatsDatabase
 import com.byd.tripstats.data.local.entity.TripEntity
 import com.byd.tripstats.data.local.entity.TripStatsEntity
+import com.byd.tripstats.data.notify.VehicleEventLog
 import com.byd.tripstats.data.preferences.PreferencesManager
+import com.byd.tripstats.data.preferences.SocSource
+import com.byd.tripstats.data.repository.BatteryVoltageHistoryRepository
 import fi.iki.elonen.NanoHTTPD
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.io.IOException
+import java.io.OutputStream
 import java.util.Collections
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -42,6 +49,14 @@ class LocalWebServer(
 
     // Failed PIN attempts per remote IP — value is the attempt count
     private val failedAttempts = ConcurrentHashMap<String, Int>()
+
+    init {
+        // NanoHTTPD's stock temp manager writes to java.io.tmpdir, which is not dependably
+        // writable on Android. Buffer uploads in our own cache instead — external first,
+        // because a database backup is far bigger than internal storage wants to hold twice.
+        val uploadCache = File(context.externalCacheDir ?: context.cacheDir, "upload")
+        setTempFileManagerFactory { UploadTempFileManager(uploadCache) }
+    }
 
     private fun clientIp(session: IHTTPSession): String =
         session.headers["remote-addr"] ?: "unknown"
@@ -119,11 +134,41 @@ class LocalWebServer(
             uri == "/api/trips"                               -> serveTrips()
             uri.matches(Regex("/api/trips/\\d+/points"))      -> serveTripPoints(uri.tripId())
             uri.matches(Regex("/api/trips/\\d+"))             -> serveTripDetail(uri.lastSegmentLong())
+            uri == "/api/notifications"                       -> serveNotifications()
+            uri == "/api/battery"                             -> serveBatteryHistory()
             uri == "/api/charges"                             -> serveCharges()
             uri.matches(Regex("/api/charges/\\d+/points"))    -> serveChargePoints(uri.chargeId())
             uri.matches(Regex("/api/charges/\\d+"))           -> serveChargeDetail(uri.lastSegmentLong())
+            isPost && uri == "/api/files/upload"              -> handleFileUpload(session)
+            isPost && uri == "/api/files/delete"              -> handleFileDelete(session)
+            uri == "/api/files"                               -> serveFileListing(session)
+            uri == "/files/download"                          -> serveFileDownload(session)
+            uri == "/files/view"                              -> serveFileView(session)
             else -> newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
         }
+    }
+
+    /**
+     * The vehicle events the app has recorded — trips finished, charges finished, alerts —
+     * newest first, for the companion's notification feed.
+     *
+     * A read of a small local ring, not the database: the feed is a passive list of what the car
+     * has done recently, and it is deliberately independent of whether a Telegram bot is linked
+     * or its switches are on. Those govern a push to a phone; this is the car's own history.
+     */
+    private fun serveNotifications(): Response {
+        val events = VehicleEventLog.getInstance(context).recent()
+        val arr = JSONArray()
+        events.forEach { e ->
+            arr.put(JSONObject().apply {
+                put("key", e.key)
+                put("type", e.type.name.lowercase())
+                put("title", e.title)
+                put("body", e.body)
+                put("timestamp", e.timestamp)
+            })
+        }
+        return serveJson(arr.toString())
     }
 
     // ── Favourite toggle (live mode write-back) ──────────────────────────────────
@@ -470,6 +515,193 @@ code{background:#20242d;padding:2px 8px;border-radius:6px;font-size:13px;color:#
         return serveJson(json)
     }
 
+    /**
+     * The 48-hour 12V / SoC history behind the dashboard's HV / 12V card.
+     *
+     * Sent whole rather than decimated like the trip endpoints: the window holds at most ~2,880
+     * samples (one a minute), which is a small response, and averaging points away would smooth
+     * out a brief 12V sag — the one thing anyone opens this chart to find.
+     *
+     * SoC is resolved here against the user's Panel/BMS preference so the companion plots exactly
+     * what the app plots, rather than picking a field of its own.
+     */
+    private fun serveBatteryHistory(): Response {
+        val socSource = PreferencesManager(context).getCachedSocSource()
+        val points = BatteryVoltageHistoryRepository.getInstance(context).history.value
+
+        val arr = JSONArray()
+        points.forEach { p ->
+            arr.put(JSONObject().apply {
+                put("t", p.timestamp)
+                put("v12", p.battery12vVoltage)
+                put("hv", p.batteryTotalVoltage)
+                put("charging", p.isChargingSample)
+                put("soc", if (socSource == SocSource.PANEL && p.socPanel > 0) {
+                    p.socPanel.toDouble()
+                } else {
+                    p.soc
+                })
+            })
+        }
+        return serveJson(
+            JSONObject()
+                .put("windowMs", BatteryVoltageHistoryRepository.HISTORY_WINDOW_MS)
+                .put("socSource", socSource.name)
+                .put("points", arr)
+                .toString()
+        )
+    }
+
+    // ── File browser ───────────────────────────────────────────────────────────
+    // Browse, download and upload inside the fixed roots FileBrowser allows. These routes are
+    // already behind the PIN gate in route(); FileBrowser.resolveWithin() is what stops a
+    // crafted ?p= from walking out of a root.
+
+    private fun param(session: IHTTPSession, name: String): String =
+        session.parameters[name]?.firstOrNull() ?: ""
+
+    private fun serveFileListing(session: IHTTPSession): Response =
+        serveJson(FileBrowser.listingJson(context, param(session, "p")).toString())
+
+    private fun resolveReadableFile(session: IHTTPSession): File? =
+        FileBrowser.resolve(context, param(session, "p"))
+            ?.second
+            ?.takeIf { it.isFile && it.canRead() }
+
+    private fun serveFileDownload(session: IHTTPSession): Response {
+        val file = resolveReadableFile(session)
+            ?: return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
+        return newFixedLengthResponse(
+            Response.Status.OK, "application/octet-stream", FileInputStream(file), file.length()
+        ).apply {
+            addHeader("Content-Disposition", """attachment; filename="${asciiFilename(file.name)}"""")
+        }
+    }
+
+    /**
+     * Renders a text file in the browser — diag.log above all, which is the one file people
+     * actually want to read rather than keep. Always text/plain, so a stored .html cannot
+     * execute in the companion's origin.
+     */
+    private fun serveFileView(session: IHTTPSession): Response {
+        val file = resolveReadableFile(session)
+            ?: return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
+        // A screenshot is served as itself, for an <img> to point at. No Content-Disposition, so
+        // the browser renders it rather than offering to save it — Download is the other button.
+        FileBrowser.imageMimeType(file)?.let { mime ->
+            return newFixedLengthResponse(Response.Status.OK, mime, FileInputStream(file), file.length())
+        }
+        if (!FileBrowser.isViewable(file)) {
+            return newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Not viewable")
+        }
+        // Tailed rather than streamed whole: diag.log runs to several MB and the end is the part
+        // anyone is looking for.
+        return newFixedLengthResponse(
+            Response.Status.OK, "text/plain; charset=utf-8", FileBrowser.readTail(file)
+        )
+    }
+
+    private fun handleFileUpload(session: IHTTPSession): Response {
+        val target = FileBrowser.resolve(context, param(session, "p"))
+        if (target == null || !target.second.isDirectory) return fileError("That folder is not available.")
+        val (root, dir) = target
+        if (!root.writable) return fileError(readOnlyReason(root))
+
+        val declared = session.headers["content-length"]?.toLongOrNull() ?: -1L
+        if (declared > FileBrowser.MAX_UPLOAD_BYTES) {
+            return fileError("That file is over the ${FileBrowser.MAX_UPLOAD_BYTES / (1024 * 1024)} MB upload limit.")
+        }
+
+        val parts = HashMap<String, String>()
+        try {
+            session.parseBody(parts)
+        } catch (e: Exception) {
+            Log.e(TAG, "Upload body parse failed", e)
+            return fileError(e.message ?: "Could not read the upload.")
+        }
+
+        val field = parts.keys.firstOrNull() ?: return fileError("No file in the upload.")
+        val temp = File(parts.getValue(field))
+        val name = sanitiseUploadName(session.parameters[field]?.firstOrNull())
+            ?: return fileError("That file name is not usable.")
+        val destination = FileBrowser.resolveWithin(dir, name)
+            ?: return fileError("That file name is not usable.")
+
+        return try {
+            temp.inputStream().use { input ->
+                FileOutputStream(destination).use { output -> input.copyTo(output) }
+            }
+            Log.i(TAG, "Uploaded ${destination.name} (${destination.length()} bytes)")
+            serveJson(JSONObject().put("ok", true).put("name", destination.name).toString())
+        } catch (e: IOException) {
+            Log.e(TAG, "Upload write failed", e)
+            fileError(e.message ?: "Could not write the file.")
+        } finally {
+            temp.delete()
+        }
+    }
+
+    /**
+     * Deletes one file. Writable roots only, so the app's own rolling backups — which it prunes
+     * itself — can't be removed from here, and files only: a recursive directory delete behind a
+     * single tap is a much bigger mistake than deleting the wrong backup.
+     */
+    private fun handleFileDelete(session: IHTTPSession): Response {
+        val resolved = FileBrowser.resolve(context, param(session, "p"))
+            ?: return fileError("That file is not available.")
+        val (root, file) = resolved
+        if (!root.writable) return fileError(readOnlyReason(root))
+        if (!file.isFile) return fileError("Only files can be deleted.")
+
+        val outcome = runCatching { file.delete() }
+        if (outcome.getOrDefault(false)) {
+            Log.i(TAG, "Deleted ${file.name}")
+            return serveJson(JSONObject().put("ok", true).put("name", file.name).toString())
+        }
+
+        // Says what went wrong rather than just that something did — the first version of this
+        // reported a bare failure for a missing storage permission, which took an adb session to
+        // work out.
+        val why = outcome.exceptionOrNull()?.message
+            ?: when {
+                !file.exists() -> "it is already gone — refresh the folder"
+                !file.canWrite() -> "the app has no write access to it on the car"
+                else -> "the car refused it"
+            }
+        Log.w(TAG, "Delete failed for ${file.absolutePath}: $why")
+        return fileError("Could not delete ${file.name} — $why.")
+    }
+
+    /** Uploads keep their own name, minus any path the browser may have sent with it. */
+    private fun sanitiseUploadName(raw: String?): String? {
+        val name = raw?.substringAfterLast('/')?.substringAfterLast('\\')?.trim().orEmpty()
+        return if (name.isEmpty() || name == "." || name == "..") null else name
+    }
+
+    /** Content-Disposition is a header, so the filename loses anything not plainly ASCII. */
+    private fun asciiFilename(name: String): String =
+        name.replace(Regex("[^A-Za-z0-9._-]"), "_")
+
+    /**
+     * Why a folder can't be written to. A blocked root is the storage permission almost every time,
+     * and that is fixable by the user — so the message says where to fix it rather than stopping at
+     * "read-only".
+     */
+    private fun readOnlyReason(root: FileBrowser.Root): String =
+        if (root.writeBlocked) {
+            "${root.label} is read-only — the app needs the Storage permission on the car. " +
+                "Grant it in Android Settings → Apps → BYD Trip Stats → Permissions, or re-run the " +
+                "ADB setup in Settings → App Management."
+        } else {
+            "${root.label} is read-only."
+        }
+
+    private fun fileError(message: String): Response =
+        newFixedLengthResponse(
+            Response.Status.BAD_REQUEST, "application/json",
+            JSONObject().put("ok", false).put("error", message).toString()
+        )
+
     // ── Helpers ────────────────────────────────────────────────────────────────
 
     private fun <T> decimate(list: List<T>, n: Int): List<T> {
@@ -477,4 +709,37 @@ code{background:#20242d;padding:2px 8px;border-radius:6px;font-size:13px;color:#
         val step = list.size.toDouble() / n
         return List(n) { i -> list[(i * step).toInt().coerceAtMost(list.size - 1)] }
     }
+}
+
+/** Keeps NanoHTTPD's upload buffering inside a directory this app can actually write to. */
+private class UploadTempFileManager(private val dir: File) : NanoHTTPD.TempFileManager {
+
+    private val created = mutableListOf<NanoHTTPD.TempFile>()
+
+    init {
+        runCatching { dir.mkdirs() }
+    }
+
+    override fun createTempFile(filenameHint: String?): NanoHTTPD.TempFile =
+        UploadTempFile(dir).also { created += it }
+
+    override fun clear() {
+        created.forEach { runCatching { it.delete() } }
+        created.clear()
+    }
+}
+
+private class UploadTempFile(dir: File) : NanoHTTPD.TempFile {
+
+    private val file = File.createTempFile("upload-", ".tmp", dir)
+    private val stream = FileOutputStream(file)
+
+    override fun open(): OutputStream = stream
+
+    override fun delete() {
+        runCatching { stream.close() }
+        file.delete()
+    }
+
+    override fun getName(): String = file.absolutePath
 }

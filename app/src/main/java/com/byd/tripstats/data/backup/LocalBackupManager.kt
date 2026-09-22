@@ -1017,9 +1017,13 @@ class LocalBackupManager private constructor(private val context: Context) {
 
             val timestamp = BackupNaming.timestamp()
 
-            // Settings first, database second: the database send is the one that can fail
-            // on the 50 MB cap, and whichever finishes last owns the status banner.
-            sendSettingsToTelegram(telegramManager, timestamp)
+            // Settings only travel with a database that can actually be sent. Over Telegram's
+            // cap, sendFile below refuses the .db and explains why — sending the settings file
+            // anyway would leave a chat message that looks like a backup but holds no trips.
+            // Settings go first so the database's result, success or cap error, owns the banner.
+            if (dbFile.length() <= TelegramManager.TELEGRAM_MAX_FILE_SIZE_BYTES) {
+                sendSettingsToTelegram(telegramManager, timestamp)
+            }
 
             val fileName = BackupNaming.fileName(timestamp = timestamp)
             val tempFile = File(context.cacheDir, fileName)

@@ -266,7 +266,7 @@
     <string name="export_save_html">Mentés HTML-megjelenítőként (dupla kattintással nyílik)</string>
     <string name="export_send_telegram">Küldés Telegram botnak</string>
     <string name="export_telegram_not_configured">Küldés Telegram botnak (nincs beállítva)</string>
-    <string name="export_telegram_setup_hint">Állítsa be a botot: Beállítások → Mentés és visszaállítás.</string>
+    <string name="export_telegram_setup_hint">Csatold a Telegram-botodat itt: Beállítások → Kapcsolatok → Telegram.</string>
     <string name="export_send_csv">CSV küldése Telegramra</string>
     <string name="export_send_json">JSON küldése Telegramra</string>
     <string name="export_send_html">HTML-megjelenítő küldése Telegramra</string>
@@ -530,17 +530,70 @@
     <string name="wifi_only_desc">Az automatikus mentések csak Wi-Fi-n futnak a mobiladat megtakarításához</string>
     <string name="last_auto_backup_label">Utolsó auto-mentés: %1$s</string>
     <string name="schedule_updated_msg">Ütemezés módosítva erre: %1$s. A következő auto-mentés az új gyakoriságot követi.</string>
-    <string name="telegram_setup_info">Csatlakoztatás után a mentések kézzel vagy ütemezetten küldhetők. Minden mentés .db fájlként érkezik a privát csevegésébe, bármely Telegramos eszközről elérhetően.</string>
+    <string name="telegram_setup_info">A biztonsági mentések manuálisan vagy ütemezetten küldhetők. Mindegyik .db-fájlként érkezik a privát csevegésedbe, amely bármely Telegramos eszközről elérhető.</string>
     <string name="telegram_instructions">1. Írjon a @BotFather-nek Telegramon → /newbot → másolja ki a tokent\n2. Küldjön bármilyen üzenetet az új botjának\n3. Illessze be lent a tokent, és koppintson az Ellenőrzésre</string>
     <string name="bot_token_label">Bot token</string>
     <string name="validate_save_action">Ellenőrzés és mentés</string>
     <string name="restore_from_telegram_label">Visszaállítás Telegramról</string>
-    <string name="connect_telegram_first">Először csatlakoztasson egy privát Telegram botot (lásd fent a Telegram-mentést).</string>
+    <string name="connect_telegram_first">Előbb csatolj egy Telegram-botot — Beállítások → Kapcsolatok → Telegram.</string>
     <string name="backups_in_chat_label">Mentések a csevegésében:</string>
     <string name="scan_telegram_hint">Koppintson a frissítésre a Telegram-csevegés .db mentéseinek kereséséhez.</string>
-    <string name="no_telegram_configured">A Telegram nincs beállítva — először állítsa be a Mentés és visszaállításban.</string>
+    <string name="no_telegram_configured">A Telegram nincs csatolva — előbb állítsd be itt: Beállítások → Kapcsolatok → Telegram.</string>
     <string name="sent_telegram_success">Elküldve Telegramon ✓</string>
     <string name="telegram_send_failed">A Telegram-küldés nem sikerült: %1$s</string>
+    <string name="tailscale_title">Tailscale — távoli hozzáférés</string>
+    <string name="tailscale_title_short">Tailscale</string>
+    <string name="tailscale_desc">Tedd az autót a saját privát Tailscale-hálózatodra, hogy a web companion és az ADB bárhonnan működjön — ne csak otthon. Semmi nem kerül ki az internetre, és a routereden nem nyílnak portok.</string>
+    <string name="tailscale_card_desc">Érd el az autó web companionját és ADB-jét bárhonnan</string>
+    <string name="tailscale_unavailable">Ebben a buildben nem érhető el (64 bites ARM fejegység szükséges).</string>
+    <string name="tailscale_not_connected">Nincs csatlakoztatva.</string>
+    <string name="tailscale_starting">Indítás…</string>
+    <string name="tailscale_error">Valami hiba történt. Nézd meg az alábbi útmutatót, és próbáld újra.</string>
+    <string name="tailscale_connected">Csatlakozva mint %1$s</string>
+    <string name="tailscale_reachable_hint">Web companion: http://%1$s:8888 · ADB: adb connect %1$s:5555</string>
+    <string name="tailscale_needs_adb">Először az egyszeri ADB-engedélyt igényli — ugyanazt, amelyet az azonnali telemetria használ. Állítsd be az Alkalmazáskezelésben, majd térj vissza.</string>
+    <string name="tailscale_signin_phone">Bejelentkezés a telefonoddal</string>
+    <string name="tailscale_scan_instructions">Olvasd be ezt a telefonod kamerájával, majd jelentkezz be a Tailscale-be a megnyíló böngészőben. Az autó csatlakozik a hálózatodhoz, amint jóváhagyod — ide semmit sem kell beírni.</string>
+    <string name="tailscale_scan_qr_cd">QR-kód, amely megnyitja a Tailscale bejelentkezési oldalát</string>
+    <string name="tailscale_waiting_for_signin">Várakozás a jóváhagyásodra… elhagyhatod ezt a képernyőt, tovább vár.</string>
+    <string name="tailscale_cancel_signin">Bejelentkezés megszakítása</string>
+    <string name="tailscale_other_ways">Más bejelentkezési módok</string>
+    <string name="tailscale_alt_adb_title">Írd be a kulcsot a számítógépedről (ADB)</string>
+    <string name="tailscale_alt_adb_body">Ha már használsz ADB-t ezzel az autóval — és használsz, mivel a Tailscale ugyanazt az engedélyt igényli — koppints az alábbi Auth key mezőre, hogy fókuszba kerüljön, majd futtasd ezt a számítógépedről a kulccsal a pontok helyén. Az auth-kulcsok csak betűket, számjegyeket és kötőjeleket tartalmaznak, így semmi sem torzul.</string>
+    <string name="tailscale_alt_key_title">Illessz be egy auth-kulcsot</string>
+    <string name="tailscale_alt_key_body">Hozz létre egyet a Tailscale konzolban a Settings → Keys alatt (az Ephemeral maradjon kikapcsolva), majd illeszd be ide. Hatvan karaktert sok begépelni egy autó képernyőjén, ezért van fent a QR-kód.</string>
+    <string name="tailscale_authkey_label">Auth-kulcs</string>
+    <string name="tailscale_connect">Csatlakozás</string>
+    <string name="tailscale_disconnect">Leválasztás a Tailscale-ről</string>
+    <string name="tailscale_how_to">Így állítsd be</string>
+    <string name="tailscale_step_1">1. Hozz létre egy ingyenes fiókot a tailscale.com oldalon, ha még nincs.</string>
+    <string name="tailscale_step_2">2. Az adminkonzolban nyisd meg a Settings → Keys menüt, és koppints a Generate auth key gombra. Az Ephemeral maradjon KIKAPCSOLVA — egy ideiglenes kulcs miatt az autó eltűnik a hálózatodból, valahányszor alvó állapotba kerül, és a címe minden alkalommal megváltozna.</string>
+    <string name="tailscale_step_3">3. Másold ki a kulcsot (tskey-auth- előtaggal kezdődik), illeszd be lentre, majd koppints a Csatlakozás gombra. Az autó csatlakozik a hálózatodhoz, és onnantól megtartja ugyanazt a címet.</string>
+    <string name="tailscale_step_4">4. Telepítsd a Tailscale-t a telefonodra vagy a laptopodra, és jelentkezz be ugyanazzal a fiókkal. Bármi, ami be van jelentkezve, elérheti az autót — más semmi.</string>
+    <string name="tailscale_console_warnings">Érdemes egyszer megtenni az adminkonzolban: nyisd meg a Machines → az autód → Disable key expiry menüt, különben körülbelül hat hónap múlva lekerül a hálózatodról, és csak az autóhoz odamenve javítható. Ne állíts be exit node-ot az autón (ez az ABRP-, MQTT- és Telegram-forgalmát valaki más internetkapcsolatán vezetné át), és ne engedélyezd a Funnelt (ez a web companiont a nyilvános internetre tenné, csak a PIN-je védené).</string>
+    <string name="tailscale_di5_note">DiLink-5 esetén az autó kikapcsoláskor minden alkalmazást kényszerből leállít, így a távoli hozzáférés megszűnik az autóval együtt, és a következő ébredéskor tér vissza.</string>
+    <string name="telegram_title_label">Telegram</string>
+    <string name="telegram_card_desc">A saját privát botod — biztonsági mentéseket és járműértesítéseket szállít</string>
+    <string name="status_not_connected_label">Nincs csatlakoztatva</string>
+    <string name="telegram_connection_desc">Csatolj ide egyszer egy privát Telegram-botot. A biztonsági mentések, értesítések, diagnosztika és útexportok mind rajta keresztül mennek, és semmi nem kerül máshová.</string>
+    <string name="telegram_connected_uses">A Mentés &amp; Visszaállítás használja az adatbázis-mentésekhez, az alábbi értesítések, valamint a diagnosztika és útexport gombok.</string>
+    <string name="telegram_setup_in_connections">Még nincs Telegram-bot csatolva. Állíts be egyet itt: Beállítások → Kapcsolatok → Telegram, majd térj vissza ide biztonsági mentések küldéséhez és visszaállításához.</string>
+    <string name="telegram_notify_needs_bot">Csatolj fentebb egy Telegram-botot az értesítések használatához.</string>
+    <string name="telegram_notify_di5_warning">DiLink-5 esetén az autó kikapcsolásától függő értesítések egyelőre nem érkeznek meg: az autód gyújtáskikapcsoláskor kényszerből leállítja az alkalmazást, így egy út csak a következő indításkor zárul le, a parkolás közbeni töltés pedig utólag töltődik ki — egyiket sem lehet a történés pillanatában bejelenteni. Minden, ami akkor történik, amikor az autó még jár, megérkezik, így ha kikapcsolás előtt magad koppintasz a Leállítás gombra az út befejezéséhez, megkapod az összegzést.</string>
+    <string name="telegram_notify_label">Telegram-értesítések</string>
+    <string name="telegram_notify_info">Járműesemények ugyanahhoz a bothoz továbbítva — nincs szerver, nincs fiók, nincs plusz alkalmazás. Az üzenetek sorba kerülnek, és újrapróbálkozás történik, ha az autónak egy esemény bekövetkeztekor nincs kapcsolata.</string>
+    <string name="telegram_notify_enable_label">Értesítések küldése</string>
+    <string name="telegram_notify_trip_label">Út összegzése</string>
+    <string name="telegram_notify_trip_desc">Egy kártya minden vezetés után, ugyanazokkal az adatokkal, amelyeket maga az út rögzít: táv, időtartam, fogyasztás az élettartam-átlagodhoz képest, felhasznált SoC, költség és útpontszám.</string>
+    <string name="telegram_notify_charging_label">Töltés befejezve</string>
+    <string name="telegram_notify_charging_desc">Amikor egy töltési munkamenet véget ér — akár befejeződött, akár korábban leállt, és milyen szinten, a hozzáadott energiával és a költséggel. Akkor küldi, amikor megtörténik, így egy éjszakai töltés, amely 03:00-kor fejeződik be, 03:00-kor küld. Alapból kikapcsolva.</string>
+    <string name="telegram_notify_imbalance_label">Cellaegyensúly-riasztás</string>
+    <string name="telegram_notify_imbalance_desc">Küldd a Pro akkumulátorcella-egyensúly riasztást a Telegramra is, ne csak az autó képernyőjére.</string>
+    <string name="telegram_notify_imbalance_pro">A Pro része, magával a cellaegyensúly-riasztással együtt.</string>
+    <string name="telegram_notify_test_action">Tesztüzenet küldése</string>
+    <string name="telegram_notify_test_ok">Tesztüzenet elküldve ✓ — nézd meg a Telegram-csevegésedet.</string>
+    <string name="telegram_notify_test_failed">Nem sikerült elérni a Telegramot. Ellenőrizd az autó kapcsolatát, és próbáld újra.</string>
+    <string name="telegram_notify_parked_note">Az összegzés akkor kerül elküldésre, amikor az út véget ér — vagyis amikor az autó a Beállításokban megadott automatikus leállítási ideig ki volt kapcsolva, így a hosszabb beállítás későbbi üzenetet jelent. Egy út, amelyet az alkalmazás csak utólag tudott lezárni, mert akkor nem futott (DiLink-5 esetén ez minden út), normálisan rögzül, de nem kerül bejelentésre, így soha nem kapsz értesítést a tegnapi útról, amikor a maira indulsz. A riasztások parkolás közben is folytatódnak az Mindig be háttérmódban: a fejegység mobiladaton marad, miután az autó lekapcsolta a Wi-Fit.</string>
 
     <!-- Trip Compare -->
     <string name="comparing_trips_label">%1$s út összehasonlítása</string>
@@ -769,7 +822,7 @@
     <string name="compat_sending_label">Küldés…</string>
     <string name="compat_email_qr_label">E-mail QR-kóddal</string>
     <string name="compat_uploading_label">Feltöltés…</string>
-    <string name="compat_telegram_not_configured">A Telegram nincs beállítva — először állítsa be a Mentés és visszaállításban.</string>
+    <string name="compat_telegram_not_configured">A Telegram nincs csatolva — előbb állítsd be itt: Beállítások → Kapcsolatok → Telegram.</string>
     <string name="compat_sent_telegram">Elküldve Telegramon ✓</string>
     <string name="compat_telegram_failed">A Telegram-küldés nem sikerült: %1$s</string>
     <string name="compat_save_failed">A mentés nem sikerült: %1$s</string>
@@ -794,6 +847,33 @@
     <string name="web_server_failed">Az indítás nem sikerült: %1$s</string>
     <string name="web_server_waiting">Várakozás IP-re…</string>
     <string name="web_server_open_hint">Nyissa meg ezt a címet bármely, ugyanazon a WiFi-n lévő eszközön.</string>
+    <string name="web_url_label_lan">A hálózatodon</string>
+    <string name="web_url_label_tailscale">Tailscale-en át — bárhonnan működik</string>
+    <string name="web_url_label_vpn">A VPN-eden át</string>
+    <string name="web_url_label_other">Másik hálózat</string>
+    <string name="web_url_label_mobile">Mobiladaton át</string>
+    <string name="web_url_label_tailscale_https">Tailscale-en át, titkosítva — bárhonnan működik</string>
+    <string name="web_https_available_hint">Ezek egyszerű http:// címek. A Tailscale-cím titkosításához kapcsold be a \"Kiszolgálás HTTPS-en\" opciót a Tailscale-kártyán a Beállítások → Kapcsolatok alatt.</string>
+    <string name="tailscale_https_label">Kiszolgálás HTTPS-en</string>
+    <string name="tailscale_https_desc">Hagyd, hogy a Tailscale démon kezelje a TLS-t a web companionhoz, valódi tanúsítvánnyal ennek az autónak a Tailscale-nevéhez. A cím https:// lesz http:// helyett, így a böngészők többé nem tekintik nem biztonságosnak — és olyan funkciók, amelyeket csak biztonságos oldalon engednek, mint az értesítések és a vágólapra másolás, működni kezdenek.</string>
+    <string name="tailscale_https_requirement">Szükséges, hogy a MagicDNS és a HTTPS Certificates be legyen kapcsolva a tailnetedhez — mindkettő egyszeri kapcsoló a Tailscale adminkonzolban a DNS alatt. Csak a .ts.net cím titkosított; a WiFi-cím http:// marad.</string>
+    <string name="tailscale_https_working">Titkosítva itt: %1$s</string>
+    <string name="tailscale_https_no_port">Használd pontosan úgy, ahogy megjelenik — a végén \":8888\" nélkül. A titkosított cím a szabványos HTTPS-portot használja; portra csak a http:// címeknek van szükségük.</string>
+    <string name="tailscale_https_first_load">Az első betöltés eltarthat néhány másodpercig, amíg a tanúsítvány kiállításra kerül.</string>
+    <string name="tailscale_https_how_to">Így kapcsold be a hálózatodhoz</string>
+    <string name="tailscale_https_step_1">1. A telefonodon vagy számítógépeden nyisd meg a Tailscale adminkonzolt, és lépj a DNS részhez — login.tailscale.com/admin/dns. Ezt egyszer tedd meg; a hálózatod minden eszközére vonatkozik, nem csak az autóra.</string>
+    <string name="tailscale_https_step_2">2. Ellenőrizd, hogy a MagicDNS be van-e kapcsolva. Megtévesztő módon akkor van BEKAPCSOLVA, ha a gombon \"Disable MagicDNS…\" felirat áll — az a gomb kikapcsolná, ezért ne nyúlj hozzá. Ha ehelyett \"Enable MagicDNS…\" látható, kattints rá.</string>
+    <string name="tailscale_https_step_3">3. A HTTPS Certificates alatt kattints az \"Enable HTTPS…\" gombra, és erősítsd meg. Ez teszi lehetővé, hogy az eszközeid valódi tanúsítványokat kapjanak.</string>
+    <string name="tailscale_https_step_4">4. Térj vissza ide, és kapcsold be a Kiszolgálás HTTPS-en opciót. Semmit sem kell újraindítani.</string>
+    <string name="tailscale_https_step_5">5. Nyisd meg az itt megjelenő https:// címet — pontosan úgy, ahogy megjelenik, a végén port nélkül. Az első betöltés néhány másodpercig tart, amíg a tanúsítvány kiállításra kerül, utána azonnali.</string>
+    <string name="tailscale_https_free_note">Mindkét beállítás ingyenes, és a teljes Tailscale-hálózatodra vonatkozik. A HTTPS bekapcsolása semmit sem tesz ki az internetre — a tanúsítvány pusztán a hálózatodon már jelen lévő eszközök felé bizonyítja, hogy az autó az, aminek mondja magát.</string>
+    <string name="tailnet_diag_label">Tailnet-cím</string>
+    <string name="tailnet_installed_not_connected">Tailscale telepítve, nincs csatlakoztatva</string>
+    <string name="remote_access_label">Távoli hozzáférés</string>
+    <string name="remote_access_connected">Ez az autó a tailneteden %1$s néven van. A fenti cím bármelyik Tailscale-eszközödről működik, bárhol is vagy — és az ADB is, az 5555-ös porton.</string>
+    <string name="remote_access_not_detected">A companion csak az otthoni hálózatodon érhető el. Hogy bárhonnan elérd, telepítsd a Tailscale alkalmazást a fejegységre és a telefonodra, és jelentkezz be mindkettőbe ugyanazzal a fiókkal — az autó ekkor egy fix 100.x címet tart, amely mobiladaton keresztül működik, parkolás közben is, amikor a WiFi ki van kapcsolva. Ehhez az alkalmazáshoz semmi nem adódik hozzá, és a routereden nem nyílnak portok.</string>
+    <string name="remote_access_tips">Három dolgot állíts be egyszer a Tailscale adminkonzolban: KAPCSOLD KI a kulcs lejáratát az autónál (különben körülbelül hat hónap múlva lekerül a tailnetről, és csak az autóhoz odamenve javítható), NE állíts be exit node-ot az autón (ez az ABRP-, MQTT- és Telegram-forgalmát valaki más internetkapcsolatán vezetné át), és NE engedélyezd a Funnelt (ez ezt a companiont a nyilvános internetre tenné, csak a PIN-je védené).</string>
+    <string name="remote_access_di5_note">DiLink-5 esetén az autód kikapcsoláskor minden alkalmazást kényszerből leállít, a Tailscale-t is beleértve — így a távoli hozzáférés megszűnik az autóval együtt, és a következő ébredéskor tér vissza. Amíg az autó jár, normálisan működik, ami továbbra is hasznos a companion vagy az ADB eléréséhez, amikor a saját WiFi-den kívül vagy.</string>
     <string name="web_copy_url_cd">URL másolása</string>
     <string name="chart_no_tyre_data">Ezen az úton nincs guminyomás-adat</string>
 
@@ -880,15 +960,15 @@
     <string name="bg_minimal">Minimális</string>
     <string name="bg_deep_sleep">Mély alvás</string>
     <string name="bg_default_label">Alapértelmezett</string>
-    <string name="bg_always_on_desc">Mindig be (ajánlott alapértelmezett): a telemetriai szolgáltatás parkolás után is tovább fut, folyamatosan 12V/SoC-mintákat rögzít az akkumulátor-előzményekbe, és rögzíti a kikapcsolt állapotú (pl. éjszakai) töltést. Kis többletterhelés a BYD gyári háttérfogyasztásán felül.\n\nMegjegyzés: a legtöbb BYD-egység ~15 perccel az autó kikapcsolása után lekapcsolja a Wi-Fit. Ezért parkolás közben az ADB Wi-Fin keresztül, a Web Companion (PWA) és az otthoni hálózaton lévő brokerhez kapcsolódó MQTT leáll, amíg az autó be nem kapcsol. Az internetről elérhető brokerhez (pl. HiveMQ Cloud) kapcsolódó MQTT általában tovább közöl, mert az autó mobiladaton marad. Az alábbi \"Wi-Fi ébren tartása parkoláskor\" beállítás támogatott egységeken nyitva tarthatja a Wi-Fit.</string>
+    <string name="bg_always_on_desc">Mindig be (ajánlott alapértelmezett): a telemetriai szolgáltatás parkolás után is tovább fut, folyamatosan 12V/SoC-mintákat rögzít az akkumulátor-előzményekbe, és rögzíti a kikapcsolt állapotú (pl. éjszakai) töltést. Kis többletterhelés a BYD gyári háttérfogyasztásán felül.\n\nMegjegyzés: a legtöbb BYD-egység ~15 perccel az autó kikapcsolása után lekapcsolja a Wi-Fit. Ezért parkolás közben az ADB Wi-Fin keresztül, a Web Companion (PWA) és az otthoni hálózaton lévő brokerhez kapcsolódó MQTT leáll, amíg az autó be nem kapcsol. Az internetről elérhető brokerhez (pl. HiveMQ Cloud) kapcsolódó MQTT általában tovább közöl, mert az autó mobiladaton marad. Az alábbi \"Wi-Fi ébren tartása, amikor az autó ki van kapcsolva\" beállítás támogatott egységeken nyitva tarthatja a Wi-Fit.</string>
     <string name="bg_minimal_desc">Minimális: a szolgáltatás 5 perccel az autó kikapcsolása után leáll, majd egy 90 perces ébresztő röviden felébreszti egy töltési pillanatképhez. Kisebb fogyasztás, de a kikapcsolt állapotú minták ritkák, az ADB nem mindig elérhető, a Web Companion (PWA) csak a rövid ébredés alatt érhető el, és az MQTT az ébredések között hallgat. A kikapcsolt állapotú töltést ~90 percen belül elkapja, utána a töltés hátralévő részében publikál.</string>
     <string name="bg_deep_sleep_desc">Mély alvás: a szolgáltatás 5 perccel az autó kikapcsolása után leáll, további ébredések nélkül. Lehetővé teszi, hogy az autó ECU-i teljes mély alvásba kerüljenek. A Web Companion (PWA) elérhetetlen, az MQTT végig hallgat, amíg az autó parkol; a kikapcsolt állapotú töltés nem élőben rögzül — csak a SoC-különbségből rekonstruálódik a következő bekapcsoláskor.</string>
     <string name="keepalive_never_fired">Minimális ébresztő: még nem aktiválódott%1$s. Ha hosszabb parkolás után is \"soha\" marad, a fejegység parkoláskor teljesen kikapcsol — a Minimális ilyenkor úgy viselkedik, mint a Mély alvás, ezért parkolási adatokhoz használd a Mindig be módot.</string>
     <string name="keepalive_fired">Minimális ébresztő: utoljára aktiválva %1$s • összesen %2$s%3$s</string>
     <string name="keepalive_armed"> (élesítve)</string>
     <string name="keepalive_not_armed"> • nincs élesítve</string>
-    <string name="wifi_keepalive_label">Wi-Fi ébren tartása parkoláskor</string>
-    <string name="wifi_keepalive_desc">Újra bekapcsolja a Wi-Fit, ha az autó parkolás után kikapcsolja, hogy a Web Companion és más helyi (otthoni hálózati) eszközök elérhetők maradjanak. Csak akkor működik, amikor az autó ki van kapcsolva, és visszavonul, ha a 12V-os akkumulátor vagy a töltöttség lecsökken. Parkolás közben egy kis többletáramot fogyaszt.\n\nHa Electrót, Overdrive-ot vagy bármely más, a Wi-Fit ébren tartó alkalmazást is használsz, csak az EGYIKÜKBEN kapcsold be, a többiben pedig tiltsd le — két egyszerre futó keepalive akadályozhatja egymást és pazarolhatja az energiát.</string>
+    <string name="wifi_keepalive_label">Wi-Fi ébren tartása, amikor az autó ki van kapcsolva</string>
+    <string name="wifi_keepalive_desc">Újra bekapcsolja a Wi-Fit az autó kikapcsolása után — a fejegység néhány perc múlva lekapcsolja —, hogy a Web Companion és más helyi (otthoni hálózati) eszközök elérhetők maradjanak. Csak akkor működik, amikor az autó ki van kapcsolva, és visszavonul, ha a 12V-os akkumulátor vagy a töltöttség lecsökken. Egy kis többletáramot fogyaszt, amíg az autó ki van kapcsolva.\n\nHa Electrót, Overdrive-ot vagy bármely más, a Wi-Fit ébren tartó alkalmazást is használsz, csak az EGYIKÜKBEN kapcsold be, a többiben pedig tiltsd le — két egyszerre futó keepalive akadályozhatja egymást és pazarolhatja az energiát.</string>
     <string name="wifi_keepalive_needs_setup">A speciális ADB-beállítást igényli (ugyanaz, mint az azonnali telemetriánál). Először végezd el, hogy engedélyezhesd ezt.</string>
 
     <!-- Settings dialogs -->
@@ -938,6 +1018,7 @@
     <string name="web_companion_desc">Böngéssze az utakat és töltéseket bármely, ugyanazon WiFi-n lévő eszközről.</string>
     <string name="web_companion_disabled_desc">Indítson helyi szervert, hogy az úttörténetet böngészőben nyithassa meg.</string>
     <string name="web_companion_wifi_info">A helyi WiFi-n keresztül szolgálja ki, így elérhető, amíg az autó be van kapcsolva és a telemetriaszolgáltatás él. Parkolás után a legtöbb BYD egység ~15 perccel a kikapcsolás után lekapcsolja a WiFi-t — ezután a companion elérhetetlen (helyi szervernél nincs mobiladat-tartalék), amíg az autó újra be nem kapcsol, minden háttértevékenységi módban.\nMegjegyzés: az Electro appnak van lehetősége a WiFi korlátlan fenntartására</string>
+    <string name="web_companion_files_info">A companionnak van egy Fájlok füle is: töltsd le az adatbázis-mentéseket, exportokat és a diagnosztikai naplót közvetlenül a telefonodra vagy laptopodra, és tölts fel egy mentést az autóra anélkül, hogy bármit csatlakoztatnál. Csak az alkalmazás saját mappáit mutatja, nem az egész fejegységet.</string>
     <string name="port_field_label">Port</string>
     <string name="port_hint_text">Próbálja a 8081, 8888, 9090 portokat, ha egy port blokkolt. A módosítások újraindítják a szervert.</string>
     <string name="access_pin_label">Hozzáférési PIN</string>
@@ -961,7 +1042,6 @@
     <string name="mqtt_card_desc">Élő telemetria publikálása brokernek, például HiveMQ-nak vagy HomeAssistantnak.</string>
     <string name="status_enabled_label">Állapot: Engedélyezve</string>
     <string name="status_disabled_label">Állapot: Letiltva</string>
-    <string name="open_connections_action">Kapcsolatok megnyitása</string>
     <string name="back_to_overview_action">Vissza az áttekintéshez</string>
 
     <!-- ABRP settings -->
@@ -1043,7 +1123,7 @@
     <string name="about_install_note">A telepítés gomb parkoláskor válik elérhetővé, aktív út vagy töltés nélkül</string>
     <string name="about_install_now">Telepítés most</string>
     <string name="about_download_update">Frissítés letöltése</string>
-    <string name="about_update_manual_di5_instructions">Az automatikus telepítés nem érhető el ezen a fejegységen. Számítógépen vagy telefonon töltse le ennek a verziónak az APK-ját a kiadások oldaláról, majd telepítse ADB-n keresztül:</string>
+    <string name="about_update_manual_di5_instructions">Az automatikus telepítéshez segédkapcsolat szükséges, amely jelenleg nem érhető el. Számítógépen vagy telefonon töltse le ennek a verziónak az APK-ját a kiadások oldaláról, majd telepítse ADB-n keresztül:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Kiadások oldalának megnyitása</string>
 
@@ -1154,6 +1234,7 @@
     <string name="autostart_dialog_title">⚠️ Teendő — Autostart</string>
     <string name="autostart_dialog_msg">Új verzió lett telepítve. Ki kell kapcsolnia a „disable autostart”-ot ennél az alkalmazásnál, ami lehetővé teszi az előtér-/háttérszolgáltatások futását.\nAz autó egyszeri újraindítása szükséges, de csak az alkalmazás első telepítésekor és a „disable autostart” kikapcsolása után. Ha egy régebbi verzióról frissít, nem kell újraindítania</string>
     <string name="autostart_got_it">Értem</string>
+    <string name="autostart_open_failed">Az automatikus indítás képernyője nem nyitható meg ezen a fejegységen. Nyisd meg az autó saját Beállítások → Alkalmazások → Automatikus indítás (vagy Háttéralkalmazások) menüjéből, és győződj meg róla, hogy a Trip Stats engedélyezve van.</string>
     <string name="flavor_mismatch_title">⚠️ Rossz build ehhez az autóhoz</string>
     <string name="flavor_mismatch_msg">A(z) %1$s buildet telepítetted, de ez az autó %2$s. A jármű telemetriája nem biztos, hogy megfelelően működik. Kérlek, telepítsd a(z) %2$s buildet ehhez a járműhöz.</string>
     <string name="adb_connecting_title">Csatlakozás…</string>

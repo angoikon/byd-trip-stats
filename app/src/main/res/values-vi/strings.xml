@@ -266,7 +266,7 @@
     <string name="export_save_html">Lưu dưới dạng trình xem HTML (nhấp đúp để mở)</string>
     <string name="export_send_telegram">Gửi tới bot Telegram</string>
     <string name="export_telegram_not_configured">Gửi tới bot Telegram (chưa cấu hình)</string>
-    <string name="export_telegram_setup_hint">Thiết lập bot trong Cài đặt → Sao lưu &amp; Khôi phục.</string>
+    <string name="export_telegram_setup_hint">Liên kết bot Telegram của bạn trong Cài đặt → Kết nối → Telegram.</string>
     <string name="export_send_csv">Gửi CSV tới Telegram</string>
     <string name="export_send_json">Gửi JSON tới Telegram</string>
     <string name="export_send_html">Gửi trình xem HTML tới Telegram</string>
@@ -530,17 +530,70 @@
     <string name="wifi_only_desc">Sao lưu tự động chỉ chạy trên Wi-Fi để tiết kiệm dữ liệu di động</string>
     <string name="last_auto_backup_label">Sao lưu tự động lần cuối: %1$s</string>
     <string name="schedule_updated_msg">Đã cập nhật lịch thành %1$s. Sao lưu tự động tiếp theo sẽ theo khoảng mới.</string>
-    <string name="telegram_setup_info">Sau khi kết nối, sao lưu có thể gửi thủ công hoặc theo lịch. Mỗi bản sao lưu đến dưới dạng tệp .db trong cuộc trò chuyện riêng của bạn, truy cập được từ mọi thiết bị có Telegram.</string>
+    <string name="telegram_setup_info">Bản sao lưu có thể được gửi thủ công hoặc theo lịch. Mỗi bản đến dưới dạng tệp .db trong cuộc trò chuyện riêng của bạn, truy cập được từ bất kỳ thiết bị nào có Telegram.</string>
     <string name="telegram_instructions">1. Nhắn @BotFather trên Telegram → /newbot → sao chép token\n2. Gửi tin nhắn bất kỳ tới bot mới của bạn\n3. Dán token bên dưới và chạm Xác thực</string>
     <string name="bot_token_label">Token Bot</string>
     <string name="validate_save_action">Xác thực &amp; Lưu</string>
     <string name="restore_from_telegram_label">Khôi phục từ Telegram</string>
-    <string name="connect_telegram_first">Kết nối bot Telegram riêng trước (xem Sao lưu Telegram ở trên).</string>
+    <string name="connect_telegram_first">Trước tiên hãy liên kết một bot Telegram — Cài đặt → Kết nối → Telegram.</string>
     <string name="backups_in_chat_label">Bản sao lưu trong cuộc trò chuyện của bạn:</string>
     <string name="scan_telegram_hint">Chạm làm mới để quét cuộc trò chuyện Telegram của bạn tìm bản sao lưu .db.</string>
-    <string name="no_telegram_configured">Telegram chưa cấu hình — thiết lập trước trong Sao lưu &amp; Khôi phục.</string>
+    <string name="no_telegram_configured">Telegram chưa được liên kết — hãy thiết lập trước trong Cài đặt → Kết nối → Telegram.</string>
     <string name="sent_telegram_success">Đã gửi qua Telegram ✓</string>
     <string name="telegram_send_failed">Gửi Telegram thất bại: %1$s</string>
+    <string name="tailscale_title">Tailscale — truy cập từ xa</string>
+    <string name="tailscale_title_short">Tailscale</string>
+    <string name="tailscale_desc">Đưa xe vào mạng Tailscale riêng của bạn, để web companion và ADB hoạt động từ bất cứ đâu — không chỉ ở nhà. Không có gì bị lộ ra internet và không có cổng nào được mở trên router của bạn.</string>
+    <string name="tailscale_card_desc">Truy cập web companion và ADB của xe từ bất cứ đâu</string>
+    <string name="tailscale_unavailable">Không khả dụng trong bản dựng này (cần head unit ARM 64-bit).</string>
+    <string name="tailscale_not_connected">Chưa kết nối.</string>
+    <string name="tailscale_starting">Đang khởi động…</string>
+    <string name="tailscale_error">Đã xảy ra sự cố. Hãy xem hướng dẫn bên dưới và thử lại.</string>
+    <string name="tailscale_connected">Đã kết nối với tên %1$s</string>
+    <string name="tailscale_reachable_hint">Web companion: http://%1$s:8888 · ADB: adb connect %1$s:5555</string>
+    <string name="tailscale_needs_adb">Cần cấp quyền ADB một lần trước — giống hệt cái mà đo từ xa tức thời dùng. Hãy thiết lập trong phần Quản lý ứng dụng rồi quay lại.</string>
+    <string name="tailscale_signin_phone">Đăng nhập bằng điện thoại của bạn</string>
+    <string name="tailscale_scan_instructions">Quét mã này bằng camera điện thoại, sau đó đăng nhập Tailscale trong trình duyệt vừa mở. Xe sẽ tham gia mạng của bạn ngay khi bạn phê duyệt — không cần gõ gì ở đây.</string>
+    <string name="tailscale_scan_qr_cd">Mã QR mở trang đăng nhập Tailscale</string>
+    <string name="tailscale_waiting_for_signin">Đang chờ bạn phê duyệt… bạn có thể rời khỏi màn hình này, nó vẫn tiếp tục chờ.</string>
+    <string name="tailscale_cancel_signin">Hủy đăng nhập</string>
+    <string name="tailscale_other_ways">Các cách đăng nhập khác</string>
+    <string name="tailscale_alt_adb_title">Nhập khóa từ máy tính của bạn (ADB)</string>
+    <string name="tailscale_alt_adb_body">Nếu bạn đã dùng ADB với xe này — và bạn có, vì Tailscale cần cùng một quyền — hãy chạm vào ô Auth key bên dưới để nó được chọn, rồi chạy lệnh này từ máy tính với khóa thay cho các dấu chấm. Khóa auth chỉ chứa chữ cái, chữ số và dấu gạch nối, nên không có gì bị hỏng.</string>
+    <string name="tailscale_alt_key_title">Dán một khóa auth</string>
+    <string name="tailscale_alt_key_body">Tạo một khóa trong bảng điều khiển Tailscale tại Settings → Keys (để Ephemeral tắt), rồi dán vào đây. Sáu mươi ký tự là quá nhiều để gõ trên màn hình xe, đó là lý do có mã QR ở trên.</string>
+    <string name="tailscale_authkey_label">Khóa auth</string>
+    <string name="tailscale_connect">Kết nối</string>
+    <string name="tailscale_disconnect">Ngắt kết nối khỏi Tailscale</string>
+    <string name="tailscale_how_to">Cách thiết lập</string>
+    <string name="tailscale_step_1">1. Tạo tài khoản miễn phí tại tailscale.com, nếu bạn chưa có.</string>
+    <string name="tailscale_step_2">2. Trong bảng điều khiển quản trị, mở Settings → Keys và chạm Generate auth key. Để Ephemeral TẮT — khóa tạm thời khiến xe biến mất khỏi mạng mỗi khi ngủ, và địa chỉ của nó sẽ thay đổi mỗi lần.</string>
+    <string name="tailscale_step_3">3. Sao chép khóa (bắt đầu bằng tskey-auth-) và dán vào bên dưới, rồi chạm Kết nối. Xe tham gia mạng của bạn và giữ nguyên địa chỉ từ đó trở đi.</string>
+    <string name="tailscale_step_4">4. Cài Tailscale trên điện thoại hoặc máy tính xách tay của bạn và đăng nhập cùng tài khoản. Bất cứ thiết bị nào đã đăng nhập đều có thể truy cập xe — không gì khác có thể.</string>
+    <string name="tailscale_console_warnings">Đáng làm một lần, trong bảng điều khiển quản trị: mở Machines → xe của bạn → Disable key expiry, nếu không nó sẽ rời khỏi mạng của bạn sau khoảng sáu tháng và chỉ có đến tận xe mới sửa được. Đừng đặt exit node trên xe (điều đó sẽ đẩy lưu lượng ABRP, MQTT và Telegram của nó qua kết nối internet của người khác), và đừng bật Funnel (điều đó sẽ đưa web companion lên internet công cộng, chỉ được bảo vệ bằng mã PIN).</string>
+    <string name="tailscale_di5_note">Trên DiLink-5, xe buộc dừng mọi ứng dụng khi bạn tắt máy, nên truy cập từ xa dừng khi xe dừng và trở lại khi xe thức dậy lần sau.</string>
+    <string name="telegram_title_label">Telegram</string>
+    <string name="telegram_card_desc">Bot riêng của bạn — mang bản sao lưu và thông báo của xe</string>
+    <string name="status_not_connected_label">Chưa kết nối</string>
+    <string name="telegram_connection_desc">Liên kết một bot Telegram riêng ở đây một lần. Bản sao lưu, thông báo, chẩn đoán và xuất chuyến đi đều đi qua nó, và không có gì được gửi đi nơi khác.</string>
+    <string name="telegram_connected_uses">Được dùng bởi Sao lưu &amp; Khôi phục cho các bản sao lưu cơ sở dữ liệu, bởi các thông báo bên dưới, và bởi các nút chẩn đoán và xuất chuyến đi.</string>
+    <string name="telegram_setup_in_connections">Chưa có bot Telegram nào được liên kết. Hãy thiết lập một cái trong Cài đặt → Kết nối → Telegram, rồi quay lại đây để gửi và khôi phục bản sao lưu.</string>
+    <string name="telegram_notify_needs_bot">Liên kết một bot Telegram ở trên để dùng thông báo.</string>
+    <string name="telegram_notify_di5_warning">Trên DiLink-5, các thông báo phụ thuộc vào việc xe tắt máy hiện chưa đến: xe của bạn buộc dừng ứng dụng khi tắt máy, nên một chuyến đi chỉ được đóng ở lần khởi động tiếp theo, và việc sạc khi đỗ được điền vào sau — cả hai đều không thể thông báo ngay lúc xảy ra. Mọi thứ xảy ra khi xe vẫn đang bật đều đến, nên nhấn Dừng để tự kết thúc chuyến đi trước khi tắt máy sẽ giúp bạn nhận được bản tóm tắt.</string>
+    <string name="telegram_notify_label">Thông báo Telegram</string>
+    <string name="telegram_notify_info">Sự kiện của xe được đẩy tới cùng một bot — không máy chủ, không tài khoản, không ứng dụng thêm. Tin nhắn được xếp hàng và thử lại nếu xe không có kết nối khi sự kiện xảy ra.</string>
+    <string name="telegram_notify_enable_label">Gửi thông báo</string>
+    <string name="telegram_notify_trip_label">Tóm tắt chuyến đi</string>
+    <string name="telegram_notify_trip_desc">Một thẻ sau mỗi lần lái, với cùng các số liệu mà chính chuyến đi ghi lại: quãng đường, thời lượng, mức tiêu thụ so với mức trung bình toàn thời gian của bạn, SoC đã dùng, chi phí và điểm chuyến đi.</string>
+    <string name="telegram_notify_charging_label">Sạc hoàn tất</string>
+    <string name="telegram_notify_charging_desc">Khi một phiên sạc kết thúc — dù hoàn tất hay dừng sớm, và ở mức nào, cùng năng lượng đã thêm và chi phí. Được gửi ngay khi xảy ra, nên một lần sạc qua đêm hoàn tất lúc 03:00 sẽ gửi lúc 03:00. Tắt theo mặc định.</string>
+    <string name="telegram_notify_imbalance_label">Cảnh báo mất cân bằng cell</string>
+    <string name="telegram_notify_imbalance_desc">Cũng gửi cảnh báo mất cân bằng cell pin của Pro tới Telegram, không chỉ trên màn hình xe.</string>
+    <string name="telegram_notify_imbalance_pro">Có sẵn trong Pro, cùng với chính cảnh báo mất cân bằng cell.</string>
+    <string name="telegram_notify_test_action">Gửi tin nhắn thử</string>
+    <string name="telegram_notify_test_ok">Đã gửi tin nhắn thử ✓ — kiểm tra cuộc trò chuyện Telegram của bạn.</string>
+    <string name="telegram_notify_test_failed">Không thể kết nối tới Telegram. Hãy kiểm tra kết nối của xe và thử lại.</string>
+    <string name="telegram_notify_parked_note">Bản tóm tắt được gửi khi chuyến đi kết thúc — tức là khi xe đã tắt trong khoảng thời gian tự dừng đặt trong Tùy chọn, nên cài đặt dài hơn nghĩa là tin nhắn đến muộn hơn. Một chuyến đi mà ứng dụng chỉ có thể đóng sau đó, vì nó không chạy vào lúc ấy (trên DiLink-5 thì đó là mọi chuyến), được ghi lại bình thường nhưng không thông báo, để bạn không bao giờ bị báo về chuyến hôm qua khi bắt đầu chuyến hôm nay. Cảnh báo vẫn tiếp tục kích hoạt khi đỗ trong chế độ nền Luôn bật: head unit vẫn dùng dữ liệu di động sau khi xe ngắt Wi-Fi.</string>
 
     <!-- Trip Compare -->
     <string name="comparing_trips_label">Đang so sánh %1$s chuyến đi</string>
@@ -769,7 +822,7 @@
     <string name="compat_sending_label">Đang gửi…</string>
     <string name="compat_email_qr_label">Email qua mã QR</string>
     <string name="compat_uploading_label">Đang tải lên…</string>
-    <string name="compat_telegram_not_configured">Telegram chưa cấu hình — thiết lập trước trong Sao lưu &amp; Khôi phục.</string>
+    <string name="compat_telegram_not_configured">Telegram chưa được liên kết — hãy thiết lập trước trong Cài đặt → Kết nối → Telegram.</string>
     <string name="compat_sent_telegram">Đã gửi qua Telegram ✓</string>
     <string name="compat_telegram_failed">Gửi Telegram thất bại: %1$s</string>
     <string name="compat_save_failed">Lưu thất bại: %1$s</string>
@@ -794,6 +847,33 @@
     <string name="web_server_failed">Khởi động thất bại: %1$s</string>
     <string name="web_server_waiting">Đang chờ IP…</string>
     <string name="web_server_open_hint">Mở địa chỉ này trên bất kỳ thiết bị nào kết nối cùng WiFi.</string>
+    <string name="web_url_label_lan">Trên mạng của bạn</string>
+    <string name="web_url_label_tailscale">Qua Tailscale — hoạt động từ bất cứ đâu</string>
+    <string name="web_url_label_vpn">Qua VPN của bạn</string>
+    <string name="web_url_label_other">Mạng khác</string>
+    <string name="web_url_label_mobile">Qua dữ liệu di động</string>
+    <string name="web_url_label_tailscale_https">Qua Tailscale, được mã hóa — hoạt động từ bất cứ đâu</string>
+    <string name="web_https_available_hint">Đây là các địa chỉ http:// thường. Để mã hóa địa chỉ Tailscale, hãy bật \"Phục vụ qua HTTPS\" trên thẻ Tailscale trong Cài đặt → Kết nối.</string>
+    <string name="tailscale_https_label">Phục vụ qua HTTPS</string>
+    <string name="tailscale_https_desc">Hãy để daemon Tailscale xử lý TLS cho web companion, dùng chứng chỉ thật cho tên Tailscale của xe này. Địa chỉ trở thành https:// thay vì http://, nên trình duyệt ngừng coi nó là không an toàn — và các tính năng chỉ cho phép trên trang an toàn, như thông báo và sao chép vào bộ nhớ tạm, bắt đầu hoạt động.</string>
+    <string name="tailscale_https_requirement">Cần bật MagicDNS và HTTPS Certificates cho tailnet của bạn — cả hai đều là công tắc một lần trong bảng điều khiển quản trị Tailscale, mục DNS. Chỉ địa chỉ .ts.net được mã hóa; địa chỉ WiFi vẫn là http://.</string>
+    <string name="tailscale_https_working">Được mã hóa tại %1$s</string>
+    <string name="tailscale_https_no_port">Dùng đúng như hiển thị — không có \":8888\" ở cuối. Địa chỉ được mã hóa dùng cổng HTTPS chuẩn; chỉ các địa chỉ http:// mới cần cổng.</string>
+    <string name="tailscale_https_first_load">Lần tải đầu tiên có thể mất vài giây trong khi chứng chỉ được cấp.</string>
+    <string name="tailscale_https_how_to">Cách bật tính năng này cho mạng của bạn</string>
+    <string name="tailscale_https_step_1">1. Trên điện thoại hoặc máy tính của bạn, mở bảng điều khiển quản trị Tailscale và vào DNS — login.tailscale.com/admin/dns. Làm một lần; nó áp dụng cho mọi thiết bị trong mạng của bạn, không chỉ xe.</string>
+    <string name="tailscale_https_step_2">2. Kiểm tra MagicDNS đang bật. Khó hiểu là, nó đang BẬT khi nút ghi \"Disable MagicDNS…\" — nút đó sẽ tắt nó, nên đừng đụng vào. Nếu thay vào đó bạn thấy \"Enable MagicDNS…\", hãy nhấp vào.</string>
+    <string name="tailscale_https_step_3">3. Trong HTTPS Certificates, nhấp \"Enable HTTPS…\" và xác nhận. Đây là điều cho phép các thiết bị của bạn nhận chứng chỉ thật.</string>
+    <string name="tailscale_https_step_4">4. Quay lại đây và bật Phục vụ qua HTTPS. Không cần khởi động lại thứ gì.</string>
+    <string name="tailscale_https_step_5">5. Mở địa chỉ https:// hiển thị ở đây — đúng như hiển thị, không có cổng ở cuối. Lần tải đầu mất vài giây trong khi chứng chỉ được cấp, sau đó là tức thì.</string>
+    <string name="tailscale_https_free_note">Cả hai cài đặt đều miễn phí và áp dụng cho toàn bộ mạng Tailscale của bạn. Bật HTTPS không làm lộ bất cứ thứ gì ra internet — chứng chỉ chỉ chứng minh với các thiết bị đã có trong mạng của bạn rằng xe đúng là nó tuyên bố.</string>
+    <string name="tailnet_diag_label">Địa chỉ Tailnet</string>
+    <string name="tailnet_installed_not_connected">Đã cài Tailscale, chưa kết nối</string>
+    <string name="remote_access_label">Truy cập từ xa</string>
+    <string name="remote_access_connected">Xe này ở trên tailnet của bạn với tên %1$s. Địa chỉ ở trên hoạt động từ bất kỳ thiết bị Tailscale nào của bạn, dù bạn ở đâu — ADB cũng vậy, ở cổng 5555.</string>
+    <string name="remote_access_not_detected">Companion chỉ truy cập được trên mạng gia đình của bạn. Để truy cập từ bất cứ đâu, hãy cài ứng dụng Tailscale trên head unit và trên điện thoại rồi đăng nhập cả hai bằng cùng một tài khoản — khi đó xe giữ một địa chỉ 100.x cố định hoạt động qua dữ liệu di động, kể cả khi đỗ, khi WiFi tắt. Không có gì được thêm vào ứng dụng này và không có cổng nào được mở trên router của bạn.</string>
+    <string name="remote_access_tips">Ba thứ cần đặt một lần, trong bảng điều khiển quản trị Tailscale: TẮT hết hạn khóa cho xe (nếu không nó sẽ rời tailnet sau khoảng sáu tháng và chỉ đến tận xe mới sửa được), ĐỪNG đặt exit node trên xe (điều đó sẽ đẩy lưu lượng ABRP, MQTT và Telegram của nó qua kết nối internet của người khác), và ĐỪNG bật Funnel (điều đó sẽ đưa companion này lên internet công cộng, chỉ được bảo vệ bằng mã PIN).</string>
+    <string name="remote_access_di5_note">Trên DiLink-5, xe của bạn buộc dừng mọi ứng dụng khi bạn tắt máy, bao gồm cả Tailscale — nên truy cập từ xa dừng khi xe dừng và trở lại khi xe thức dậy lần sau. Khi xe đang bật thì nó hoạt động bình thường, điều này vẫn hữu ích để truy cập companion hoặc ADB khi bạn ở xa WiFi của mình.</string>
     <string name="web_copy_url_cd">Sao chép URL</string>
     <string name="chart_no_tyre_data">Không có dữ liệu áp suất lốp được ghi trong chuyến đi này</string>
 
@@ -880,15 +960,15 @@
     <string name="bg_minimal">Tối thiểu</string>
     <string name="bg_deep_sleep">Ngủ sâu</string>
     <string name="bg_default_label">Mặc định</string>
-    <string name="bg_always_on_desc">Luôn bật (mặc định được khuyến nghị): dịch vụ đo từ xa tiếp tục chạy sau khi bạn đỗ xe, liên tục lấy mẫu 12V/SoC vào lịch sử pin và ghi lại việc sạc khi tắt máy (ví dụ qua đêm). Tải thêm nhỏ ngoài mức tiêu thụ nền gốc của BYD.\n\nLưu ý: hầu hết các bộ BYD ngắt Wi-Fi khoảng 15 phút sau khi tắt xe. Vì vậy khi đỗ, ADB qua Wi-Fi, Web Companion (PWA) và MQTT tới một broker trên mạng gia đình của bạn sẽ dừng cho đến khi xe khởi động. MQTT tới một broker truy cập được từ Internet (ví dụ HiveMQ Cloud) thường vẫn tiếp tục phát, vì xe vẫn dùng dữ liệu di động. Tùy chọn \"Giữ Wi-Fi hoạt động khi đỗ xe\" bên dưới có thể giữ Wi-Fi mở trên các bộ được hỗ trợ.</string>
+    <string name="bg_always_on_desc">Luôn bật (mặc định được khuyến nghị): dịch vụ đo từ xa tiếp tục chạy sau khi bạn đỗ xe, liên tục lấy mẫu 12V/SoC vào lịch sử pin và ghi lại việc sạc khi tắt máy (ví dụ qua đêm). Tải thêm nhỏ ngoài mức tiêu thụ nền gốc của BYD.\n\nLưu ý: hầu hết các bộ BYD ngắt Wi-Fi khoảng 15 phút sau khi tắt xe. Vì vậy khi đỗ, ADB qua Wi-Fi, Web Companion (PWA) và MQTT tới một broker trên mạng gia đình của bạn sẽ dừng cho đến khi xe khởi động. MQTT tới một broker truy cập được từ Internet (ví dụ HiveMQ Cloud) thường vẫn tiếp tục phát, vì xe vẫn dùng dữ liệu di động. Tùy chọn \"Giữ Wi-Fi hoạt động khi xe tắt máy\" bên dưới có thể giữ Wi-Fi mở trên các bộ được hỗ trợ.</string>
     <string name="bg_minimal_desc">Tối thiểu: dịch vụ tự dừng 5 phút sau khi tắt xe, rồi một báo thức 90 phút đánh thức nó ngắn để chụp nhanh việc sạc. Tiêu hao thấp hơn, nhưng mẫu khi tắt thưa thớt, ADB không phải lúc nào cũng bật, Web Companion (PWA) chỉ truy cập được trong chớp thức ngắn, và MQTT im lặng giữa các chớp. Việc sạc khi tắt được bắt trong ~90 phút, sau đó xuất bản cho phần còn lại của lần sạc.</string>
     <string name="bg_deep_sleep_desc">Ngủ sâu: dịch vụ tự dừng 5 phút sau khi tắt xe mà không thức thêm. Cho phép các ECU của xe đạt trạng thái ngủ sâu hoàn toàn. Web Companion (PWA) không truy cập được và MQTT im lặng suốt thời gian xe đỗ; việc sạc khi tắt không được ghi trực tiếp — chỉ tái tạo từ chênh lệch SoC khi xe bật lần tới.</string>
     <string name="keepalive_never_fired">Báo thức của chế độ Tối thiểu: chưa từng kích hoạt%1$s. Nếu vẫn là \"chưa bao giờ\" sau khi xe đã đỗ một lúc, bộ của bạn tắt hoàn toàn khi đỗ — Tối thiểu khi đó hoạt động như Ngủ sâu, vì vậy hãy dùng Luôn bật cho dữ liệu khi đỗ.</string>
     <string name="keepalive_fired">Báo thức của chế độ Tối thiểu: kích hoạt gần nhất %1$s • tổng %2$s%3$s</string>
     <string name="keepalive_armed"> (đã kích)</string>
     <string name="keepalive_not_armed"> • chưa kích</string>
-    <string name="wifi_keepalive_label">Giữ Wi-Fi hoạt động khi đỗ xe</string>
-    <string name="wifi_keepalive_desc">Bật lại Wi-Fi nếu xe tắt nó sau khi đỗ, để Web Companion và các công cụ cục bộ khác (mạng gia đình) vẫn có thể truy cập. Chỉ hoạt động khi xe tắt máy và lùi lại nếu pin 12V hoặc mức sạc xuống thấp. Tiêu thụ thêm một chút điện khi đỗ.\n\nNếu bạn cũng dùng Electro, Overdrive hoặc bất kỳ ứng dụng nào khác giữ Wi-Fi hoạt động, chỉ bật tính năng này ở MỘT ứng dụng và tắt ở những ứng dụng còn lại — hai cơ chế keepalive chạy cùng lúc có thể xung đột và lãng phí điện.</string>
+    <string name="wifi_keepalive_label">Giữ Wi-Fi hoạt động khi xe tắt máy</string>
+    <string name="wifi_keepalive_desc">Bật lại Wi-Fi sau khi xe tắt máy — head unit tắt nó vài phút sau đó — để Web Companion và các công cụ cục bộ khác (mạng gia đình) vẫn có thể truy cập. Chỉ hoạt động khi xe tắt máy và lùi lại nếu pin 12V hoặc mức sạc xuống thấp. Tiêu thụ thêm một chút điện khi xe còn tắt máy.\n\nNếu bạn cũng dùng Electro, Overdrive hoặc bất kỳ ứng dụng nào khác giữ Wi-Fi hoạt động, chỉ bật tính năng này ở MỘT ứng dụng và tắt ở những ứng dụng còn lại — hai cơ chế keepalive chạy cùng lúc có thể xung đột và lãng phí điện.</string>
     <string name="wifi_keepalive_needs_setup">Yêu cầu thiết lập ADB nâng cao (giống như đo từ xa tức thời). Hãy hoàn tất bước đó trước để bật tính năng này.</string>
 
     <!-- Settings dialogs -->
@@ -938,6 +1018,7 @@
     <string name="web_companion_desc">Duyệt chuyến đi &amp; sạc từ bất kỳ thiết bị nào trên cùng WiFi.</string>
     <string name="web_companion_disabled_desc">Khởi động máy chủ cục bộ để bạn có thể mở lịch sử chuyến đi trong trình duyệt.</string>
     <string name="web_companion_wifi_info">Phục vụ qua WiFi cục bộ của bạn, nên truy cập được khi xe bật và dịch vụ đo từ xa còn hoạt động. Khi đã đỗ, hầu hết bộ BYD ngắt WiFi ~15 phút sau khi tắt xe — sau đó companion không truy cập được (không có dự phòng dữ liệu di động cho máy chủ cục bộ) cho đến khi xe bật lại, ở mọi chế độ hoạt động nền.\nLưu ý: ứng dụng Electro có tùy chọn giữ WiFi bật vô thời hạn</string>
+    <string name="web_companion_files_info">Companion cũng có tab Tệp: tải bản sao lưu cơ sở dữ liệu, các bản xuất và nhật ký chẩn đoán thẳng về điện thoại hoặc máy tính xách tay, và tải một bản sao lưu lên xe mà không cần cắm gì cả. Nó chỉ hiển thị các thư mục của riêng ứng dụng, không phải toàn bộ head unit.</string>
     <string name="port_field_label">Cổng</string>
     <string name="port_hint_text">Thử 8081, 8888, 9090 nếu một cổng bị chặn. Thay đổi sẽ khởi động lại máy chủ.</string>
     <string name="access_pin_label">PIN Truy cập</string>
@@ -961,7 +1042,6 @@
     <string name="mqtt_card_desc">Xuất bản đo từ xa trực tiếp tới một broker như HiveMQ hoặc HomeAssistant.</string>
     <string name="status_enabled_label">Trạng thái: Đã bật</string>
     <string name="status_disabled_label">Trạng thái: Đã tắt</string>
-    <string name="open_connections_action">Mở Kết nối</string>
     <string name="back_to_overview_action">Về tổng quan</string>
 
     <!-- ABRP settings -->
@@ -1043,7 +1123,7 @@
     <string name="about_install_note">Nút cài đặt sẽ khả dụng khi đỗ mà không có chuyến đi hoặc sạc đang hoạt động</string>
     <string name="about_install_now">Cài đặt ngay</string>
     <string name="about_download_update">Tải cập nhật</string>
-    <string name="about_update_manual_di5_instructions">Cài đặt tự động không khả dụng trên head unit này. Trên PC hoặc điện thoại, hãy tải APK của phiên bản này từ trang phát hành, sau đó cài đặt qua ADB:</string>
+    <string name="about_update_manual_di5_instructions">Cài đặt tự động cần kết nối trợ giúp, hiện không khả dụng. Trên PC hoặc điện thoại, hãy tải APK của phiên bản này từ trang phát hành, sau đó cài đặt qua ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Mở trang phát hành</string>
 
@@ -1154,6 +1234,7 @@
     <string name="autostart_dialog_title">⚠️ Cần Hành động — Tự khởi động</string>
     <string name="autostart_dialog_msg">Một phiên bản mới đã được cài đặt. Bạn cần tắt „disable autostart” cho ứng dụng này, việc này cho phép các dịch vụ tiền cảnh / nền chạy.\nCần khởi động lại xe một lần, và chỉ khi bạn cài đặt ứng dụng lần đầu và sau khi tắt „disable autostart”. Nếu bạn đang cập nhật từ phiên bản cũ hơn, bạn không cần khởi động lại</string>
     <string name="autostart_got_it">Đã hiểu</string>
+    <string name="autostart_open_failed">Không thể mở màn hình tự khởi động trên bộ này. Hãy mở từ Cài đặt của chính xe → Ứng dụng → Tự khởi động (hoặc Ứng dụng chạy nền) và đảm bảo Trip Stats được cho phép.</string>
     <string name="flavor_mismatch_title">⚠️ Sai bản dựng cho xe này</string>
     <string name="flavor_mismatch_msg">Bạn đã cài đặt bản dựng %1$s, nhưng xe này là %2$s. Đo từ xa của xe có thể không hoạt động chính xác. Vui lòng cài đặt bản dựng %2$s cho xe này.</string>
     <string name="adb_connecting_title">Đang kết nối…</string>

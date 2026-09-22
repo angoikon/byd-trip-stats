@@ -12,6 +12,10 @@ interface TripDao {
     @Query("SELECT * FROM trips ORDER BY startTime DESC")
     fun getAllTrips(): Flow<List<TripEntity>>
 
+    /** One-shot read of [getAllTrips], for the FIFO cost attribution run at trip close. */
+    @Query("SELECT * FROM trips ORDER BY startTime DESC")
+    suspend fun getAllTripsSync(): List<TripEntity>
+
     @Query("SELECT * FROM trips WHERE isActive = 1 LIMIT 1")
     suspend fun getActiveTrip(): TripEntity?
 

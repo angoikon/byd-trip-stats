@@ -14,7 +14,6 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
@@ -38,10 +37,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.byd.tripstats.R
+import com.byd.tripstats.ui.components.BrandSwitch
 import com.byd.tripstats.adb.AdbPermissionManager
 import com.byd.tripstats.data.backup.TelegramManager
 import com.byd.tripstats.ui.theme.BydElectricAzure
-import com.byd.tripstats.ui.theme.ToggleUncheckedTrack
 import com.byd.tripstats.ui.theme.AccelerationOrange
 import com.byd.tripstats.ui.theme.BatteryBlue
 import com.byd.tripstats.ui.theme.RegenGreen
@@ -353,23 +352,9 @@ internal fun AppDiagnosticsCard() {
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                Switch(
+                BrandSwitch(
                     checked = diagnosticsEnabled,
                     onCheckedChange = { AppDiagnosticsMonitor.setEnabled(context, it) },
-                    thumbContent = if (!diagnosticsEnabled) {
-                        {
-                            Box(
-                                modifier = Modifier
-                                    .size(12.dp)
-                                    .background(ToggleUncheckedTrack, CircleShape)
-                            )
-                        }
-                    } else null,
-                    colors = SwitchDefaults.colors(
-                        uncheckedThumbColor = Color.White,
-                        uncheckedTrackColor = ToggleUncheckedTrack,
-                        uncheckedBorderColor = ToggleUncheckedTrack
-                    )
                 )
             }
 
@@ -536,6 +521,16 @@ internal fun AppDiagnosticsCard() {
                     if (hasReadLogs) stringResource(R.string.perm_granted) else stringResource(R.string.perm_not_granted)
                 )
                 SettingsDetailRow(stringResource(R.string.startup_safeguards_label), stringResource(R.string.safeguards_auto_label))
+                // "The companion is unreachable" is otherwise unanswerable without the car in
+                // front of you: this says whether the unit is on a tailnet at all, and at which
+                // address, so a report carries the answer with it.
+                SettingsDetailRow(
+                    stringResource(R.string.tailnet_diag_label),
+                    com.byd.tripstats.server.WebServerManager.tailnetAddress(context)
+                        ?: if (com.byd.tripstats.server.WebServerManager.isTailscaleInstalled(context))
+                            stringResource(R.string.tailnet_installed_not_connected)
+                        else stringResource(R.string.value_na)
+                )
                 if (!hasWriteSecureSettings || !hasBackgroundLocation) {
                     androidx.compose.material3.Card(
                         colors = androidx.compose.material3.CardDefaults.cardColors(

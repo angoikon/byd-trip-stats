@@ -269,7 +269,7 @@
     <string name="export_save_html">Gem som HTML-visning (dobbeltklik for at åbne)</string>
     <string name="export_send_telegram">Send til Telegram-bot</string>
     <string name="export_telegram_not_configured">Send til Telegram-bot (ikke konfigureret)</string>
-    <string name="export_telegram_setup_hint">Opsæt botten i Indstillinger → Sikkerhedskopi &amp; Gendan.</string>
+    <string name="export_telegram_setup_hint">Tilknyt din Telegram-bot i Indstillinger → Forbindelser → Telegram.</string>
     <string name="export_send_csv">Send CSV til Telegram</string>
     <string name="export_send_json">Send JSON til Telegram</string>
     <string name="export_send_html">Send HTML-visning til Telegram</string>
@@ -533,17 +533,70 @@
     <string name="wifi_only_desc">Automatiske sikkerhedskopier kører kun på Wi-Fi for at spare mobildata</string>
     <string name="last_auto_backup_label">Seneste auto-sikkerhedskopi: %1$s</string>
     <string name="schedule_updated_msg">Tidsplan opdateret til %1$s. Næste auto-sikkerhedskopi følger det nye interval.</string>
-    <string name="telegram_setup_info">Når tilsluttet, kan sikkerhedskopier sendes manuelt eller på en tidsplan. Hver sikkerhedskopi lander som en .db-fil i din private chat, tilgængelig fra enhver enhed med Telegram.</string>
+    <string name="telegram_setup_info">Sikkerhedskopier kan sendes manuelt eller efter en tidsplan. Hver enkelt lander som en .db-fil i din private chat, tilgængelig fra enhver enhed med Telegram.</string>
     <string name="telegram_instructions">1. Send besked til @BotFather på Telegram → /newbot → kopier tokenet\n2. Send en besked til din nye bot\n3. Indsæt tokenet nedenfor og tryk Validér</string>
     <string name="bot_token_label">Bot-token</string>
     <string name="validate_save_action">Validér &amp; Gem</string>
     <string name="restore_from_telegram_label">Gendan fra Telegram</string>
-    <string name="connect_telegram_first">Tilslut først en Telegram-privatbot (se Telegram-sikkerhedskopi ovenfor).</string>
+    <string name="connect_telegram_first">Tilknyt først en Telegram-bot — Indstillinger → Forbindelser → Telegram.</string>
     <string name="backups_in_chat_label">Sikkerhedskopier i din chat:</string>
     <string name="scan_telegram_hint">Tryk på opdater for at scanne din Telegram-chat for .db-sikkerhedskopier.</string>
-    <string name="no_telegram_configured">Telegram ikke konfigureret — opsæt det under Sikkerhedskopi &amp; Gendan først.</string>
+    <string name="no_telegram_configured">Telegram er ikke tilknyttet — konfigurer det først under Indstillinger → Forbindelser → Telegram.</string>
     <string name="sent_telegram_success">Sendt via Telegram ✓</string>
     <string name="telegram_send_failed">Telegram-afsendelse mislykkedes: %1$s</string>
+    <string name="tailscale_title">Tailscale — fjernadgang</string>
+    <string name="tailscale_title_short">Tailscale</string>
+    <string name="tailscale_desc">Sæt bilen på dit eget private Tailscale-netværk, så web companion og ADB virker overalt — ikke kun hjemme. Intet eksponeres mod internettet, og der åbnes ingen porte på din router.</string>
+    <string name="tailscale_card_desc">Nå bilens web companion og ADB overalt</string>
+    <string name="tailscale_unavailable">Ikke tilgængelig i denne build (kræver en 64-bit ARM-head unit).</string>
+    <string name="tailscale_not_connected">Ikke forbundet.</string>
+    <string name="tailscale_starting">Starter…</string>
+    <string name="tailscale_error">Noget gik galt. Tjek vejledningen nedenfor, og prøv igen.</string>
+    <string name="tailscale_connected">Forbundet som %1$s</string>
+    <string name="tailscale_reachable_hint">Web companion: http://%1$s:8888 · ADB: adb connect %1$s:5555</string>
+    <string name="tailscale_needs_adb">Kræver først den engangs ADB-godkendelse — den samme, som øjeblikkelig telemetri bruger. Konfigurer den i Appadministration, og kom så tilbage.</string>
+    <string name="tailscale_signin_phone">Log ind med din telefon</string>
+    <string name="tailscale_scan_instructions">Scan dette med telefonens kamera, og log derefter ind på Tailscale i browseren, der åbner. Bilen slutter sig til dit netværk, så snart du godkender den — der er intet at skrive her.</string>
+    <string name="tailscale_scan_qr_cd">QR-kode, der åbner Tailscales login-side</string>
+    <string name="tailscale_waiting_for_signin">Venter på, at du godkender det… du kan forlade denne skærm, den bliver ved med at vente.</string>
+    <string name="tailscale_cancel_signin">Annuller login</string>
+    <string name="tailscale_other_ways">Andre måder at logge ind på</string>
+    <string name="tailscale_alt_adb_title">Indtast nøglen fra din computer (ADB)</string>
+    <string name="tailscale_alt_adb_body">Hvis du allerede bruger ADB med denne bil — og det gør du, da Tailscale kræver den samme godkendelse — tryk på feltet Auth key nedenfor, så det har fokus, og kør derefter dette fra din computer med nøglen i stedet for prikkerne. Auth-nøgler indeholder kun bogstaver, tal og bindestreger, så intet bliver forvansket.</string>
+    <string name="tailscale_alt_key_title">Indsæt en auth-nøgle</string>
+    <string name="tailscale_alt_key_body">Generer en i Tailscale-konsollen under Settings → Keys (lad Ephemeral være slået fra), og indsæt den her. Tres tegn er mange at skrive på en bilskærm, derfor findes QR-koden ovenfor.</string>
+    <string name="tailscale_authkey_label">Auth-nøgle</string>
+    <string name="tailscale_connect">Forbind</string>
+    <string name="tailscale_disconnect">Afbryd fra Tailscale</string>
+    <string name="tailscale_how_to">Sådan konfigurerer du det</string>
+    <string name="tailscale_step_1">1. Opret en gratis konto på tailscale.com, hvis du ikke har en.</string>
+    <string name="tailscale_step_2">2. I administrationskonsollen skal du åbne Settings → Keys og trykke på Generate auth key. Lad Ephemeral være SLÅET FRA — en flygtig nøgle får bilen til at forsvinde fra dit netværk, hver gang den går i dvale, og dens adresse ville ændre sig hver gang.</string>
+    <string name="tailscale_step_3">3. Kopiér nøglen (den starter med tskey-auth-) og indsæt den nedenfor, tryk derefter på Forbind. Bilen slutter sig til dit netværk og beholder den samme adresse fra da af.</string>
+    <string name="tailscale_step_4">4. Installer Tailscale på din telefon eller bærbare, og log ind på samme konto. Alt, der er logget ind, kan så nå bilen — intet andet kan.</string>
+    <string name="tailscale_console_warnings">Værd at gøre én gang i administrationskonsollen: åbn Machines → din bil → Disable key expiry, ellers falder den ud af dit netværk efter cirka seks måneder, og kun et besøg ved bilen kan rette det. Sæt ikke en exit node på bilen (det ville sende dens ABRP-, MQTT- og Telegram-trafik gennem en andens internetforbindelse), og aktivér ikke Funnel (det ville lægge web companion på det offentlige internet, beskyttet af intet andet end sin PIN).</string>
+    <string name="tailscale_di5_note">På DiLink-5 tvangsstopper bilen alle apps, når du slukker, så fjernadgang ophører, når bilen gør, og vender tilbage, næste gang den vågner.</string>
+    <string name="telegram_title_label">Telegram</string>
+    <string name="telegram_card_desc">Din egen private bot — bærer sikkerhedskopier og køretøjsnotifikationer</string>
+    <string name="status_not_connected_label">Ikke forbundet</string>
+    <string name="telegram_connection_desc">Tilknyt en privat Telegram-bot her én gang. Sikkerhedskopier, notifikationer, diagnostik og tureksporter går alle gennem den, og intet sendes andre steder hen.</string>
+    <string name="telegram_connected_uses">Bruges af Sikkerhedskopiering &amp; Gendannelse til databasesikkerhedskopier, af notifikationerne nedenfor og af knapperne til diagnostik og tureksport.</string>
+    <string name="telegram_setup_in_connections">Ingen Telegram-bot tilknyttet endnu. Konfigurer en under Indstillinger → Forbindelser → Telegram, og kom så tilbage hertil for at sende og gendanne sikkerhedskopier.</string>
+    <string name="telegram_notify_needs_bot">Tilknyt en Telegram-bot ovenfor for at bruge notifikationer.</string>
+    <string name="telegram_notify_di5_warning">På DiLink-5 kommer notifikationer, der afhænger af, at bilen slukkes, ikke frem for nu: din bil tvangsstopper appen ved slukning, så en tur først lukkes ved næste start, og opladning under parkering udfyldes bagefter — ingen af dem kan meldes i selve øjeblikket. Alt, hvad der sker, mens bilen stadig er tændt, kommer frem, så ved at trykke på Stop for selv at afslutte turen, før du slukker, får du opsummeringen.</string>
+    <string name="telegram_notify_label">Telegram-notifikationer</string>
+    <string name="telegram_notify_info">Køretøjshændelser sendes til den samme bot — ingen server, ingen konto, ingen ekstra app. Beskeder sættes i kø og forsøges igen, hvis bilen ikke har forbindelse, når en hændelse sker.</string>
+    <string name="telegram_notify_enable_label">Send notifikationer</string>
+    <string name="telegram_notify_trip_label">Turresumé</string>
+    <string name="telegram_notify_trip_desc">Et kort efter hver køretur med de samme tal, som turen selv registrerer: distance, varighed, forbrug i forhold til dit livstidsgennemsnit, brugt SoC, omkostning og turscore.</string>
+    <string name="telegram_notify_charging_label">Opladning færdig</string>
+    <string name="telegram_notify_charging_desc">Når en opladningssession slutter — uanset om den blev fuldført eller stoppede før tid, og på hvilket niveau, med den tilførte energi og hvad den kostede. Sendes, når det sker, så en natopladning, der fuldføres kl. 03:00, sender kl. 03:00. Slået fra som standard.</string>
+    <string name="telegram_notify_imbalance_label">Advarsel om celleubalance</string>
+    <string name="telegram_notify_imbalance_desc">Send også Pro-advarslen om ubalance i battericeller til Telegram, ikke kun til bilens skærm.</string>
+    <string name="telegram_notify_imbalance_pro">Inkluderet i Pro sammen med selve advarslen om celleubalance.</string>
+    <string name="telegram_notify_test_action">Send testbesked</string>
+    <string name="telegram_notify_test_ok">Testbesked sendt ✓ — tjek din Telegram-chat.</string>
+    <string name="telegram_notify_test_failed">Kunne ikke nå Telegram. Tjek bilens forbindelse, og prøv igen.</string>
+    <string name="telegram_notify_parked_note">Et resumé sendes, når turen slutter — altså når bilen har været slukket i den auto-stoptid, der er indstillet i Præferencer, så en længere indstilling betyder en senere besked. En tur, som appen først kunne lukke bagefter, fordi den ikke kørte på det tidspunkt (på DiLink-5 er det hver tur), registreres normalt, men annonceres ikke, så du aldrig får en notifikation om gårsdagens tur, når du kører af sted på dagens. Advarsler bliver ved med at udløses under parkering i baggrundstilstanden Altid tændt: head unit forbliver på mobildata, efter bilen har slukket Wi-Fi.</string>
 
     <!-- Trip Compare -->
     <string name="comparing_trips_label">Sammenligner %1$s ture</string>
@@ -772,7 +825,7 @@
     <string name="compat_sending_label">Sender…</string>
     <string name="compat_email_qr_label">E-mail via QR-kode</string>
     <string name="compat_uploading_label">Uploader…</string>
-    <string name="compat_telegram_not_configured">Telegram ikke konfigureret — konfigurer det under Backup &amp; Restore først.</string>
+    <string name="compat_telegram_not_configured">Telegram er ikke tilknyttet — konfigurer det først under Indstillinger → Forbindelser → Telegram.</string>
     <string name="compat_sent_telegram">Sendt via Telegram ✓</string>
     <string name="compat_telegram_failed">Telegram-afsendelse mislykkedes: %1$s</string>
     <string name="compat_save_failed">Gem mislykkedes: %1$s</string>
@@ -797,6 +850,33 @@
     <string name="web_server_failed">Start mislykkedes: %1$s</string>
     <string name="web_server_waiting">Venter på IP-adresse…</string>
     <string name="web_server_open_hint">Åbn denne adresse på en enhed tilsluttet det samme WiFi.</string>
+    <string name="web_url_label_lan">På dit netværk</string>
+    <string name="web_url_label_tailscale">Via Tailscale — virker overalt</string>
+    <string name="web_url_label_vpn">Via dit VPN</string>
+    <string name="web_url_label_other">Andet netværk</string>
+    <string name="web_url_label_mobile">Via mobildata</string>
+    <string name="web_url_label_tailscale_https">Via Tailscale, krypteret — virker overalt</string>
+    <string name="web_https_available_hint">Dette er almindelige http://-adresser. For at kryptere Tailscale-adressen skal du slå \"Server via HTTPS\" til på Tailscale-kortet under Indstillinger → Forbindelser.</string>
+    <string name="tailscale_https_label">Server via HTTPS</string>
+    <string name="tailscale_https_desc">Lad Tailscale-dæmonen håndtere TLS for web companion med et rigtigt certifikat til denne bils Tailscale-navn. Adressen bliver https:// i stedet for http://, så browsere holder op med at kalde den usikker — og funktioner, som de kun tillader på en sikker side, som notifikationer og kopiér til udklipsholder, begynder at virke.</string>
+    <string name="tailscale_https_requirement">Kræver, at MagicDNS og HTTPS Certificates er slået til for dit tailnet — begge er engangskontakter i Tailscale-administrationskonsollen under DNS. Kun .ts.net-adressen krypteres; WiFi-adressen forbliver http://.</string>
+    <string name="tailscale_https_working">Krypteret på %1$s</string>
+    <string name="tailscale_https_no_port">Brug den præcis som vist — uden \":8888\" til sidst. Den krypterede adresse bruger standard-HTTPS-porten; kun http://-adresserne kræver en port.</string>
+    <string name="tailscale_https_first_load">Den første indlæsning kan tage et par sekunder, mens certifikatet udstedes.</string>
+    <string name="tailscale_https_how_to">Sådan slår du det til for dit netværk</string>
+    <string name="tailscale_https_step_1">1. På din telefon eller computer skal du åbne Tailscale-administrationskonsollen og gå til DNS — login.tailscale.com/admin/dns. Gør dette én gang; det gælder for alle enheder på dit netværk, ikke kun bilen.</string>
+    <string name="tailscale_https_step_2">2. Tjek, at MagicDNS er slået til. Forvirrende nok er det slået TIL, når knappen viser \"Disable MagicDNS…\" — den knap ville slå det fra, så lad den være. Hvis du i stedet ser \"Enable MagicDNS…\", skal du klikke på den.</string>
+    <string name="tailscale_https_step_3">3. Under HTTPS Certificates skal du klikke på \"Enable HTTPS…\" og bekræfte. Det er dette, der lader dine enheder få rigtige certifikater.</string>
+    <string name="tailscale_https_step_4">4. Kom tilbage hertil og slå Server via HTTPS til. Der er ikke noget, der skal genstartes.</string>
+    <string name="tailscale_https_step_5">5. Åbn den https://-adresse, der vises her — præcis som vist, uden port til sidst. Den første indlæsning tager et par sekunder, mens certifikatet udstedes, derefter er det øjeblikkeligt.</string>
+    <string name="tailscale_https_free_note">Begge indstillinger er gratis og gælder for hele dit Tailscale-netværk. At slå HTTPS til eksponerer ikke noget mod internettet — certifikatet beviser blot over for enheder, der allerede er på dit netværk, at bilen er den, den udgiver sig for at være.</string>
+    <string name="tailnet_diag_label">Tailnet-adresse</string>
+    <string name="tailnet_installed_not_connected">Tailscale installeret, ikke forbundet</string>
+    <string name="remote_access_label">Fjernadgang</string>
+    <string name="remote_access_connected">Denne bil er på dit tailnet som %1$s. Adressen ovenfor virker fra enhver af dine Tailscale-enheder, uanset hvor du er — og det gør ADB også, på port 5555.</string>
+    <string name="remote_access_not_detected">Companion er kun tilgængelig på dit hjemmenetværk. For at nå den overalt skal du installere Tailscale-appen på head unit og på din telefon og logge begge ind på samme konto — bilen beholder så en fast 100.x-adresse, der virker over mobildata, også under parkering, når WiFi er slukket. Der tilføjes intet til denne app, og der åbnes ingen porte på din router.</string>
+    <string name="remote_access_tips">Tre ting at indstille én gang i Tailscale-administrationskonsollen: slå nøgleudløb FRA for bilen (ellers falder den ud af tailnettet efter cirka seks måneder, og kun et besøg ved bilen kan rette det), sæt IKKE en exit node på bilen (det ville sende dens ABRP-, MQTT- og Telegram-trafik gennem en andens internetforbindelse), og aktivér IKKE Funnel (det ville lægge denne companion på det offentlige internet, beskyttet af intet andet end sin PIN).</string>
+    <string name="remote_access_di5_note">På DiLink-5 tvangsstopper din bil alle apps, når du slukker, inklusive Tailscale — så fjernadgang ophører, når bilen gør, og vender tilbage, næste gang bilen vågner. Mens bilen er tændt, virker det normalt, hvilket stadig er nyttigt til at nå companion eller ADB, når du er væk fra dit eget WiFi.</string>
     <string name="web_copy_url_cd">Kopiér URL</string>
     <string name="chart_no_tyre_data">Ingen dæktrykdata registreret på denne tur</string>
 
@@ -883,15 +963,15 @@
     <string name="bg_minimal">Minimal</string>
     <string name="bg_deep_sleep">Dyb dvale</string>
     <string name="bg_default_label">Standard</string>
-    <string name="bg_always_on_desc">Altid tændt (anbefalet standard): telemetritjenesten kører videre, efter du parkerer, tager løbende 12V/SoC-prøver til batterihistorikken og registrerer opladning i slukket tilstand (f.eks. om natten). Lille ekstra belastning oven i BYD\'s eget fabriksbaggrundsforbrug.\n\nBemærk: de fleste BYD-enheder afbryder Wi-Fi ~15 min efter bilen slukkes. Mens den er parkeret, stopper ADB over Wi-Fi, Web Companion (PWA) og MQTT til en broker på dit hjemmenetværk derfor, indtil bilen tændes. MQTT til en broker, der kan nås via internettet (f.eks. HiveMQ Cloud), fortsætter normalt med at publicere, fordi bilen forbliver på mobildata. Indstillingen \"Hold Wi-Fi aktivt ved parkering\" nedenfor kan holde Wi-Fi åbent på understøttede enheder.</string>
+    <string name="bg_always_on_desc">Altid tændt (anbefalet standard): telemetritjenesten kører videre, efter du parkerer, tager løbende 12V/SoC-prøver til batterihistorikken og registrerer opladning i slukket tilstand (f.eks. om natten). Lille ekstra belastning oven i BYD\'s eget fabriksbaggrundsforbrug.\n\nBemærk: de fleste BYD-enheder afbryder Wi-Fi ~15 min efter bilen slukkes. Mens den er parkeret, stopper ADB over Wi-Fi, Web Companion (PWA) og MQTT til en broker på dit hjemmenetværk derfor, indtil bilen tændes. MQTT til en broker, der kan nås via internettet (f.eks. HiveMQ Cloud), fortsætter normalt med at publicere, fordi bilen forbliver på mobildata. Indstillingen \"Hold Wi-Fi aktivt, når bilen er slukket\" nedenfor kan holde Wi-Fi åbent på understøttede enheder.</string>
     <string name="bg_minimal_desc">Minimal: tjenesten selvstarter 5 min efter bilen slukker, derefter vækker en 90-minutters alarm den kort til et opladningssnapshot. Lavere afledning, men off-state-prøver er sparsomme, ADB er ikke altid tændt, Web Companion (PWA) er kun tilgængelig under det korte vækblip, og MQTT er inaktiv mellem blips. Off-state opladning registreres inden for ca. 90 min, hvorefter den udgiver resten af opladningen.</string>
     <string name="bg_deep_sleep_desc">Dyb dvale: tjenesten selvstarter 5 min efter bilen slukker uden yderligere vækninger. Tillader bilens ECU\'er at nå fuld dyb dvale. Web Companion (PWA) er utilgængelig og MQTT er stille hele den tid bilen er parkeret; off-state opladning registreres ikke live — kun rekonstrueret fra SoC-delta, når bilen næste gang tændes.</string>
     <string name="keepalive_never_fired">Minimal-vækkealarm: er aldrig udløst endnu%1$s. Hvis dette forbliver \"aldrig\", efter bilen har været parkeret et stykke tid, slukker din enhed helt ved parkering — Minimal opfører sig så som Dyb dvale, så brug Altid tændt til parkeringsdata.</string>
     <string name="keepalive_fired">Minimal-vækkealarm: senest udløst %1$s • %2$s i alt%3$s</string>
     <string name="keepalive_armed"> (bevæbnet)</string>
     <string name="keepalive_not_armed"> · ikke bevæbnet</string>
-    <string name="wifi_keepalive_label">Hold Wi-Fi aktivt ved parkering</string>
-    <string name="wifi_keepalive_desc">Aktiverer Wi-Fi igen, hvis bilen slår det fra efter parkering, så Web Companion og andre lokale værktøjer (hjemmenetværk) forbliver tilgængelige. Virker kun, mens bilen er slukket, og trækker sig tilbage, hvis 12V-batteriet eller ladeniveauet bliver lavt. Bruger lidt ekstra strøm under parkering.\n\nHvis du også bruger Electro, Overdrive eller en anden app, der holder Wi-Fi aktivt, skal du kun slå dette til i ÉN af dem og deaktivere det i de andre — to keepalives, der kører samtidig, kan modarbejde hinanden og spilde strøm.</string>
+    <string name="wifi_keepalive_label">Hold Wi-Fi aktivt, når bilen er slukket</string>
+    <string name="wifi_keepalive_desc">Slår Wi-Fi til igen, efter bilen er slukket — head unit slår det fra få minutter senere — så Web Companion og andre lokale værktøjer (hjemmenetværk) forbliver tilgængelige. Virker kun, mens bilen er slukket, og trækker sig tilbage, hvis 12V-batteriet eller ladeniveauet bliver lavt. Bruger lidt ekstra strøm, så længe bilen er slukket.\n\nHvis du også bruger Electro, Overdrive eller en anden app, der holder Wi-Fi aktivt, skal du kun slå dette til i ÉN af dem og deaktivere det i de andre — to keepalives, der kører samtidig, kan modarbejde hinanden og spilde strøm.</string>
     <string name="wifi_keepalive_needs_setup">Kræver den avancerede ADB-opsætning (samme som øjeblikkelig telemetri). Gennemfør den først for at aktivere dette.</string>
 
     <!-- Settings dialogs -->
@@ -941,6 +1021,7 @@
     <string name="web_companion_desc">Gennemse ture &amp; opladning fra enhver enhed på samme WiFi.</string>
     <string name="web_companion_disabled_desc">Start en lokal server, så du kan åbne turhistorik i en browser.</string>
     <string name="web_companion_wifi_info">Serveret over dit lokale WiFi, så det er tilgængeligt, mens bilen er tændt og telemetritjenesten kører. Når parkeret, kutter de fleste BYD-enheder WiFi ca. 15 min efter bilen er slukket — efter det er companion utilgængelig (der er ingen mobildata-fallback til en lokal server), indtil bilen tændes igen, i alle baggrundsaktivitetstilstande.\nBemærk: Electro-appen har en mulighed for at holde WiFi aktivt på ubestemt tid</string>
+    <string name="web_companion_files_info">Companion har også en fane Filer: download databasesikkerhedskopier, eksporter og diagnostikloggen direkte til din telefon eller bærbare, og upload en sikkerhedskopi til bilen uden at tilslutte noget. Den viser kun appens egne mapper, ikke hele head unit.</string>
     <string name="port_field_label">Port</string>
     <string name="port_hint_text">Prøv 8081, 8888, 9090 hvis en port er blokeret. Ændringer genstarter serveren.</string>
     <string name="access_pin_label">Adgangs-PIN</string>
@@ -964,7 +1045,6 @@
     <string name="mqtt_card_desc">Udgiv live-telemetri til en broker som HiveMQ eller HomeAssistant.</string>
     <string name="status_enabled_label">Status: Aktiveret</string>
     <string name="status_disabled_label">Status: Deaktiveret</string>
-    <string name="open_connections_action">Åbn forbindelser</string>
     <string name="back_to_overview_action">Tilbage til oversigt</string>
 
     <!-- ABRP settings -->
@@ -1047,7 +1127,7 @@
     <string name="about_install_note">Installationsknappen bliver tilgængelig, når parkeret uden aktiv tur eller opladning</string>
     <string name="about_install_now">Installér nu</string>
     <string name="about_download_update">Download opdatering</string>
-    <string name="about_update_manual_di5_instructions">Automatisk installation er ikke tilgængelig på denne head unit. Download denne versions APK fra udgivelsessiden på en pc eller telefon, og installer den derefter via ADB:</string>
+    <string name="about_update_manual_di5_instructions">Automatisk installation kræver hjælpeforbindelsen, som ikke er tilgængelig lige nu. Download denne versions APK fra udgivelsessiden på en pc eller telefon, og installer den derefter via ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">Åbn udgivelsesside</string>
 
@@ -1158,6 +1238,7 @@
     <string name="autostart_dialog_title">⚠️ Handling påkrævet — Autostart</string>
     <string name="autostart_dialog_msg">En ny version er installeret. Du skal deaktivere autostart for denne app, hvilket gør det muligt at køre forgrunds-/baggrundstjenester.\nEn engangsgenstart af bilen er nødvendig, og kun når du installerer appen første gang og efter du har deaktiveret autostart. Hvis du opdaterer fra en ældre version, behøver du ikke genstarte</string>
     <string name="autostart_got_it">Forstået</string>
+    <string name="autostart_open_failed">Autostart-skærmen kunne ikke åbnes på denne enhed. Åbn den fra bilens egne Indstillinger → Apps → Autostart (eller Baggrundsapps), og sørg for, at Trip Stats er tilladt.</string>
     <string name="flavor_mismatch_title">⚠️ Forkert build til denne bil</string>
     <string name="flavor_mismatch_msg">Du installerede %1$s-buildet, men denne bil er %2$s. Køretøjets telemetri fungerer muligvis ikke korrekt. Installer %2$s-buildet til dette køretøj.</string>
     <string name="adb_connecting_title">Tilslutter…</string>

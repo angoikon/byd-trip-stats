@@ -9,6 +9,7 @@ import android.content.pm.PackageInstaller
 import android.net.Uri
 import android.os.Build
 import android.util.Log
+import com.byd.tripstats.adb.AdbPermissionManager
 import com.byd.tripstats.receiver.InstallStatusReceiver
 import com.byd.tripstats.sdk.DiLink5Platform
 import kotlinx.coroutines.Dispatchers
@@ -273,6 +274,29 @@ class UpdateRepository private constructor(private val context: Context) {
         } catch (e: Exception) {
             Log.w(TAG, "Silent install failed (${e.message}), falling back to system installer")
             installViaSystemInstaller(apkFile)
+        }
+    }
+
+    /**
+     * Install over the local adb channel as the shell user — the route for head units where the
+     * silent [PackageInstaller] session can't commit and there is no installer dialog to fall back
+     * to (see [AdbPermissionManager.installApkViaShell]).
+     *
+     * Deliberately has **no** fallback to the two paths above: on those units both are known to
+     * fail, and driving them would only produce a second, more confusing error. A false return
+     * means the caller should surface the manual `adb install -r` instructions instead.
+     *
+     * @return true only when `pm` reported Success. On success this process is about to be killed
+     *         by the package replace, so callers should not expect to run much afterwards.
+     */
+    suspend fun installUpdateViaShell(apkFile: File): Boolean = withContext(Dispatchers.IO) {
+        val result = AdbPermissionManager.installApkViaShell(context, apkFile)
+        if (result.exitCode == 0) {
+            Log.i(TAG, "Shell install succeeded — process will be replaced")
+            true
+        } else {
+            Log.w(TAG, "Shell install failed: ${result.output.take(200)}")
+            false
         }
     }
 

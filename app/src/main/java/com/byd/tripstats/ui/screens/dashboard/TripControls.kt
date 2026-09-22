@@ -24,9 +24,9 @@ import com.byd.tripstats.data.preferences.convertEfficiency
 import com.byd.tripstats.data.preferences.speedUnit
 import androidx.compose.ui.res.stringResource
 import com.byd.tripstats.R
+import com.byd.tripstats.ui.components.BrandSwitch
 import com.byd.tripstats.ui.theme.BydElectricAzure
 import com.byd.tripstats.ui.theme.BydErrorRed
-import com.byd.tripstats.ui.theme.ToggleUncheckedTrack
 import kotlinx.coroutines.delay
 
 @Composable
@@ -184,22 +184,12 @@ fun TripControls(
             Text(text = stringResource(R.string.auto_short), fontSize = 12.sp, fontWeight = FontWeight.Medium)
         }
         val autoSwitch: @Composable () -> Unit = {
-            Switch(
+            BrandSwitch(
                 checked = autoTripDetection,
                 onCheckedChange = { enabled ->
                     if (!enabled) showManualWarning = true
                     else onToggleAutoDetection()
                 },
-                thumbContent = if (!autoTripDetection) {
-                    {
-                        Box(modifier = Modifier.size(12.dp).background(ToggleUncheckedTrack, CircleShape))
-                    }
-                } else null,
-                colors = SwitchDefaults.colors(
-                    uncheckedThumbColor  = Color.White,
-                    uncheckedTrackColor  = ToggleUncheckedTrack,
-                    uncheckedBorderColor = ToggleUncheckedTrack
-                )
             )
         }
         val autoToggle: @Composable () -> Unit = {

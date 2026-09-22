@@ -309,7 +309,7 @@ object TelemetryDaemonMain {
         }, "telemetry-push").apply { isDaemon = true }.start()
     }
 
-    // ---- Wi-Fi keepalive when parked (opt-in, DiLink-3) ----
+    // ---- Wi-Fi keepalive when the car is off (opt-in, DiLink-3) ----
     //
     // The MCU cuts Wi-Fi minutes after the car is switched off, taking down all LAN access while the
     // unit stays alive on 4G. This is the same counter 3rd party keepalive apps use on

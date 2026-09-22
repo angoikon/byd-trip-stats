@@ -269,7 +269,7 @@
     <string name="export_save_html">HTMLビューアーとして保存（ダブルクリックで開く）</string>
     <string name="export_send_telegram">Telegramボットに送信</string>
     <string name="export_telegram_not_configured">Telegramボットに送信（未設定）</string>
-    <string name="export_telegram_setup_hint">設定 → バックアップ &amp; 復元でボットを設定してください。</string>
+    <string name="export_telegram_setup_hint">設定 → 接続 → Telegram で Telegram ボットをリンクしてください。</string>
     <string name="export_send_csv">CSVをTelegramに送信</string>
     <string name="export_send_json">JSONをTelegramに送信</string>
     <string name="export_send_html">HTMLビューアーをTelegramに送信</string>
@@ -533,17 +533,70 @@
     <string name="wifi_only_desc">モバイルデータを節約するため、自動バックアップはWi-Fiでのみ実行されます</string>
     <string name="last_auto_backup_label">最終自動バックアップ：%1$s</string>
     <string name="schedule_updated_msg">スケジュールが %1$s に更新されました。次の自動バックアップは新しい間隔に従います。</string>
-    <string name="telegram_setup_info">接続後、バックアップを手動またはスケジュールで送信できます。各バックアップはプライベートチャットに.dbファイルとして届き、Telegramがある任意のデバイスからアクセスできます。</string>
+    <string name="telegram_setup_info">バックアップは手動またはスケジュールで送信できます。それぞれが .db ファイルとしてあなたのプライベートチャットに届き、Telegram のある任意の端末からアクセスできます。</string>
     <string name="telegram_instructions">1. TelegramでBotFatherにメッセージ → /newbot → トークンをコピー\n2. 新しいボットにメッセージを送信\n3. 下のフィールドにトークンを貼り付けて「確認」をタップ</string>
     <string name="bot_token_label">ボットトークン</string>
     <string name="validate_save_action">確認 &amp; 保存</string>
     <string name="restore_from_telegram_label">Telegramから復元</string>
-    <string name="connect_telegram_first">先にTelegramプライベートボットを接続してください（上のTelegramバックアップを参照）。</string>
+    <string name="connect_telegram_first">まず Telegram ボットをリンクしてください — 設定 → 接続 → Telegram。</string>
     <string name="backups_in_chat_label">チャット内のバックアップ：</string>
     <string name="scan_telegram_hint">更新をタップしてTelegramチャットで.dbバックアップを検索します。</string>
-    <string name="no_telegram_configured">Telegramが設定されていません — 最初にバックアップ &amp; 復元で設定してください。</string>
+    <string name="no_telegram_configured">Telegram が未リンクです — まず 設定 → 接続 → Telegram で設定してください。</string>
     <string name="sent_telegram_success">Telegramで送信 ✓</string>
     <string name="telegram_send_failed">Telegram送信に失敗しました：%1$s</string>
+    <string name="tailscale_title">Tailscale — リモートアクセス</string>
+    <string name="tailscale_title_short">Tailscale</string>
+    <string name="tailscale_desc">車をあなた自身のプライベートな Tailscale ネットワークに追加すると、web companion と ADB がどこからでも — 自宅だけでなく — 使えます。インターネットには何も公開されず、ルーターのポートも開きません。</string>
+    <string name="tailscale_card_desc">車の web companion と ADB にどこからでもアクセス</string>
+    <string name="tailscale_unavailable">このビルドでは利用できません（64ビット ARM ヘッドユニットが必要）。</string>
+    <string name="tailscale_not_connected">未接続です。</string>
+    <string name="tailscale_starting">起動中…</string>
+    <string name="tailscale_error">問題が発生しました。下の手順を確認してもう一度お試しください。</string>
+    <string name="tailscale_connected">%1$s として接続中</string>
+    <string name="tailscale_reachable_hint">Web companion: http://%1$s:8888 · ADB: adb connect %1$s:5555</string>
+    <string name="tailscale_needs_adb">まず一度きりの ADB 認可が必要です — 即時テレメトリと同じものです。アプリ管理で設定してから戻ってきてください。</string>
+    <string name="tailscale_signin_phone">スマートフォンでサインイン</string>
+    <string name="tailscale_scan_instructions">これをスマートフォンのカメラでスキャンし、開いたブラウザで Tailscale にサインインします。承認するとすぐに車がネットワークに参加します — ここで入力するものはありません。</string>
+    <string name="tailscale_scan_qr_cd">Tailscale のサインインページを開く QR コード</string>
+    <string name="tailscale_waiting_for_signin">承認をお待ちしています… この画面を離れても待機し続けます。</string>
+    <string name="tailscale_cancel_signin">サインインをキャンセル</string>
+    <string name="tailscale_other_ways">その他のサインイン方法</string>
+    <string name="tailscale_alt_adb_title">パソコンからキーを入力（ADB）</string>
+    <string name="tailscale_alt_adb_body">この車ですでに ADB を使っている場合 — Tailscale は同じ認可を必要とするので使っているはずです — 下の Auth key 欄をタップしてフォーカスを合わせ、点線の代わりにキーを入れてパソコンから実行してください。auth キーには英字・数字・ハイフンしか含まれないので、文字化けは起きません。</string>
+    <string name="tailscale_alt_key_title">auth キーを貼り付け</string>
+    <string name="tailscale_alt_key_body">Tailscale コンソールの Settings → Keys で1つ生成し（Ephemeral はオフのまま）、ここに貼り付けます。60文字は車の画面で入力するには長いので、上に QR があります。</string>
+    <string name="tailscale_authkey_label">auth キー</string>
+    <string name="tailscale_connect">接続</string>
+    <string name="tailscale_disconnect">Tailscale から切断</string>
+    <string name="tailscale_how_to">設定方法</string>
+    <string name="tailscale_step_1">1. アカウントがなければ tailscale.com で無料アカウントを作成します。</string>
+    <string name="tailscale_step_2">2. 管理コンソールで Settings → Keys を開き、Generate auth key をタップします。Ephemeral はオフのままにしてください — 一時キーだと車がスリープするたびにネットワークから消え、アドレスも毎回変わってしまいます。</string>
+    <string name="tailscale_step_3">3. キー（tskey-auth- で始まります）をコピーして下に貼り付け、接続 をタップします。車がネットワークに参加し、以後は同じアドレスを保ちます。</string>
+    <string name="tailscale_step_4">4. スマートフォンやノートパソコンに Tailscale をインストールし、同じアカウントでサインインします。サインインしているものだけが車にアクセスでき、それ以外はできません。</string>
+    <string name="tailscale_console_warnings">管理コンソールで一度やっておく価値があります：Machines → あなたの車 → Disable key expiry を開いてください。さもないと約6か月でネットワークから外れ、車のところへ行くしか直せません。車に exit node を設定しないでください（ABRP・MQTT・Telegram の通信が他人のインターネット接続を経由してしまいます）。また Funnel を有効にしないでください（web companion が PIN だけを頼りに公開インターネット上に置かれてしまいます）。</string>
+    <string name="tailscale_di5_note">DiLink-5 では、オフにするたびに車がすべてのアプリを強制停止するため、リモートアクセスは車と同時に止まり、次に車が起動したときに戻ります。</string>
+    <string name="telegram_title_label">Telegram</string>
+    <string name="telegram_card_desc">あなた専用のプライベートボット — バックアップと車両通知を届けます</string>
+    <string name="status_not_connected_label">未接続</string>
+    <string name="telegram_connection_desc">ここでプライベートな Telegram ボットを一度リンクします。バックアップ、通知、診断、トリップのエクスポートはすべてこれを通り、他のどこにも送信されません。</string>
+    <string name="telegram_connected_uses">データベースのバックアップに「バックアップ &amp; 復元」が、下の通知が、そして診断ボタンとトリップのエクスポートボタンが使用します。</string>
+    <string name="telegram_setup_in_connections">まだ Telegram ボットがリンクされていません。設定 → 接続 → Telegram で設定してから、ここに戻ってバックアップの送信と復元を行ってください。</string>
+    <string name="telegram_notify_needs_bot">通知を使うには、上で Telegram ボットをリンクしてください。</string>
+    <string name="telegram_notify_di5_warning">DiLink-5 では、車をオフにすることに依存する通知は今のところ届きません。エンジンオフ時に車がアプリを強制停止するため、トリップは次回始動時にしか閉じられず、駐車中の充電は後から補完されます — どちらも発生時には通知できません。車がまだオンの間に起きたことは届くので、オフにする前に自分で 停止 をタップしてトリップを終了すれば、サマリーを受け取れます。</string>
+    <string name="telegram_notify_label">Telegram 通知</string>
+    <string name="telegram_notify_info">車両イベントは同じボットに送信されます — サーバー不要、アカウント不要、追加アプリ不要。イベント発生時に車が接続されていない場合、メッセージはキューに入れられ再送されます。</string>
+    <string name="telegram_notify_enable_label">通知を送信</string>
+    <string name="telegram_notify_trip_label">トリップの概要</string>
+    <string name="telegram_notify_trip_desc">走行のたびに、そのトリップ自体が記録するのと同じ数値を載せたカード：距離、所要時間、生涯平均に対する消費、使用した SoC、コスト、トリップスコア。</string>
+    <string name="telegram_notify_charging_label">充電完了</string>
+    <string name="telegram_notify_charging_desc">充電セッションが終了したとき — 完了したか途中で止まったか、どのレベルか、追加されたエネルギーとその費用とともに。発生したときに送信されるため、03:00 に完了する夜間充電は 03:00 に送信されます。デフォルトはオフ。</string>
+    <string name="telegram_notify_imbalance_label">セル不均衡アラート</string>
+    <string name="telegram_notify_imbalance_desc">Pro のバッテリーセル不均衡アラートを、車の画面だけでなく Telegram にも送信します。</string>
+    <string name="telegram_notify_imbalance_pro">セル不均衡アラート本体とともに Pro に含まれます。</string>
+    <string name="telegram_notify_test_action">テストメッセージを送信</string>
+    <string name="telegram_notify_test_ok">テストメッセージを送信しました ✓ — Telegram のチャットを確認してください。</string>
+    <string name="telegram_notify_test_failed">Telegram に接続できませんでした。車の接続を確認してもう一度お試しください。</string>
+    <string name="telegram_notify_parked_note">サマリーはトリップが終了したとき — つまり、車が Preferences で設定した自動停止時間だけオフだったとき — に送信されるため、設定が長いほどメッセージは遅くなります。アプリがその時点で動作していなかったために後からしか閉じられなかったトリップ（DiLink-5 ではすべてのトリップ）は通常どおり記録されますが通知はされないため、今日のトリップに出発するときに昨日の走行の通知が来ることはありません。常時起動のバックグラウンドモードでは駐車中もアラートが発生し続けます：車が Wi-Fi を切った後もヘッドユニットはモバイルデータに接続されたままです。</string>
 
     <!-- Trip Compare -->
     <string name="comparing_trips_label">%1$s件のトリップを比較中</string>
@@ -772,7 +825,7 @@
     <string name="compat_sending_label">送信中…</string>
     <string name="compat_email_qr_label">QRコードでメール</string>
     <string name="compat_uploading_label">アップロード中…</string>
-    <string name="compat_telegram_not_configured">Telegramが設定されていません — 先にBackup &amp; Restoreで設定してください。</string>
+    <string name="compat_telegram_not_configured">Telegram が未リンクです — まず 設定 → 接続 → Telegram で設定してください。</string>
     <string name="compat_sent_telegram">Telegramで送信しました ✓</string>
     <string name="compat_telegram_failed">Telegram送信失敗：%1$s</string>
     <string name="compat_save_failed">保存失敗：%1$s</string>
@@ -797,6 +850,33 @@
     <string name="web_server_failed">起動失敗：%1$s</string>
     <string name="web_server_waiting">IPアドレスを待っています…</string>
     <string name="web_server_open_hint">同じWiFiに接続された任意のデバイスでこのアドレスを開いてください。</string>
+    <string name="web_url_label_lan">あなたのネットワーク上</string>
+    <string name="web_url_label_tailscale">Tailscale 経由 — どこからでも使えます</string>
+    <string name="web_url_label_vpn">あなたの VPN 経由</string>
+    <string name="web_url_label_other">その他のネットワーク</string>
+    <string name="web_url_label_mobile">モバイルデータ経由</string>
+    <string name="web_url_label_tailscale_https">Tailscale 経由、暗号化 — どこからでも使えます</string>
+    <string name="web_https_available_hint">これらは暗号化されていない http:// アドレスです。Tailscale のアドレスを暗号化するには、設定 → 接続 の Tailscale カードで \"HTTPS で配信\" をオンにしてください。</string>
+    <string name="tailscale_https_label">HTTPS で配信</string>
+    <string name="tailscale_https_desc">Tailscale デーモンに、この車の Tailscale 名の本物の証明書を使って web companion の TLS を処理させます。アドレスが http:// ではなく https:// になるため、ブラウザは安全でないと表示しなくなり — 通知やクリップボードへのコピーなど、安全なページでしか許可されない機能が使えるようになります。</string>
+    <string name="tailscale_https_requirement">tailnet で MagicDNS と HTTPS Certificates を有効にする必要があります — どちらも Tailscale 管理コンソールの DNS にある一度きりの切り替えです。暗号化されるのは .ts.net アドレスのみで、WiFi アドレスは http:// のままです。</string>
+    <string name="tailscale_https_working">%1$s で暗号化</string>
+    <string name="tailscale_https_no_port">表示されたとおりに使ってください — 末尾に \":8888\" は付けません。暗号化アドレスは標準の HTTPS ポートを使うため、ポートが必要なのは http:// アドレスだけです。</string>
+    <string name="tailscale_https_first_load">証明書が発行される間、最初の読み込みに数秒かかることがあります。</string>
+    <string name="tailscale_https_how_to">あなたのネットワークでこれを有効にする方法</string>
+    <string name="tailscale_https_step_1">1. スマートフォンかパソコンで Tailscale 管理コンソールを開き、DNS に移動します — login.tailscale.com/admin/dns。これは一度だけ行います。車だけでなく、ネットワーク上のすべての端末に適用されます。</string>
+    <string name="tailscale_https_step_2">2. MagicDNS がオンか確認します。紛らわしいのですが、ボタンに \"Disable MagicDNS…\" と表示されているときがオンです — そのボタンはオフにするものなので触らないでください。代わりに \"Enable MagicDNS…\" と表示されている場合はクリックします。</string>
+    <string name="tailscale_https_step_3">3. HTTPS Certificates で \"Enable HTTPS…\" をクリックして確認します。これにより、あなたの端末が本物の証明書を取得できるようになります。</string>
+    <string name="tailscale_https_step_4">4. ここに戻って HTTPS で配信 をオンにします。再起動は不要です。</string>
+    <string name="tailscale_https_step_5">5. ここに表示されている https:// アドレスを開きます — 表示どおり、末尾にポートを付けずに。最初の読み込みは証明書が発行される間、数秒かかり、その後は瞬時です。</string>
+    <string name="tailscale_https_free_note">どちらの設定も無料で、Tailscale ネットワーク全体に適用されます。HTTPS を有効にしてもインターネットには何も公開されません — 証明書は、すでにネットワーク上にある端末に対して、車が名乗るとおりの相手であることを証明するだけです。</string>
+    <string name="tailnet_diag_label">Tailnet アドレス</string>
+    <string name="tailnet_installed_not_connected">Tailscale インストール済み、未接続</string>
+    <string name="remote_access_label">リモートアクセス</string>
+    <string name="remote_access_connected">この車はあなたの tailnet に %1$s として参加しています。上のアドレスは、どこにいても、あなたのどの Tailscale 端末からでも使えます — ADB も同様に、ポート 5555 で使えます。</string>
+    <string name="remote_access_not_detected">companion は自宅ネットワークでしか到達できません。どこからでも到達するには、Tailscale アプリをヘッドユニットとスマートフォンにインストールし、両方を同じアカウントでサインインしてください — すると車は固定の 100.x アドレスを保ち、WiFi がオフの駐車中も含めてモバイルデータ経由で使えます。このアプリには何も追加されず、ルーターのポートも開きません。</string>
+    <string name="remote_access_tips">Tailscale 管理コンソールで一度設定しておく3つのこと：車のキー有効期限をオフにする（さもないと約6か月で tailnet から外れ、車のところへ行くしか直せません）、車に exit node を設定しない（ABRP・MQTT・Telegram の通信が他人のインターネット接続を経由してしまいます）、そして Funnel を有効にしない（この companion が PIN だけを頼りに公開インターネット上に置かれてしまいます）。</string>
+    <string name="remote_access_di5_note">DiLink-5 では、オフにするたびに車が Tailscale を含むすべてのアプリを強制停止します — そのためリモートアクセスは車と同時に止まり、次に車が起動したときに戻ります。車がオンの間は通常どおり動作し、自分の WiFi から離れているときに companion や ADB に到達するのに役立ちます。</string>
     <string name="web_copy_url_cd">URLをコピー</string>
     <string name="chart_no_tyre_data">このトリップにタイヤ空気圧データが記録されていません</string>
 
@@ -883,15 +963,15 @@
     <string name="bg_minimal">最小限</string>
     <string name="bg_deep_sleep">ディープスリープ</string>
     <string name="bg_default_label">デフォルト</string>
-    <string name="bg_always_on_desc">常時起動（推奨のデフォルト）：駐車後もテレメトリサービスが動作し続け、12V/SoC のサンプルを継続的にバッテリー履歴に記録し、オフ状態（例：夜間）の充電を取得します。BYD 自身の工場出荷時のバックグラウンド消費に加わるわずかな追加負荷です。\n\n注：ほとんどの BYD ユニットは車を切ってから約15分で Wi-Fi を切断します。そのため駐車中は、Wi-Fi 経由の ADB、Webコンパニオン（PWA）、自宅ネットワークのブローカーへの MQTT は、車が起動するまで停止します。インターネットから到達可能なブローカー（例：HiveMQ Cloud）への MQTT は、車がモバイルデータに接続されたままなので通常は発行を続けます。下の「駐車中も Wi-Fi を維持」オプションは、対応ユニットで Wi-Fi を開いたままにできます。</string>
+    <string name="bg_always_on_desc">常時起動（推奨のデフォルト）：駐車後もテレメトリサービスが動作し続け、12V/SoC のサンプルを継続的にバッテリー履歴に記録し、オフ状態（例：夜間）の充電を取得します。BYD 自身の工場出荷時のバックグラウンド消費に加わるわずかな追加負荷です。\n\n注：ほとんどの BYD ユニットは車を切ってから約15分で Wi-Fi を切断します。そのため駐車中は、Wi-Fi 経由の ADB、Webコンパニオン（PWA）、自宅ネットワークのブローカーへの MQTT は、車が起動するまで停止します。インターネットから到達可能なブローカー（例：HiveMQ Cloud）への MQTT は、車がモバイルデータに接続されたままなので通常は発行を続けます。下の「車がオフのときも Wi-Fi を維持」オプションは、対応ユニットで Wi-Fi を開いたままにできます。</string>
     <string name="bg_minimal_desc">最小限：車がオフになった5分後にサービスが自動停止し、90分のアラームで充電スナップショットのために短時間起動します。消費が少ないですが、オフ状態のサンプルはまばらで、ADBは常時起動ではなく、Webコンパニオン（PWA）は短い起動の間だけアクセス可能で、MQTTは起動間は待機状態です。オフ状態の充電は約90分以内に検出され、その後充電の残りを公開します。</string>
     <string name="bg_deep_sleep_desc">ディープスリープ：車がオフになった5分後にサービスが自動停止し、以降の起動はありません。車のECUが完全なディープスリープに達することができます。Webコンパニオン（PWA）はアクセス不能で、MQTTは駐車中全体で無音です。オフ状態の充電はライブでキャプチャされず、次回の起動時のSoCデルタから再構築されるだけです。</string>
     <string name="keepalive_never_fired">最小限の起動アラーム：まだ起動したことがありません%1$s。車をしばらく駐車した後も「なし」のままの場合、ヘッドユニットは駐車時に完全にオフになります — 最小限はそのときディープスリープのように動作するため、駐車中のデータには常時起動を使用してください。</string>
     <string name="keepalive_fired">最小限の起動アラーム：最終起動 %1$s • 合計 %2$s%3$s</string>
     <string name="keepalive_armed">（準備完了）</string>
     <string name="keepalive_not_armed"> · 準備未完了</string>
-    <string name="wifi_keepalive_label">駐車中も Wi-Fi を維持</string>
-    <string name="wifi_keepalive_desc">駐車後に車が Wi-Fi をオフにした場合は再度オンにし、Webコンパニオンやその他のローカル（自宅ネットワーク）ツールに引き続きアクセスできるようにします。車がオフのときのみ動作し、12V バッテリーや充電状態が低下すると動作を控えます。駐車中はわずかに追加の電力を消費します。\n\nElectro、Overdrive、その他 Wi-Fi を維持するアプリも使っている場合は、そのうちの1つだけでこれをオンにし、他ではオフにしてください — 2つの維持機能が同時に動くと互いに干渉し、電力を無駄にすることがあります。</string>
+    <string name="wifi_keepalive_label">車がオフのときも Wi-Fi を維持</string>
+    <string name="wifi_keepalive_desc">車をオフにした後に Wi-Fi を再びオンにします（ヘッドユニットは数分後にオフにします）。これにより Webコンパニオンやその他のローカル（自宅ネットワーク）ツールに引き続きアクセスできます。車がオフのときのみ動作し、12V バッテリーや充電状態が低下すると動作を控えます。車がオフの間、わずかに追加の電力を消費します。\n\nElectro、Overdrive、その他 Wi-Fi を維持するアプリも使っている場合は、そのうちの1つだけでこれをオンにし、他ではオフにしてください — 2つの維持機能が同時に動くと互いに干渉し、電力を無駄にすることがあります。</string>
     <string name="wifi_keepalive_needs_setup">高度な ADB セットアップ（即時テレメトリと同じ）が必要です。これを有効にするには、まずそれを完了してください。</string>
 
     <!-- Settings dialogs -->
@@ -941,6 +1021,7 @@
     <string name="web_companion_desc">同じWiFi上の任意のデバイスから走行 &amp; 充電を閲覧。</string>
     <string name="web_companion_disabled_desc">ブラウザで走行履歴を開けるローカルサーバーを起動します。</string>
     <string name="web_companion_wifi_info">ローカルWiFi上で提供されるため、車がオンでテレメトリーサービスが動作している間はアクセス可能です。駐車後は、多くのBYDユニットが車がオフになった後約15分でWiFiを切断します — その後、コンパニオンはすべてのバックグラウンド動作モードで、車が再び電源オンになるまでアクセス不能です（ローカルサーバーにはモバイルデータのフォールバックがありません）。\n注意：Electroアプリには無制限にWiFiをオンに保つオプションがあります</string>
+    <string name="web_companion_files_info">companion には ファイル タブもあります：データベースのバックアップ、エクスポート、診断ログをスマートフォンやノートパソコンに直接ダウンロードでき、何も接続せずにバックアップを車にアップロードできます。表示されるのはアプリ自身のフォルダのみで、ヘッドユニット全体ではありません。</string>
     <string name="port_field_label">ポート</string>
     <string name="port_hint_text">ポートがブロックされている場合は8081、8888、9090をお試しください。変更するとサーバーが再起動します。</string>
     <string name="access_pin_label">アクセスPIN</string>
@@ -964,7 +1045,6 @@
     <string name="mqtt_card_desc">HiveMQやHomeAssistantなどのブローカーにライブテレメトリーを公開します。</string>
     <string name="status_enabled_label">ステータス：有効</string>
     <string name="status_disabled_label">ステータス：無効</string>
-    <string name="open_connections_action">接続を開く</string>
     <string name="back_to_overview_action">概要に戻る</string>
 
     <!-- ABRP settings -->
@@ -1047,7 +1127,7 @@
     <string name="about_install_note">インストールボタンは、アクティブな走行や充電がない駐車状態のときに利用可能になります</string>
     <string name="about_install_now">今すぐインストール</string>
     <string name="about_download_update">更新をダウンロード</string>
-    <string name="about_update_manual_di5_instructions">自動インストールはこのヘッドユニットでは利用できません。PC またはスマートフォンで、リリースページからこのバージョンの APK をダウンロードし、ADB でインストールしてください:</string>
+    <string name="about_update_manual_di5_instructions">自動インストールにはヘルパー接続が必要ですが、現在利用できません。PC またはスマートフォンで、リリースページからこのバージョンの APK をダウンロードし、ADB でインストールしてください:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>
     <string name="about_update_open_releases">リリースページを開く</string>
 
@@ -1158,6 +1238,7 @@
     <string name="autostart_dialog_title">⚠️ 操作が必要 — 自動起動</string>
     <string name="autostart_dialog_msg">新しいバージョンがインストールされました。このアプリの自動起動を無効にする必要があります。これにより、フォアグラウンド / バックグラウンドサービスの実行が有効になります。\n車の再起動が一度だけ必要です。アプリを初めてインストールしたときと、自動起動を無効にした後のみです。以前のバージョンから更新する場合は、再起動する必要はありません</string>
     <string name="autostart_got_it">了解</string>
+    <string name="autostart_open_failed">このヘッドユニットで自動起動画面を開けませんでした。車両側の設定 → アプリ → 自動起動（またはバックグラウンドアプリ）から開き、Trip Stats が許可されていることを確認してください。</string>
     <string name="flavor_mismatch_title">⚠️ この車に合わないビルドです</string>
     <string name="flavor_mismatch_msg">%1$s ビルドをインストールしていますが、この車は %2$s です。車両テレメトリが正しく動作しない可能性があります。この車両には %2$s ビルドをインストールしてください。</string>
     <string name="adb_connecting_title">接続中…</string>
