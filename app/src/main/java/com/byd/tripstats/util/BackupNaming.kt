@@ -6,7 +6,8 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * Centralised backup filename scheme: `<prefix>_v<appVersion>_<timestamp>.db`
+ * Centralised backup filename scheme: `<prefix>_v<appVersion>_<timestamp><extension>`,
+ * where database backups use `.db.gz` (older ones `.db`) and settings files `.json`.
  *
  * The `v<appVersion>` segment records which build produced a backup, so a restored
  * `.db` can be matched to the schema it was written against. Every scan/sort/prune path
@@ -17,8 +18,9 @@ import java.util.Locale
 object BackupNaming {
     const val EXTENSION = ".db"
 
-    /** `..._<yyyy-MM-dd_HH-mm>.<ext>` — the shared segment of a backup/settings pair. */
-    private val TIMESTAMP_REGEX = Regex("""_(\d{4}-\d{2}-\d{2}_\d{2}-\d{2})\.[A-Za-z0-9]+$""")
+    /** `..._<yyyy-MM-dd_HH-mm>.<ext>` — the shared segment of a backup/settings pair.
+     *  The extension may be compound (`.db.gz`). */
+    private val TIMESTAMP_REGEX = Regex("""_(\d{4}-\d{2}-\d{2}_\d{2}-\d{2})(?:\.[A-Za-z0-9]+)+$""")
 
     /** App version, sanitised to filename-safe characters (e.g. "2.11.1-beta09"). */
     val appVersionTag: String

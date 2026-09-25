@@ -467,7 +467,7 @@
     <!-- Local Backup screen -->
     <string name="backup_restore_title">数据库备份 &amp; 恢复</string>
     <string name="backup_to_download_label">备份到 Download</string>
-    <string name="backup_download_desc">将完整行程数据库保存至：Download/BydTripStats/byd_stats_backup_DATE.db</string>
+    <string name="backup_download_desc">将完整行程数据库保存至：Download/BydTripStats/byd_stats_backup_DATE.db.gz</string>
     <string name="backup_now_action">立即备份</string>
     <string name="backup_to_sd_label">备份到 SD 卡</string>
     <string name="sd_backup_desc">将数据库副本保存到 SD 卡上的 BydTripStats 文件夹。与下载备份不同，这些文件在卸载应用后仍会保留 — 可取出并在电脑上读取，实现离机冗余备份。</string>
@@ -478,8 +478,8 @@
     <string name="available_backups_label">可用备份：</string>
     <string name="no_backups_found">未找到备份。请先执行备份。</string>
     <string name="restore_from_file_action">从文件恢复…</string>
-    <string name="restore_browser_title">选择备份 (.db) 文件</string>
-    <string name="restore_browser_empty">这里没有文件夹或 .db 文件</string>
+    <string name="restore_browser_title">选择备份 (.db, .db.gz) 文件</string>
+    <string name="restore_browser_empty">这里没有文件夹或 .db/.db.gz 文件</string>
     <string name="file_browser_internal">内部存储</string>
     <string name="file_browser_sdcard">SD 卡</string>
     <string name="trim_database_label">精简数据库</string>

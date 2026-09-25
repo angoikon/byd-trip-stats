@@ -467,7 +467,7 @@
     <!-- Local Backup screen -->
     <string name="backup_restore_title">データベースバックアップ &amp; 復元</string>
     <string name="backup_to_download_label">Download にバックアップ</string>
-    <string name="backup_download_desc">走行データベース全体を次の場所に保存：Download/BydTripStats/byd_stats_backup_DATE.db</string>
+    <string name="backup_download_desc">走行データベース全体を次の場所に保存：Download/BydTripStats/byd_stats_backup_DATE.db.gz</string>
     <string name="backup_now_action">今すぐバックアップ</string>
     <string name="backup_to_sd_label">SDカードにバックアップ</string>
     <string name="sd_backup_desc">データベースのコピーをSDカードのBydTripStatsフォルダに保存します。ダウンロードバックアップとは異なり、アプリのアンインストール後も残ります。コンピュータで読み取れるデバイス外の冗長バックアップです。</string>
@@ -478,8 +478,8 @@
     <string name="available_backups_label">利用可能なバックアップ：</string>
     <string name="no_backups_found">バックアップが見つかりません。最初にバックアップを実行してください。</string>
     <string name="restore_from_file_action">ファイルから復元…</string>
-    <string name="restore_browser_title">バックアップ (.db) ファイルを選択</string>
-    <string name="restore_browser_empty">フォルダや .db ファイルはありません</string>
+    <string name="restore_browser_title">バックアップ (.db, .db.gz) ファイルを選択</string>
+    <string name="restore_browser_empty">フォルダや .db/.db.gz ファイルはありません</string>
     <string name="file_browser_internal">内部ストレージ</string>
     <string name="file_browser_sdcard">SDカード</string>
     <string name="trim_database_label">データベースをトリミング</string>

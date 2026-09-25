@@ -464,7 +464,7 @@
     <!-- Local Backup screen -->
     <string name="backup_restore_title">Sao lưu &amp; Khôi phục Cơ sở dữ liệu</string>
     <string name="backup_to_download_label">Sao lưu vào Download</string>
-    <string name="backup_download_desc">Lưu toàn bộ cơ sở dữ liệu chuyến đi vào: Download/BydTripStats/byd_stats_backup_NGÀY.db</string>
+    <string name="backup_download_desc">Lưu toàn bộ cơ sở dữ liệu chuyến đi vào: Download/BydTripStats/byd_stats_backup_NGÀY.db.gz</string>
     <string name="backup_now_action">Sao lưu Ngay</string>
     <string name="backup_to_sd_label">Sao lưu vào thẻ SD</string>
     <string name="sd_backup_desc">Lưu bản sao cơ sở dữ liệu vào thư mục BydTripStats trên thẻ SD. Khác với sao lưu Download, các bản này tồn tại sau khi gỡ ứng dụng — dự phòng ngoài thiết bị mà bạn có thể rút ra và đọc trên máy tính.</string>
@@ -475,8 +475,8 @@
     <string name="available_backups_label">Bản sao lưu có sẵn:</string>
     <string name="no_backups_found">Không tìm thấy bản sao lưu. Hãy sao lưu trước.</string>
     <string name="restore_from_file_action">Khôi phục từ tệp…</string>
-    <string name="restore_browser_title">Chọn tệp sao lưu (.db)</string>
-    <string name="restore_browser_empty">Không có thư mục hoặc tệp .db ở đây</string>
+    <string name="restore_browser_title">Chọn tệp sao lưu (.db, .db.gz)</string>
+    <string name="restore_browser_empty">Không có thư mục hoặc tệp .db/.db.gz ở đây</string>
     <string name="file_browser_internal">Bộ nhớ trong</string>
     <string name="file_browser_sdcard">Thẻ SD</string>
     <string name="trim_database_label">Cắt gọn cơ sở dữ liệu</string>

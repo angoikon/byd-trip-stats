@@ -422,7 +422,7 @@
     <string name="remove_tag_action">टैग हटाएं</string>
     <string name="backup_restore_title">बैकअप &amp; डेटाबेस रिस्टोर</string>
     <string name="backup_to_download_label">Download में बैकअप</string>
-    <string name="backup_download_desc">यात्रा डेटाबेस को यहां सहेजें: Download/BydTripStats/byd_stats_backup_DATE.db</string>
+    <string name="backup_download_desc">यात्रा डेटाबेस को यहां सहेजें: Download/BydTripStats/byd_stats_backup_DATE.db.gz</string>
     <string name="backup_now_action">अभी बैकअप करें</string>
     <string name="backup_to_sd_label">SD Card में बैकअप</string>
     <string name="sd_backup_desc">SD Card पर BydTripStats फ़ोल्डर में डेटाबेस की एक प्रति सहेजें। डाउनलोड बैकअप के विपरीत, यह अनइंस्टॉल के बाद भी रहता है।</string>
@@ -433,8 +433,8 @@
     <string name="available_backups_label">उपलब्ध बैकअप:</string>
     <string name="no_backups_found">कोई बैकअप नहीं मिला। पहले बैकअप करें।</string>
     <string name="restore_from_file_action">फ़ाइल से पुनर्स्थापित करें…</string>
-    <string name="restore_browser_title">बैकअप (.db) फ़ाइल चुनें</string>
-    <string name="restore_browser_empty">यहाँ कोई फ़ोल्डर या .db फ़ाइल नहीं है</string>
+    <string name="restore_browser_title">बैकअप (.db, .db.gz) फ़ाइल चुनें</string>
+    <string name="restore_browser_empty">यहाँ कोई फ़ोल्डर या .db/.db.gz फ़ाइल नहीं है</string>
     <string name="file_browser_internal">आंतरिक संग्रहण</string>
     <string name="file_browser_sdcard">SD कार्ड</string>
     <string name="trim_database_label">डेटाबेस ट्रिम करें</string>

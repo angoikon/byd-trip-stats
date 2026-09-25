@@ -464,7 +464,7 @@
     <!-- Local Backup screen -->
     <string name="backup_restore_title">Cadangkan &amp; Pulihkan Basis Data</string>
     <string name="backup_to_download_label">Cadangkan ke Download</string>
-    <string name="backup_download_desc">Menyimpan seluruh basis data perjalanan ke: Download/BydTripStats/byd_stats_backup_TANGGAL.db</string>
+    <string name="backup_download_desc">Menyimpan seluruh basis data perjalanan ke: Download/BydTripStats/byd_stats_backup_TANGGAL.db.gz</string>
     <string name="backup_now_action">Cadangkan Sekarang</string>
     <string name="backup_to_sd_label">Cadangkan ke kartu SD</string>
     <string name="sd_backup_desc">Menyimpan salinan basis data ke folder BydTripStats di kartu SD. Berbeda dari cadangan Download, ini bertahan setelah aplikasi dihapus — redundansi di luar perangkat yang bisa Anda cabut dan baca di komputer.</string>
@@ -475,8 +475,8 @@
     <string name="available_backups_label">Cadangan tersedia:</string>
     <string name="no_backups_found">Tidak ada cadangan ditemukan. Buat cadangan dulu.</string>
     <string name="restore_from_file_action">Pulihkan dari file…</string>
-    <string name="restore_browser_title">Pilih file cadangan (.db)</string>
-    <string name="restore_browser_empty">Tidak ada folder atau file .db di sini</string>
+    <string name="restore_browser_title">Pilih file cadangan (.db, .db.gz)</string>
+    <string name="restore_browser_empty">Tidak ada folder atau file .db/.db.gz di sini</string>
     <string name="file_browser_internal">Penyimpanan internal</string>
     <string name="file_browser_sdcard">Kartu SD</string>
     <string name="trim_database_label">Pangkas basis data</string>

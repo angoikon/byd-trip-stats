@@ -28,7 +28,7 @@ The simplest option. No setup required.
 **Steps:**
 1. Open the app → **Settings** → **Backup & Restore**
 2. Under *Backup to Download*, tap **Backup Now**
-3. The file is saved to `Download/BydTripStats/byd_stats_backup_YYYY-MM-DD_HH-mm.db` on the car's internal storage
+3. The file is saved to `Download/BydTripStats/byd_stats_backup_vX.Y.Z_YYYY-MM-DD_HH-mm.db.gz` on the car's internal storage (a gzip-compressed database — see [Notes](#notes))
 
 The file will appear in the car's file manager and can be copied to a USB drive or SD card from there.
 
@@ -52,7 +52,7 @@ Everything below then happens in **Settings → Data → Backup & Restore**.
 
 **Manual backup:**
 1. Tap **Send Backup Now**
-2. The `.db` file arrives in your private chat with the bot, captioned with the timestamp
+2. The `.db.gz` file arrives in your private chat with the bot, captioned with the timestamp
 3. Access it from any device via the Telegram app
 
 **Restore from Telegram:**
@@ -126,8 +126,8 @@ adb -s 192.168.x.x:5555 shell run-as com.byd.tripstats \
 **Pull a backup to your PC:**
 ```bash
 adb -s 192.168.x.x:5555 shell run-as com.byd.tripstats \
-    cat /data/data/com.byd.tripstats/files/db_backup/byd_stats_backup_2026-02-28_10-30.db \
-    > byd_stats_backup_2026-02-28_10-30.db
+    cat /data/data/com.byd.tripstats/files/db_backup/byd_stats_backup_v2.17.0_2026-02-28_10-30.db.gz \
+    > byd_stats_backup_v2.17.0_2026-02-28_10-30.db.gz
 ```
 
 > The private backup directory keeps the **5 most recent** backups automatically. Older ones are pruned when a new backup is created.
@@ -209,8 +209,8 @@ Use this to restore a backup from your PC directly to the car over WiFi, then pi
 
 1. Push the backup file from your PC to your car's download folder:
 ```bash
-adb -s 192.168.x.x:5555 push byd_stats_backup_2026-02-28_10-30.db \
-    /sdcard/Download/BydTripStats/byd_stats_backup_2026-02-28_10-30.db
+adb -s 192.168.x.x:5555 push byd_stats_backup_v2.17.0_2026-02-28_10-30.db.gz \
+    /sdcard/Download/BydTripStats/byd_stats_backup_v2.17.0_2026-02-28_10-30.db.gz
 ```
 
 2. **(DEBUG-ONLY)** Create the backup directory on the car if it doesn't exist yet:
@@ -222,7 +222,7 @@ adb -s 192.168.x.x:5555 shell run-as com.byd.tripstats \
 3. **(DEBUG-ONLY)** Copy the file while using run-as (overrides debug permissions):
 ```bash
 adb -s 192.168.x.x:5555 shell run-as com.byd.tripstats \
-    cp /sdcard/Download/BydTripStats/byd_stats_backup_2026-02-28_10-30.db /data/data/com.byd.tripstats/files/db_backup/byd_stats_backup_2026-02-28_10-30.db
+    cp /sdcard/Download/BydTripStats/byd_stats_backup_v2.17.0_2026-02-28_10-30.db.gz /data/data/com.byd.tripstats/files/db_backup/byd_stats_backup_v2.17.0_2026-02-28_10-30.db.gz
 ```
 4. Open the app → **Settings** → **Backup & Restore**
 
@@ -235,5 +235,6 @@ adb -s 192.168.x.x:5555 shell run-as com.byd.tripstats \
 ## Notes
 
 - **Before pulling via ADB**, trigger an in-app backup first. This flushes the SQLite Write-Ahead Log (WAL) and ensures the `.db` file is self-consistent. Pulling the raw file while the app is running may result in an incomplete snapshot.
-- **All backup methods** produce the same file format — a standard SQLite 3 database. You can open it with any SQLite browser (e.g. DB Browser for SQLite, SQLiteStudio) for inspection or manual queries.
-- The app validates that any file selected for restore is a genuine SQLite database before touching the live data.
+- **All backup methods** produce the same file format — a standard SQLite 3 database, **gzip-compressed** (`.db.gz`). Decompress it (`gunzip byd_stats_backup_….db.gz`, or 7-Zip on Windows) to open it with any SQLite browser (e.g. DB Browser for SQLite, SQLiteStudio) for inspection or manual queries.
+- **Restore accepts both** compressed `.db.gz` and plain `.db` files — backups made by older versions, or a database you decompressed and pushed back yourself, restore the same way. The format is detected from the file's contents, not its name.
+- The app validates that any file selected for restore is a genuine SQLite database (after decompressing it, if needed) before touching the live data.

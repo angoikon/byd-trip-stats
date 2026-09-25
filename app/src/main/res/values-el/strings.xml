@@ -422,7 +422,7 @@
     <string name="remove_tag_action">Αφαίρεση ετικέτας</string>
     <string name="backup_restore_title">Δημιουργία αντιγράφου &amp; Επαναφορά βάσης δεδομένων</string>
     <string name="backup_to_download_label">Αντίγραφο στο φάκελο Download</string>
-    <string name="backup_download_desc">Αποθηκεύει τη βάση δεδομένων διαδρομών σε: Download/BydTripStats/byd_stats_backup_DATE.db</string>
+    <string name="backup_download_desc">Αποθηκεύει τη βάση δεδομένων διαδρομών σε: Download/BydTripStats/byd_stats_backup_DATE.db.gz</string>
     <string name="backup_now_action">Δημιουργία αντιγράφου τώρα</string>
     <string name="backup_to_sd_label">Αντίγραφο σε κάρτα SD</string>
     <string name="sd_backup_desc">Αποθηκεύει αντίγραφο της βάσης δεδομένων σε φάκελο BydTripStats στην κάρτα SD. Σε αντίθεση με το αντίγραφο στον φάκελο Download, αυτό επιβιώνει από απεγκατάσταση του προγράμματος.</string>
@@ -433,8 +433,8 @@
     <string name="available_backups_label">Διαθέσιμα αντίγραφα:</string>
     <string name="no_backups_found">Δεν βρέθηκαν αντίγραφα. Δημιουργήστε πρώτα αντίγραφο.</string>
     <string name="restore_from_file_action">Επαναφορά από αρχείο…</string>
-    <string name="restore_browser_title">Επιλέξτε αρχείο αντιγράφου (.db)</string>
-    <string name="restore_browser_empty">Δεν υπάρχουν φάκελοι ή αρχεία .db εδώ</string>
+    <string name="restore_browser_title">Επιλέξτε αρχείο αντιγράφου (.db, .db.gz)</string>
+    <string name="restore_browser_empty">Δεν υπάρχουν φάκελοι ή αρχεία .db/.db.gz εδώ</string>
     <string name="file_browser_internal">Εσωτερικός χώρος αποθήκευσης</string>
     <string name="file_browser_sdcard">Κάρτα SD</string>
     <string name="trim_database_label">Εκκαθάριση βάσης δεδομένων</string>

@@ -422,7 +422,7 @@
     <string name="remove_tag_action">Tag entfernen</string>
     <string name="backup_restore_title">Datenbank-Backup &amp; Wiederherstellung</string>
     <string name="backup_to_download_label">Backup in Download</string>
-    <string name="backup_download_desc">Speichert die vollständige Fahrtdatenbank unter: Download/BydTripStats/byd_stats_backup_DATE.db</string>
+    <string name="backup_download_desc">Speichert die vollständige Fahrtdatenbank unter: Download/BydTripStats/byd_stats_backup_DATE.db.gz</string>
     <string name="backup_now_action">Jetzt sichern</string>
     <string name="backup_to_sd_label">Auf SD-Karte sichern</string>
     <string name="sd_backup_desc">Speichert eine Kopie der Datenbank in einem BydTripStats-Ordner auf der SD-Karte. Im Gegensatz zum Download-Backup überleben diese eine App-Deinstallation — externe Redundanz, die Sie herausnehmen und am Computer lesen können.</string>
@@ -433,8 +433,8 @@
     <string name="available_backups_label">Verfügbare Backups:</string>
     <string name="no_backups_found">Keine Backups gefunden. Führen Sie zuerst ein Backup durch.</string>
     <string name="restore_from_file_action">Aus Datei wiederherstellen…</string>
-    <string name="restore_browser_title">Sicherungsdatei (.db) auswählen</string>
-    <string name="restore_browser_empty">Keine Ordner oder .db-Dateien hier</string>
+    <string name="restore_browser_title">Sicherungsdatei (.db, .db.gz) auswählen</string>
+    <string name="restore_browser_empty">Keine Ordner oder .db/.db.gz-Dateien hier</string>
     <string name="file_browser_internal">Interner Speicher</string>
     <string name="file_browser_sdcard">SD-Karte</string>
     <string name="trim_database_label">Datenbank bereinigen</string>

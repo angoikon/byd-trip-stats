@@ -467,7 +467,7 @@
     <!-- Local Backup screen -->
     <string name="backup_restore_title">Backup &amp; restauração do banco de dados</string>
     <string name="backup_to_download_label">Backup para Download</string>
-    <string name="backup_download_desc">Salva o banco de dados completo de viagens em: Download/BydTripStats/byd_stats_backup_DATE.db</string>
+    <string name="backup_download_desc">Salva o banco de dados completo de viagens em: Download/BydTripStats/byd_stats_backup_DATE.db.gz</string>
     <string name="backup_now_action">Fazer backup agora</string>
     <string name="backup_to_sd_label">Backup para cartão SD</string>
     <string name="sd_backup_desc">Salva uma cópia do banco de dados em uma pasta BydTripStats no cartão SD. Ao contrário do backup em Downloads, estes sobrevivem a uma desinstalação do aplicativo — redundância fora do dispositivo que você pode retirar e ler em um computador.</string>
@@ -478,8 +478,8 @@
     <string name="available_backups_label">Backups disponíveis:</string>
     <string name="no_backups_found">Nenhum backup encontrado. Faça um backup primeiro.</string>
     <string name="restore_from_file_action">Restaurar de arquivo…</string>
-    <string name="restore_browser_title">Selecione um arquivo de backup (.db)</string>
-    <string name="restore_browser_empty">Nenhuma pasta ou arquivo .db aqui</string>
+    <string name="restore_browser_title">Selecione um arquivo de backup (.db, .db.gz)</string>
+    <string name="restore_browser_empty">Nenhuma pasta ou arquivo .db/.db.gz aqui</string>
     <string name="file_browser_internal">Armazenamento interno</string>
     <string name="file_browser_sdcard">Cartão SD</string>
     <string name="trim_database_label">Compactar banco de dados</string>

@@ -7,7 +7,6 @@ import androidx.work.WorkerParameters
 import com.byd.tripstats.data.backup.LocalBackupManager.Companion.DATABASE_NAME
 import com.byd.tripstats.util.BackupNaming
 import java.io.File
-import java.io.FileInputStream
 
 /**
  * Periodic WorkManager task that sends a database backup to Telegram.
@@ -43,40 +42,47 @@ class TelegramBackupWorker(
 
             val timestamp = BackupNaming.timestamp()
 
-            // Pre-check against Telegram's 50 MB cap. Without this, every periodic run
-            // would copy the DB to cache and stream the whole file to api.telegram.org
-            // before the server replies with "Request Entity Too Large" — silently
-            // burning the user's data plan on a daily/weekly cadence. We mark this as
-            // failure (not retry) so WorkManager doesn't immediately re-try with the
-            // same oversized file; the next periodic tick will check again.
-            val dbSize = dbFile.length()
-            if (dbSize > TelegramManager.TELEGRAM_MAX_FILE_SIZE_BYTES) {
-                Log.w(
-                    TAG,
-                    "Skipping auto-backup: DB is ${dbSize / (1024 * 1024)} MB, " +
-                        "above Telegram's 50 MB limit."
-                )
-                return Result.failure()
-            }
-
             // Flush WAL for a consistent snapshot
             flushWal(dbFile)
 
-            // Settings ride along with the database — and ONLY with it. They are sent after
-            // the size check above, not before it: a scheduled run that delivers a 2 KB
-            // settings file while the database it belongs to never left the car looks like
-            // the weekly backup arrived when it didn't. Over the cap, the run sends nothing
-            // and settings are exported by hand from Backup & Restore instead.
-            LocalBackupManager.getInstance(context).sendSettingsToTelegram(telegramManager, timestamp)
-
-            val fileName = BackupNaming.fileName(prefix = "byd_stats_weekly", timestamp = timestamp)
+            // Compress locally first — it's the archive that has to fit Telegram's cap.
+            val fileName = BackupNaming.fileName(
+                prefix = "byd_stats_weekly",
+                timestamp = timestamp,
+                extension = BackupCodec.COMPRESSED_EXTENSION,
+            )
             val tempFile = File(context.cacheDir, fileName)
-            dbFile.copyTo(tempFile, overwrite = true)
+            try {
+                BackupCodec.compress(dbFile, tempFile)
 
-            val caption = "BYD Trip Stats - Auto Backup\n$timestamp"
-            telegramManager.sendFile(tempFile, caption)
+                // Pre-check against Telegram's 50 MB cap. Without this, every periodic run
+                // would stream the whole file to api.telegram.org before the server replies
+                // with "Request Entity Too Large" — silently burning the user's data plan on
+                // a daily/weekly cadence. We mark this as failure (not retry) so WorkManager
+                // doesn't immediately re-try with the same oversized file; the next periodic
+                // tick will check again.
+                val archiveSize = tempFile.length()
+                if (archiveSize > TelegramManager.TELEGRAM_MAX_FILE_SIZE_BYTES) {
+                    Log.w(
+                        TAG,
+                        "Skipping auto-backup: compressed DB is ${archiveSize / (1024 * 1024)} MB, " +
+                            "above Telegram's 50 MB limit."
+                    )
+                    return Result.failure()
+                }
 
-            tempFile.delete()
+                // Settings ride along with the database — and ONLY with it. They are sent after
+                // the size check above, not before it: a scheduled run that delivers a 2 KB
+                // settings file while the database it belongs to never left the car looks like
+                // the weekly backup arrived when it didn't. Over the cap, the run sends nothing
+                // and settings are exported by hand from Backup & Restore instead.
+                LocalBackupManager.getInstance(context).sendSettingsToTelegram(telegramManager, timestamp)
+
+                val caption = "BYD Trip Stats - Auto Backup\n$timestamp"
+                telegramManager.sendFile(tempFile, caption)
+            } finally {
+                tempFile.delete()
+            }
 
             // Record timestamp of last successful auto-backup
             telegramManager.recordAutoBackup(timestamp)

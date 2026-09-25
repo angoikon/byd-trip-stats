@@ -1,6 +1,7 @@
 package com.byd.tripstats.ui.screens
 
 import android.os.Environment
+import com.byd.tripstats.data.backup.BackupCodec
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,7 +26,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 /**
- * Self-contained in-app file browser for picking a `.db` backup to restore. Replaces the SAF
+ * Self-contained in-app file browser for picking a `.db` or `.db.gz` backup to restore. Replaces the SAF
  * OpenDocument picker, which on DiLink head units (no DocumentsUI) degrades to an app chooser that
  * forces reliance on a third-party file explorer. Reads the filesystem directly via [File.listFiles]
  * — works here because the app runs with requestLegacyExternalStorage + READ_EXTERNAL_STORAGE (the
@@ -44,7 +45,7 @@ fun FileBrowserDialog(
         mutableStateOf(startDir.takeIf { it.isDirectory && it.canRead() } ?: internalRoot)
     }
 
-    // List off the main thread: directories (for navigation) + .db files (for restore).
+    // List off the main thread: directories (for navigation) + .db / .db.gz backups (for restore).
     val listing by produceState(
         initialValue = emptyList<File>() to emptyList<File>(),
         currentDir
@@ -55,7 +56,7 @@ fun FileBrowserDialog(
                 .filter { it.isDirectory && it.canRead() && !it.isHidden }
                 .sortedBy { it.name.lowercase() }
             val dbs = files
-                .filter { it.isFile && it.name.endsWith(".db", ignoreCase = true) }
+                .filter { it.isFile && BackupCodec.isBackupName(it.name) }
                 .sortedByDescending { it.lastModified() }
             dirs to dbs
         }

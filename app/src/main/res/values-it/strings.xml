@@ -467,7 +467,7 @@
     <!-- Local Backup screen -->
     <string name="backup_restore_title">Backup &amp; Ripristino database</string>
     <string name="backup_to_download_label">Backup in Download</string>
-    <string name="backup_download_desc">Salva il database completo in: Download/BydTripStats/byd_stats_backup_DATE.db</string>
+    <string name="backup_download_desc">Salva il database completo in: Download/BydTripStats/byd_stats_backup_DATE.db.gz</string>
     <string name="backup_now_action">Esegui backup ora</string>
     <string name="backup_to_sd_label">Backup su scheda SD</string>
     <string name="sd_backup_desc">Salva una copia del database in una cartella BydTripStats sulla scheda SD. A differenza del backup in Download, questi sopravvivono alla disinstallazione dell\'app — ridondanza esterna che puoi estrarre e leggere su un computer.</string>
@@ -478,8 +478,8 @@
     <string name="available_backups_label">Backup disponibili:</string>
     <string name="no_backups_found">Nessun backup trovato. Esegui prima un backup.</string>
     <string name="restore_from_file_action">Ripristina da file…</string>
-    <string name="restore_browser_title">Seleziona un file di backup (.db)</string>
-    <string name="restore_browser_empty">Nessuna cartella o file .db qui</string>
+    <string name="restore_browser_title">Seleziona un file di backup (.db, .db.gz)</string>
+    <string name="restore_browser_empty">Nessuna cartella o file .db/.db.gz qui</string>
     <string name="file_browser_internal">Memoria interna</string>
     <string name="file_browser_sdcard">Scheda SD</string>
     <string name="trim_database_label">Comprimi database</string>

@@ -467,7 +467,7 @@
     <!-- Local Backup screen -->
     <string name="backup_restore_title">Cópia de segurança &amp; restauro da base de dados</string>
     <string name="backup_to_download_label">Cópia de segurança para Download</string>
-    <string name="backup_download_desc">Guarda a base de dados completa de viagens em: Download/BydTripStats/byd_stats_backup_DATE.db</string>
+    <string name="backup_download_desc">Guarda a base de dados completa de viagens em: Download/BydTripStats/byd_stats_backup_DATE.db.gz</string>
     <string name="backup_now_action">Fazer cópia agora</string>
     <string name="backup_to_sd_label">Cópia de segurança para cartão SD</string>
     <string name="sd_backup_desc">Guarda uma cópia da base de dados numa pasta BydTripStats no cartão SD. Ao contrário da cópia em Transferências, estas sobrevivem a uma desinstalação da aplicação — redundância fora do dispositivo que pode retirar e ler num computador.</string>
@@ -478,8 +478,8 @@
     <string name="available_backups_label">Cópias de segurança disponíveis:</string>
     <string name="no_backups_found">Nenhuma cópia de segurança encontrada. Faça primeiro uma cópia.</string>
     <string name="restore_from_file_action">Restaurar a partir de ficheiro…</string>
-    <string name="restore_browser_title">Selecione um ficheiro de cópia de segurança (.db)</string>
-    <string name="restore_browser_empty">Nenhuma pasta ou ficheiro .db aqui</string>
+    <string name="restore_browser_title">Selecione um ficheiro de cópia de segurança (.db, .db.gz)</string>
+    <string name="restore_browser_empty">Nenhuma pasta ou ficheiro .db/.db.gz aqui</string>
     <string name="file_browser_internal">Armazenamento interno</string>
     <string name="file_browser_sdcard">Cartão SD</string>
     <string name="trim_database_label">Compactar base de dados</string>

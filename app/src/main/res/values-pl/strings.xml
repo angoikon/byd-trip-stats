@@ -464,7 +464,7 @@
     <!-- Local Backup screen -->
     <string name="backup_restore_title">Kopia zapasowa i przywracanie bazy danych</string>
     <string name="backup_to_download_label">Kopia do Download</string>
-    <string name="backup_download_desc">Zapisuje pełną bazę podróży do: Download/BydTripStats/byd_stats_backup_DATA.db</string>
+    <string name="backup_download_desc">Zapisuje pełną bazę podróży do: Download/BydTripStats/byd_stats_backup_DATA.db.gz</string>
     <string name="backup_now_action">Utwórz kopię teraz</string>
     <string name="backup_to_sd_label">Kopia na kartę SD</string>
     <string name="sd_backup_desc">Zapisuje kopię bazy danych w folderze BydTripStats na karcie SD. W przeciwieństwie do kopii w Download przetrwa ona odinstalowanie aplikacji — redundancja poza urządzeniem, którą możesz wyjąć i odczytać na komputerze.</string>
@@ -475,8 +475,8 @@
     <string name="available_backups_label">Dostępne kopie zapasowe:</string>
     <string name="no_backups_found">Nie znaleziono kopii zapasowych. Najpierw utwórz kopię.</string>
     <string name="restore_from_file_action">Przywróć z pliku…</string>
-    <string name="restore_browser_title">Wybierz plik kopii zapasowej (.db)</string>
-    <string name="restore_browser_empty">Brak folderów lub plików .db tutaj</string>
+    <string name="restore_browser_title">Wybierz plik kopii zapasowej (.db, .db.gz)</string>
+    <string name="restore_browser_empty">Brak folderów lub plików .db/.db.gz tutaj</string>
     <string name="file_browser_internal">Pamięć wewnętrzna</string>
     <string name="file_browser_sdcard">Karta SD</string>
     <string name="trim_database_label">Przytnij bazę danych</string>
