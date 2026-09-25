@@ -1114,6 +1114,9 @@ class LocalBackupManager private constructor(private val context: Context) {
         tempFile.copyTo(dbFile, overwrite = true)
         tempFile.delete()
 
+        // The restored history may predate the one-shot repairs whose flags are already set.
+        com.byd.tripstats.data.repository.TripRepository.rearmRepairsAfterRestore(context)
+
         _state.value = BackupState.Success(
             "Database restored successfully.$settingsNote\n" +
                 // Only DiLink-3 relaunches itself; promising it everywhere is how a

@@ -990,6 +990,11 @@ class TripRepository private constructor(context: Context) {
                         backAnchorToJourney = backAnchorToJourney,
                         startReason = startReason
                     )
+                    // The start tick itself shows the car on, so a stop straight after pulling
+                    // away is held like any other (di5StandstillCountsAsCarOn). Without this the
+                    // flag waited for the next moving tick, and a wait right after the start
+                    // still ran into the car-off timeout (beta32, trip 126).
+                    if (DiLink5Platform.isDiLink5 && t.isCarOn) di5MovedInThisProcess = true
                 } else {
                     lastTelemetry     = t
                     lastTelemetryTime = now
@@ -1169,6 +1174,7 @@ class TripRepository private constructor(context: Context) {
                             maxBackdateMs = carOffTimeoutMs(),
                             startReason = "after-stale-close $restartReason"
                         )
+                        if (DiLink5Platform.isDiLink5 && t.isCarOn) di5MovedInThisProcess = true
                         return
                     }
                     lastTelemetry     = t
@@ -2849,9 +2855,27 @@ class TripRepository private constructor(context: Context) {
         private const val PREF_OFFSTATE_BACKFILL_DONE = "offstate_duration_backfill_v4"
         private const val PREF_DURATION_REPAIR_DONE = "duration_repair_v1"
         private const val PREF_FLAT_END_SOC_PANEL_REPAIR_DONE = "flat_end_soc_panel_repair_v1"
-        private const val PREF_GHOST_TRIP_CLEANUP_DONE = "ghost_trip_cleanup_v1"
-        private const val PREF_SENTINEL_DISCHARGE_REPAIR_DONE = "sentinel_discharge_repair_v1"
-        private const val PREF_DI5_DURATION_REPAIR_DONE = "di5_offstate_duration_repair_v1"
+        // v2: beta testers who restored a backup after the v1 run (see rearmRepairsAfterRestore)
+        // get the repairs once more. All three are idempotent, so a repaired DB just logs "fixed 0".
+        private const val PREF_GHOST_TRIP_CLEANUP_DONE = "ghost_trip_cleanup_v2"
+        private const val PREF_SENTINEL_DISCHARGE_REPAIR_DONE = "sentinel_discharge_repair_v2"
+        private const val PREF_DI5_DURATION_REPAIR_DONE = "di5_offstate_duration_repair_v2"
+
+        /**
+         * Re-arms the 2.17.0 one-shot repairs after a database restore. Their "done" flags live in
+         * trip_prefs and describe the database that was just replaced, so a backup restored after
+         * the update — the usual order after a reinstall — was never repaired (beta32: the repairs
+         * ran on a fresh empty DB at 14:41, the backup came back at 14:42). All three are
+         * idempotent, so an already-repaired backup just reports "fixed 0". commit(), not apply():
+         * the process is about to be restarted.
+         */
+        fun rearmRepairsAfterRestore(context: Context) {
+            context.getSharedPreferences("trip_prefs", Context.MODE_PRIVATE).edit()
+                .remove(PREF_GHOST_TRIP_CLEANUP_DONE)
+                .remove(PREF_SENTINEL_DISCHARGE_REPAIR_DONE)
+                .remove(PREF_DI5_DURATION_REPAIR_DONE)
+                .commit()
+        }
 
         /**
          * Gap between consecutive recorded data points (or between the last point
