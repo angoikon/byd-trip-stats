@@ -467,7 +467,7 @@
     <!-- Local Backup screen -->
     <string name="backup_restore_title">Sikkerhetskopiering &amp; gjenoppretting av database</string>
     <string name="backup_to_download_label">Sikkerhetskopier til Download</string>
-    <string name="backup_download_desc">Lagrer den fullstendige turdatabasen til: Download/BydTripStats/byd_stats_backup_DATE.db</string>
+    <string name="backup_download_desc">Lagrer den fullstendige turdatabasen til: Download/BydTripStats/byd_stats_backup_DATE.db.gz</string>
     <string name="backup_now_action">Sikkerhetskopier nå</string>
     <string name="backup_to_sd_label">Sikkerhetskopier til SD-kort</string>
     <string name="sd_backup_desc">Lagrer en kopi av databasen til en BydTripStats-mappe på SD-kortet. I motsetning til nedlastingssikkerhetskopien overlever disse en app-avinstallasjon — enhetsekstern redundans du kan ta ut og lese på en datamaskin.</string>
@@ -478,8 +478,8 @@
     <string name="available_backups_label">Tilgjengelige sikkerhetskopier:</string>
     <string name="no_backups_found">Ingen sikkerhetskopier funnet. Kjør en sikkerhetskopiering først.</string>
     <string name="restore_from_file_action">Gjenopprett fra fil…</string>
-    <string name="restore_browser_title">Velg en sikkerhetskopi (.db)</string>
-    <string name="restore_browser_empty">Ingen mapper eller .db-filer her</string>
+    <string name="restore_browser_title">Velg en sikkerhetskopi (.db, .db.gz)</string>
+    <string name="restore_browser_empty">Ingen mapper eller .db/.db.gz-filer her</string>
     <string name="file_browser_internal">Intern lagring</string>
     <string name="file_browser_sdcard">SD-kort</string>
     <string name="trim_database_label">Trim database</string>

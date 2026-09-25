@@ -464,7 +464,7 @@
     <!-- Local Backup screen -->
     <string name="backup_restore_title">גיבוי ושחזור מסד נתונים</string>
     <string name="backup_to_download_label">גיבוי ל-Download</string>
-    <string name="backup_download_desc">שומר את מסד נתוני הנסיעות המלא אל: Download/BydTripStats/byd_stats_backup_DATE.db</string>
+    <string name="backup_download_desc">שומר את מסד נתוני הנסיעות המלא אל: Download/BydTripStats/byd_stats_backup_DATE.db.gz</string>
     <string name="backup_now_action">גבה עכשיו</string>
     <string name="backup_to_sd_label">גיבוי לכרטיס SD</string>
     <string name="sd_backup_desc">שומר עותק של מסד הנתונים בתיקיית BydTripStats בכרטיס ה-SD. בניגוד לגיבוי ה-Download, אלה שורדים הסרת אפליקציה — יתירות מחוץ למכשיר שאפשר לשלוף ולקרוא במחשב.</string>
@@ -475,8 +475,8 @@
     <string name="available_backups_label">גיבויים זמינים:</string>
     <string name="no_backups_found">לא נמצאו גיבויים. הריצו גיבוי קודם.</string>
     <string name="restore_from_file_action">שחזור מקובץ…</string>
-    <string name="restore_browser_title">בחר קובץ גיבוי (.db)</string>
-    <string name="restore_browser_empty">אין כאן תיקיות או קבצי .db</string>
+    <string name="restore_browser_title">בחר קובץ גיבוי (.db, .db.gz)</string>
+    <string name="restore_browser_empty">אין כאן תיקיות או קבצי .db/.db.gz</string>
     <string name="file_browser_internal">אחסון פנימי</string>
     <string name="file_browser_sdcard">כרטיס SD</string>
     <string name="trim_database_label">דילול מסד הנתונים</string>

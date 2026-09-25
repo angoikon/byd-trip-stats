@@ -464,7 +464,7 @@
     <!-- Local Backup screen -->
     <string name="backup_restore_title">Резервное копирование и восстановление БД</string>
     <string name="backup_to_download_label">Копия в Download</string>
-    <string name="backup_download_desc">Сохраняет полную базу поездок в: Download/BydTripStats/byd_stats_backup_ДАТА.db</string>
+    <string name="backup_download_desc">Сохраняет полную базу поездок в: Download/BydTripStats/byd_stats_backup_ДАТА.db.gz</string>
     <string name="backup_now_action">Создать копию сейчас</string>
     <string name="backup_to_sd_label">Копия на SD-карту</string>
     <string name="sd_backup_desc">Сохраняет копию базы данных в папку BydTripStats на SD-карте. В отличие от копии в Download, она переживает удаление приложения — резерв вне устройства, который можно вынуть и прочитать на компьютере.</string>
@@ -475,8 +475,8 @@
     <string name="available_backups_label">Доступные копии:</string>
     <string name="no_backups_found">Копии не найдены. Сначала создайте копию.</string>
     <string name="restore_from_file_action">Восстановить из файла…</string>
-    <string name="restore_browser_title">Выберите файл резервной копии (.db)</string>
-    <string name="restore_browser_empty">Здесь нет папок или файлов .db</string>
+    <string name="restore_browser_title">Выберите файл резервной копии (.db, .db.gz)</string>
+    <string name="restore_browser_empty">Здесь нет папок или файлов .db/.db.gz</string>
     <string name="file_browser_internal">Внутренняя память</string>
     <string name="file_browser_sdcard">SD-карта</string>
     <string name="trim_database_label">Сжать базу данных</string>

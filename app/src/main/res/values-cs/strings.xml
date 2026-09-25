@@ -464,7 +464,7 @@
     <!-- Local Backup screen -->
     <string name="backup_restore_title">Záloha a obnovení databáze</string>
     <string name="backup_to_download_label">Záloha do Download</string>
-    <string name="backup_download_desc">Ukládá celou databázi jízd do: Download/BydTripStats/byd_stats_backup_DATUM.db</string>
+    <string name="backup_download_desc">Ukládá celou databázi jízd do: Download/BydTripStats/byd_stats_backup_DATUM.db.gz</string>
     <string name="backup_now_action">Zálohovat nyní</string>
     <string name="backup_to_sd_label">Záloha na SD kartu</string>
     <string name="sd_backup_desc">Ukládá kopii databáze do složky BydTripStats na SD kartě. Na rozdíl od zálohy v Download přežije odinstalaci aplikace — redundance mimo zařízení, kterou můžete vyjmout a přečíst na počítači.</string>
@@ -475,8 +475,8 @@
     <string name="available_backups_label">Dostupné zálohy:</string>
     <string name="no_backups_found">Žádné zálohy nenalezeny. Nejprve zálohujte.</string>
     <string name="restore_from_file_action">Obnovit ze souboru…</string>
-    <string name="restore_browser_title">Vyberte záložní soubor (.db)</string>
-    <string name="restore_browser_empty">Žádné složky ani soubory .db zde</string>
+    <string name="restore_browser_title">Vyberte záložní soubor (.db, .db.gz)</string>
+    <string name="restore_browser_empty">Žádné složky ani soubory .db/.db.gz zde</string>
     <string name="file_browser_internal">Interní úložiště</string>
     <string name="file_browser_sdcard">SD karta</string>
     <string name="trim_database_label">Zeštíhlit databázi</string>

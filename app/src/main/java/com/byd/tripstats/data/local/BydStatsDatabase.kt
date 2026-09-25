@@ -22,6 +22,7 @@ import com.byd.tripstats.data.local.entity.ChargingSessionEntity
 import com.byd.tripstats.data.local.entity.ChargingDataPointEntity
 import com.byd.tripstats.data.local.entity.TagEntity
 import com.byd.tripstats.data.local.entity.TripTagCrossRef
+import com.byd.tripstats.data.backup.BackupCodec
 import com.byd.tripstats.util.BackupNaming
 import android.os.Environment
 import java.io.File
@@ -443,7 +444,7 @@ abstract class BydStatsDatabase : RoomDatabase() {
                 .filter { it.exists() }
                 .flatMap { dir ->
                     dir.listFiles()
-                        ?.filter { it.name.endsWith(".db") }
+                        ?.filter { BackupCodec.isBackupName(it.name) }
                         .orEmpty()
                         .toList()
                 }

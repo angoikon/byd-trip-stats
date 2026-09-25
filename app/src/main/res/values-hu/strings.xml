@@ -464,7 +464,7 @@
     <!-- Local Backup screen -->
     <string name="backup_restore_title">Adatbázis mentése és visszaállítása</string>
     <string name="backup_to_download_label">Mentés a Download mappába</string>
-    <string name="backup_download_desc">A teljes útadatbázist ide menti: Download/BydTripStats/byd_stats_backup_DÁTUM.db</string>
+    <string name="backup_download_desc">A teljes útadatbázist ide menti: Download/BydTripStats/byd_stats_backup_DÁTUM.db.gz</string>
     <string name="backup_now_action">Mentés most</string>
     <string name="backup_to_sd_label">Mentés SD-kártyára</string>
     <string name="sd_backup_desc">Az adatbázis másolatát az SD-kártya BydTripStats mappájába menti. A Download-mentéssel ellentétben ezek túlélik az alkalmazás eltávolítását — eszközön kívüli redundancia, amelyet kivehet és számítógépen olvashat.</string>
@@ -475,8 +475,8 @@
     <string name="available_backups_label">Elérhető mentések:</string>
     <string name="no_backups_found">Nem található mentés. Először készítsen egyet.</string>
     <string name="restore_from_file_action">Visszaállítás fájlból…</string>
-    <string name="restore_browser_title">Válasszon biztonsági mentés (.db) fájlt</string>
-    <string name="restore_browser_empty">Nincsenek mappák vagy .db fájlok itt</string>
+    <string name="restore_browser_title">Válasszon biztonsági mentés (.db, .db.gz) fájlt</string>
+    <string name="restore_browser_empty">Nincsenek mappák vagy .db/.db.gz fájlok itt</string>
     <string name="file_browser_internal">Belső tárhely</string>
     <string name="file_browser_sdcard">SD-kártya</string>
     <string name="trim_database_label">Adatbázis karcsúsítása</string>

@@ -476,7 +476,7 @@
     <!-- Local Backup screen -->
     <string name="backup_restore_title">Database Backup &amp; Restore</string>
     <string name="backup_to_download_label">Backup to Download</string>
-    <string name="backup_download_desc">Saves the full trip database to: Download/BydTripStats/byd_stats_backup_DATE.db</string>
+    <string name="backup_download_desc">Saves the full trip database to: Download/BydTripStats/byd_stats_backup_DATE.db.gz</string>
     <string name="backup_now_action">Backup Now</string>
     <string name="backup_to_sd_label">Backup to SD card</string>
     <string name="sd_backup_desc">Saves a copy of the database to a BydTripStats folder on the SD card. Unlike the Download backup, these survive an app uninstall — off-device redundancy you can pull out and read on a computer.</string>
@@ -487,8 +487,8 @@
     <string name="available_backups_label">Available backups:</string>
     <string name="no_backups_found">No backups found. Run a backup first.</string>
     <string name="restore_from_file_action">Restore from file…</string>
-    <string name="restore_browser_title">Select a backup (.db) file</string>
-    <string name="restore_browser_empty">No folders or .db files here</string>
+    <string name="restore_browser_title">Select a backup (.db, .db.gz) file</string>
+    <string name="restore_browser_empty">No folders or .db/.db.gz files here</string>
     <string name="file_browser_internal">Internal storage</string>
     <string name="file_browser_sdcard">SD card</string>
     <string name="trim_database_label">Trim database</string>

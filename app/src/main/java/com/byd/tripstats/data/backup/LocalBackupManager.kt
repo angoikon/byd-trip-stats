@@ -20,17 +20,16 @@ import com.byd.tripstats.util.AppRestart
 import com.byd.tripstats.util.BackupNaming
 import java.io.File
 import java.io.FileInputStream
-import java.io.FileOutputStream
 
 /**
  * Manages local database backup and restore operations.
  *
- * Backup  → saves .db to TWO locations simultaneously:
+ * Backup  → saves a gzip-compressed .db.gz to TWO locations simultaneously:
  *     1. Download/BydTripStats/    (MediaStore, visible in file manager)
  *     2. files/db_backup/          (private app dir, accessible via ADB run-as)
- * Restore → two strategies:
- *   1. File picker (OpenDocument intent) — lets user navigate to any .db file
- *   2. Folder scan — lists .db files from both Download and private db_backup/
+ * Restore → two strategies, both accepting compressed (.db.gz) and plain (.db) backups:
+ *   1. File picker (OpenDocument intent) — lets user navigate to any backup file
+ *   2. Folder scan — lists backups from both Download and private db_backup/
  *
  * DATABASE_NAME must match the string in Room.databaseBuilder() in BydStatsDatabase.kt
  */
@@ -47,7 +46,8 @@ class LocalBackupManager private constructor(private val context: Context) {
         // BYD DiLink names the folder "Download" (not "Downloads" as stock Android does)
         const val BYD_DOWNLOAD_DIR   = "Download"
         const val BACKUP_MIME_TYPE = "application/octet-stream"
-        const val BACKUP_EXTENSION = ".db"
+        const val BACKUP_EXTENSION = BackupCodec.PLAIN_EXTENSION
+        const val COMPRESSED_BACKUP_EXTENSION = BackupCodec.COMPRESSED_EXTENSION
         const val PRIVATE_BACKUP_DIR = "db_backup"
         const val PRIVATE_BACKUP_MAX = 5   // keep newest N backups in private dir
         const val SD_BACKUP_MAX      = 10  // keep newest N backups on the SD card
@@ -100,7 +100,7 @@ class LocalBackupManager private constructor(private val context: Context) {
     // ── Backup ────────────────────────────────────────────────────────────────
 
     /**
-     * Saves the Room database to Download/BydTripStats/byd_stats_backup_DATE.db
+     * Saves the Room database to Download/BydTripStats/byd_stats_backup_DATE.db.gz
      * Uses MediaStore so no WRITE_EXTERNAL_STORAGE permission is needed (API 29+).
      */
     suspend fun backupDatabase() = withContext(Dispatchers.IO) {
@@ -120,38 +120,48 @@ class LocalBackupManager private constructor(private val context: Context) {
             // One timestamp for both artefacts: the settings file is paired back to this
             // database by that segment when the user restores (see [settingsFileFor]).
             val timestamp = BackupNaming.timestamp()
-            val fileName  = BackupNaming.fileName(timestamp = timestamp)
+            val fileName  = BackupNaming.fileName(timestamp = timestamp, extension = COMPRESSED_BACKUP_EXTENSION)
 
-            _state.value = BackupState.InProgress("Saving to Download…")
+            // Compress once into cache; both destinations copy the same archive.
+            _state.value = BackupState.InProgress("Compressing database…")
+            val archive = File(context.cacheDir, fileName)
+            val archiveSize = try {
+                BackupCodec.compress(dbFile, archive)
 
-            val values = android.content.ContentValues().apply {
-                put(MediaStore.Downloads.DISPLAY_NAME, fileName)
-                put(MediaStore.Downloads.MIME_TYPE, BACKUP_MIME_TYPE)
-                put(MediaStore.Downloads.RELATIVE_PATH,
-                    "$BYD_DOWNLOAD_DIR/$BACKUP_SUBFOLDER")
-                put(MediaStore.Downloads.IS_PENDING, 1)
+                _state.value = BackupState.InProgress("Saving to Download…")
+
+                val values = android.content.ContentValues().apply {
+                    put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                    put(MediaStore.Downloads.MIME_TYPE, BACKUP_MIME_TYPE)
+                    put(MediaStore.Downloads.RELATIVE_PATH,
+                        "$BYD_DOWNLOAD_DIR/$BACKUP_SUBFOLDER")
+                    put(MediaStore.Downloads.IS_PENDING, 1)
+                }
+
+                val resolver = context.contentResolver
+                val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+                    ?: throw Exception("Could not create file in Download")
+
+                resolver.openOutputStream(uri)?.use { out ->
+                    FileInputStream(archive).use { input -> input.copyTo(out) }
+                } ?: throw Exception("Could not open output stream")
+
+                // Mark complete — file becomes visible in file manager. Explicitly stamp SIZE/
+                // DATE_MODIFIED here rather than relying on the platform to backfill them on
+                // IS_PENDING clear — this BYD ROM's MediaProvider doesn't, leaving the row stuck
+                // at its insert-time defaults (0 bytes / epoch date) forever.
+                values.clear()
+                values.put(MediaStore.Downloads.IS_PENDING, 0)
+                values.put(MediaStore.Downloads.SIZE, archive.length())
+                values.put(MediaStore.Downloads.DATE_MODIFIED, System.currentTimeMillis() / 1000L)
+                resolver.update(uri, values, null, null)
+
+                // Also write to private app dir for ADB access
+                copyToPrivateBackup(archive, fileName)
+                archive.length()
+            } finally {
+                archive.delete()
             }
-
-            val resolver = context.contentResolver
-            val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
-                ?: throw Exception("Could not create file in Download")
-
-            resolver.openOutputStream(uri)?.use { out ->
-                FileInputStream(dbFile).use { input -> input.copyTo(out) }
-            } ?: throw Exception("Could not open output stream")
-
-            // Mark complete — file becomes visible in file manager. Explicitly stamp SIZE/
-            // DATE_MODIFIED here rather than relying on the platform to backfill them on
-            // IS_PENDING clear — this BYD ROM's MediaProvider doesn't, leaving the row stuck
-            // at its insert-time defaults (0 bytes / epoch date) forever.
-            values.clear()
-            values.put(MediaStore.Downloads.IS_PENDING, 0)
-            values.put(MediaStore.Downloads.SIZE, dbFile.length())
-            values.put(MediaStore.Downloads.DATE_MODIFIED, System.currentTimeMillis() / 1000L)
-            resolver.update(uri, values, null, null)
-
-            // Also write to private app dir for ADB access
-            copyToPrivateBackup(dbFile, fileName)
 
             // Settings live outside the database, so a database-only backup can't put a
             // reinstalled app back the way it was. Written as a sibling file, never as
@@ -159,7 +169,7 @@ class LocalBackupManager private constructor(private val context: Context) {
             _state.value = BackupState.InProgress("Saving settings…")
             val settingsName = writeSettingsSidecar(timestamp, includeCredentialsSetting())
 
-            val sizeMb = "%.1f".format(dbFile.length() / 1_048_576.0)
+            val sizeMb = "%.1f".format(archiveSize / 1_048_576.0)
             _state.value = BackupState.Success(
                 "Saved: $fileName ($sizeMb MB)\nDownload/$BACKUP_SUBFOLDER/ + internal storage" +
                     if (settingsName != null) "\nSettings: $settingsName" else ""
@@ -275,24 +285,27 @@ class LocalBackupManager private constructor(private val context: Context) {
             flushWal(dbFile)
 
             val timestamp = BackupNaming.timestamp()
-            val fileName  = BackupNaming.fileName(timestamp = timestamp)
+            val fileName  = BackupNaming.fileName(timestamp = timestamp, extension = COMPRESSED_BACKUP_EXTENSION)
 
             _state.value = BackupState.InProgress("Saving to SD card…")
             val dest = File(dir, fileName)
-            dbFile.copyTo(dest, overwrite = true)
+            BackupCodec.compress(dbFile, dest)
 
             // Settings sibling, same as the Download backup.
             val settingsName = writeSettingsToSdCard(dir, timestamp)
 
             // Prune old SD backups — keep newest SD_BACKUP_MAX of each kind
-            listOf("db", "json").forEach { ext ->
-                dir.listFiles { f -> f.extension == ext }
+            listOf<(File) -> Boolean>(
+                { BackupCodec.isBackupName(it.name) },
+                { it.extension == "json" },
+            ).forEach { kind ->
+                dir.listFiles { f -> f.isFile && kind(f) }
                     ?.sortedByDescending { it.lastModified() }
                     ?.drop(SD_BACKUP_MAX)
                     ?.forEach { it.delete() }
             }
 
-            val sizeMb = "%.1f".format(dbFile.length() / 1_048_576.0)
+            val sizeMb = "%.1f".format(dest.length() / 1_048_576.0)
             _state.value = BackupState.Success(
                 "Saved to SD card: $SD_BACKUP_FOLDER/$fileName ($sizeMb MB)" +
                     if (settingsName != null) "\nSettings: $settingsName" else ""
@@ -306,12 +319,12 @@ class LocalBackupManager private constructor(private val context: Context) {
         }
     }
 
-    /** Lists .db backups in <SD root>/BydTripStats/. */
+    /** Lists .db / .db.gz backups in <SD root>/BydTripStats/. */
     private fun scanSdCardBackups(): List<BackupFile> {
         return try {
             val dir = sdBackupDir() ?: return emptyList()
             if (!dir.exists()) return emptyList()
-            dir.listFiles { f -> f.extension == "db" }
+            dir.listFiles { f -> f.isFile && BackupCodec.isBackupName(f.name) }
                 ?.sortedByDescending { it.lastModified() }
                 ?.map { f ->
                     BackupFile(
@@ -331,26 +344,27 @@ class LocalBackupManager private constructor(private val context: Context) {
     // ── Restore from URI (file picker) ────────────────────────────────────────
 
     /**
-     * Restores the database from a URI returned by the system file picker.
+     * Restores the database from a URI returned by the system file picker, or from a
+     * scanned backup. Accepts both compressed (.db.gz) and plain (.db) backups.
      * After success the app process is killed so Room reinitialises cleanly.
      */
     suspend fun restoreFromUri(uri: Uri, settingsNote: String = "") = withContext(Dispatchers.IO) {
         try {
             _state.value = BackupState.InProgress("Reading backup file…")
 
-            val resolver = context.contentResolver
-
-            // Validate it looks like a SQLite file
-            resolver.openInputStream(uri)?.use { input ->
-                val header = ByteArray(16)
-                if (input.read(header) < 16 || !isSQLiteFile(header)) {
-                    _state.value = BackupState.Error("Selected file is not a valid database backup.")
-                    return@withContext
-                }
-            } ?: throw Exception("Cannot read selected file")
+            val input = if (uri.scheme == "file") {
+                FileInputStream(File(uri.path!!))
+            } else {
+                context.contentResolver.openInputStream(uri) ?: throw Exception("Cannot read selected file")
+            }
+            val restored = decodeToRestoreTemp(input)
+            if (restored == null) {
+                _state.value = BackupState.Error("Selected file is not a valid database backup.")
+                return@withContext
+            }
 
             _state.value = BackupState.InProgress("Restoring database…")
-            doRestore(uri, resolver, settingsNote)
+            doRestore(restored, settingsNote)
 
         } catch (e: Exception) {
             Log.e(TAG, "Restore from URI failed", e)
@@ -383,7 +397,7 @@ class LocalBackupManager private constructor(private val context: Context) {
     // ── Scan local backups ────────────────────────────────────────────────────
 
     /**
-     * Scans Download/BydTripStats/ for .db files using MediaStore.
+     * Scans Download/BydTripStats/ for .db / .db.gz files using MediaStore.
      * Populates [localBackups] sorted newest first.
      */
     suspend fun scanLocalBackups() = withContext(Dispatchers.IO) {
@@ -399,10 +413,12 @@ class LocalBackupManager private constructor(private val context: Context) {
             )
 
             val selection = "${MediaStore.Downloads.RELATIVE_PATH} LIKE ? " +
-                "AND ${MediaStore.Downloads.DISPLAY_NAME} LIKE ?"
+                "AND (${MediaStore.Downloads.DISPLAY_NAME} LIKE ? " +
+                "OR ${MediaStore.Downloads.DISPLAY_NAME} LIKE ?)"
             val selectionArgs = arrayOf(
                 "%$BACKUP_SUBFOLDER%",
-                "%$BACKUP_EXTENSION"
+                "%$BACKUP_EXTENSION",
+                "%$COMPRESSED_BACKUP_EXTENSION"
             )
 
             val results = mutableListOf<BackupFile>()
@@ -646,7 +662,7 @@ class LocalBackupManager private constructor(private val context: Context) {
         return try {
             val dir = File(context.filesDir, PRIVATE_BACKUP_DIR)
             if (!dir.exists()) return emptyList()
-            dir.listFiles { f -> f.extension == "db" }
+            dir.listFiles { f -> f.isFile && BackupCodec.isBackupName(f.name) }
                 ?.sortedByDescending { it.lastModified() }
                 ?.map { f ->
                     BackupFile(
@@ -682,7 +698,7 @@ class LocalBackupManager private constructor(private val context: Context) {
                 java.io.File(base, "Downloads/$BACKUP_SUBFOLDER")
             ).firstOrNull { it.exists() && it.isDirectory } ?: return emptyList()
 
-            dir.listFiles { f -> f.extension == "db" }
+            dir.listFiles { f -> f.isFile && BackupCodec.isBackupName(f.name) }
                 ?.sortedByDescending { it.lastModified() }
                 ?.map { f ->
                     BackupFile(
@@ -702,18 +718,18 @@ class LocalBackupManager private constructor(private val context: Context) {
 
     // ── Private app dir backup ───────────────────────────────────────────────
 
-    /** Copies the database to files/db_backup/. Keeps newest PRIVATE_BACKUP_MAX files. */
-    private fun copyToPrivateBackup(dbFile: File, fileName: String) {
+    /** Copies a backup archive to files/db_backup/. Keeps newest PRIVATE_BACKUP_MAX files. */
+    private fun copyToPrivateBackup(archive: File, fileName: String) {
         try {
             val dir = File(context.filesDir, PRIVATE_BACKUP_DIR)
             dir.mkdirs()
 
             val dest = File(dir, fileName)
-            dbFile.copyTo(dest, overwrite = true)
+            archive.copyTo(dest, overwrite = true)
             Log.i(TAG, "Private backup written: ${dest.path}")
 
             // Prune old backups — keep newest PRIVATE_BACKUP_MAX
-            val files = dir.listFiles { f -> f.extension == "db" }
+            val files = dir.listFiles { f -> f.isFile && BackupCodec.isBackupName(f.name) }
                 ?.sortedByDescending { it.lastModified() } ?: return
             files.drop(PRIVATE_BACKUP_MAX).forEach {
                 it.delete()
@@ -1017,21 +1033,24 @@ class LocalBackupManager private constructor(private val context: Context) {
 
             val timestamp = BackupNaming.timestamp()
 
-            // Settings only travel with a database that can actually be sent. Over Telegram's
-            // cap, sendFile below refuses the .db and explains why — sending the settings file
-            // anyway would leave a chat message that looks like a backup but holds no trips.
-            // Settings go first so the database's result, success or cap error, owns the banner.
-            if (dbFile.length() <= TelegramManager.TELEGRAM_MAX_FILE_SIZE_BYTES) {
-                sendSettingsToTelegram(telegramManager, timestamp)
-            }
-
-            val fileName = BackupNaming.fileName(timestamp = timestamp)
+            // Compress first: it's the archive, not the raw .db, that has to fit the cap.
+            val fileName = BackupNaming.fileName(timestamp = timestamp, extension = COMPRESSED_BACKUP_EXTENSION)
             val tempFile = File(context.cacheDir, fileName)
-            dbFile.copyTo(tempFile, overwrite = true)
+            try {
+                BackupCodec.compress(dbFile, tempFile)
 
-            telegramManager.sendFile(tempFile, caption = "BYD Trip Stats backup — $timestamp")
+                // Settings only travel with a database that can actually be sent. Over Telegram's
+                // cap, sendFile below refuses the backup and explains why — sending the settings file
+                // anyway would leave a chat message that looks like a backup but holds no trips.
+                // Settings go first so the database's result, success or cap error, owns the banner.
+                if (tempFile.length() <= TelegramManager.TELEGRAM_MAX_FILE_SIZE_BYTES) {
+                    sendSettingsToTelegram(telegramManager, timestamp)
+                }
 
-            tempFile.delete()
+                telegramManager.sendFile(tempFile, caption = "BYD Trip Stats backup — $timestamp")
+            } finally {
+                tempFile.delete()
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Telegram backup prep failed", e)
         }
@@ -1051,18 +1070,19 @@ class LocalBackupManager private constructor(private val context: Context) {
                 val tempFile = telegramManager.downloadBackup(backup, context)
                     ?: return@withContext  // TelegramManager.state already has the error
 
-                // Validate it's a real SQLite file before wiping the live DB
-                val header = ByteArray(16)
-                tempFile.inputStream().use { it.read(header) }
-                if (!isSQLiteFile(header)) {
+                // Decompress if needed and validate it's a real SQLite file before wiping the live DB
+                val restored = try {
+                    decodeToRestoreTemp(tempFile.inputStream())
+                } finally {
                     tempFile.delete()
+                }
+                if (restored == null) {
                     _state.value = BackupState.Error("Downloaded file is not a valid database.")
                     return@withContext
                 }
 
                 _state.value = BackupState.InProgress("Restoring from Telegram backup…")
-                doRestore(android.net.Uri.fromFile(tempFile), context.contentResolver)
-                tempFile.delete()
+                doRestore(restored)
 
             } catch (e: Exception) {
                 Log.e(TAG, "restoreFromTelegram failed", e)
@@ -1076,26 +1096,39 @@ class LocalBackupManager private constructor(private val context: Context) {
 
     // ── Private helpers ───────────────────────────────────────────────────────
 
+    /**
+     * Step 1 of every restore: decodes [input] — gzip-compressed or plain — into a temp
+     * file and checks it is a SQLite database. Done before touching Room, so a bad or
+     * truncated backup never costs the live database. Returns null (temp removed) when
+     * the file is not a usable backup. [input] is closed.
+     */
+    private fun decodeToRestoreTemp(input: java.io.InputStream): File? {
+        val tempFile = File(context.cacheDir, "restore_temp.db")
+        try {
+            BackupCodec.decodeTo(input, tempFile)
+        } catch (e: java.io.IOException) {
+            tempFile.delete()
+            // Only a corrupt or truncated gzip stream means "not a backup". A full disk or a
+            // file-picker read failure propagates so the caller reports "Restore failed: …".
+            if (e !is java.util.zip.ZipException && e !is java.io.EOFException) throw e
+            Log.w(TAG, "Backup could not be decoded: ${e.message}")
+            return null
+        }
+        if (!BackupCodec.isSQLiteFile(tempFile)) {
+            tempFile.delete()
+            return null
+        }
+        return tempFile
+    }
+
+    /** Replaces the live database with [tempFile], a decoded backup from [decodeToRestoreTemp]. */
     private fun doRestore(
-        uri: Uri,
-        resolver: android.content.ContentResolver,
+        tempFile: File,
         settingsNote: String = "",
     ) {
         val dbFile  = context.getDatabasePath(DATABASE_NAME)
         val walFile = File(dbFile.path + "-wal")
         val shmFile = File(dbFile.path + "-shm")
-
-        // Step 1: Copy backup to a temp file first.
-        // We do this before touching Room so we know the source read works.
-        val tempFile = File(context.cacheDir, "restore_temp.db")
-        val inputStream = if (uri.scheme == "file") {
-            FileInputStream(File(uri.path!!))
-        } else {
-            resolver.openInputStream(uri) ?: throw Exception("Could not read backup stream")
-        }
-        inputStream.use { input ->
-            FileOutputStream(tempFile).use { out -> input.copyTo(out) }
-        }
 
         // Step 2: Close Room's connection BEFORE touching the database files.
         // Room auto-checkpoints WAL on close, so closing is sufficient — no need
@@ -1144,12 +1177,5 @@ class LocalBackupManager private constructor(private val context: Context) {
         } catch (e: Exception) {
             Log.w(TAG, "WAL flush warning (non-fatal): ${e.message}")
         }
-    }
-
-    /** Check the first 16 bytes for the SQLite magic header string. */
-    private fun isSQLiteFile(header: ByteArray): Boolean {
-        val magic = "SQLite format 3\u0000"
-        return header.size >= magic.length &&
-            magic.indices.all { header[it] == magic[it].code.toByte() }
     }
 }

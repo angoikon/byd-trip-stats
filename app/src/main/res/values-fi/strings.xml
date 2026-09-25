@@ -467,7 +467,7 @@
     <!-- Local Backup screen -->
     <string name="backup_restore_title">Tietokannan varmuuskopio &amp; palautus</string>
     <string name="backup_to_download_label">Varmuuskopio Download-kansioon</string>
-    <string name="backup_download_desc">Tallentaa koko matkatietokannan kohteeseen: Download/BydTripStats/byd_stats_backup_DATE.db</string>
+    <string name="backup_download_desc">Tallentaa koko matkatietokannan kohteeseen: Download/BydTripStats/byd_stats_backup_DATE.db.gz</string>
     <string name="backup_now_action">Tee varmuuskopio nyt</string>
     <string name="backup_to_sd_label">Varmuuskopio SD-kortille</string>
     <string name="sd_backup_desc">Tallentaa kopion tietokannasta BydTripStats-kansioon SD-kortille. Toisin kuin Lataukset-varmuuskopio, nämä selviävät sovelluksen asennuksen poistamisesta — laitteen ulkopuolinen redundanssi jonka voit ottaa ulos ja lukea tietokoneella.</string>
@@ -478,8 +478,8 @@
     <string name="available_backups_label">Saatavilla olevat varmuuskopiot:</string>
     <string name="no_backups_found">Varmuuskopioita ei löydy. Tee ensin varmuuskopio.</string>
     <string name="restore_from_file_action">Palauta tiedostosta…</string>
-    <string name="restore_browser_title">Valitse varmuuskopiotiedosto (.db)</string>
-    <string name="restore_browser_empty">Ei kansioita tai .db-tiedostoja täällä</string>
+    <string name="restore_browser_title">Valitse varmuuskopiotiedosto (.db, .db.gz)</string>
+    <string name="restore_browser_empty">Ei kansioita tai .db/.db.gz-tiedostoja täällä</string>
     <string name="file_browser_internal">Sisäinen tallennustila</string>
     <string name="file_browser_sdcard">SD-kortti</string>
     <string name="trim_database_label">Karsitse tietokanta</string>

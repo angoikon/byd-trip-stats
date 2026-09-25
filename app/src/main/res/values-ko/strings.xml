@@ -422,7 +422,7 @@
     <string name="remove_tag_action">태그 제거</string>
     <string name="backup_restore_title">데이터베이스 백업 &amp; 복원</string>
     <string name="backup_to_download_label">Download에 백업</string>
-    <string name="backup_download_desc">주행 데이터베이스를 저장합니다: Download/BydTripStats/byd_stats_backup_DATE.db</string>
+    <string name="backup_download_desc">주행 데이터베이스를 저장합니다: Download/BydTripStats/byd_stats_backup_DATE.db.gz</string>
     <string name="backup_now_action">지금 백업</string>
     <string name="backup_to_sd_label">SD 카드에 백업</string>
     <string name="sd_backup_desc">SD 카드의 BydTripStats 폴더에 데이터베이스 복사본을 저장합니다. 다운로드 백업과 달리 앱 삭제 후에도 유지됩니다.</string>
@@ -433,8 +433,8 @@
     <string name="available_backups_label">사용 가능한 백업:</string>
     <string name="no_backups_found">백업을 찾을 수 없습니다. 먼저 백업을 만드세요.</string>
     <string name="restore_from_file_action">파일에서 복원…</string>
-    <string name="restore_browser_title">백업 (.db) 파일 선택</string>
-    <string name="restore_browser_empty">여기에 폴더나 .db 파일이 없습니다</string>
+    <string name="restore_browser_title">백업 (.db, .db.gz) 파일 선택</string>
+    <string name="restore_browser_empty">여기에 폴더나 .db/.db.gz 파일이 없습니다</string>
     <string name="file_browser_internal">내부 저장소</string>
     <string name="file_browser_sdcard">SD 카드</string>
     <string name="trim_database_label">데이터베이스 정리</string>

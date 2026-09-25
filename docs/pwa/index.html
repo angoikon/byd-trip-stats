@@ -511,9 +511,9 @@ span.star { cursor: default; }
       <div id="notif-list"></div>
     </div>
   </div>
-  <label class="load-btn" title="Load a .db backup file">
+  <label class="load-btn" title="Load a .db or .db.gz backup file">
     Load DB
-    <input id="file-input" type="file" accept=".db" />
+    <input id="file-input" type="file" accept=".db,.gz" />
   </label>
 </header>
 
@@ -1223,17 +1223,28 @@ function rows(sql, params = []) {
 function one(sql, params = []) { return rows(sql, params)[0] ?? null; }
 
 // ── File handling ──────────────────────────────────────────────────────────────
+// Backups are gzip-compressed (.db.gz) since 2.17; older ones are plain .db. Tell them
+// apart by the gzip magic bytes, not the name, same as the app's own restore does.
+async function readBackup(file) {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  if (bytes[0] !== 0x1f || bytes[1] !== 0x8b) return bytes;
+  if (typeof DecompressionStream === 'undefined') {
+    throw new Error('This browser cannot open compressed backups — decompress the .db.gz first (e.g. gunzip or 7-Zip) and load the .db.');
+  }
+  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
 async function loadFile(file) {
-  if (!file || !file.name.endsWith('.db')) {
-    alert('Please select a .db backup file.');
+  const name = file?.name.toLowerCase() ?? '';
+  if (!name.endsWith('.db') && !name.endsWith('.db.gz')) {
+    alert('Please select a .db or .db.gz backup file.');
     return;
   }
   showLoading('Loading sql.js…');
   try {
     await ensureSql();
     showLoading('Reading database…');
-    const buf = await file.arrayBuffer();
-    db = new SQL.Database(new Uint8Array(buf));
+    db = new SQL.Database(await readBackup(file));
     const tables = rows("SELECT name FROM sqlite_master WHERE type='table'").map(r => r.name);
     if (!tables.includes('trips')) throw new Error('Not a BYD Trip Stats database.');
     loadSchema();

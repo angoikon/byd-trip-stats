@@ -422,7 +422,7 @@
     <string name="remove_tag_action">Retirer l\'étiquette</string>
     <string name="backup_restore_title">Sauvegarde &amp; Restauration de base de données</string>
     <string name="backup_to_download_label">Sauvegarder dans Download</string>
-    <string name="backup_download_desc">Enregistre la base de données de trajets dans: Download/BydTripStats/byd_stats_backup_DATE.db</string>
+    <string name="backup_download_desc">Enregistre la base de données de trajets dans: Download/BydTripStats/byd_stats_backup_DATE.db.gz</string>
     <string name="backup_now_action">Sauvegarder maintenant</string>
     <string name="backup_to_sd_label">Sauvegarder sur carte SD</string>
     <string name="sd_backup_desc">Enregistre une copie de la base de données sur un dossier BydTripStats sur la carte SD. Contrairement à la sauvegarde Téléchargements, celle-ci survit à une désinstallation.</string>
@@ -433,8 +433,8 @@
     <string name="available_backups_label">Sauvegardes disponibles:</string>
     <string name="no_backups_found">Aucune sauvegarde trouvée. Effectuez d\'abord une sauvegarde.</string>
     <string name="restore_from_file_action">Restaurer depuis un fichier…</string>
-    <string name="restore_browser_title">Sélectionner un fichier de sauvegarde (.db)</string>
-    <string name="restore_browser_empty">Aucun dossier ni fichier .db ici</string>
+    <string name="restore_browser_title">Sélectionner un fichier de sauvegarde (.db, .db.gz)</string>
+    <string name="restore_browser_empty">Aucun dossier ni fichier .db/.db.gz ici</string>
     <string name="file_browser_internal">Stockage interne</string>
     <string name="file_browser_sdcard">Carte SD</string>
     <string name="trim_database_label">Nettoyer la base de données</string>

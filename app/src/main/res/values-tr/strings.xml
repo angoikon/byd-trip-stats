@@ -467,7 +467,7 @@
     <!-- Local Backup screen -->
     <string name="backup_restore_title">Veritabanı Yedekleme &amp; Geri Yükleme</string>
     <string name="backup_to_download_label">Download\'a Yedekle</string>
-    <string name="backup_download_desc">Tam seyahat veritabanını şuraya kaydeder: Download/BydTripStats/byd_stats_backup_DATE.db</string>
+    <string name="backup_download_desc">Tam seyahat veritabanını şuraya kaydeder: Download/BydTripStats/byd_stats_backup_DATE.db.gz</string>
     <string name="backup_now_action">Şimdi Yedekle</string>
     <string name="backup_to_sd_label">SD karta yedekle</string>
     <string name="sd_backup_desc">Veritabanının bir kopyasını SD karttaki BydTripStats klasörüne kaydeder. İndirilenler yedeğinin aksine, bunlar uygulama kaldırmadan sonra da hayatta kalır — bilgisayarda okuyabileceğiniz cihaz dışı yedeklilik.</string>
@@ -478,8 +478,8 @@
     <string name="available_backups_label">Kullanılabilir yedekler:</string>
     <string name="no_backups_found">Yedek bulunamadı. Önce bir yedek alın.</string>
     <string name="restore_from_file_action">Dosyadan geri yükle…</string>
-    <string name="restore_browser_title">Bir yedek (.db) dosyası seçin</string>
-    <string name="restore_browser_empty">Burada klasör veya .db dosyası yok</string>
+    <string name="restore_browser_title">Bir yedek (.db, .db.gz) dosyası seçin</string>
+    <string name="restore_browser_empty">Burada klasör veya .db/.db.gz dosyası yok</string>
     <string name="file_browser_internal">Dahili depolama</string>
     <string name="file_browser_sdcard">SD kart</string>
     <string name="trim_database_label">Veritabanını kırp</string>

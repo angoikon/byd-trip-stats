@@ -464,7 +464,7 @@
     <!-- Local Backup screen -->
     <string name="backup_restore_title">Backup și restaurare bază de date</string>
     <string name="backup_to_download_label">Backup în Download</string>
-    <string name="backup_download_desc">Salvează întreaga bază de date a călătoriilor în: Download/BydTripStats/byd_stats_backup_DATA.db</string>
+    <string name="backup_download_desc">Salvează întreaga bază de date a călătoriilor în: Download/BydTripStats/byd_stats_backup_DATA.db.gz</string>
     <string name="backup_now_action">Backup acum</string>
     <string name="backup_to_sd_label">Backup pe card SD</string>
     <string name="sd_backup_desc">Salvează o copie a bazei de date într-un folder BydTripStats de pe cardul SD. Spre deosebire de backupul din Download, acestea supraviețuiesc dezinstalării aplicației — redundanță în afara dispozitivului, pe care o puteți scoate și citi pe un computer.</string>
@@ -475,8 +475,8 @@
     <string name="available_backups_label">Backupuri disponibile:</string>
     <string name="no_backups_found">Niciun backup găsit. Rulați mai întâi un backup.</string>
     <string name="restore_from_file_action">Restaurează din fișier…</string>
-    <string name="restore_browser_title">Selectează un fișier de rezervă (.db)</string>
-    <string name="restore_browser_empty">Niciun folder sau fișier .db aici</string>
+    <string name="restore_browser_title">Selectează un fișier de rezervă (.db, .db.gz)</string>
+    <string name="restore_browser_empty">Niciun folder sau fișier .db/.db.gz aici</string>
     <string name="file_browser_internal">Stocare internă</string>
     <string name="file_browser_sdcard">Card SD</string>
     <string name="trim_database_label">Comprimă baza de date</string>

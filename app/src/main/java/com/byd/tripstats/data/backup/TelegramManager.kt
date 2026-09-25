@@ -36,13 +36,13 @@ import java.net.URLEncoder
  *   4. Paste token → tap "Validate & Save" → chat ID is fetched automatically
  *
  * BACKUP:
- *   Flushes WAL, reads the .db into memory, sends via multipart/form-data to
+ *   Flushes WAL, gzips the .db into a .db.gz, streams it via multipart/form-data to
  *   https://api.telegram.org/bot{TOKEN}/sendDocument
  *   The file lands in your private Telegram chat, accessible from any device.
  *
  * RESTORE:
- *   Download the .db from your Telegram chat on any device, then use the
- *   file picker or ADB push to restore it.
+ *   Download the .db.gz (or a legacy .db) from your Telegram chat on any device,
+ *   then use the file picker or ADB push to restore it.
  */
 class TelegramManager private constructor(private val context: Context) {
 
@@ -449,7 +449,7 @@ class TelegramManager private constructor(private val context: Context) {
      * that are not restorable databases.
      */
     private fun isBackupFile(fileName: String): Boolean =
-        fileName.endsWith(BackupNaming.EXTENSION, ignoreCase = true)
+        BackupCodec.isBackupName(fileName)
 
     /** Persists metadata for every successfully sent backup so listTelegramBackups()
      *  can reconstruct the list without relying on getUpdates (which only shows
@@ -632,7 +632,7 @@ class TelegramManager private constructor(private val context: Context) {
     // ── Restore from Telegram ─────────────────────────────────────────────────
 
     /**
-     * Scans the bot chat history for .db document messages.
+     * Scans the bot chat history for .db / .db.gz document messages.
      * Populates [telegramBackups] sorted newest-first.
      */
     /**

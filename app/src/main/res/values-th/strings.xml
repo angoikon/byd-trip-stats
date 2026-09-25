@@ -422,7 +422,7 @@
     <string name="remove_tag_action">ลบแท็ก</string>
     <string name="backup_restore_title">สำรองข้อมูล &amp; กู้คืนฐานข้อมูล</string>
     <string name="backup_to_download_label">สำรองไปยัง Download</string>
-    <string name="backup_download_desc">บันทึกฐานข้อมูลการเดินทางไปยัง: Download/BydTripStats/byd_stats_backup_DATE.db</string>
+    <string name="backup_download_desc">บันทึกฐานข้อมูลการเดินทางไปยัง: Download/BydTripStats/byd_stats_backup_DATE.db.gz</string>
     <string name="backup_now_action">สำรองทันที</string>
     <string name="backup_to_sd_label">สำรองไปยัง SD Card</string>
     <string name="sd_backup_desc">บันทึกสำเนาฐานข้อมูลไปยังโฟลเดอร์ BydTripStats บน SD Card ต่างจากการสำรองดาวน์โหลด รายการนี้จะรอดหากถอนการติดตั้ง</string>
@@ -433,8 +433,8 @@
     <string name="available_backups_label">การสำรองที่มี:</string>
     <string name="no_backups_found">ไม่พบการสำรอง สำรองก่อน</string>
     <string name="restore_from_file_action">กู้คืนจากไฟล์…</string>
-    <string name="restore_browser_title">เลือกไฟล์สำรองข้อมูล (.db)</string>
-    <string name="restore_browser_empty">ไม่มีโฟลเดอร์หรือไฟล์ .db ที่นี่</string>
+    <string name="restore_browser_title">เลือกไฟล์สำรองข้อมูล (.db, .db.gz)</string>
+    <string name="restore_browser_empty">ไม่มีโฟลเดอร์หรือไฟล์ .db/.db.gz ที่นี่</string>
     <string name="file_browser_internal">ที่เก็บข้อมูลภายใน</string>
     <string name="file_browser_sdcard">การ์ด SD</string>
     <string name="trim_database_label">ตัดแต่งฐานข้อมูล</string>
