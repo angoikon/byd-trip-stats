@@ -223,6 +223,10 @@ private fun TelegramNotificationsCard(botConnected: Boolean, scope: CoroutineSco
                 )
             }
 
+            // if/else, not an early `return@Column`: returning out of Column's inline lambda here
+            // unbalanced Compose's group stack on recomposition — beta32 crashed on opening this
+            // page (ArrayIndexOutOfBounds in IntStack.peek2 via ComposerImpl.endRoot) on a
+            // DiLink-5 car with no bot linked.
             if (!botConnected) {
                 Spacer(Modifier.height(8.dp))
                 Text(
@@ -230,108 +234,107 @@ private fun TelegramNotificationsCard(botConnected: Boolean, scope: CoroutineSco
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                return@Column
-            }
-
-            Spacer(Modifier.height(8.dp))
-            NotifySwitchRow(
-                label = stringResource(R.string.telegram_notify_enable_label),
-                description = null,
-                checked = enabled,
-                onCheckedChange = { notifier.setEnabled(it) },
-            )
-
-            if (enabled) {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
-
+            } else {
+                Spacer(Modifier.height(8.dp))
                 NotifySwitchRow(
-                    label = stringResource(R.string.telegram_notify_trip_label),
-                    description = stringResource(R.string.telegram_notify_trip_desc),
-                    checked = tripSummary,
-                    onCheckedChange = { notifier.setTripSummaryEnabled(it) },
+                    label = stringResource(R.string.telegram_notify_enable_label),
+                    description = null,
+                    checked = enabled,
+                    onCheckedChange = { notifier.setEnabled(it) },
                 )
 
-                Spacer(Modifier.height(10.dp))
-                NotifySwitchRow(
-                    label = stringResource(R.string.telegram_notify_charging_label),
-                    description = stringResource(R.string.telegram_notify_charging_desc),
-                    checked = chargingFinished,
-                    onCheckedChange = { notifier.setChargingFinishedEnabled(it) },
-                )
+                if (enabled) {
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
 
-                Spacer(Modifier.height(10.dp))
-                if (isPro) {
                     NotifySwitchRow(
-                        label = stringResource(R.string.telegram_notify_imbalance_label),
-                        description = stringResource(R.string.telegram_notify_imbalance_desc),
-                        checked = cellImbalance,
-                        onCheckedChange = { notifier.setCellImbalanceEnabled(it) },
+                        label = stringResource(R.string.telegram_notify_trip_label),
+                        description = stringResource(R.string.telegram_notify_trip_desc),
+                        checked = tripSummary,
+                        onCheckedChange = { notifier.setTripSummaryEnabled(it) },
                     )
-                } else {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                stringResource(R.string.telegram_notify_imbalance_label),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            Text(
-                                stringResource(R.string.telegram_notify_imbalance_pro),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+
+                    Spacer(Modifier.height(10.dp))
+                    NotifySwitchRow(
+                        label = stringResource(R.string.telegram_notify_charging_label),
+                        description = stringResource(R.string.telegram_notify_charging_desc),
+                        checked = chargingFinished,
+                        onCheckedChange = { notifier.setChargingFinishedEnabled(it) },
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+                    if (isPro) {
+                        NotifySwitchRow(
+                            label = stringResource(R.string.telegram_notify_imbalance_label),
+                            description = stringResource(R.string.telegram_notify_imbalance_desc),
+                            checked = cellImbalance,
+                            onCheckedChange = { notifier.setCellImbalanceEnabled(it) },
+                        )
+                    } else {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    stringResource(R.string.telegram_notify_imbalance_label),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                Text(
+                                    stringResource(R.string.telegram_notify_imbalance_pro),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            Icon(
+                                Icons.Filled.Lock,
+                                contentDescription = stringResource(R.string.unlock_pro_action),
+                                modifier = Modifier.size(20.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
-                        Icon(
-                            Icons.Filled.Lock,
-                            contentDescription = stringResource(R.string.unlock_pro_action),
-                            modifier = Modifier.size(20.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    }
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
+
+                    Text(
+                        stringResource(R.string.telegram_notify_parked_note),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+                    OutlinedButton(
+                        onClick = {
+                            testing = true
+                            scope.launch {
+                                testResult = notifier.sendTest()
+                                testing = false
+                            }
+                        },
+                        enabled = !testing,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        if (testing) {
+                            CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                        } else {
+                            Icon(Icons.AutoMirrored.Filled.Send, null, modifier = Modifier.size(18.dp))
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.telegram_notify_test_action))
+                    }
+
+                    testResult?.let { ok ->
+                        Spacer(Modifier.height(8.dp))
+                        TelegramBanner(
+                            text = stringResource(
+                                if (ok) R.string.telegram_notify_test_ok
+                                else R.string.telegram_notify_test_failed
+                            ),
+                            color = if (ok) RegenGreen.copy(alpha = 0.15f)
+                                    else MaterialTheme.colorScheme.errorContainer,
+                            icon = if (ok) Icons.Filled.CheckCircle else Icons.Filled.Error,
+                            iconTint = if (ok) RegenGreen else MaterialTheme.colorScheme.error,
+                            onDismiss = { testResult = null },
                         )
                     }
-                }
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
-
-                Text(
-                    stringResource(R.string.telegram_notify_parked_note),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                Spacer(Modifier.height(10.dp))
-                OutlinedButton(
-                    onClick = {
-                        testing = true
-                        scope.launch {
-                            testResult = notifier.sendTest()
-                            testing = false
-                        }
-                    },
-                    enabled = !testing,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    if (testing) {
-                        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-                    } else {
-                        Icon(Icons.AutoMirrored.Filled.Send, null, modifier = Modifier.size(18.dp))
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.telegram_notify_test_action))
-                }
-
-                testResult?.let { ok ->
-                    Spacer(Modifier.height(8.dp))
-                    TelegramBanner(
-                        text = stringResource(
-                            if (ok) R.string.telegram_notify_test_ok
-                            else R.string.telegram_notify_test_failed
-                        ),
-                        color = if (ok) RegenGreen.copy(alpha = 0.15f)
-                                else MaterialTheme.colorScheme.errorContainer,
-                        icon = if (ok) Icons.Filled.CheckCircle else Icons.Filled.Error,
-                        iconTint = if (ok) RegenGreen else MaterialTheme.colorScheme.error,
-                        onDismiss = { testResult = null },
-                    )
                 }
             }
         }
