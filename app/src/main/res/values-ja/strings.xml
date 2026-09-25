@@ -874,7 +874,7 @@
     <string name="tailnet_installed_not_connected">Tailscale インストール済み、未接続</string>
     <string name="remote_access_label">リモートアクセス</string>
     <string name="remote_access_connected">この車はあなたの tailnet に %1$s として参加しています。上のアドレスは、どこにいても、あなたのどの Tailscale 端末からでも使えます — ADB も同様に、ポート 5555 で使えます。</string>
-    <string name="remote_access_not_detected">companion は自宅ネットワークでしか到達できません。どこからでも到達するには、Tailscale アプリをヘッドユニットとスマートフォンにインストールし、両方を同じアカウントでサインインしてください — すると車は固定の 100.x アドレスを保ち、WiFi がオフの駐車中も含めてモバイルデータ経由で使えます。このアプリには何も追加されず、ルーターのポートも開きません。</string>
+    <string name="remote_access_not_detected">companion は自宅ネットワークでしか到達できません。どこからでも到達するには、設定 → 接続 → Tailscale で車をあなたの Tailscale ネットワークに参加させてください — スマートフォンで QR コードをスキャンしてサインインするだけで、ヘッドユニットに何かをインストールする必要はありません。スマートフォンにも Tailscale を入れておけば、車は固定の 100.x アドレスを保ち、WiFi がオフの駐車中も含めてモバイルデータ経由で使えます。ルーターのポートは開きません。</string>
     <string name="remote_access_tips">Tailscale 管理コンソールで一度設定しておく3つのこと：車のキー有効期限をオフにする（さもないと約6か月で tailnet から外れ、車のところへ行くしか直せません）、車に exit node を設定しない（ABRP・MQTT・Telegram の通信が他人のインターネット接続を経由してしまいます）、そして Funnel を有効にしない（この companion が PIN だけを頼りに公開インターネット上に置かれてしまいます）。</string>
     <string name="remote_access_di5_note">DiLink-5 では、車をオフにしてから約10分後にヘッドユニットが自動的に電源を落とします — そのためリモートアクセスはその時点で止まり、次に車が起動したときに戻ります。車がオンの間は通常どおり動作し、自分の WiFi から離れているときに companion や ADB に到達するのに役立ちます。</string>
     <string name="mqtt_di5_note">DiLink-5 では、車をオフにしてまもなく配信が停止します。ヘッドユニットが約10分以内に自動的に電源を落とし、その後は何も動作しないためです。駐車中に報告してくる車ではなく、駐車から次の走行までの間、Home Assistant に空白があると考えてください。配信は次に車が起動したときに自動的に再開します。</string>
@@ -1281,7 +1281,7 @@
     <string name="discharge_subtitle_lifetime">総放電エネルギー</string>
     <string name="tyre_subtitle_pressure">°C · %1$s 圧力</string>
     <string name="d5_consent_title">車両データへのアクセスを許可しますか？</string>
-    <string name="d5_consent_body">この車のライブデータ（バッテリー、走行可能距離、速度、タイヤ…）を読み取るため、BYD Trip Stats はヘッドユニットの1つのシステム設定（hidden-API 制限）を緩和する必要があります。対象は BYD の車両ライブラリに限定されます。\n\nこれは端末全体の設定です。再起動でリセットされ、アプリは必要なときのみ再適用します。後で設定から変更できます。\n\nこれがないとアプリは動作しますが車両データは表示されません。</string>
+    <string name="d5_consent_body">この車のライブデータ（バッテリー、走行可能距離、速度、タイヤ…）を読み取るため、BYD Trip Stats はヘッドユニットの1つのシステム設定（hidden-API 制限）を緩和する必要があります。対象は BYD の車両ライブラリに限定されます。\n\nこれは端末全体の設定です。再起動でリセットされ、アプリは必要なときのみ再適用します。後で設定から変更できます。\n\nこれがないとアプリは動作しますが車両データは表示されません。\n\nまた、アプリは ADB を常に有効に保ちます。これは任意ではありません。車はシャットダウンのたびに ADB を無効にし、アプリは起動時にそれを再び有効にします。これにより、車を始動したときにアプリが自動で記録を開始できます。</string>
     <string name="d5_consent_allow">許可</string>
     <string name="d5_consent_not_now">後で</string>
     <string name="d5_vehicle_access_section">車両データへのアクセス</string>

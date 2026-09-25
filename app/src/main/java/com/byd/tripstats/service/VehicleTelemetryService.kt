@@ -46,6 +46,7 @@ import com.byd.tripstats.connections.AbrpConnectionManager
 import com.byd.tripstats.connections.MqttConnectionManager
 import com.byd.tripstats.receiver.ServiceRestartReceiver
 import com.byd.tripstats.sdk.BydVehicleDataSource
+import com.byd.tripstats.sdk.DiLink5Platform
 import com.byd.tripstats.sdk.VehicleCompatibilityProbe
 import com.byd.tripstats.sdk.VehicleTelemetrySnapshot
 import kotlinx.coroutines.CoroutineScope
@@ -473,6 +474,13 @@ class VehicleTelemetryService : Service() {
                     val pollIntervalMs = when {
                         lastTelemetry == null -> 0L
                         lastTelemetry.isCarOn -> 1_000L
+                        // DiLink-5: a trip in progress keeps the driving cadence even when isCarOn
+                        // reads false. With no power-state signal there, every slow-down below
+                        // 2 km/h did, and the loop then slept 30 s through the next acceleration —
+                        // those blind windows were stored as off-state and cut a third of the
+                        // trip's duration. DiLink-3's isCarOn holds through a stop, so it is left
+                        // on its own cadence.
+                        DiLink5Platform.isDiLink5 && tripRepository?.isInTrip?.value == true -> 1_000L
                         lastTelemetry.isCharging && lastTelemetry.chargingPower > 23.0 -> 1_000L
                         lastTelemetry.isCharging -> 30_000L      // AC/slow charging: 30s for SoC granularity
                         msSinceLastEvent < 60_000L -> 5_000L     // car awake (recent SDK event) but not driving
@@ -589,7 +597,11 @@ class VehicleTelemetryService : Service() {
                         // chance to register devices and emit its first event.
                         val sdkSilent = vehicleDataSource.lastFeatureEventElapsedMs > 0L &&
                                 msSinceLastEvent > 10 * 60 * 1000L
-                        val effectivelyOff = (!telemetry.isCarOn && !telemetry.isCharging) ||
+                        // A DiLink-5 standstill held as car-on by the trip (see TripRepository.
+                        // di5StandstillHeld; always false on DiLink-3) is a queue, not parking.
+                        val carOnForSelfStop = telemetry.isCarOn ||
+                            tripRepository?.di5StandstillHeld?.value == true
+                        val effectivelyOff = (!carOnForSelfStop && !telemetry.isCharging) ||
                                 (sdkSilent && !telemetry.isCharging)
                         if (effectivelyOff) {
                             if (carOffSinceMs == 0L) {

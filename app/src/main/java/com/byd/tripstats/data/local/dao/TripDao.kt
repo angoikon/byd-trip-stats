@@ -94,6 +94,16 @@ interface TripDataPointDao {
     @Query("SELECT COUNT(*) FROM trip_data_points WHERE tripId = :tripId")
     suspend fun getDataPointCount(tripId: Long): Int
 
+    /** Trips holding a point whose lifetime discharge is outside the plausible range — the
+     *  0xFFFFFF sentinel (see TripRepository.repairSentinelDischarge). Bounds mirror
+     *  isPlausibleTotalDischargeKwh. */
+    @Query("SELECT DISTINCT tripId FROM trip_data_points WHERE totalDischarge >= 1000000 OR totalDischarge <= -1000")
+    suspend fun getTripIdsWithImplausibleDischarge(): List<Long>
+
+    /** Overwrites one point's lifetime discharge. Used by the one-shot sentinel repair. */
+    @Query("UPDATE trip_data_points SET totalDischarge = :value WHERE id = :id")
+    suspend fun updateTotalDischarge(id: Long, value: Double)
+
     @Query("SELECT * FROM trip_data_points WHERE tripId = :tripId AND timestamp >= :startTime AND timestamp <= :endTime ORDER BY timestamp ASC")
     fun getDataPointsInTimeRange(tripId: Long, startTime: Long, endTime: Long): Flow<List<TripDataPointEntity>>
 

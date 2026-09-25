@@ -41,6 +41,9 @@ interface TagDao {
     @Query("DELETE FROM trip_tags WHERE tripId = :tripId")
     suspend fun clearTagsForTrip(tripId: Long)
 
+    @Query("SELECT COUNT(*) FROM trip_tags WHERE tripId = :tripId")
+    suspend fun getTagCountForTrip(tripId: Long): Int
+
     @Query("DELETE FROM trip_tags WHERE tagId = :tagId")
     suspend fun clearTripsForTag(tagId: Long)
 

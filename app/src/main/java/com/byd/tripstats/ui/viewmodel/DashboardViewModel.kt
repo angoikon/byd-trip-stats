@@ -33,6 +33,7 @@ import com.byd.tripstats.data.repository.TripRepository
 import com.byd.tripstats.data.repository.UpdateRepository
 import com.byd.tripstats.BuildConfig
 import com.byd.tripstats.service.VehicleTelemetryService
+import com.byd.tripstats.sdk.DiLink5Platform
 import com.byd.tripstats.sdk.VehicleTelemetrySnapshot
 import com.byd.tripstats.ui.components.RangeDataPoint
 import kotlinx.coroutines.Dispatchers
@@ -1161,6 +1162,14 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         if (suppressJourneyDistance) null
         else telemetry.currentJourneyDriveMileage?.takeIf { isUsableJourneyDistance(it) }
 
+    /**
+     * Car-on as the live trip figures should see it: [VehicleTelemetry.isCarOn], plus a DiLink-5
+     * standstill the trip repository is counting as car-on (TripRepository.di5StandstillHeld —
+     * always false on DiLink-3), so the live TIME, AVG and segment agree with the stored trip.
+     */
+    private fun carOnForLive(telemetry: VehicleTelemetry): Boolean =
+        telemetry.isCarOn || tripRepository.di5StandstillHeld.value
+
     private fun shouldStartLiveDriveSession(inTrip: Boolean, telemetry: VehicleTelemetry): Boolean =
         inTrip ||
             effectiveSpeed(telemetry) > 0.5 ||
@@ -1285,7 +1294,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 )
             )
         }
-        lastTelemetryWasCarOn = telemetry.isCarOn
+        lastTelemetryWasCarOn = carOnForLive(telemetry)
         segmentOffSinceMs = null
         Log.i(
             TAG,
@@ -1472,7 +1481,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         return@collect
                     }
 
-                    if (!telemetry.isCarOn) {
+                    if (!carOnForLive(telemetry)) {
                         if (segmentOffSinceMs == null) segmentOffSinceMs = telemetryMs
                         lastTelemetryWasCarOn = false
                         lastTelemetryTimeMs = telemetryMs
@@ -1506,8 +1515,12 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         // Accumulate off-state time so the live Trip Tracking
                         // card's TIME and AVG reflect actual driving rather
                         // than driving + parked-with-trip-open. Mirrors the
-                        // close-time computation in TripRepository.
-                        if (offDurationMs > 0L) {
+                        // close-time computation in TripRepository — including
+                        // DiLink-5's longer threshold, where a short "off" window
+                        // is a red light (no power-state signal there).
+                        val countsAsParked = !DiLink5Platform.isDiLink5 ||
+                            offDurationMs > TripRepository.offStateGapThresholdMs(isDiLink5 = true)
+                        if (offDurationMs > 0L && countsAsParked) {
                             _liveOffStateMs.value = _liveOffStateMs.value + offDurationMs
                         }
                         segmentOffSinceMs = null
@@ -1674,7 +1687,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
                     val lastDist = _tripDataPoints.value.lastOrNull()?.distanceKm ?: distKm
                     if (distKm - lastDist < SAMPLE_INTERVAL_KM) {
-                        lastTelemetryWasCarOn = telemetry.isCarOn
+                        lastTelemetryWasCarOn = carOnForLive(telemetry)
                         wasInTrip = inTrip
                         return@collect
                     }
@@ -1894,7 +1907,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     // LiveProjectionCache). Keyed by trip id so it can never bleed
                     // into a different trip.
                     currentTripId.value?.let { liveProjectionCache.update(it, _tripDataPoints.value) }
-                    lastTelemetryWasCarOn = telemetry.isCarOn
+                    lastTelemetryWasCarOn = carOnForLive(telemetry)
                 }
                 wasInTrip = inTrip
             }
@@ -2097,10 +2110,14 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 // Case 1 and is a no-op for Case 3 (engine-off cycle) where
                 // journeyAnchor > trip.startOdometer anyway.
                 val journey = journeyDistanceKm(telemetry)
+                // No trip meter (DiLink-5 has none; also suppressed after a manual start/stop):
+                // with no ≥5 min gap found below, the current segment began with the trip.
+                // Anchoring at the *current* odometer instead pinned the segment at 0.0 until
+                // the car moved again — "0.0 (9.9)" on a DiLink-5 dashboard opened after a drive.
                 val journeyAnchor = if (journey != null) {
                     (telemetry.odometer - journey).coerceAtLeast(0.0)
                 } else {
-                    telemetry.odometer
+                    trip.startOdometer
                 }
                 // If the stored data points contain a gap longer than the
                 // segment-reset threshold (i.e. the trip went through at least one
@@ -2148,17 +2165,14 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 _liveSessionStartMs.value = trip.startTime
                 _liveOdometerDistanceKm.value = odometerCumulative
                 // Reconstruct off-state duration from the stored data-point gaps so
-                // the live TIME/AVG match what the trip will store at close. Mirrors
-                // TripRepository.computeOffStateDurationMs — same 20 s threshold.
-                val dbOffStateMs = run {
-                    if (dataPoints.size < 2) return@run 0L
-                    var off = 0L
-                    for (i in 1 until dataPoints.size) {
-                        val gap = dataPoints[i].timestamp - dataPoints[i - 1].timestamp
-                        if (gap > 20_000L) off += gap
-                    }
-                    off
-                }
+                // the live TIME/AVG match what the trip will store at close — the same
+                // function and threshold TripRepository uses at close.
+                val offStateGapMs = TripRepository.offStateGapThresholdMs(DiLink5Platform.isDiLink5)
+                val dbOffStateMs = TripRepository.computeOffStateDurationMs(
+                    points = dataPoints,
+                    tripEndMs = null,
+                    gapThresholdMs = offStateGapMs
+                )
                 // Add the current pending off-state that isn't stored in DB yet — the
                 // car just came back on. segmentOffSinceMs is set when the car turned off
                 // (same ViewModel session); on a fresh ViewModel start (Minimal/Deep Sleep
@@ -2168,7 +2182,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     ?.let { (telemetryMs - it).coerceAtLeast(0L) }
                     ?: dataPoints.lastOrNull()?.let { lastPt ->
                         val gap = telemetryMs - lastPt.timestamp
-                        if (gap > 20_000L) gap else 0L
+                        if (gap > offStateGapMs) gap else 0L
                     } ?: 0L
                 _liveOffStateMs.value = dbOffStateMs + currentOffMs
 
@@ -2434,7 +2448,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     lifetimeWhPerKm.value != null                       -> RangeModel.LIFETIME_AVERAGE
                     else                                                -> RangeModel.BASELINE
                 })
-                lastTelemetryWasCarOn = telemetry.isCarOn
+                lastTelemetryWasCarOn = carOnForLive(telemetry)
                 segmentOffSinceMs = null
                 Log.i(TAG, "Restored trip state for id=$tripId with ${dataPoints.size} points")
             }

@@ -874,7 +874,7 @@
     <string name="tailnet_installed_not_connected">已安裝 Tailscale，未連線</string>
     <string name="remote_access_label">遠端存取</string>
     <string name="remote_access_connected">這輛車在你的 tailnet 上的名稱為 %1$s。上面的位址可從你任何一台 Tailscale 裝置使用，無論你在哪裡——ADB 也一樣，在連接埠 5555。</string>
-    <string name="remote_access_not_detected">companion 只能在你的家庭網路上存取。要從任何地方存取它，請在車機和你的手機上安裝 Tailscale 應用，並用同一帳號登入兩者——車輛隨後會保持一個固定的 100.x 位址，透過行動數據即可使用，包括在 WiFi 關閉的停車期間。不會向此應用新增任何東西，也不會在你的路由器上開放連接埠。</string>
+    <string name="remote_access_not_detected">companion 只能在你的家庭網路上存取。要從任何地方存取它，請在 設定 → 連線 → Tailscale 中將車輛加入你的 Tailscale 網路——用手機掃描 QR 碼即可登入，車機上無需安裝任何東西。你的手機上也裝有 Tailscale 時，車輛會保持一個固定的 100.x 位址，透過行動數據即可使用，包括在 WiFi 關閉的停車期間。不會在你的路由器上開放連接埠。</string>
     <string name="remote_access_tips">在 Tailscale 管理主控台裡一次性設定三件事：關閉該車的金鑰過期（否則約六個月後它會掉出 tailnet，且只能到車上才能修復），不要在車上設定 exit node（那會讓它的 ABRP、MQTT 和 Telegram 流量經過別人的網路連線），不要啟用 Funnel（那會把這個 companion 放到公共網際網路上，僅靠其 PIN 保護）。</string>
     <string name="remote_access_di5_note">在 DiLink-5 上，熄火約十分鐘後車機會自行關機——因此遠端存取會在那時停止，並在車輛下次喚醒時恢復。車輛開著時它正常運作，當你不在自己的 WiFi 附近時，這對存取 companion 或 ADB 仍然有用。</string>
     <string name="mqtt_di5_note">在 DiLink-5 上，熄火後不久發布就會停止：車機會在約十分鐘內自行關機，之後便沒有任何東西在執行。請預期在停車與下次駕駛之間 Home Assistant 會有一段空白，而不是一輛停著的車持續回報。車輛下次喚醒時發布會自動恢復。</string>
@@ -1281,7 +1281,7 @@
     <string name="discharge_subtitle_lifetime">總輸出電量</string>
     <string name="tyre_subtitle_pressure">°C · %1$s 胎壓</string>
     <string name="d5_consent_title">允許存取車輛資料？</string>
-    <string name="d5_consent_body">為讀取本車的即時資料（電池、續航、車速、輪胎…），BYD Trip Stats 需要放寬主機的一項系統設定（hidden-API 限制），僅限於 BYD 車輛程式庫。\n\n這是裝置層級的設定。重新開機後會重設，應用程式僅在需要時重新套用。你可以稍後在「設定」中變更。\n\n沒有它，應用程式仍可執行，但不會顯示車輛資料。</string>
+    <string name="d5_consent_body">為讀取本車的即時資料（電池、續航、車速、輪胎…），BYD Trip Stats 需要放寬主機的一項系統設定（hidden-API 限制），僅限於 BYD 車輛程式庫。\n\n這是裝置層級的設定。重新開機後會重設，應用程式僅在需要時重新套用。你可以稍後在「設定」中變更。\n\n沒有它，應用程式仍可執行，但不會顯示車輛資料。\n\n此外，應用程式會始終保持 ADB 開啟，這一項不可選。車輛每次關機都會關閉 ADB；應用程式啟動時會將其重新開啟，因為這正是車輛啟動時應用程式能自動開始記錄的前提。</string>
     <string name="d5_consent_allow">允許</string>
     <string name="d5_consent_not_now">暫不</string>
     <string name="d5_vehicle_access_section">車輛資料存取</string>

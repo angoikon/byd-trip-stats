@@ -17,6 +17,8 @@ import com.byd.tripstats.data.local.entity.TAG_PALETTE_SIZE
 import com.byd.tripstats.data.model.VehicleTelemetry
 import com.byd.tripstats.data.notify.VehicleEvents
 import com.byd.tripstats.data.preferences.PreferencesManager
+import com.byd.tripstats.sdk.DiLink5Platform
+import com.byd.tripstats.sdk.isPlausibleTotalDischargeKwh
 import com.byd.tripstats.util.DiagLog
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -113,6 +115,26 @@ internal fun decideCarOffStop(
         else                             -> CarOffStopAction.HOLD_FOR_CONFIRM
     }
 }
+
+/**
+ * DiLink-5 only: whether a standstill during a trip counts as the car being on.
+ *
+ * DiLink-5 reports no on/off state — isCarOn there is only speed and power, so every red light
+ * reads as car-off. But BYD's power service force-stops every third-party app within seconds of
+ * the car being switched off (CarPowerService standby, decompiled; seen in diag.log on a Sealion 7
+ * on 2026-09-24: last line 19:22:12, revived process 19:22:23). So a process that has seen this
+ * trip move and is still alive has never seen the car switched off: the standstill is a red light
+ * or a queue, and it counts as it would on DiLink-3. A car-off window that is already open — the
+ * one a revived process inherits from recoverActiveTrip, i.e. a real switch-off — runs its normal
+ * course, and [capMs] bounds the rule should a firmware ever stop force-stopping.
+ */
+internal fun di5StandstillCountsAsCarOn(
+    isDiLink5: Boolean,
+    movedInThisProcess: Boolean,
+    carOffWindowOpen: Boolean,
+    standstillMs: Long,
+    capMs: Long
+): Boolean = isDiLink5 && movedInThisProcess && !carOffWindowOpen && standstillMs < capMs
 
 // ── Trip merge ──────────────────────────────────────────────────────────────
 
@@ -290,6 +312,20 @@ class TripRepository private constructor(context: Context) {
     // Timestamp (ms) when the car turned off during an active trip.
     // 0L means the car is currently on (or no active trip).
     private var carOffSinceMs: Long = 0L
+
+    // DiLink-5 standstill hold — see di5StandstillCountsAsCarOn. Both are per trip and per
+    // process: a process revived after a switch-off starts with di5MovedInThisProcess = false,
+    // so the car-off window it inherits from recoverActiveTrip is never held.
+    private var di5MovedInThisProcess = false
+    private var di5StandstillSinceMs: Long = 0L
+    private val _di5StandstillHeld = MutableStateFlow(false)
+
+    /**
+     * True while a DiLink-5 standstill is being counted as car-on. The service's self-stop and the
+     * live dashboard read car-on through it, so neither treats a red light as parking while the
+     * stored trip counts it. Always false on DiLink-3.
+     */
+    val di5StandstillHeld: StateFlow<Boolean> = _di5StandstillHeld.asStateFlow()
 
     // Set true when the user taps "Keep recording" on the auto-stop prompt: the
     // current car-off window is held open and won't auto-stop or re-prompt. Cleared
@@ -583,6 +619,20 @@ class TripRepository private constructor(context: Context) {
                         .putBoolean(PREF_FLAT_END_SOC_PANEL_REPAIR_DONE, true)
                         .apply()
                 }
+                // 2.17.0 repairs. Ghosts first, so the sentinel repair never spends time on a
+                // 0 km trip that is about to be deleted (several carry the sentinel too).
+                if (!prefs.getBoolean(PREF_GHOST_TRIP_CLEANUP_DONE, false)) {
+                    deleteGhostTrips()
+                    prefs.edit().putBoolean(PREF_GHOST_TRIP_CLEANUP_DONE, true).apply()
+                }
+                if (!prefs.getBoolean(PREF_SENTINEL_DISCHARGE_REPAIR_DONE, false)) {
+                    repairSentinelDischarge()
+                    prefs.edit().putBoolean(PREF_SENTINEL_DISCHARGE_REPAIR_DONE, true).apply()
+                }
+                if (!prefs.getBoolean(PREF_DI5_DURATION_REPAIR_DONE, false)) {
+                    repairDi5OffStateDurations()
+                    prefs.edit().putBoolean(PREF_DI5_DURATION_REPAIR_DONE, true).apply()
+                }
             } catch (e: Exception) {
                 Log.w(TAG, "offStateDuration backfill / repair failed: ${e.message}")
             }
@@ -758,6 +808,146 @@ class TripRepository private constructor(context: Context) {
         )
     }
 
+    /**
+     * One-shot cleanup (2.17.0) of "ghost" trips: auto-started, 0 km, 0 kWh, at most two data
+     * points. They were opened by the odometer going 0.0 → real as the car came online (the
+     * "moved" check didn't require a real previous reading) — typically a DiLink-5 head unit
+     * waking by itself at night — and closed by the car-off timeout 3 min later. Fixed forward
+     * in [autoStartReason].
+     *
+     * The signature is deliberately narrow: a trip that moved at all, recorded a third point,
+     * used any energy, was started by hand, or was favourited or tagged is left alone.
+     */
+    private suspend fun deleteGhostTrips() {
+        val candidates = tripDao.getCompletedTripsBefore(Long.MAX_VALUE).filter { trip ->
+            !trip.isManual && !trip.isFavourite &&
+                (trip.distance ?: 1.0).let { abs(it) < 0.05 } &&
+                (trip.energyConsumed ?: 1.0).let { abs(it) < 0.05 }
+        }
+        var deleted = 0
+        for (trip in candidates) {
+            if (dataPointDao.getDataPointCount(trip.id) > 2) continue
+            if (tagDao.getTagCountForTrip(trip.id) > 0) continue
+            deleteTrip(trip.id)
+            deleted++
+            kotlinx.coroutines.yield()
+        }
+        DiagLog.event(
+            appContext, TAG,
+            "ghost trip cleanup: deleted $deleted / ${candidates.size} candidate trips"
+        )
+    }
+
+    /**
+     * One-shot repair (2.17.0) of BYD's 0xFFFFFF "signal unavailable" value in the lifetime
+     * discharge counter. It arrives on the first reads after the car wakes, so it sits in a trip's
+     * first data points and became the trip's start value: stored energy ≈ −16.77 M kWh, and the
+     * per-speed efficiency breakdown poisoned by the same jump. Fixed forward at the source by
+     * [isPlausibleTotalDischargeKwh].
+     *
+     * Sentinel points take the nearest real reading of the same trip (so their delta to the
+     * neighbour is zero) and a sentinel start takes the first real reading. An end that was
+     * accumulated on top of the sentinel start keeps its accumulated delta, which is real. A trip
+     * with no real reading at all is left alone.
+     */
+    private suspend fun repairSentinelDischarge() {
+        val byRow = tripDao.getCompletedTripsBefore(Long.MAX_VALUE)
+            .filter { trip ->
+                !isPlausibleTotalDischargeKwh(trip.startTotalDischarge) ||
+                    trip.endTotalDischarge?.let { !isPlausibleTotalDischargeKwh(it) } == true
+            }
+            .map { it.id }
+        val candidateIds = (byRow + dataPointDao.getTripIdsWithImplausibleDischarge()).distinct()
+        val maxTripKwh = resolveBatteryKwh() * MAX_PLAUSIBLE_TRIP_BATTERIES
+        var fixed = 0
+        for (tripId in candidateIds) {
+            val trip = tripDao.getTripById(tripId) ?: continue
+            if (trip.isActive) continue
+            val points = dataPointDao.getDataPointsForTripSync(tripId)
+            val real = points.map { p ->
+                p.totalDischarge.takeIf { isPlausibleTotalDischargeKwh(it) && it > 0.0 }
+            }
+            val firstReal = real.firstOrNull { it != null } ?: continue
+            val lastReal = real.lastOrNull { it != null } ?: firstReal
+
+            var previous: Double? = null
+            points.forEachIndexed { i, p ->
+                val v = real[i]
+                if (v != null) {
+                    previous = v
+                } else if (!isPlausibleTotalDischargeKwh(p.totalDischarge)) {
+                    // Leading points have no previous reading; the next real one is firstReal.
+                    dataPointDao.updateTotalDischarge(p.id, previous ?: firstReal)
+                }
+            }
+
+            val startBad = !isPlausibleTotalDischargeKwh(trip.startTotalDischarge)
+            val newStart = if (startBad) firstReal else trip.startTotalDischarge
+            val oldEnd = trip.endTotalDischarge
+            val carried = oldEnd?.let { it - trip.startTotalDischarge }
+            val newEnd = when {
+                oldEnd == null -> null
+                isPlausibleTotalDischargeKwh(oldEnd) -> oldEnd
+                startBad && carried != null && carried in 0.0..maxTripKwh -> newStart + carried
+                else -> lastReal.coerceAtLeast(newStart)
+            }
+            tripDao.updateTrip(trip.copy(startTotalDischarge = newStart, endTotalDischarge = newEnd))
+            try {
+                calculateTripStats(tripId)
+            } catch (e: Exception) {
+                Log.w(TAG, "Stats recalculation after sentinel repair failed for trip $tripId", e)
+            }
+            fixed++
+            kotlinx.coroutines.yield()
+        }
+        DiagLog.event(
+            appContext, TAG,
+            "sentinel discharge repair: fixed $fixed / ${candidateIds.size} candidate trips"
+        )
+    }
+
+    /**
+     * One-shot repair (2.17.0, DiLink-5 only) of stored trip durations. With no power-state
+     * signal, every slow-down below 2 km/h read as car-off: the telemetry loop dropped to its 30 s
+     * parked cadence and slept through the next acceleration, and each blind window was then
+     * subtracted as off-state — about 30 % of all trip time on one car. Recomputed with the rule
+     * new trips use ([offStateGapThresholdMs]), which still subtracts the trailing car-off window
+     * and any in-trip stop over 2 min.
+     *
+     * Only ever lowers the stored off-state. The real driving time was never recorded, so this
+     * is the same estimate a new trip gets, not a measurement.
+     */
+    private suspend fun repairDi5OffStateDurations() {
+        if (!DiLink5Platform.isDiLink5) return
+        val threshold = offStateGapThresholdMs(isDiLink5 = true)
+        val all = tripDao.getCompletedTripsBefore(Long.MAX_VALUE)
+        var fixed = 0
+        for (trip in all) {
+            if (trip.offStateDurationMs <= 0L) continue
+            val points = dataPointDao.getDataPointsForTripSync(trip.id)
+            val off = computeOffStateDurationMs(points, trip.endTime, threshold)
+            if (off >= trip.offStateDurationMs) continue
+            val corrected = trip.copy(offStateDurationMs = off)
+            tripDao.updateTrip(corrected)
+            // Same lightweight stats touch as backfillOffStateDuration: duration and avg speed only.
+            statsDao.getStatsForTrip(trip.id)?.let { stats ->
+                val durationMs = corrected.duration ?: 0L
+                val distance = corrected.distance ?: 0.0
+                statsDao.updateStats(stats.copy(
+                    totalDuration = durationMs,
+                    avgSpeed = if (durationMs > 0L && distance > 0.0)
+                        distance / (durationMs / 3_600_000.0) else stats.avgSpeed
+                ))
+            }
+            fixed++
+            kotlinx.coroutines.yield()
+        }
+        DiagLog.event(
+            appContext, TAG,
+            "DiLink-5 duration repair: fixed $fixed / ${all.size} trips"
+        )
+    }
+
     // ── Event dispatcher ──────────────────────────────────────────────────────
 
     private suspend fun handleEvent(event: TripEvent) {
@@ -785,17 +975,20 @@ class TripRepository private constructor(context: Context) {
             TripState.IDLE -> {
                 val inCooldown = now < manualStopCooldownUntilMs
                 val previousTelemetry = lastTelemetry
-                if (!inCooldown && autoTripDetection && shouldAutoStart(t, previousTelemetry)) {
+                val startReason = if (!inCooldown && autoTripDetection)
+                    autoStartReason(t, previousTelemetry) else null
+                if (startReason != null) {
                     val backAnchorToJourney = shouldBackAnchorTripStart(previousTelemetry, t)
                     // Assign lastTelemetry AFTER the check so odometer
                     // comparison uses the actual previous packet.
-                    Log.i(TAG, "Auto-detect: movement → starting trip")
+                    Log.i(TAG, "Auto-detect: movement → starting trip ($startReason)")
                     lastTelemetry     = t
                     lastTelemetryTime = now
                     doStartTrip(
                         telemetry = t,
                         isManual = false,
-                        backAnchorToJourney = backAnchorToJourney
+                        backAnchorToJourney = backAnchorToJourney,
+                        startReason = startReason
                     )
                 } else {
                     lastTelemetry     = t
@@ -818,7 +1011,12 @@ class TripRepository private constructor(context: Context) {
                 // isCarOn is false in edge cases (slow speed, gear=P, etc.).
                 updateTripMetrics(t)
 
-                if (!t.isCarOn) {
+                // DiLink-5: a standstill in a process that has run since the trip last moved is
+                // the car waiting with the power on — it takes the car-on path below and is
+                // recorded like any other part of the trip. Always false on DiLink-3.
+                val di5StandstillIsCarOn = di5HoldStandstill(t, now)
+
+                if (!t.isCarOn && !di5StandstillIsCarOn) {
                     if (carOffSinceMs == 0L) {
                         carOffSinceMs = resolveCarOffSince(now)
                         Log.i(TAG, "Engine OFF — will end trip in ${carOffTimeoutMs() / 60_000} min if not restarted")
@@ -860,7 +1058,18 @@ class TripRepository private constructor(context: Context) {
 
                 // Engine came back on — continue trip seamlessly
                 if (carOffSinceMs > 0L) {
-                    Log.i(TAG, "Engine back ON after ${(now - carOffSinceMs) / 1000}s — continuing trip")
+                    val offSec = (now - carOffSinceMs) / 1000
+                    Log.i(TAG, "Engine back ON after ${offSec}s — continuing trip")
+                    // Persisted, because this is what explains a trip's duration afterwards. On
+                    // DiLink-5 a standstill with the app running never opens this window (it is
+                    // logged as "standstill during trip"), so here it usually means the car was
+                    // switched off and on again. Sub-10 s windows are flicker around the 2 km/h threshold.
+                    if (offSec >= 10) {
+                        DiagLog.event(
+                            appContext, TAG,
+                            "car-off window during trip id=${_currentTripId.value} lasted ${offSec}s"
+                        )
+                    }
                     carOffSinceMs = 0L
                     // The car-off window is over — drop any held auto-stop prompt and the
                     // user's "keep" flag so a future stop is evaluated fresh.
@@ -947,7 +1156,9 @@ class TripRepository private constructor(context: Context) {
                     // Re-evaluate this same packet for a new auto-start rather than
                     // discarding it — avoids a one-packet hole after stale-trip close.
                     val inCooldown = now < manualStopCooldownUntilMs
-                    if (!inCooldown && autoTripDetection && shouldAutoStart(t, null)) {
+                    val restartReason = if (!inCooldown && autoTripDetection)
+                        autoStartReason(t, null) else null
+                    if (restartReason != null) {
                         Log.i(TAG, "Immediately re-starting trip after stale close")
                         lastTelemetry     = t
                         lastTelemetryTime = now
@@ -955,7 +1166,8 @@ class TripRepository private constructor(context: Context) {
                             telemetry = t,
                             isManual = false,
                             backAnchorToJourney = true,
-                            maxBackdateMs = carOffTimeoutMs()
+                            maxBackdateMs = carOffTimeoutMs(),
+                            startReason = "after-stale-close $restartReason"
                         )
                         return
                     }
@@ -987,6 +1199,50 @@ class TripRepository private constructor(context: Context) {
                 lastTelemetryTime = now
             }
         }
+    }
+
+    /**
+     * DiLink-5 standstill bookkeeping for one ACTIVE tick; true when this tick's car-off reading
+     * is to be treated as car-on (see [di5StandstillCountsAsCarOn]). A no-op returning false on
+     * DiLink-3.
+     */
+    private fun di5HoldStandstill(t: VehicleTelemetry, now: Long): Boolean {
+        if (!DiLink5Platform.isDiLink5) return false
+        if (t.isCarOn) {
+            // Logged from a minute up, so a long wait is explained without a line per red light.
+            if (di5StandstillSinceMs > 0L && _di5StandstillHeld.value) {
+                val sec = (now - di5StandstillSinceMs) / 1000
+                if (sec >= 60) {
+                    DiagLog.event(
+                        appContext, TAG,
+                        "standstill during trip id=${_currentTripId.value} lasted ${sec}s — " +
+                            "counted as car on (app ran throughout)"
+                    )
+                }
+            }
+            di5StandstillSinceMs = 0L
+            di5MovedInThisProcess = true
+            _di5StandstillHeld.value = false
+            return false
+        }
+        if (di5StandstillSinceMs == 0L) di5StandstillSinceMs = now
+        val held = di5StandstillCountsAsCarOn(
+            isDiLink5          = true,
+            movedInThisProcess = di5MovedInThisProcess,
+            carOffWindowOpen   = carOffSinceMs > 0L,
+            standstillMs       = now - di5StandstillSinceMs,
+            capMs              = MAX_KEPT_OFF_MS
+        )
+        if (!held && _di5StandstillHeld.value) {
+            // Only the cap ends a hold while standing — hand it to the normal car-off timeout.
+            DiagLog.event(
+                appContext, TAG,
+                "standstill during trip id=${_currentTripId.value} reached " +
+                    "${MAX_KEPT_OFF_MS / 60_000} min with the app running — handing it to the car-off timeout"
+            )
+        }
+        _di5StandstillHeld.value = held
+        return held
     }
 
     private suspend fun handleManualStart() {
@@ -1080,7 +1336,13 @@ class TripRepository private constructor(context: Context) {
         // engine-off timeout. This matches the in-flight logic: engine-off
         // for less than the timeout means the trip continues.
         val STALE_THRESHOLD = carOffTimeoutMs()
-        val storedOffSince = trailingStoredCarOffStart(dataPoints)
+        // DiLink-5: an open trip at process start means the previous process died mid-trip, and
+        // there that is the car being switched off — BYD force-stops the app within seconds of
+        // it. The dead process's last point is the switch-off. Standstill points before it were
+        // recorded with the car on (di5StandstillCountsAsCarOn) and must not be read back as
+        // parked time; they look exactly like car-off points to trailingStoredCarOffStart.
+        val storedOffSince = if (DiLink5Platform.isDiLink5) lastPoint?.timestamp
+                             else trailingStoredCarOffStart(dataPoints)
         val staleBecauseCarOff = storedOffSince != null && now - storedOffSince > STALE_THRESHOLD
 
         // Seed best-known distance / discharge / min-SoC from recorded data
@@ -1194,6 +1456,10 @@ class TripRepository private constructor(context: Context) {
     }
 
     private suspend fun resolveCarOffSince(now: Long): Long {
+        // DiLink-5's stored standstill points were recorded with the car on, so they can't date a
+        // switch-off. A window opened live there (a trip that never moved, or the standstill cap)
+        // starts now; one inherited from a dead process is set by recoverActiveTrip instead.
+        if (DiLink5Platform.isDiLink5) return now
         val tripId = _currentTripId.value ?: return now
         val storedOffSince = trailingStoredCarOffStart(dataPointDao.getDataPointsForTripSync(tripId))
         if (storedOffSince != null && storedOffSince < now) {
@@ -1238,7 +1504,8 @@ class TripRepository private constructor(context: Context) {
         telemetry: VehicleTelemetry,
         isManual: Boolean,
         backAnchorToJourney: Boolean,
-        maxBackdateMs: Long = 8 * 60 * 60 * 1000L
+        maxBackdateMs: Long = 8 * 60 * 60 * 1000L,
+        startReason: String? = null
     ) {
         val now = System.currentTimeMillis()
         // Back-anchor using the car's journey counter so a trip opened mid-drive
@@ -1341,7 +1608,7 @@ class TripRepository private constructor(context: Context) {
             "trip start id=$tripId manual=$isManual " +
                 "soc=${"%.1f".format(telemetry.soc)} panel=${telemetry.socPanel} " +
                 "odo=${"%.1f".format(startOdometer)} backdate=${clampedBackdateMs / 1000}s " +
-                "journey=$journeyKm backAnchor=$backAnchorToJourney"
+                "journey=$journeyKm backAnchor=$backAnchorToJourney reason=${startReason ?: "-"}"
         )
     }
 
@@ -1523,7 +1790,8 @@ class TripRepository private constructor(context: Context) {
         // time rather than driving + parked-with-trip-still-open.
         val offStateMs = computeOffStateDurationMs(
             points = dataPointDao.getDataPointsForTripSync(tripId),
-            tripEndMs = endTime
+            tripEndMs = endTime,
+            gapThresholdMs = offStateGapThresholdMs(DiLink5Platform.isDiLink5)
         )
 
         tripDao.updateTrip(
@@ -1637,6 +1905,9 @@ class TripRepository private constructor(context: Context) {
         keepCurrentOffWindow  = false
         lastLoggedCarOffAction = null
         _pendingAutoStop.value = false
+        di5MovedInThisProcess = false
+        di5StandstillSinceMs  = 0L
+        _di5StandstillHeld.value = false
         tripBestDistanceKm    = 0.0
         tripBestTotalDischarge = 0.0
         tripIntegratedDischargeKwh = 0.0
@@ -1661,12 +1932,21 @@ class TripRepository private constructor(context: Context) {
 
     // ── Auto-start detection ──────────────────────────────────────────────────
 
-    private fun shouldAutoStart(
+    /**
+     * Why [t] should open a trip, or null if it shouldn't. The reason is carried into the
+     * `trip start` diag.log line: release builds strip Log, and without it a 0 km "ghost" trip
+     * could only be explained by ruling the other paths out by hand.
+     */
+    private fun autoStartReason(
         t: VehicleTelemetry,
         previousTelemetry: VehicleTelemetry?
-    ): Boolean {
+    ): String? {
         // All available signals may not arrive on every packet.
+        // Both odometer readings must be real. The odometer falls back to 0.0 until the car
+        // reports it, so "0 → 14355" as the car comes online is not movement — that jump opened
+        // a 3-minute, 0 km trip every time a DiLink-5 head unit woke by itself (e.g. at night).
         val movedByOdometer = previousTelemetry != null &&
+            previousTelemetry.odometer > 0.0 &&
             t.odometer > previousTelemetry.odometer + 0.01
         val effectiveSpeed = maxOf(t.speed, t.locationGpsSpeed ?: 0.0)
         val drivetrainAlive = t.engineSpeedFront > 0 ||
@@ -1677,27 +1957,23 @@ class TripRepository private constructor(context: Context) {
         // Primary: car on, in drive gear, any movement signal
         if (carLooksOn && t.gear in DRIVE_GEARS) {
             if (effectiveSpeed > 2.0 || drivetrainAlive || movedByOdometer) {
-                Log.i(TAG, "shouldAutoStart: YES (primary) — carOn=${t.carOn} " +
-                    "gear=${t.gear} speed=$effectiveSpeed power=${t.enginePower} " +
-                    "frontRpm=${t.engineSpeedFront} rearRpm=${t.engineSpeedRear} " +
-                    "odomMoved=$movedByOdometer")
-                return true
+                return "primary carOn=${t.carOn} gear=${t.gear} " +
+                    "speed=${"%.1f".format(effectiveSpeed)} power=${t.enginePower} " +
+                    "rpmF=${t.engineSpeedFront} rpmR=${t.engineSpeedRear} odoMoved=$movedByOdometer"
             }
         }
         // Fallbacks: unambiguous movement even if carOn/gear not yet populated
         if (effectiveSpeed > 5.0) {
-            Log.i(TAG, "shouldAutoStart: YES (speed fallback) speed=$effectiveSpeed")
-            return true
+            return "speed=${"%.1f".format(effectiveSpeed)} gps=${t.locationGpsSpeed}"
         }
         if (movedByOdometer) {
-            Log.i(TAG, "shouldAutoStart: YES (odometer moved)")
-            return true
+            return "odometer ${"%.1f".format(previousTelemetry?.odometer)}→${"%.1f".format(t.odometer)}"
         }
         if (drivetrainAlive && t.gear in DRIVE_GEARS) {
-            Log.i(TAG, "shouldAutoStart: YES (drivetrain alive in drive gear)")
-            return true
+            return "drivetrain gear=${t.gear} power=${t.enginePower} " +
+                "rpmF=${t.engineSpeedFront} rpmR=${t.engineSpeedRear}"
         }
-        return false
+        return null
     }
 
     // ── Data-point throttle ───────────────────────────────────────────────────
@@ -2573,6 +2849,9 @@ class TripRepository private constructor(context: Context) {
         private const val PREF_OFFSTATE_BACKFILL_DONE = "offstate_duration_backfill_v4"
         private const val PREF_DURATION_REPAIR_DONE = "duration_repair_v1"
         private const val PREF_FLAT_END_SOC_PANEL_REPAIR_DONE = "flat_end_soc_panel_repair_v1"
+        private const val PREF_GHOST_TRIP_CLEANUP_DONE = "ghost_trip_cleanup_v1"
+        private const val PREF_SENTINEL_DISCHARGE_REPAIR_DONE = "sentinel_discharge_repair_v1"
+        private const val PREF_DI5_DURATION_REPAIR_DONE = "di5_offstate_duration_repair_v1"
 
         /**
          * Gap between consecutive recorded data points (or between the last point
@@ -2581,6 +2860,22 @@ class TripRepository private constructor(context: Context) {
          * above the noise floor and below any plausible mid-traffic event.
          */
         private const val OFFSTATE_GAP_THRESHOLD_MS = 20_000L
+
+        /**
+         * DiLink-5 counterpart of [OFFSTATE_GAP_THRESHOLD_MS] for gaps *inside* a trip. There is
+         * no power-state signal on DiLink-5 (carOn is always 0, gear reads "P" below 5 km/h), so
+         * isCarOn is only speed/power and every red light with a light foot reads as car-off.
+         * Trips recorded before 2.17.0 have those stops as gaps, and the one-off repair
+         * (repairDi5OffStateDurations) counts the short ones as driving by this rule. New trips
+         * record through a standstill (di5StandstillCountsAsCarOn), so a gap now means the app
+         * was dead — the car switched off and on again — and this only lets a switch-off of
+         * under 2 minutes, or a stalled loop, count as trip time instead of parked.
+         */
+        private const val DI5_OFFSTATE_GAP_THRESHOLD_MS = 120_000L
+
+        /** Shortest in-trip gap that counts as parked-with-trip-open on this head unit. */
+        fun offStateGapThresholdMs(isDiLink5: Boolean): Long =
+            if (isDiLink5) DI5_OFFSTATE_GAP_THRESHOLD_MS else OFFSTATE_GAP_THRESHOLD_MS
 
         /**
          * Largest time gap between the end of the earlier trip and the start of the
@@ -2634,16 +2929,21 @@ class TripRepository private constructor(context: Context) {
          * These represent time when the car was off but the trip stayed open
          * (the configurable engine-off resume window, plus the trailing window
          * before the timeout closes the trip).
+         *
+         * [gapThresholdMs] applies to gaps between points only — see
+         * [offStateGapThresholdMs]. The trailing window keeps the 20 s rule on every
+         * head unit: it is the car-off timeout itself, so it is always parked time.
          */
         fun computeOffStateDurationMs(
             points: List<TripDataPointEntity>,
-            tripEndMs: Long?
+            tripEndMs: Long?,
+            gapThresholdMs: Long = OFFSTATE_GAP_THRESHOLD_MS
         ): Long {
             if (points.isEmpty()) return 0L
             var off = 0L
             for (i in 1 until points.size) {
                 val gap = points[i].timestamp - points[i - 1].timestamp
-                if (gap > OFFSTATE_GAP_THRESHOLD_MS) off += gap
+                if (gap > gapThresholdMs) off += gap
             }
             if (tripEndMs != null) {
                 val tail = tripEndMs - points.last().timestamp

@@ -1,6 +1,7 @@
 package com.byd.tripstats.sdk
 
 import android.content.Context
+import android.os.PowerManager
 import android.os.SystemClock
 import android.util.Log
 import android.hardware.bydauto.statistic.AbsBYDAutoStatisticListener
@@ -77,6 +78,18 @@ class Dilink5Client {
     // Latest HV bus readings from collectdata events → real power = V·I.
     private var lastHvVolt: Int = 0
     private var lastHvCurrent: Int? = null
+
+    // ── Car on/off probe (diagnostic only — feeds nothing) ───────────────────────
+    // DiLink-5 gives the app no car-on signal, so the trip logic infers it (TripRepository.
+    // di5StandstillCountsAsCarOn). The DiLink-5 ACC state is read from two
+    // system properties: sys.accanim.status (0 = on, >0 = off) and sys.byd.power_mode (standby/
+    // sleep = off, startup = on, "display on" = head unit awake, which a parked cloud wake also
+    // shows). Logged here with the screen state, on change only, to learn whether they hold on
+    // these cars and whether this app can read them at all. Deliberately no BYD SDK device: no
+    // new getInstance, no listener, no permission — as BYD listeners (gearbox,
+    // bodywork) might be throwing on their internal threads, and a crash + revive loop is the DiLink-5
+    // boot-loop pattern. isCarOn does not read any of this.
+    private var lastCarState: String? = null
 
     // derived-power state
     private var lastUsableKwh: Double = Double.NaN
@@ -234,6 +247,7 @@ class Dilink5Client {
         sensorListener = null; pm2p5Listener = null; energyListener = null; acListener = null
         chargingDev = null; speedDev = null; healthDev = null; tyreDev = null; collectDataDev = null; instrumentDev = null; otaDev = null; acDev = null; settingDev = null
         sensorDev = null; pm2p5Dev = null; energyDev = null
+        lastCarState = null
         Log.i(tag, "stopped")
     }
 
@@ -255,6 +269,7 @@ class Dilink5Client {
         // it gates each ~100 m projection sample as EV vs ICE distance (see the ICE-aware projection).
         // Returns 0/absent on BEVs → filtered out in applyDilink5Phev, so this is a no-op there.
         reflGetInt(energyDev, "getEnergyMode")?.let { ds.applyDilink5Phev(energyMode = it) }
+        probeCarState(ds)
         if (!slowTick) return
         // SLOW (~30s): the statistic LISTENER already pushes soc/mileage/range live, so these getters
         // are only a missed-callback backstop; SOH barely changes. No need to read them every tick.
@@ -635,6 +650,31 @@ class Dilink5Client {
             Log.w(tag, "ac battery-temp probe listener failed: ${c.javaClass.simpleName}: ${c.message}")
         }
     }
+
+    // Written only when a value changes — a property flipping, the screen going on or off. Speed and
+    // power ride along for context but don't trigger a line themselves.
+    private fun probeCarState(ds: BydVehicleDataSource) {
+        val screen = (appCtx?.getSystemService(Context.POWER_SERVICE) as? PowerManager)?.isInteractive
+        val state = "accanim=${systemProperty("sys.accanim.status")} " +
+            "powerMode=${systemProperty("sys.byd.power_mode")} " +
+            "screen=${when (screen) { true -> "on"; false -> "off"; null -> "-" }}"
+        if (state == lastCarState) return
+        lastCarState = state
+        val s = ds.vehicleSnapshot.value
+        diag("🔌 car-state: $state (speed=${"%.0f".format(s.directSpeedKmh)} power=${s.enginePower ?: "-"})")
+    }
+
+    private val systemPropertiesGet by lazy {
+        runCatching {
+            Class.forName("android.os.SystemProperties").getMethod("get", String::class.java, String::class.java)
+        }.getOrNull()
+    }
+
+    // "-" when the property is unset or SELinux keeps it from this app — which is itself the answer
+    // to whether the app could use it.
+    private fun systemProperty(key: String): String = runCatching {
+        systemPropertiesGet?.invoke(null, key, "") as? String
+    }.getOrNull()?.trim()?.takeIf { it.isNotEmpty() }?.replace(Regex("\\s+"), "_")?.take(40) ?: "-"
 
     // Real driving power = HV volts × amps / 1000. Sign follows the current sign (regen negative).
     // NOTE: verify sign convention on-car (drive should be positive); flip here if inverted.

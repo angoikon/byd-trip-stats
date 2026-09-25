@@ -108,6 +108,13 @@ private const val WEDGE_GPS_THRESHOLD_KMH = 8.0
 private const val WEDGE_CONFIRM_MS = 10_000L
 private const val DRIVE_MODE_UNKNOWN = 0
 
+// Lifetime discharge counter (kWh). BYD reports "signal unavailable" as all-ones, 0xFFFFFF
+// (16777215), typically on the first read after the car wakes — it became the start anchor of
+// the next trip and stored ≈ −16.77 M kWh. The SDK documents {-1000, 1676721.4}; nothing real
+// comes near 1 GWh.
+internal fun isPlausibleTotalDischargeKwh(kwh: Double): Boolean =
+    kwh.isFinite() && kwh > -1_000.0 && kwh < 1_000_000.0
+
 private enum class InstrumentTyrePressureEncoding {
     CENTI_BAR,
     DECI_PSI,
@@ -1004,7 +1011,10 @@ class BydVehicleDataSource(context: Context) {
 
     private fun filterBmsSocGlitch(candidate: Double): Double {
         val last = lastSocBmsFiltered
-        if (last == null || socBmsHeldOnce || kotlin.math.abs(candidate - last) <= SOC_BMS_GLITCH_STEP) {
+        // A 0.0 baseline is the BMS not reporting yet (seen at every DiLink-5 wake), not a
+        // reading — treat it as no baseline, or the first real value is suppressed as a jump.
+        if (last == null || last <= 0.0 || socBmsHeldOnce ||
+            kotlin.math.abs(candidate - last) <= SOC_BMS_GLITCH_STEP) {
             lastSocBmsFiltered = candidate
             socBmsHeldOnce = false
             return candidate
@@ -1432,7 +1442,12 @@ class BydVehicleDataSource(context: Context) {
             }
         }
 
-        tryDevice("Gearbox") {
+        // Not on DiLink-5. There it has only ever failed (SecurityException: BYDAUTO_GEARBOX_COMMON),
+        // and once that permission is granted for the car on/off probe this listener would become
+        // live — the open-source Overdrive app disabled exactly this gearbox listener after its
+        // learningEPB() path killed the BYD device manager's HandlerThread. DiLink-5 reads the gear
+        // selector by polling getGearboxAutoModeType() in Dilink5Client's probe instead.
+        if (!DiLink5Platform.isDiLink5) tryDevice("Gearbox") {
             gearboxDevice = BYDAutoGearboxDevice.getInstance(ctx)?.also {
                 it.registerListener(gearboxListener)
                 Log.i(TAG, "✅ GearboxDevice registered")
@@ -3507,7 +3522,10 @@ class BydVehicleDataSource(context: Context) {
             val fuelRangeRaw = invokeIntGetter(device, *m48["fuelRange"].orEmpty().toTypedArray())
             val fuelRange = fuelRangeRaw?.takeIf { it in 0..1000 }
 
+            // Sentinel → null, i.e. the same as a failed read, which the trip path already
+            // treats as stale (see isPlausibleTotalDischargeKwh).
             val totalElecCon = invokeDoubleGetter(device, *m48["totalElecCon"].orEmpty().toTypedArray())
+                ?.takeIf { isPlausibleTotalDischargeKwh(it) }
             val totalElecConPhm = invokeDoubleGetter(device, *m48["totalElecConPhm"].orEmpty().toTypedArray())
                 ?.takeIf { it in 5.0..50.0 }
 
@@ -5066,8 +5084,11 @@ class BydVehicleDataSource(context: Context) {
             }
             "onTotalElecConChanged" -> {
                 val total = args?.firstOrNull().asDoubleOrNull()
-                _vehicleSnapshot.value = _vehicleSnapshot.value.copy(statisticTotalElecConValue = total)
-                publishSnapshot()
+                // A sentinel event carries no reading — ignore it rather than store it.
+                if (total == null || isPlausibleTotalDischargeKwh(total)) {
+                    _vehicleSnapshot.value = _vehicleSnapshot.value.copy(statisticTotalElecConValue = total)
+                    publishSnapshot()
+                }
                 Log.d(TAG, "📈 totalElecCon=$total")
             }
             "onTotalElecConPHMChanged" -> {

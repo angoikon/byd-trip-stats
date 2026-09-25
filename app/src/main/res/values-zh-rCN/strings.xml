@@ -874,7 +874,7 @@
     <string name="tailnet_installed_not_connected">已安装 Tailscale，未连接</string>
     <string name="remote_access_label">远程访问</string>
     <string name="remote_access_connected">这辆车在你的 tailnet 上的名称为 %1$s。上面的地址可从你任何一台 Tailscale 设备使用，无论你在哪里——ADB 也一样，在端口 5555。</string>
-    <string name="remote_access_not_detected">companion 只能在你的家庭网络上访问。要从任何地方访问它，请在车机和你的手机上安装 Tailscale 应用，并用同一账号登录两者——车辆随后会保持一个固定的 100.x 地址，通过移动数据即可使用，包括在 WiFi 关闭的泊车期间。不会向此应用添加任何东西，也不会在你的路由器上开放端口。</string>
+    <string name="remote_access_not_detected">companion 只能在你的家庭网络上访问。要从任何地方访问它，请在 设置 → 连接 → Tailscale 中将车辆加入你的 Tailscale 网络——用手机扫描二维码即可登录，车机上无需安装任何东西。你的手机上也装有 Tailscale 时，车辆会保持一个固定的 100.x 地址，通过移动数据即可使用，包括在 WiFi 关闭的泊车期间。不会在你的路由器上开放端口。</string>
     <string name="remote_access_tips">在 Tailscale 管理控制台里一次性设置三件事：关闭该车的密钥过期（否则约六个月后它会掉出 tailnet，且只能到车上才能修复），不要在车上设置 exit node（那会让它的 ABRP、MQTT 和 Telegram 流量经过别人的网络连接），不要启用 Funnel（那会把这个 companion 放到公共互联网上，仅靠其 PIN 保护）。</string>
     <string name="remote_access_di5_note">在 DiLink-5 上，熄火约十分钟后车机会自行关机——因此远程访问会在那时停止，并在车辆下次唤醒时恢复。车辆开着时它正常工作，当你不在自己的 WiFi 附近时，这对访问 companion 或 ADB 仍然有用。</string>
     <string name="mqtt_di5_note">在 DiLink-5 上，熄火后不久发布就会停止：车机会在约十分钟内自行关机，之后便没有任何东西在运行。请预期在停车与下次驾驶之间 Home Assistant 会有一段空白，而不是一辆停着的车持续上报。车辆下次唤醒时发布会自动恢复。</string>
@@ -1281,7 +1281,7 @@
     <string name="discharge_subtitle_lifetime">总输出电量</string>
     <string name="tyre_subtitle_pressure">°C · %1$s 胎压</string>
     <string name="d5_consent_title">允许访问车辆数据？</string>
-    <string name="d5_consent_body">为读取本车的实时数据（电池、续航、车速、轮胎…），BYD Trip Stats 需要放宽主机的一项系统设置（hidden-API 限制），仅限于 BYD 车辆库。\n\n这是设备级设置。重启后会重置，应用仅在需要时重新应用。你可以稍后在“设置”中更改。\n\n没有它，应用仍可运行，但不会显示车辆数据。</string>
+    <string name="d5_consent_body">为读取本车的实时数据（电池、续航、车速、轮胎…），BYD Trip Stats 需要放宽主机的一项系统设置（hidden-API 限制），仅限于 BYD 车辆库。\n\n这是设备级设置。重启后会重置，应用仅在需要时重新应用。你可以稍后在“设置”中更改。\n\n没有它，应用仍可运行，但不会显示车辆数据。\n\n此外，应用会始终保持 ADB 开启，这一项不可选。车辆每次关机都会关闭 ADB；应用启动时会将其重新开启，因为这正是车辆启动时应用能自动开始记录的前提。</string>
     <string name="d5_consent_allow">允许</string>
     <string name="d5_consent_not_now">暂不</string>
     <string name="d5_vehicle_access_section">车辆数据访问</string>
