@@ -574,7 +574,7 @@
     <string name="tailscale_step_3">3. 複製金鑰（以 tskey-auth- 開頭）並貼到下方，然後輕觸「連線」。車輛會加入你的網路，並從此保持同一位址。</string>
     <string name="tailscale_step_4">4. 在你的手機或筆電上安裝 Tailscale，並登入同一帳號。任何已登入的裝置都能存取車輛——其他裝置都不能。</string>
     <string name="tailscale_console_warnings">值得在管理主控台裡做一次：開啟 Machines → 你的車 → Disable key expiry，否則大約六個月後它會掉出你的網路，且只能到車上才能修復。不要在車上設定 exit node（那會讓它的 ABRP、MQTT 和 Telegram 流量經過別人的網路連線），也不要啟用 Funnel（那會把 web companion 放到公共網際網路上，僅靠其 PIN 保護）。</string>
-    <string name="tailscale_di5_note">在 DiLink-5 上，熄火時車輛會強制停止每個應用，因此遠端存取會隨車輛一起停止，並在車輛下次喚醒時恢復。</string>
+    <string name="tailscale_di5_note">在 DiLink-5 上，熄火約十分鐘後車機會自行關機，因此遠端存取會在那時停止，並在車輛下次喚醒時恢復。</string>
     <string name="telegram_title_label">Telegram</string>
     <string name="telegram_card_desc">你自己的私人機器人——傳送備份和車輛通知</string>
     <string name="status_not_connected_label">未連線</string>
@@ -876,7 +876,9 @@
     <string name="remote_access_connected">這輛車在你的 tailnet 上的名稱為 %1$s。上面的位址可從你任何一台 Tailscale 裝置使用，無論你在哪裡——ADB 也一樣，在連接埠 5555。</string>
     <string name="remote_access_not_detected">companion 只能在你的家庭網路上存取。要從任何地方存取它，請在車機和你的手機上安裝 Tailscale 應用，並用同一帳號登入兩者——車輛隨後會保持一個固定的 100.x 位址，透過行動數據即可使用，包括在 WiFi 關閉的停車期間。不會向此應用新增任何東西，也不會在你的路由器上開放連接埠。</string>
     <string name="remote_access_tips">在 Tailscale 管理主控台裡一次性設定三件事：關閉該車的金鑰過期（否則約六個月後它會掉出 tailnet，且只能到車上才能修復），不要在車上設定 exit node（那會讓它的 ABRP、MQTT 和 Telegram 流量經過別人的網路連線），不要啟用 Funnel（那會把這個 companion 放到公共網際網路上，僅靠其 PIN 保護）。</string>
-    <string name="remote_access_di5_note">在 DiLink-5 上，熄火時你的車會強制停止每個應用，包括 Tailscale——因此遠端存取會隨車輛一起停止，並在車輛下次喚醒時恢復。車輛開著時它正常運作，當你不在自己的 WiFi 附近時，這對存取 companion 或 ADB 仍然有用。</string>
+    <string name="remote_access_di5_note">在 DiLink-5 上，熄火約十分鐘後車機會自行關機——因此遠端存取會在那時停止，並在車輛下次喚醒時恢復。車輛開著時它正常運作，當你不在自己的 WiFi 附近時，這對存取 companion 或 ADB 仍然有用。</string>
+    <string name="mqtt_di5_note">在 DiLink-5 上，熄火後不久發布就會停止：車機會在約十分鐘內自行關機，之後便沒有任何東西在執行。請預期在停車與下次駕駛之間 Home Assistant 會有一段空白，而不是一輛停著的車持續回報。車輛下次喚醒時發布會自動恢復。</string>
+    <string name="abrp_di5_note">在 DiLink-5 上，熄火後不久遙測就會停止：車機會在約十分鐘內自行關機，之後便沒有任何東西在執行。因此停車期間的充電記錄不會即時傳送到 ABRP——但它們仍會記錄在車上並顯示在應用中。車輛下次喚醒時傳送會自動恢復。</string>
     <string name="web_copy_url_cd">複製URL</string>
     <string name="chart_no_tyre_data">本次行程未記錄輪胎氣壓資料</string>
 

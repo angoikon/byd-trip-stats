@@ -87,6 +87,15 @@ internal fun AbrpConnectionSection(context: Context, scope: CoroutineScope) {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            // Parked charging is the case people actually notice missing here, so say it before
+            // they conclude the token is wrong. Not a gate — while the car is on it works normally.
+            if (com.byd.tripstats.sdk.DiLink5Platform.isDiLink5) {
+                Text(
+                    stringResource(R.string.abrp_di5_note),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,

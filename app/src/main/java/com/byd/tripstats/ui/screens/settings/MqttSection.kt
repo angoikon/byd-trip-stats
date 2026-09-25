@@ -90,6 +90,17 @@ internal fun MqttConnectionSection(context: Context, scope: CoroutineScope) {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            // Stated up front rather than in a FAQ: a parked car that stops reporting looks exactly
+            // like a broken broker, and someone would reasonably spend an evening on TLS and topics
+            // before suspecting the head unit simply powered off. Not a gate — while the car is on
+            // MQTT behaves as it does on DiLink-3.
+            if (com.byd.tripstats.sdk.DiLink5Platform.isDiLink5) {
+                Text(
+                    stringResource(R.string.mqtt_di5_note),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
