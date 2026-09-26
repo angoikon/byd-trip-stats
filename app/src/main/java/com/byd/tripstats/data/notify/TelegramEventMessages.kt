@@ -1,5 +1,9 @@
 package com.byd.tripstats.data.notify
 
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -56,11 +60,19 @@ object TelegramEventMessages {
         energyRatePerKwh: Double?,
         currencySymbol: String,
         imperial: Boolean,
+        startTimeMs: Long? = null,
+        endTimeMs: Long? = null,
+        socFromBms: Boolean = false,
+        zone: ZoneId = ZoneId.systemDefault(),
     ): VehicleEvent {
         val distUnit = if (imperial) "mi" else "km"
         val consUnit = if (imperial) "kWh/100mi" else "kWh/100km"
         val speedUnit = if (imperial) "mph" else "km/h"
         val lines = mutableListOf<String>()
+
+        // When the trip happened. A summary can arrive hours late — queued while the car had no
+        // link, e.g. parked underground — and without this it reads exactly like a fresh one.
+        if (startTimeMs != null && endTimeMs != null) lines += timeRange(startTimeMs, endTimeMs, zone)
 
         val distance = if (imperial) distanceKm * KM_TO_MI else distanceKm
         val firstLine = StringBuilder("${fmt(distance, 1)} $distUnit")
@@ -90,8 +102,9 @@ object TelegramEventMessages {
 
         if (endSoc != null) {
             val used = startSoc - endSoc
-            val usedText = if (used > 0) " (−${fmt(used, 0)}%)" else ""
-            lines += "SoC ${fmt(startSoc, 0)}% → ${fmt(endSoc, 0)}%$usedText"
+            val usedText = if (used > 0) " (−${socValue(used, socFromBms)}%)" else ""
+            lines += "${socLabel(socFromBms)} ${socValue(startSoc, socFromBms)}% → " +
+                "${socValue(endSoc, socFromBms)}%$usedText"
         }
 
         // The app hides cost when no rate is resolvable (no tariff and no priced charge); a null
@@ -132,9 +145,16 @@ object TelegramEventMessages {
         peakKw: Double,
         ratePerKwh: Double?,
         currencySymbol: String,
+        socFromBms: Boolean = false,
+        startTimeMs: Long? = null,
+        endTimeMs: Long? = null,
+        zone: ZoneId = ZoneId.systemDefault(),
     ): VehicleEvent {
         val complete = socEnd >= FULL_SOC_PCT
         val lines = mutableListOf<String>()
+
+        // Same reason as the trip card: a queued message must say which session it describes.
+        if (startTimeMs != null && endTimeMs != null) lines += timeRange(startTimeMs, endTimeMs, zone)
 
         val detail = StringBuilder()
         kwhAdded?.takeIf { it > 0 }?.let { detail.append("Added ${fmt(it, 2)} kWh") }
@@ -143,7 +163,7 @@ object TelegramEventMessages {
         }
         if (detail.isNotEmpty()) lines += detail.toString()
 
-        lines += "SoC ${fmt(socStart, 0)}% → ${fmt(socEnd, 0)}%"
+        lines += "${socLabel(socFromBms)} ${socValue(socStart, socFromBms)}% → ${socValue(socEnd, socFromBms)}%"
 
         // A session reconstructed from the SoC delta has no power readings at all; one recorded
         // live has both. Emit only what was actually measured.
@@ -196,6 +216,29 @@ object TelegramEventMessages {
     /** Locale-independent: a German head unit must not emit "18,3" into a bot message. */
     private fun fmt(value: Double, decimals: Int): String =
         String.format(java.util.Locale.US, "%.${decimals}f", value)
+
+    // SoC as the trip screen shows it for the selected source (Settings → SoC): the BMS reading
+    // with one decimal and labelled, the panel reading as whole percent. Rounding BMS to whole
+    // numbers made it indistinguishable from the panel value.
+    private fun socLabel(bms: Boolean): String = if (bms) "SoC (BMS)" else "SoC"
+    private fun socValue(value: Double, bms: Boolean): String = fmt(value, if (bms) 1 else 0)
+
+    /**
+     * "14:14 → 15:20", 24-hour like the trip screens; a trip that crosses midnight carries both
+     * dates ("Sep 26 23:50 → Sep 27 00:40"). The end is the trip's stored end time — the same one
+     * History shows — which for an auto-stopped trip includes the car-off timeout.
+     */
+    internal fun timeRange(startMs: Long, endMs: Long, zone: ZoneId): String {
+        val time = DateTimeFormatter.ofPattern("HH:mm", Locale.US).withZone(zone)
+        val dated = DateTimeFormatter.ofPattern("MMM dd HH:mm", Locale.US).withZone(zone)
+        val start = Instant.ofEpochMilli(startMs)
+        val end = Instant.ofEpochMilli(endMs)
+        return if (start.atZone(zone).toLocalDate() == end.atZone(zone).toLocalDate()) {
+            "${time.format(start)} → ${time.format(end)}"
+        } else {
+            "${dated.format(start)} → ${dated.format(end)}"
+        }
+    }
 
     /** "45 min" / "1 h 23 min" / "38 s" — no zero-padding, no leading "0 h". */
     internal fun duration(ms: Long): String {

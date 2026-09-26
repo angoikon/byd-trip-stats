@@ -479,6 +479,15 @@ class ChargingRepository private constructor(context: Context) {
             return
         }
 
+        if (isBmsRestRebound(socDelta, previousShutdownState?.socPanel ?: 0, telemetry.socPanel)) {
+            com.byd.tripstats.util.DiagLog.event(
+                appContext, TAG,
+                "charge reconstruction skipped: BMS ${"%.1f".format(lastSoc)} → ${"%.1f".format(telemetry.soc)}% " +
+                    "but panel ${previousShutdownState?.socPanel} → ${telemetry.socPanel}% — rest rebound, not a charge"
+            )
+            return
+        }
+
         // Duplicate guard
         val recent = sessionDao.getMostRecentSession()
         if (recent != null && recent.startTime >= lastTimestamp - OVERLAP_GUARD_MS) {
@@ -587,6 +596,20 @@ class ChargingRepository private constructor(context: Context) {
         private const val KEY_LAST_VOLTAGE    = "last_voltage"
         private const val KEY_LAST_SOC_PANEL  = "last_soc_panel"
 
+        /**
+         * The BMS reading drops further than the panel under load and creeps back up once the
+         * pack rests — 1–2 % after a drive, with the panel unmoved (DiLink-3 Seal, 2026-09-26:
+         * BMS 48.7 → 50.2 % over 4.5 h parked underground, panel 50 → 50). Taken as a charge,
+         * that rebound stored phantom "Reconstructed" sessions of ~1.2–1.4 kWh. A real charge
+         * moves the panel as well, so a BMS rise below [MAX_BMS_REST_REBOUND_PCT] with the panel
+         * unchanged (or lower) is a rebound. Above it the BMS alone is trusted, in case the panel
+         * still reads its pre-charge value on the first packet after wake; with either panel
+         * reading missing (0) the check stands aside.
+         */
+        internal fun isBmsRestRebound(bmsRisePct: Double, panelBefore: Int, panelNow: Int): Boolean =
+            panelBefore > 0 && panelNow > 0 && panelNow <= panelBefore && bmsRisePct < MAX_BMS_REST_REBOUND_PCT
+
+        private const val MAX_BMS_REST_REBOUND_PCT = 3.0
         private const val MIN_SOC_DELTA_PCT   = 1.0
         private const val MIN_KWH_ADDED       = 0.3
         private const val MIN_RECONSTRUCTION_GAP_MS = 30_000L

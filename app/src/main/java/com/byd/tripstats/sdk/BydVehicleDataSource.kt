@@ -115,6 +115,17 @@ private const val DRIVE_MODE_UNKNOWN = 0
 internal fun isPlausibleTotalDischargeKwh(kwh: Double): Boolean =
     kwh.isFinite() && kwh > -1_000.0 && kwh < 1_000_000.0
 
+// The bodywork power level as a carOn value, for cars that report no power state. SDK §6.1.9
+// `int getPowerLevel()`: 0x0 OFF / 0x1 ACC / 0x2 ON; the change listener also reports 3 = OK/READY.
+// ON/OK → 2; OFF and ACC (infotainment only, not drivable) → 0; anything else is a sentinel → null.
+// Verified on a DiLink-3 car 2026-09-26: 2 in P with the power on, 0 after every switch-off, and
+// flipping within seconds of the ignition-on broadcast.
+internal fun carOnFromBodyworkPowerLevel(level: Int?): Int? = when (level) {
+    2, 3 -> 2
+    0, 1 -> 0
+    else -> null
+}
+
 private enum class InstrumentTyrePressureEncoding {
     CENTI_BAR,
     DECI_PSI,
@@ -318,6 +329,17 @@ data class VehicleTelemetrySnapshot(
         )
     }
 
+    /**
+     * carOn as the app uses it (null = no source): the power state, else the MCU status, else — on
+     * DiLink-3 cars that report neither (carOn=- on the dev car) — the bodywork power level. Without
+     * that last one, sitting in P with the power on read as switched off there and the trip
+     * auto-stopped after the timeout. Not DiLink-5: bodywork is virtualized there, and its trips go
+     * by process continuity instead (TripRepository.di5StandstillCountsAsCarOn).
+     */
+    fun effectiveCarOn(): Int? = powerStateRaw?.coerceIn(0, 2)
+        ?: powerMcuStatus?.coerceIn(0, 2)
+        ?: carOnFromBodyworkPowerLevel(bodyworkPowerLevel)?.takeIf { !DiLink5Platform.isDiLink5 }
+
     fun toTelemetry(carConfig: CarConfig? = null): VehicleTelemetry {
         val batteryKwh = carConfig?.batteryKwh ?: 0.0
         val fallbackSoh = statisticBatterySoh
@@ -376,9 +398,7 @@ data class VehicleTelemetrySnapshot(
             ?: statisticTotalMileageValue?.toDouble()
             ?: 0.0
         val currentDatetime = Instant.now().toString()
-        val derivedCarOn = powerStateRaw?.coerceIn(0, 2)
-            ?: powerMcuStatus?.coerceIn(0, 2)
-            ?: 0
+        val derivedCarOn = effectiveCarOn() ?: 0
 
         // DC-charge synchronous fallback. The BMS charging listener (gun/work/capacity) is the
         // primary detector, but its *pushed* callbacks can go silent — the SDK event-delivery
@@ -1573,12 +1593,22 @@ class BydVehicleDataSource(context: Context) {
             onRegistered = { device ->
                 bodyworkDevice = device
                 Log.i(TAG, "✅ BodyworkDevice registered (${device.javaClass.name})")
+                // DiLink-3 only, no class name (diag.log gets shared): see logBodyworkSnapshot.
+                if (!DiLink5Platform.isDiLink5) DiagLog.event(appContext, TAG, "🚗 bodywork device registered")
                 dumpForCompatProbe("bodywork", device)
                 logBodyworkSnapshot(device)
                 registerEventMirrorListener(device, "Bodywork")
                 anySuccess = true
             },
-            onEvent = null
+            onEvent = null,
+            onUnavailable = { lastError ->
+                if (!DiLink5Platform.isDiLink5) {
+                    DiagLog.event(
+                        appContext, TAG,
+                        "🚗 bodywork device unavailable (${lastError ?: "getInstance returned null"}) — no power-level source"
+                    )
+                }
+            }
         )
 
         tryDynamicDevice(
@@ -1782,6 +1812,14 @@ class BydVehicleDataSource(context: Context) {
             },
             onEvent = null
         )
+        // DiLink-3: whether the device behind the carOn fallback exists at all (see
+        // logDi3PowerStateIfChanged). No class name — it's a private mapping.
+        if (!DiLink5Platform.isDiLink5) {
+            DiagLog.event(
+                appContext, TAG,
+                if (powerDevice != null) "🔋 power device registered" else "🔋 power device unavailable"
+            )
+        }
 
         tryDynamicDevice(
             label = "Sensor",
@@ -2287,6 +2325,9 @@ class BydVehicleDataSource(context: Context) {
         listenerInterfaceName: String?,
         onRegistered: (Any) -> Unit,
         onEvent: ((String, Array<out Any?>?) -> Unit)?,
+        // Called with the last candidate's failure when none binds (null = getInstance returned
+        // null). The warning below is Log-only and so invisible in a release build.
+        onUnavailable: ((String?) -> Unit)? = null,
     ) {
         var lastError: String? = null
         classNames.forEach { className ->
@@ -2322,10 +2363,14 @@ class BydVehicleDataSource(context: Context) {
             } catch (e: NoSuchMethodException) {
                 lastError = e.message
             } catch (e: Throwable) {
-                lastError = "${e.javaClass.simpleName}: ${e.message}"
+                // getInstance runs reflectively: the real failure (e.g. a SecurityException naming
+                // the missing permission) is the InvocationTargetException's cause.
+                val c = (e as? java.lang.reflect.InvocationTargetException)?.cause ?: e
+                lastError = "${c.javaClass.simpleName}: ${c.message}"
             }
         }
         Log.w(TAG, "⚠️ $label unavailable: tried ${classNames.joinToString()} last=$lastError")
+        onUnavailable?.invoke(lastError)
     }
 
     private fun logChargingSnapshot(device: BYDAutoChargingDevice) {
@@ -2446,7 +2491,7 @@ class BydVehicleDataSource(context: Context) {
                                 "work=${chargerWorkState ?: "-"} type=${chargingType ?: "-"} mode=${chargingMode ?: "-"} " +
                                 "cap=${chargingCapacity ?: "-"} chargeState=${state ?: "-"} " +
                                 "gear=${snap.gear} enginePower=${snap.enginePower} " +
-                                "carOn=${snap.powerStateRaw ?: snap.powerMcuStatus ?: "-"}")
+                                "carOn=${snap.effectiveCarOn() ?: "-"}")
                     }
                 }
             }
@@ -2604,6 +2649,35 @@ class BydVehicleDataSource(context: Context) {
         }
     }
 
+    /**
+     * DiLink-3 only, diagnostic. Some DiLink-3 cars never report the power state (`carOn=-` on the
+     * dev car), so this bodywork power level is now their carOn (carOnFromBodyworkPowerLevel; SDK
+     * §6.1.9 `int getPowerLevel()`: 0x0 OFF / 0x1 ACC / 0x2 ON, listener adds 3 = OK/READY — the
+     * signal Overdrive and Electro use). This line keeps both sources on record, so a car where they
+     * disagree, or where the value never moves, can be told apart from a log alone. Runs every 5 s,
+     * so it writes only when a value changes.
+     */
+    private fun logDi3BodyworkPowerIfChanged(
+        device: Any,
+        mappedLevel: Int?,
+        publicLevel: Int?,
+        mappedSystemState: Int?,
+    ) {
+        if (DiLink5Platform.isDiLink5) return
+        val publicSystemState = invokeIntGetter(device, "getAutoSystemState")
+        val state = "powerLevel mapped=${mappedLevel ?: "null"} public=${publicLevel ?: "null"} " +
+            "autoSystemState mapped=${mappedSystemState ?: "null"} public=${publicSystemState ?: "null"}"
+        if (state == lastDi3BodyworkPowerState) return
+        lastDi3BodyworkPowerState = state
+        val snap = _vehicleSnapshot.value
+        DiagLog.event(
+            appContext, TAG,
+            "🚗 bodywork poll: $state (gear=${_gear.value} speed=${"%.0f".format(snap.directSpeedKmh)} " +
+                "carOn=${snap.effectiveCarOn() ?: "-"})"
+        )
+    }
+    private var lastDi3BodyworkPowerState: String? = null
+
     private fun logBodyworkSnapshot(device: Any) {
         try {
             val autoSystemState = m29["autoSystemState"]?.takeIf { it.isNotEmpty() }?.let { invokeIntGetter(device, it) }
@@ -2618,7 +2692,12 @@ class BydVehicleDataSource(context: Context) {
             val battery12vVoltage = batteryPowerValue
                 ?.takeIf { it in 90..180 }
                 ?.let { it / 10.0 }
-            val powerLevel = m29["powerLevel"]?.takeIf { it.isNotEmpty() }?.let { invokeIntGetter(device, it) }
+            val mappedPowerLevel = m29["powerLevel"]?.takeIf { it.isNotEmpty() }?.let { invokeIntGetter(device, it) }
+            // DiLink-3: the SDK's public getter backs the mapping up (a build without the private
+            // module has none). The value now feeds carOn there — see carOnFromBodyworkPowerLevel.
+            val publicPowerLevel = if (!DiLink5Platform.isDiLink5) invokeIntGetter(device, "getPowerLevel") else null
+            val powerLevel = mappedPowerLevel ?: publicPowerLevel
+            logDi3BodyworkPowerIfChanged(device, mappedPowerLevel, publicPowerLevel, autoSystemState)
             // Car lock state — try various known getter names
             val lockState = invokeIntGetter(device, *runtimeMethodNames("m30"))
             // Any door open — read door slots 0-5, filter out sentinel values (e.g. -2147482645).
@@ -3952,6 +4031,33 @@ class BydVehicleDataSource(context: Context) {
         }
     }
 
+    /**
+     * DiLink-3 only, diagnostic — feeds nothing new. `mcuStatus` is the first car-on fallback
+     * (see effectiveCarOn), and `carOn=-` on the dev car meant it reads null there; this shows what the power device actually returns across a park / switch-off, next
+     * to the power-control slots that may carry ACC/ON. Values only (the getters are private
+     * mappings); runs every second, so it writes only when something changes.
+     */
+    private fun logDi3PowerStateIfChanged(mcuStatus: Int?, powerCtl: List<Int?>, allStatus: Any?) {
+        if (DiLink5Platform.isDiLink5) return
+        // Plain values only: an object's toString() can carry an identity hash that differs on every
+        // read, which would turn this log-on-change into a line per second.
+        val all = when (allStatus) {
+            null -> "null"
+            is Number, is Boolean, is String -> allStatus.toString()
+            is IntArray -> allStatus.joinToString(",", "[", "]")
+            else -> "obj"
+        }.take(80)
+        val state = "mcuStatus=${mcuStatus ?: "null"} powerCtl=${powerCtl.joinToString(",", "[", "]") { it?.toString() ?: "null" }} allStatus=$all"
+        if (state == lastDi3PowerState) return
+        lastDi3PowerState = state
+        val snap = _vehicleSnapshot.value
+        DiagLog.event(
+            appContext, TAG,
+            "🔋 power poll: $state (gear=${_gear.value} speed=${"%.0f".format(snap.directSpeedKmh)})"
+        )
+    }
+    private var lastDi3PowerState: String? = null
+
     private fun logPowerSnapshot(device: Any) {
         try {
             val remainPowerEv = invokeDoubleGetter(device, *runtimeMethodNames("m18"))
@@ -3975,6 +4081,7 @@ class BydVehicleDataSource(context: Context) {
             val batteryCurrent = invokeDoubleGetter(device, *m50["current"].orEmpty().toTypedArray())
             val powerUnit = invokeIntGetter(device, *m50["powerUnit"].orEmpty().toTypedArray())
             _vehicleSnapshot.value = _vehicleSnapshot.value.copy(powerMcuStatus = mcuStatus)
+            logDi3PowerStateIfChanged(mcuStatus, listOf(powerCtl0, powerCtl1, powerCtl2, powerCtl3), allStatus)
             // Range-guard the write: on DiLink-5 the power device's remain-EV getter (m18) returns -1
             // (dead there). Unguarded, that -1 clobbers the correct usable-kWh set by Dilink5Client,
             // collapsing derived BMS SoC to 0. This only bites builds that HAVE private-telemetry

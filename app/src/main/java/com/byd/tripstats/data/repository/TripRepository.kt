@@ -349,7 +349,7 @@ class TripRepository private constructor(context: Context) {
     private val MAX_KEPT_OFF_MS = 30 * 60 * 1000L   // 30 minutes
 
     // Hard timeout after engine-off before the trip is automatically ended.
-    // User-configurable in Settings → Preferences (default 30 min). Read from
+    // User-configurable in Settings → Preferences (default 3 min since 78aa345, 30 before). Read from
     // the synchronous SharedPreferences cache on every tick so a change applies
     // to the current trip without having to restart the service.
     private fun carOffTimeoutMs(): Long =

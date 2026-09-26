@@ -190,6 +190,68 @@ class TelegramEventMessagesTest {
         assertTrue(charging(ratePerKwh = 0.30).contains("Cost €2.94"))
     }
 
+    // ── When the trip happened / which SoC ─────────────────────────────────────
+
+    private val utc = java.time.ZoneId.of("UTC")
+    private fun at(iso: String) = java.time.Instant.parse(iso).toEpochMilli()
+
+    /** A summary can arrive hours late (queued underground); the times say which trip it is. */
+    @Test
+    fun `trip summary leads with its start and end time`() {
+        val text = TelegramEventMessages.tripSummary(
+            tripId = 752L, distanceKm = 22.8, durationMs = 64 * 60_000L, energyKwh = 3.7,
+            efficiencyKwh100km = 16.2, fleetAvgKwh100km = 20.6, startSoc = 53.0, endSoc = 49.0,
+            avgSpeedKmh = 21.0, tripScore = null, energyRatePerKwh = null, currencySymbol = "€",
+            imperial = false,
+            startTimeMs = at("2026-09-26T14:14:00Z"), endTimeMs = at("2026-09-26T15:25:00Z"), zone = utc,
+        ).text()
+        assertTrue(text, text.contains("14:14 → 15:25"))
+        assertTrue(text, text.indexOf("14:14") < text.indexOf("22.8 km"))
+    }
+
+    @Test
+    fun `a trip across midnight carries both dates`() {
+        assertEquals(
+            "Sep 26 23:50 → Sep 27 00:40",
+            TelegramEventMessages.timeRange(at("2026-09-26T23:50:00Z"), at("2026-09-27T00:40:00Z"), utc),
+        )
+    }
+
+    private val clockRange = Regex("""\d{2}:\d{2} → """)
+
+    @Test
+    fun `no time line without both times`() {
+        assertFalse(clockRange.containsMatchIn(tripSummary()))
+        assertFalse(clockRange.containsMatchIn(charging()))
+    }
+
+    @Test
+    fun `charging summary leads with its start and end time`() {
+        val text = TelegramEventMessages.chargingFinished(
+            sessionId = 7L, socEnd = 80.0, socStart = 43.0, kwhAdded = 30.0, durationMs = 5 * 3_600_000L,
+            avgKw = 6.1, peakKw = 7.0, ratePerKwh = null, currencySymbol = "€",
+            startTimeMs = at("2026-09-26T22:00:00Z"), endTimeMs = at("2026-09-27T03:00:00Z"), zone = utc,
+        ).text()
+        assertTrue(text, text.contains("Sep 26 22:00 → Sep 27 03:00"))
+        assertTrue(text, text.indexOf("Sep 26") < text.indexOf("Added 30.00 kWh"))
+    }
+
+    /** BMS rounded to whole percent looked exactly like the panel reading. */
+    @Test
+    fun `BMS SoC is labelled and keeps its decimal, panel stays whole`() {
+        val bms = TelegramEventMessages.tripSummary(
+            tripId = 1L, distanceKm = 20.0, durationMs = null, energyKwh = null, efficiencyKwh100km = null,
+            fleetAvgKwh100km = null, startSoc = 53.5, endSoc = 48.7, avgSpeedKmh = null, tripScore = null,
+            energyRatePerKwh = null, currencySymbol = "€", imperial = false, socFromBms = true,
+        ).text()
+        assertTrue(bms, bms.contains("SoC (BMS) 53.5% → 48.7% (−4.8%)"))
+        assertTrue(tripSummary().contains("SoC 80% → 76% (−4%)"))
+        val charge = TelegramEventMessages.chargingFinished(
+            7L, 43.0, 31.2, 9.8, null, 0.0, 0.0, null, "€", socFromBms = true,
+        ).text()
+        assertTrue(charge, charge.contains("SoC (BMS) 31.2% → 43.0%"))
+    }
+
     // ── Formatting ──────────────────────────────────────────────────────────────
 
     @Test

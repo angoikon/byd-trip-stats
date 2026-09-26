@@ -97,6 +97,9 @@ class VehicleEvents private constructor(private val context: Context) {
                 energyRatePerKwh = energyRatePerKwh,
                 currencySymbol = appPrefs.getCachedCurrencySymbol(),
                 imperial = appPrefs.getCachedUnitSystem() == UnitSystem.IMPERIAL,
+                startTimeMs = trip.startTime,
+                endTimeMs = trip.endTime,
+                socFromBms = appPrefs.getCachedSocSource() == SocSource.BMS,
             ),
             pushEnabled = telegram.tripSummaryEnabled.value,
         )
@@ -128,6 +131,9 @@ class VehicleEvents private constructor(private val context: Context) {
                 peakKw = session.peakKw,
                 ratePerKwh = ratePerKwh,
                 currencySymbol = appPrefs.getCachedCurrencySymbol(),
+                socFromBms = appPrefs.getCachedSocSource() == SocSource.BMS,
+                startTimeMs = session.startTime,
+                endTimeMs = session.endTime,
             ),
             pushEnabled = telegram.chargingFinishedEnabled.value,
         )

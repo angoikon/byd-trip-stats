@@ -1,6 +1,9 @@
 package com.byd.tripstats.data.notify
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
 import android.util.Log
 import com.byd.tripstats.data.backup.TelegramManager
 import com.byd.tripstats.util.DiagLog
@@ -62,6 +65,43 @@ class TelegramNotifier private constructor(private val context: Context) {
     /** True while a backoff chain is draining the outbox; guards against one chain per event. */
     @Volatile private var retryRunning = false
 
+    /** Last time a regained connection triggered a flush — see [registerReconnectFlush]. */
+    @Volatile private var lastReconnectFlushMs = 0L
+
+    /**
+     * Sends the queue the moment the car has a working connection again. The 1/5/20-min backoff
+     * gives up after about half an hour, and after that only a new event or a service start
+     * retried — so a summary from a car parked underground for hours went out only when the next
+     * one did (closed 15:25, delivered 20:52). Retrying at switch-on wouldn't help there: the car
+     * is still underground. Registered for the process lifetime; the callback costs nothing while
+     * the queue is empty, and on mobile data — where it fires on every signal-strength change — it
+     * is rate-limited to one flush per [RECONNECT_FLUSH_MIN_INTERVAL_MS].
+     */
+    private fun registerReconnectFlush() {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return
+        runCatching {
+            cm.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
+                override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
+                    // Never let anything escape onto the system's connectivity thread.
+                    if (caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) {
+                        runCatching { flushOnReconnect() }
+                    }
+                }
+            })
+        }.onFailure { Log.w(TAG, "Reconnect flush not registered: ${it.message}") }
+    }
+
+    private fun flushOnReconnect() {
+        if (!active()) return
+        val queued = readOutbox().size
+        if (queued == 0) return
+        val now = System.currentTimeMillis()
+        if (now - lastReconnectFlushMs < RECONNECT_FLUSH_MIN_INTERVAL_MS) return
+        lastReconnectFlushMs = now
+        DiagLog.event(context, TAG, "connection back — sending $queued queued notification(s)")
+        scope.launch { flushOutbox() }
+    }
+
     // ── Settings ──────────────────────────────────────────────────────────────
     // SharedPreferences rather than DataStore: every gate is read from the telemetry
     // thread at event time, where a suspending read would be the wrong shape.
@@ -80,6 +120,12 @@ class TelegramNotifier private constructor(private val context: Context) {
 
     private val _cellImbalance = MutableStateFlow(prefs.getBoolean(KEY_CELL_IMBALANCE, true))
     val cellImbalanceEnabled: StateFlow<Boolean> = _cellImbalance.asStateFlow()
+
+    // After every property above: the callback can fire on the connectivity thread before this
+    // constructor returns, and active() reads _enabled.
+    init {
+        registerReconnectFlush()
+    }
 
     fun setEnabled(value: Boolean) {
         prefs.edit().putBoolean(KEY_ENABLED, value).apply()
@@ -281,6 +327,7 @@ class TelegramNotifier private constructor(private val context: Context) {
         private const val OUTBOX_MAX_SIZE = 20
         private const val OUTBOX_MAX_AGE_MS = 24 * 60 * 60 * 1000L
         private val RETRY_DELAYS_MS = longArrayOf(60_000L, 5 * 60_000L, 20 * 60_000L)
+        private const val RECONNECT_FLUSH_MIN_INTERVAL_MS = 30_000L
 
         @Volatile private var INSTANCE: TelegramNotifier? = null
 
