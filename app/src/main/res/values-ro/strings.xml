@@ -1109,6 +1109,8 @@
     <string name="about_author_label">Autor</string>
     <string name="about_platform_label">Platformă</string>
     <string name="about_license_label">Licență</string>
+    <string name="about_disclaimer_title">Declinarea răspunderii</string>
+    <string name="about_disclaimer_body">BYD Trip Stats este un proiect independent, neafiliat cu BYD. Aplicația este oferită „ca atare”, fără nicio garanție, iar o folosiți pe propria răspundere. Autorul nu răspunde pentru daune aduse vehiculului sau pierderi de date. Autonomia, starea bateriei și consumul sunt estimări. Condusul în siguranță are întotdeauna prioritate.</string>
     <string name="about_site_label">Site</string>
     <string name="about_github_label">Github</string>
     <string name="about_discord_label">Discord</string>
@@ -1244,11 +1246,17 @@
     <string name="adb_granting_title">Se acordă permisiunile…</string>
     <string name="adb_failed_title">Configurarea a eșuat</string>
     <string name="adb_setup_required_title">Configurare necesară</string>
-    <string name="adb_idle_msg">BYD Trip Stats are nevoie de o autorizare ADB unică pentru a rula în fundal.\n\nPași:\n1. Setări → Opțiuni dezvoltator\n2. Activați depanarea USB\n3. Reveniți aici și atingeți Autorizează</string>
+    <string name="adb_idle_msg">BYD Trip Stats are nevoie de o autorizare ADB unică pentru a rula în fundal.\n\nAtingeți Autorizează, apoi atingeți Permite când mașina cere permisiunea pentru depanarea USB.</string>
     <string name="adb_connecting_msg">Conectare la daemonul ADB…</string>
     <string name="adb_waiting_msg">Ar trebui să apară pe ecran un dialog care cere permiterea depanării USB. Atingeți Permite, apoi reveniți aici.\n\nEste o acțiune unică. Actualizările viitoare sunt complet automate.</string>
     <string name="adb_granting_msg">Se acordă permisiunile de fundal…</string>
     <string name="authorize_action">Autorizează</string>
+    <string name="adb_failed_retry_hint">Atingeți Reîncearcă pentru a încerca din nou.</string>
+    <string name="adb_fail_not_enabled">ADB nu este activat pe această unitate principală. Activați-l în modul cerut de versiunea dvs. de DiLink.</string>
+    <string name="adb_fail_auth_timeout">Autorizarea a expirat. Atingeți Permite când dialogul de depanare USB apare pe ecranul mașinii, apoi reporniți aplicația.</string>
+    <string name="adb_fail_connection">Eroare de conexiune: %1$s</string>
+    <string name="adb_fail_partial_grant">Unele permisiuni nu au putut fi acordate</string>
+    <string name="adb_fail_grant">Acordarea permisiunilor a eșuat: %1$s</string>
 
     <!-- Dashboard CARDS layout (Pro) -->
     <string name="stat_tyres">Anvelope</string>
@@ -1278,6 +1286,7 @@
     <string name="tyre_subtitle_pressure">°C · %1$s presiune</string>
     <string name="d5_consent_title">Permiteți accesul la datele vehiculului?</string>
     <string name="d5_consent_body">Pentru a citi date în timp real de la această mașină (baterie, autonomie, viteză, anvelope…), BYD Trip Stats trebuie să relaxeze o setare de sistem a unității centrale (restricția hidden-API), limitată la bibliotecile de vehicule BYD.\n\nAceasta este o setare la nivelul întregului dispozitiv. Se resetează la repornire, iar aplicația o reaplică doar când este nevoie. Puteți modifica acest lucru mai târziu în Setări.\n\nFără ea, aplicația funcționează, dar nu afișează date despre vehicul.\n\nAplicația menține și ADB activat permanent, iar această parte nu este opțională. Mașina dezactivează ADB la fiecare oprire; aplicația îl reactivează la pornire, deoarece doar așa poate începe singură înregistrarea atunci când porniți mașina.</string>
+    <string name="consent_own_risk">Efectuați această modificare pe propria răspundere. BYD Trip Stats este oferit „ca atare”, fără nicio garanție.</string>
     <string name="d5_consent_allow">Permite</string>
     <string name="d5_consent_not_now">Nu acum</string>
     <string name="d5_vehicle_access_section">Acces la datele vehiculului</string>

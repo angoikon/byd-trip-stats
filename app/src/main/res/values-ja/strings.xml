@@ -1112,6 +1112,8 @@
     <string name="about_author_label">作者</string>
     <string name="about_platform_label">プラットフォーム</string>
     <string name="about_license_label">ライセンス</string>
+    <string name="about_disclaimer_title">免責事項</string>
+    <string name="about_disclaimer_body">BYD Trip Stats は BYD とは提携していない独立したプロジェクトです。本アプリは「現状のまま」提供され、いかなる保証もありません。ご利用はご自身の責任で行ってください。作者は車両の損傷やデータの損失について責任を負いません。航続距離、バッテリー状態、消費量の数値は推定値です。常に安全運転を最優先してください。</string>
     <string name="about_license_value" translatable="false">BUSL 1.1</string>
     <string name="about_site_label">サイト</string>
     <string name="about_github_label">Github</string>
@@ -1248,11 +1250,17 @@
     <string name="adb_granting_title">アクセス許可を付与中…</string>
     <string name="adb_failed_title">設定に失敗しました</string>
     <string name="adb_setup_required_title">設定が必要</string>
-    <string name="adb_idle_msg">BYD Trip Statsにはバックグラウンドで実行するために一回限りのADB認証が必要です。\n\n手順：\n1. 設定 → 開発者オプション\n2. USBデバッグを有効にする\n3. ここに戻って「認証」をタップ</string>
+    <string name="adb_idle_msg">BYD Trip Statsにはバックグラウンドで実行するために一回限りのADB認証が必要です。\n\n「認証」をタップし、車からUSBデバッグの許可を求められたら「許可」をタップしてください。</string>
     <string name="adb_connecting_msg">ADBデーモンに接続中…</string>
     <string name="adb_waiting_msg">USBデバッグを許可するダイアログが画面に表示されます。「許可」をタップしてここに戻ってください。\n\nこれは一回限りの操作です。将来の更新は完全に自動です。</string>
     <string name="adb_granting_msg">バックグラウンドアクセス許可を付与中…</string>
     <string name="authorize_action">認証</string>
+    <string name="adb_failed_retry_hint">「再試行」をタップしてもう一度お試しください。</string>
+    <string name="adb_fail_not_enabled">このヘッドユニットではADBが有効になっていません。お使いのDiLinkバージョンに応じた方法で有効にしてください。</string>
+    <string name="adb_fail_auth_timeout">認証がタイムアウトしました。車の画面にUSBデバッグのダイアログが表示されたら「許可」をタップし、アプリを再起動してください。</string>
+    <string name="adb_fail_connection">接続エラー：%1$s</string>
+    <string name="adb_fail_partial_grant">一部の権限を付与できませんでした</string>
+    <string name="adb_fail_grant">権限の付与に失敗しました：%1$s</string>
 
     <!-- Dashboard CARDS layout (Pro) -->
     <string name="stat_tyres">タイヤ</string>
@@ -1282,6 +1290,7 @@
     <string name="tyre_subtitle_pressure">°C · %1$s 圧力</string>
     <string name="d5_consent_title">車両データへのアクセスを許可しますか？</string>
     <string name="d5_consent_body">この車のライブデータ（バッテリー、走行可能距離、速度、タイヤ…）を読み取るため、BYD Trip Stats はヘッドユニットの1つのシステム設定（hidden-API 制限）を緩和する必要があります。対象は BYD の車両ライブラリに限定されます。\n\nこれは端末全体の設定です。再起動でリセットされ、アプリは必要なときのみ再適用します。後で設定から変更できます。\n\nこれがないとアプリは動作しますが車両データは表示されません。\n\nまた、アプリは ADB を常に有効に保ちます。これは任意ではありません。車はシャットダウンのたびに ADB を無効にし、アプリは起動時にそれを再び有効にします。これにより、車を始動したときにアプリが自動で記録を開始できます。</string>
+    <string name="consent_own_risk">この変更はご自身の責任で行ってください。BYD Trip Stats は「現状のまま」提供され、いかなる保証もありません。</string>
     <string name="d5_consent_allow">許可</string>
     <string name="d5_consent_not_now">後で</string>
     <string name="d5_vehicle_access_section">車両データへのアクセス</string>

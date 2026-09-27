@@ -1112,6 +1112,8 @@
     <string name="about_author_label">Autore</string>
     <string name="about_platform_label">Piattaforma</string>
     <string name="about_license_label">Licenza</string>
+    <string name="about_disclaimer_title">Note legali</string>
+    <string name="about_disclaimer_body">BYD Trip Stats è un progetto indipendente, non affiliato a BYD. È fornito \"così com\'è\", senza garanzie di alcun tipo, e lo usi a tuo rischio. L\'autore non è responsabile di danni al veicolo o perdita di dati. Autonomia, stato della batteria e consumi sono stime. La guida sicura viene sempre prima di tutto.</string>
     <string name="about_license_value" translatable="false">BUSL 1.1</string>
     <string name="about_site_label">Sito</string>
     <string name="about_github_label">Github</string>
@@ -1248,11 +1250,17 @@
     <string name="adb_granting_title">Concessione permessi…</string>
     <string name="adb_failed_title">Configurazione fallita</string>
     <string name="adb_setup_required_title">Configurazione richiesta</string>
-    <string name="adb_idle_msg">BYD Trip Stats necessita di un\'autorizzazione ADB una tantum per funzionare in background.\n\nPassaggi:\n1. Impostazioni → Opzioni sviluppatore\n2. Abilita debug USB\n3. Torna qui e tocca Autorizza</string>
+    <string name="adb_idle_msg">BYD Trip Stats necessita di un\'autorizzazione ADB una tantum per funzionare in background.\n\nTocca Autorizza, poi tocca Consenti quando l\'auto chiede di consentire il debug USB.</string>
     <string name="adb_connecting_msg">Connessione al demone ADB…</string>
     <string name="adb_waiting_msg">Dovrebbe apparire una finestra sullo schermo che chiede di consentire il debug USB. Tocca Consenti, poi torna qui.\n\nQuesta è un\'azione una tantum. Gli aggiornamenti futuri sono completamente automatici.</string>
     <string name="adb_granting_msg">Concessione permessi in background…</string>
     <string name="authorize_action">Autorizza</string>
+    <string name="adb_failed_retry_hint">Tocca Riprova per tentare di nuovo.</string>
+    <string name="adb_fail_not_enabled">ADB non è attivo su questa unità principale. Attivalo nel modo previsto dalla tua versione di DiLink.</string>
+    <string name="adb_fail_auth_timeout">Autorizzazione scaduta. Tocca Consenti quando sullo schermo dell\'auto compare la finestra del debug USB, poi riavvia l\'app.</string>
+    <string name="adb_fail_connection">Errore di connessione: %1$s</string>
+    <string name="adb_fail_partial_grant">Non è stato possibile concedere alcune autorizzazioni</string>
+    <string name="adb_fail_grant">Concessione delle autorizzazioni non riuscita: %1$s</string>
 
     <!-- Dashboard CARDS layout (Pro) -->
     <string name="stat_tyres">Pneumatici</string>
@@ -1282,6 +1290,7 @@
     <string name="tyre_subtitle_pressure">°C · %1$s pressione</string>
     <string name="d5_consent_title">Consentire l\'accesso ai dati del veicolo?</string>
     <string name="d5_consent_body">Per leggere i dati in tempo reale di questa auto (batteria, autonomia, velocità, pneumatici…), BYD Trip Stats deve allentare un\'impostazione di sistema dell\'unità centrale (la restrizione hidden-API), limitata alle librerie veicolo di BYD.\n\nÈ un\'impostazione a livello di dispositivo. Si ripristina al riavvio e l\'app la riapplica solo quando serve. Puoi modificarla in seguito nelle Impostazioni.\n\nSenza di essa l\'app funziona ma non mostra dati del veicolo.\n\nL\'app mantiene inoltre ADB sempre attivo, e questa parte non è facoltativa. L\'auto disattiva ADB a ogni spegnimento; l\'app lo riattiva all\'avvio, perché è ciò che le permette di iniziare a registrare da sola quando accendi l\'auto.</string>
+    <string name="consent_own_risk">Effettui questa modifica a tuo rischio. BYD Trip Stats è fornito \"così com\'è\", senza garanzie di alcun tipo.</string>
     <string name="d5_consent_allow">Consenti</string>
     <string name="d5_consent_not_now">Non ora</string>
     <string name="d5_vehicle_access_section">Accesso ai dati del veicolo</string>

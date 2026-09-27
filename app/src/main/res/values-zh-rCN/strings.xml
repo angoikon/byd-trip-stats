@@ -1112,6 +1112,8 @@
     <string name="about_author_label">作者</string>
     <string name="about_platform_label">平台</string>
     <string name="about_license_label">许可证</string>
+    <string name="about_disclaimer_title">免责声明</string>
+    <string name="about_disclaimer_body">BYD Trip Stats 是一个独立项目，与比亚迪（BYD）无关。本应用按“原样”提供，不附带任何形式的担保，使用风险由你自行承担。作者不对车辆损坏或数据丢失负责。续航、电池健康和能耗数据均为估算值。请始终把安全驾驶放在首位。</string>
     <string name="about_license_value" translatable="false">BUSL 1.1</string>
     <string name="about_site_label">网站</string>
     <string name="about_github_label">Github</string>
@@ -1248,11 +1250,17 @@
     <string name="adb_granting_title">授权权限中…</string>
     <string name="adb_failed_title">设置失败</string>
     <string name="adb_setup_required_title">需要设置</string>
-    <string name="adb_idle_msg">BYD Trip Stats 需要一次性 ADB 授权才能在后台运行。\n\n步骤：\n1. 设置 → 开发者选项\n2. 启用 USB 调试\n3. 返回此处并点击授权</string>
+    <string name="adb_idle_msg">BYD Trip Stats 需要一次性 ADB 授权才能在后台运行。\n\n点击“授权”，然后在车机请求允许 USB 调试时点击“允许”。</string>
     <string name="adb_connecting_msg">正在连接 ADB 守护进程…</string>
     <string name="adb_waiting_msg">屏幕上应出现允许 USB 调试的对话框。点击允许，然后返回此处。\n\n这是一次性操作，后续更新完全自动化。</string>
     <string name="adb_granting_msg">正在授予后台权限…</string>
     <string name="authorize_action">授权</string>
+    <string name="adb_failed_retry_hint">点击“重试”再试一次。</string>
+    <string name="adb_fail_not_enabled">此车机未启用 ADB。请按照你的 DiLink 版本所需的方式开启。</string>
+    <string name="adb_fail_auth_timeout">授权超时。请在车机屏幕出现 USB 调试对话框时点击“允许”，然后重新启动应用。</string>
+    <string name="adb_fail_connection">连接错误：%1$s</string>
+    <string name="adb_fail_partial_grant">部分权限无法授予</string>
+    <string name="adb_fail_grant">授予权限失败：%1$s</string>
 
     <!-- Dashboard CARDS layout (Pro) -->
     <string name="stat_tyres">轮胎</string>
@@ -1282,6 +1290,7 @@
     <string name="tyre_subtitle_pressure">°C · %1$s 胎压</string>
     <string name="d5_consent_title">允许访问车辆数据？</string>
     <string name="d5_consent_body">为读取本车的实时数据（电池、续航、车速、轮胎…），BYD Trip Stats 需要放宽主机的一项系统设置（hidden-API 限制），仅限于 BYD 车辆库。\n\n这是设备级设置。重启后会重置，应用仅在需要时重新应用。你可以稍后在“设置”中更改。\n\n没有它，应用仍可运行，但不会显示车辆数据。\n\n此外，应用会始终保持 ADB 开启，这一项不可选。车辆每次关机都会关闭 ADB；应用启动时会将其重新开启，因为这正是车辆启动时应用能自动开始记录的前提。</string>
+    <string name="consent_own_risk">进行此更改的风险由你自行承担。BYD Trip Stats 按“原样”提供，不附带任何形式的担保。</string>
     <string name="d5_consent_allow">允许</string>
     <string name="d5_consent_not_now">暂不</string>
     <string name="d5_vehicle_access_section">车辆数据访问</string>

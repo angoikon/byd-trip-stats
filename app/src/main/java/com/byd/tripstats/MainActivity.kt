@@ -9,7 +9,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
-import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -202,7 +201,17 @@ class MainActivity : ComponentActivity() {
                             onDismissRequest = { },
                             containerColor = MaterialTheme.colorScheme.surfaceVariant,
                             title = { Text(stringResource(R.string.d5_consent_title)) },
-                            text = { Text(stringResource(R.string.d5_consent_body)) },
+                            text = {
+                                Column {
+                                    Text(stringResource(R.string.d5_consent_body))
+                                    Spacer(Modifier.height(12.dp))
+                                    Text(
+                                        stringResource(R.string.consent_own_risk),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            },
                             confirmButton = {
                                 TextButton(onClick = {
                                     AdbPermissionManager.setHiddenApiConsent(this@MainActivity, true)
@@ -258,29 +267,24 @@ class MainActivity : ComponentActivity() {
                             showSetupRequired.value = false
                         } else {
                             val dialogTitle = when (adbState) {
-                                is AdbPermissionManager.SetupState.Connecting  -> "Connecting..."
-                                is AdbPermissionManager.SetupState.WaitingAuth -> "Waiting for authorization"
-                                is AdbPermissionManager.SetupState.Granting    -> "Granting permissions..."
-                                is AdbPermissionManager.SetupState.Failed      -> "Setup failed"
-                                else -> "Setup Required"
+                                is AdbPermissionManager.SetupState.Connecting  -> stringResource(R.string.adb_connecting_title)
+                                is AdbPermissionManager.SetupState.WaitingAuth -> stringResource(R.string.adb_waiting_auth_title)
+                                is AdbPermissionManager.SetupState.Granting    -> stringResource(R.string.adb_granting_title)
+                                is AdbPermissionManager.SetupState.Failed      -> stringResource(R.string.adb_failed_title)
+                                else -> stringResource(R.string.adb_setup_required_title)
                             }
                             val dialogBody = when (val s = adbState) {
                                 is AdbPermissionManager.SetupState.Idle ->
-                                    "BYD Trip Stats needs one-time ADB authorization to run " +
-                                    "in the background.\n\nSteps:\n" +
-                                    "1. Settings → Developer Options\n" +
-                                    "2. Enable USB Debugging\n" +
-                                    "3. Return here and tap Authorize"
+                                    stringResource(R.string.adb_idle_msg)
                                 is AdbPermissionManager.SetupState.Connecting ->
-                                    "Connecting to ADB daemon..."
+                                    stringResource(R.string.adb_connecting_msg)
                                 is AdbPermissionManager.SetupState.WaitingAuth ->
-                                    "A dialog should appear on screen asking to allow " +
-                                    "USB debugging. Tap Allow, then return here.\n\n" +
-                                    "This is a one-time action. Future updates are fully automatic."
+                                    stringResource(R.string.adb_waiting_msg)
                                 is AdbPermissionManager.SetupState.Granting ->
-                                    "Granting background permissions..."
+                                    stringResource(R.string.adb_granting_msg)
                                 is AdbPermissionManager.SetupState.Failed ->
-                                    s.reason + "\n\nTap Retry to try again."
+                                    stringResource(s.reasonRes, s.detail) + "\n\n" +
+                                    stringResource(R.string.adb_failed_retry_hint)
                                 else -> ""
                             }
                             val busy = adbState is AdbPermissionManager.SetupState.Connecting ||
@@ -294,6 +298,15 @@ class MainActivity : ComponentActivity() {
                                 text = {
                                     Column {
                                         Text(dialogBody)
+                                        // Shown only while the user is still deciding (before Authorize).
+                                        if (adbState is AdbPermissionManager.SetupState.Idle) {
+                                            Spacer(Modifier.height(12.dp))
+                                            Text(
+                                                stringResource(R.string.consent_own_risk),
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
                                         if (busy) {
                                             Spacer(Modifier.height(12.dp))
                                             LinearProgressIndicator(Modifier.padding(top = 4.dp))
@@ -302,29 +315,27 @@ class MainActivity : ComponentActivity() {
                                 },
                                 confirmButton = {
                                     if (adbState is AdbPermissionManager.SetupState.Idle) {
+                                        // Only starts the handshake; the car then raises its own "Allow USB
+                                        // debugging?" prompt. How ADB itself gets switched on differs per
+                                        // DiLink version (no stock Developer Options), so we don't open it.
                                         TextButton(onClick = {
-                                            runCatching {
-                                                startActivity(Intent(
-                                                    Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS
-                                                ))
-                                            }
                                             lifecycleScope.launch {
                                                 AdbPermissionManager.runSetup(this@MainActivity)
                                             }
-                                        }) { Text("Open Developer Settings") }
+                                        }) { Text(stringResource(R.string.authorize_action)) }
                                     } else if (adbState is AdbPermissionManager.SetupState.Failed) {
                                         TextButton(onClick = {
                                             lifecycleScope.launch {
                                                 AdbPermissionManager.runSetup(this@MainActivity)
                                             }
-                                        }) { Text("Retry") }
+                                        }) { Text(stringResource(R.string.retry)) }
                                     }
                                 },
                                 dismissButton = {
                                     if (!busy) {
                                         TextButton(onClick = {
                                             showSetupRequired.value = false
-                                        }) { Text("Later") }
+                                        }) { Text(stringResource(R.string.later)) }
                                     }
                                 }
                             )

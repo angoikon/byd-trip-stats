@@ -1134,6 +1134,8 @@
     <string name="about_author_label">Author</string>
     <string name="about_platform_label">Platform</string>
     <string name="about_license_label">License</string>
+    <string name="about_disclaimer_title">Disclaimer</string>
+    <string name="about_disclaimer_body">BYD Trip Stats is an independent project, not affiliated with BYD. It is provided \"as is\", without warranty of any kind, and you use it at your own risk. The author is not responsible for vehicle damage or data loss. Range, battery health and consumption figures are estimates. Always put safe driving first.</string>
     <string name="about_license_value" translatable="false">BUSL 1.1</string>
     <string name="about_site_label">Site</string>
     <string name="about_github_label">Github</string>
@@ -1270,11 +1272,17 @@
     <string name="adb_granting_title">Granting permissions…</string>
     <string name="adb_failed_title">Setup failed</string>
     <string name="adb_setup_required_title">Setup Required</string>
-    <string name="adb_idle_msg">BYD Trip Stats needs one-time ADB authorization to run in the background.\n\nSteps:\n1. Settings → Developer Options\n2. Enable USB Debugging\n3. Return here and tap Authorize</string>
+    <string name="adb_idle_msg">BYD Trip Stats needs one-time ADB authorization to run in the background.\n\nTap Authorize, then tap Allow when the car asks to allow USB debugging.</string>
     <string name="adb_connecting_msg">Connecting to ADB daemon…</string>
     <string name="adb_waiting_msg">A dialog should appear on screen asking to allow USB debugging. Tap Allow, then return here.\n\nThis is a one-time action. Future updates are fully automatic.</string>
     <string name="adb_granting_msg">Granting background permissions…</string>
     <string name="authorize_action">Authorize</string>
+    <string name="adb_failed_retry_hint">Tap Retry to try again.</string>
+    <string name="adb_fail_not_enabled">ADB is not enabled on this head unit. Turn it on the way your DiLink version requires.</string>
+    <string name="adb_fail_auth_timeout">Authorization timed out. Please tap \'Allow\' when the USB debugging dialog appears in the car screen, then restart the app.</string>
+    <string name="adb_fail_connection">Connection error: %1$s</string>
+    <string name="adb_fail_partial_grant">Some permissions could not be granted</string>
+    <string name="adb_fail_grant">Grant failed: %1$s</string>
 
     <!-- Dashboard CARDS layout (Pro) -->
     <string name="stat_tyres">Tyres</string>
@@ -1305,6 +1313,7 @@
     <!-- DiLink-5 vehicle-data-access consent (hidden-API opt-in) -->
     <string name="d5_consent_title">Allow vehicle data access?</string>
     <string name="d5_consent_body">To read live data from this car (battery, range, speed, tyres…), BYD Trip Stats needs to relax one system setting on the head unit (the hidden-API restriction), scoped to the BYD vehicle libraries.\n\nThis is a device-wide setting. It reverts on reboot and the app re-applies it only when needed. You can change this later in Settings.\n\nWithout it the app runs but shows no vehicle data.\n\nThe app also keeps ADB switched on at all times, and this part isn\'t optional. The car switches ADB off every time it shuts down; the app switches it back on as it starts, because that is what lets it start recording by itself when you start the car.</string>
+    <string name="consent_own_risk">You make this change at your own risk. BYD Trip Stats is provided \"as is\", without warranty of any kind.</string>
     <string name="d5_consent_allow">Allow</string>
     <string name="d5_consent_not_now">Not now</string>
     <string name="d5_vehicle_access_section">Vehicle data access</string>

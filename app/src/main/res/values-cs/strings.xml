@@ -1109,6 +1109,8 @@
     <string name="about_author_label">Autor</string>
     <string name="about_platform_label">Platforma</string>
     <string name="about_license_label">Licence</string>
+    <string name="about_disclaimer_title">Právní upozornění</string>
+    <string name="about_disclaimer_body">BYD Trip Stats je nezávislý projekt bez vazby na společnost BYD. Je poskytován „tak, jak je“, bez jakékoli záruky, a používáte jej na vlastní riziko. Autor neodpovídá za poškození vozidla ani ztrátu dat. Dojezd, stav baterie a spotřeba jsou odhady. Bezpečná jízda má vždy přednost.</string>
     <string name="about_site_label">Web</string>
     <string name="about_github_label">Github</string>
     <string name="about_discord_label">Discord</string>
@@ -1244,11 +1246,17 @@
     <string name="adb_granting_title">Udělování oprávnění…</string>
     <string name="adb_failed_title">Nastavení se nezdařilo</string>
     <string name="adb_setup_required_title">Vyžadováno nastavení</string>
-    <string name="adb_idle_msg">BYD Trip Stats potřebuje jednorázovou autorizaci ADB pro běh na pozadí.\n\nKroky:\n1. Nastavení → Možnosti pro vývojáře\n2. Zapněte ladění USB\n3. Vraťte se sem a klepněte na Autorizovat</string>
+    <string name="adb_idle_msg">BYD Trip Stats potřebuje jednorázovou autorizaci ADB pro běh na pozadí.\n\nKlepněte na Autorizovat a poté, až se vůz zeptá na povolení ladění USB, klepněte na Povolit.</string>
     <string name="adb_connecting_msg">Připojování k ADB daemonu…</string>
     <string name="adb_waiting_msg">Na obrazovce by se měl objevit dialog s žádostí o povolení ladění USB. Klepněte na Povolit a vraťte se sem.\n\nToto je jednorázová akce. Budoucí aktualizace jsou plně automatické.</string>
     <string name="adb_granting_msg">Udělování oprávnění na pozadí…</string>
     <string name="authorize_action">Autorizovat</string>
+    <string name="adb_failed_retry_hint">Pro nový pokus klepněte na Zkusit znovu.</string>
+    <string name="adb_fail_not_enabled">ADB není na této hlavní jednotce zapnuto. Zapněte jej způsobem, který vyžaduje vaše verze DiLink.</string>
+    <string name="adb_fail_auth_timeout">Autorizace vypršela. Až se na obrazovce vozu objeví dialog ladění USB, klepněte na Povolit a poté aplikaci restartujte.</string>
+    <string name="adb_fail_connection">Chyba připojení: %1$s</string>
+    <string name="adb_fail_partial_grant">Některá oprávnění nebylo možné udělit</string>
+    <string name="adb_fail_grant">Udělení oprávnění selhalo: %1$s</string>
 
     <!-- Dashboard CARDS layout (Pro) -->
     <string name="stat_tyres">Pneumatiky</string>
@@ -1278,6 +1286,7 @@
     <string name="tyre_subtitle_pressure">°C · %1$s tlak</string>
     <string name="d5_consent_title">Povolit přístup k datům vozidla?</string>
     <string name="d5_consent_body">Aby aplikace BYD Trip Stats mohla číst živá data z tohoto vozidla (baterie, dojezd, rychlost, pneumatiky…), musí uvolnit jedno systémové nastavení hlavní jednotky (omezení hidden-API), omezené na knihovny vozidel BYD.\n\nJde o nastavení platné pro celé zařízení. Po restartu se vrátí a aplikace jej znovu použije jen v případě potřeby. Toto lze později změnit v Nastavení.\n\nBez něj aplikace běží, ale nezobrazuje žádná data vozidla.\n\nAplikace také udržuje ADB trvale zapnuté a tato část není volitelná. Vozidlo ADB při každém vypnutí vypne; aplikace jej při spuštění znovu zapne, protože právě díky tomu může sama začít nahrávat, když vozidlo nastartujete.</string>
+    <string name="consent_own_risk">Tuto změnu provádíte na vlastní riziko. BYD Trip Stats je poskytován „tak, jak je“, bez jakékoli záruky.</string>
     <string name="d5_consent_allow">Povolit</string>
     <string name="d5_consent_not_now">Teď ne</string>
     <string name="d5_vehicle_access_section">Přístup k datům vozidla</string>

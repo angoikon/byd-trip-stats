@@ -59,6 +59,10 @@ class TelegramManager private constructor(private val context: Context) {
         private const val KEY_WIFI_ONLY     = "auto_backup_wifi_only"
         private const val KEY_SENT_FILES      = "sent_files"        // JSON array of sent backup metadata
         private const val REGISTRY_FILE_NAME  = "telegram_registry.json"  // survives uninstalls
+        // The complete list, .db.gz backups included. Builds before 2.17 drop every entry not
+        // ending in ".db" from REGISTRY_FILE_NAME and rewrite it, so compressed backups are kept
+        // in a file those builds never open — a downgrade can no longer wipe them from the list.
+        private const val FULL_REGISTRY_FILE_NAME = "telegram_registry_full.json"
         private const val BASE_URL      = "https://api.telegram.org/bot"
         private const val FILE_BASE_URL = "https://api.telegram.org/file/bot"
 
@@ -459,12 +463,24 @@ class TelegramManager private constructor(private val context: Context) {
         if (existing.none { it.fileId == backup.fileId }) {
             existing.add(0, backup)   // newest first
         }
-        val jsonStr = buildRegistryJson(existing)
-        // 1. SharedPreferences (fast access while app is installed)
-        prefs.edit().putString(KEY_SENT_FILES, jsonStr).apply()
-        // 2. Download/BydTripStats/telegram_registry.json (survives uninstalls)
-        writeExternalRegistry(jsonStr)
+        persistRegistry(existing)
         _telegramBackups.value = existing
+    }
+
+    /**
+     * Writes [backups] to every store: SharedPreferences (fast access while the app is
+     * installed) and the two files in Download/BydTripStats (survive uninstalls).
+     *
+     * The legacy file only ever gets the plain `.db` entries — exactly what an older build
+     * understands, so a downgraded app finds nothing in it to purge. The full list goes to
+     * [FULL_REGISTRY_FILE_NAME], which those builds never open.
+     */
+    private fun persistRegistry(backups: List<TelegramBackupFile>) {
+        val jsonStr = buildRegistryJson(backups)
+        prefs.edit().putString(KEY_SENT_FILES, jsonStr).apply()
+        writeExternalRegistry(FULL_REGISTRY_FILE_NAME, jsonStr)
+        val legacy = backups.filter { it.fileName.endsWith(BackupCodec.PLAIN_EXTENSION, ignoreCase = true) }
+        writeExternalRegistry(REGISTRY_FILE_NAME, buildRegistryJson(legacy))
     }
 
     private fun buildRegistryJson(backups: List<TelegramBackupFile>): String {
@@ -481,10 +497,10 @@ class TelegramManager private constructor(private val context: Context) {
         return arr.toString()
     }
 
-    private fun writeExternalRegistry(jsonStr: String) {
+    private fun writeExternalRegistry(fileName: String, jsonStr: String) {
         try {
             val values = android.content.ContentValues().apply {
-                put(android.provider.MediaStore.Downloads.DISPLAY_NAME, REGISTRY_FILE_NAME)
+                put(android.provider.MediaStore.Downloads.DISPLAY_NAME, fileName)
                 put(android.provider.MediaStore.Downloads.MIME_TYPE, "application/json")
                 put(android.provider.MediaStore.Downloads.RELATIVE_PATH,
                     "Download/BydTripStats")
@@ -497,7 +513,7 @@ class TelegramManager private constructor(private val context: Context) {
             resolver.delete(collection,
                 "${android.provider.MediaStore.Downloads.DISPLAY_NAME} = ? AND " +
                 "${android.provider.MediaStore.Downloads.RELATIVE_PATH} LIKE ?",
-                arrayOf(REGISTRY_FILE_NAME, "%BydTripStats%")
+                arrayOf(fileName, "%BydTripStats%")
             )
 
             val uri = resolver.insert(collection, values) ?: run {
@@ -508,24 +524,24 @@ class TelegramManager private constructor(private val context: Context) {
             values.clear()
             values.put(android.provider.MediaStore.Downloads.IS_PENDING, 0)
             resolver.update(uri, values, null, null)
-            Log.i(TAG, "External registry written: $REGISTRY_FILE_NAME")
+            Log.i(TAG, "External registry written: $fileName")
         } catch (e: Exception) {
             Log.w(TAG, "External registry write failed (non-fatal): ${e.message}")
         }
     }
 
-    private fun readExternalRegistry(): List<TelegramBackupFile> {
+    private fun readExternalRegistry(fileName: String): List<TelegramBackupFile> {
         // Try MediaStore first (fast path when ownership is intact)
-        val fromMediaStore = readExternalRegistryViaMediaStore()
+        val fromMediaStore = readExternalRegistryViaMediaStore(fileName)
         if (fromMediaStore.isNotEmpty()) return fromMediaStore
 
         // Fallback: read the JSON file directly from disk.
         // This succeeds after a reinstall when MediaStore ownership is lost
         // but READ_EXTERNAL_STORAGE is granted.
-        return readExternalRegistryFromFilesystem()
+        return readExternalRegistryFromFilesystem(fileName)
     }
 
-    private fun readExternalRegistryViaMediaStore(): List<TelegramBackupFile> {
+    private fun readExternalRegistryViaMediaStore(fileName: String): List<TelegramBackupFile> {
         return try {
             val resolver = context.contentResolver
             val collection = android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI
@@ -534,7 +550,7 @@ class TelegramManager private constructor(private val context: Context) {
                 collection, projection,
                 "${android.provider.MediaStore.Downloads.DISPLAY_NAME} = ? AND " +
                 "${android.provider.MediaStore.Downloads.RELATIVE_PATH} LIKE ?",
-                arrayOf(REGISTRY_FILE_NAME, "%BydTripStats%"),
+                arrayOf(fileName, "%BydTripStats%"),
                 null
             )
             val uri = cursor?.use {
@@ -553,17 +569,17 @@ class TelegramManager private constructor(private val context: Context) {
         }
     }
 
-    private fun readExternalRegistryFromFilesystem(): List<TelegramBackupFile> {
+    private fun readExternalRegistryFromFilesystem(fileName: String): List<TelegramBackupFile> {
         return try {
             val base = android.os.Environment.getExternalStorageDirectory()
             val file = listOf(
-                java.io.File(base, "Download/BydTripStats/$REGISTRY_FILE_NAME"),
-                java.io.File(base, "Downloads/BydTripStats/$REGISTRY_FILE_NAME")
+                java.io.File(base, "Download/BydTripStats/$fileName"),
+                java.io.File(base, "Downloads/BydTripStats/$fileName")
             ).firstOrNull { it.exists() } ?: return emptyList()
 
             val jsonStr = file.readText(Charsets.UTF_8)
             val result = parseRegistryJson(jsonStr)
-            Log.i(TAG, "Registry loaded from filesystem: ${result.size} entries")
+            Log.i(TAG, "Registry loaded from filesystem ($fileName): ${result.size} entries")
             result
         } catch (e: Exception) {
             Log.w(TAG, "Filesystem registry read failed: ${e.message}")
@@ -586,7 +602,9 @@ class TelegramManager private constructor(private val context: Context) {
     }
 
     private fun loadSentFiles(): List<TelegramBackupFile> {
-        // Merge SharedPreferences (fast) + external registry (survives uninstalls)
+        // Merge SharedPreferences (fast) + external registries (survive uninstalls). Both
+        // files are read: the full one holds the compressed backups, and the legacy one
+        // picks up any plain .db a downgraded older build sent in the meantime.
         val fromPrefs = try {
             val raw = prefs.getString(KEY_SENT_FILES, null) ?: ""
             if (raw.isBlank()) emptyList() else parseRegistryJson(raw)
@@ -594,7 +612,8 @@ class TelegramManager private constructor(private val context: Context) {
             Log.w(TAG, "Failed to parse prefs registry: ${e.message}")
             emptyList()
         }
-        val fromExternal = readExternalRegistry()
+        val fromExternal = readExternalRegistry(FULL_REGISTRY_FILE_NAME) +
+            readExternalRegistry(REGISTRY_FILE_NAME)
 
         // Merge, deduplicate by fileId, sort newest first
         val all = (fromPrefs + fromExternal)
@@ -607,9 +626,7 @@ class TelegramManager private constructor(private val context: Context) {
         val merged  = all.filter { isBackupFile(it.fileName) }
         val dropped = all.size - merged.size
         if (dropped > 0) {
-            val jsonStr = buildRegistryJson(merged)
-            prefs.edit().putString(KEY_SENT_FILES, jsonStr).apply()
-            writeExternalRegistry(jsonStr)
+            persistRegistry(merged)
             Log.i(TAG, "Purged $dropped non-backup entries from the Telegram registry")
         } else if (fromExternal.isNotEmpty() && merged.size > fromPrefs.size) {
             // External had entries that prefs didn't — persist back to prefs
@@ -619,12 +636,10 @@ class TelegramManager private constructor(private val context: Context) {
         return merged
     }
 
-    /** Drops [fileId] from both registry stores and the exposed list. */
+    /** Drops [fileId] from every registry store and the exposed list. */
     private fun removeSentFile(fileId: String) {
         val remaining = loadSentFiles().filterNot { it.fileId == fileId }
-        val jsonStr = buildRegistryJson(remaining)
-        prefs.edit().putString(KEY_SENT_FILES, jsonStr).apply()
-        writeExternalRegistry(jsonStr)
+        persistRegistry(remaining)
         _telegramBackups.value = remaining
         Log.i(TAG, "Backup removed from registry: $fileId")
     }

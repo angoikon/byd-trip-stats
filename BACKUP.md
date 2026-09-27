@@ -62,13 +62,16 @@ Everything below then happens in **Settings → Data → Backup & Restore**.
 4. Confirm the warning dialog
 5. The app downloads the file, validates it, restores the database, and restarts automatically
 
+> **20 MB download limit.** Telegram lets a bot *send* files up to 50 MB but *download* only up to 20 MB, so the in-app restore works for backups of 20 MB or less (the size shown in the list). Compression keeps that true until the raw database reaches roughly 300 MB. For a bigger backup, save it from the chat on your phone, upload it to *Backups (Download)* in the web companion's **Files** tab, and restore it from the backup list.
+
 **Backup registry — survives reinstalls:**
 
-Every time a backup is sent successfully, its metadata (`file_id`, filename, size, date) is saved in two places simultaneously:
+Every time a backup is sent successfully, its metadata (`file_id`, filename, size, date) is saved in three places simultaneously:
 - **SharedPreferences** — fast access while the app is installed
-- **`Download/BydTripStats/telegram_registry.json`** — persists across uninstalls
+- **`Download/BydTripStats/telegram_registry_full.json`** — the complete list, persists across uninstalls
+- **`Download/BydTripStats/telegram_registry.json`** — the same, limited to plain `.db` backups. Versions before 2.17 read only this file and drop any entry they don't recognise, so the compressed backups are kept out of it — installing an older version can't remove them from the list.
 
-If you uninstall or reset app data and then reconnect your bot, tapping refresh in *Restore from Telegram* will rediscover all previous backups automatically by reading the registry file from Download. As long as `Download/BydTripStats/` has not been manually cleared, no backups are lost.
+If you uninstall or reset app data and then reconnect your bot, tapping refresh in *Restore from Telegram* will rediscover all previous backups automatically by reading the registry files from Download. As long as `Download/BydTripStats/` has not been manually cleared, no backups are lost.
 
 **Automatic backup:**
 
@@ -146,7 +149,7 @@ Download/BydTripStats/byd_stats_settings_v2.15.2_2026-09-07_14-30.json
 
 It is a couple of kilobytes of plain JSON, written to the same places as the database backup (Download, the private ADB directory, the SD card) and sent to Telegram with it — including on the automatic schedule. The two files share the same timestamp, which is how the app pairs them at restore time.
 
-> Telegram is the one exception to "always written": the settings file goes to your chat **only when the database goes with it**. A database over Telegram's 50 MB limit is skipped, and the settings file is skipped with it, so a message in your chat always means a real backup. Export settings by hand from the card described below when that happens — the local copy is written regardless of database size.
+> Telegram is the one exception to "always written": the settings file goes to your chat **only when the database goes with it**. A backup over Telegram's 50 MB limit (measured on the compressed file) is skipped, and the settings file is skipped with it, so a message in your chat always means a real backup. Export settings by hand from the card described below when that happens — the local copy is written regardless of database size.
 
 **Credentials.** By default the file carries the secrets it needs to be useful: the MQTT password, the ABRP and Telegram tokens, the web companion PIN and the Pro code. That file sits in your own car's Download folder, next to your trip database. If you plan to share it — to copy a configuration to another car, or to attach it to a bug report — turn **Include credentials** off in *Settings → App → Backup & Restore → Settings backup & restore* first; everything else is still exported, and the connections come back configured but need their passwords re-entered.
 
@@ -195,7 +198,9 @@ Restore a backup directly from your Telegram chat without needing a PC or ADB.
 5. Confirm the warning dialog
 6. The app downloads the file, validates it, restores the database, and restarts automatically
 
-> If you have just reinstalled the app or cleared app data, your previous backups will reappear after tapping refresh — as long as `Download/BydTripStats/telegram_registry.json` is still present.
+> Backups over 20 MB can't be downloaded by the bot — see the [20 MB download limit](#2-telegram) for the way around it.
+
+> If you have just reinstalled the app or cleared app data, your previous backups will reappear after tapping refresh — as long as the `telegram_registry*.json` files in `Download/BydTripStats/` are still present.
 
 > The Telegram restore list holds **databases only**. Settings files are sent to your chat with every backup so you have an off-car copy, but they are restored from the local list in the *Settings backup & restore* card — on the car itself, `Download/BydTripStats/` survives the uninstall, so the settings file is normally already there.
 

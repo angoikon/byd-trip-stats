@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.provider.Settings
 import android.util.Log
+import androidx.annotation.StringRes
+import com.byd.tripstats.R
 import com.byd.tripstats.runtimebridge.RuntimeExtensionBridge
 import dadb.AdbKeyPair
 import dadb.Dadb
@@ -115,7 +117,8 @@ object AdbPermissionManager {
         object WaitingAuth  : SetupState()
         object Granting     : SetupState()
         object Done         : SetupState()
-        data class Failed(val reason: String) : SetupState()
+        /** [reasonRes] may take one `%1$s` arg, filled from [detail] (an exception message). */
+        data class Failed(@StringRes val reasonRes: Int, val detail: String = "") : SetupState()
     }
 
     data class ShellResult(
@@ -253,10 +256,7 @@ object AdbPermissionManager {
         try {
             // Check ADB port is open (adbd running)
             if (!isPortOpen()) {
-                _state.value = SetupState.Failed(
-                    "ADB not enabled. Go to Settings → System → Developer Options " +
-                    "and enable USB Debugging."
-                )
+                _state.value = SetupState.Failed(R.string.adb_fail_not_enabled)
                 return@withContext false
             }
 
@@ -285,14 +285,11 @@ object AdbPermissionManager {
                 }
             }
 
-            _state.value = SetupState.Failed(
-                "Authorization timed out. Please tap 'Allow' when the USB debugging " +
-                "dialog appears in the car screen, then restart the app."
-            )
+            _state.value = SetupState.Failed(R.string.adb_fail_auth_timeout)
             false
         } catch (e: Exception) {
             Log.e(TAG, "Setup failed: ${e.message}", e)
-            _state.value = SetupState.Failed("Connection error: ${e.message}")
+            _state.value = SetupState.Failed(R.string.adb_fail_connection, e.message ?: e.javaClass.simpleName)
             false
         }
     }
@@ -455,12 +452,12 @@ object AdbPermissionManager {
                 Log.i(TAG, "✅ All permissions granted via ADB")
                 true
             } else {
-                _state.value = SetupState.Failed("Some permissions could not be granted")
+                _state.value = SetupState.Failed(R.string.adb_fail_partial_grant)
                 false
             }
         } catch (e: Exception) {
             runCatching { dadb.close() }
-            _state.value = SetupState.Failed("Grant failed: ${e.message}")
+            _state.value = SetupState.Failed(R.string.adb_fail_grant, e.message ?: e.javaClass.simpleName)
             false
         }
     }

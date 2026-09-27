@@ -1112,6 +1112,8 @@
     <string name="about_author_label">Auteur</string>
     <string name="about_platform_label">Platform</string>
     <string name="about_license_label">Licentie</string>
+    <string name="about_disclaimer_title">Disclaimer</string>
+    <string name="about_disclaimer_body">BYD Trip Stats is een onafhankelijk project en is niet verbonden aan BYD. De app wordt geleverd \"zoals hij is\", zonder enige garantie, en je gebruikt hem op eigen risico. De maker is niet aansprakelijk voor schade aan het voertuig of verlies van gegevens. Actieradius, batterijconditie en verbruik zijn schattingen. Veilig rijden gaat altijd voor.</string>
     <string name="about_license_value" translatable="false">BUSL 1.1</string>
     <string name="about_site_label">Site</string>
     <string name="about_github_label">Github</string>
@@ -1248,11 +1250,17 @@
     <string name="adb_granting_title">Bevoegdheden verlenen…</string>
     <string name="adb_failed_title">Instelling mislukt</string>
     <string name="adb_setup_required_title">Instelling vereist</string>
-    <string name="adb_idle_msg">BYD Trip Stats heeft eenmalige ADB-autorisatie nodig om op de achtergrond te draaien.\n\nStappen:\n1. Instellingen → Ontwikkelaarsopties\n2. USB-foutopsporing inschakelen\n3. Kom hier terug en tik op Autoriseren</string>
+    <string name="adb_idle_msg">BYD Trip Stats heeft eenmalige ADB-autorisatie nodig om op de achtergrond te draaien.\n\nTik op Autoriseren en tik daarna op Toestaan wanneer de auto vraagt om USB-foutopsporing toe te staan.</string>
     <string name="adb_connecting_msg">Verbinding maken met ADB-daemon…</string>
     <string name="adb_waiting_msg">Er zou een dialoogvenster op het scherm moeten verschijnen om USB-foutopsporing toe te staan. Tik op Toestaan en kom dan hier terug.\n\nDit is een eenmalige actie. Toekomstige updates zijn volledig automatisch.</string>
     <string name="adb_granting_msg">Achtergrondbevoegdheden verlenen…</string>
     <string name="authorize_action">Autoriseren</string>
+    <string name="adb_failed_retry_hint">Tik op Opnieuw proberen om het nog eens te proberen.</string>
+    <string name="adb_fail_not_enabled">ADB is niet ingeschakeld op deze head-unit. Schakel het in op de manier die jouw DiLink-versie vereist.</string>
+    <string name="adb_fail_auth_timeout">Autorisatie is verlopen. Tik op Toestaan wanneer het dialoogvenster voor USB-foutopsporing op het scherm van de auto verschijnt, en start de app daarna opnieuw.</string>
+    <string name="adb_fail_connection">Verbindingsfout: %1$s</string>
+    <string name="adb_fail_partial_grant">Sommige machtigingen konden niet worden verleend</string>
+    <string name="adb_fail_grant">Machtigingen verlenen mislukt: %1$s</string>
 
     <!-- Dashboard CARDS layout (Pro) -->
     <string name="stat_tyres">Banden</string>
@@ -1282,6 +1290,7 @@
     <string name="tyre_subtitle_pressure">°C · %1$s druk</string>
     <string name="d5_consent_title">Toegang tot voertuiggegevens toestaan?</string>
     <string name="d5_consent_body">Om live gegevens van deze auto te lezen (accu, actieradius, snelheid, banden…), moet BYD Trip Stats één systeeminstelling op de hoofdunit versoepelen (de hidden-API-beperking), beperkt tot de BYD-voertuigbibliotheken.\n\nDit is een apparaatbrede instelling. Ze wordt hersteld na een herstart en de app past ze alleen opnieuw toe wanneer nodig. Je kunt dit later wijzigen in Instellingen.\n\nZonder deze werkt de app wel, maar toont ze geen voertuiggegevens.\n\nDe app houdt ook ADB altijd ingeschakeld, en dit deel is niet optioneel. De auto schakelt ADB uit telkens wanneer hij afsluit; de app schakelt het bij het opstarten weer in, want daardoor kan de app zelf beginnen met registreren wanneer je de auto start.</string>
+    <string name="consent_own_risk">Je voert deze wijziging uit op eigen risico. BYD Trip Stats wordt geleverd \"zoals hij is\", zonder enige garantie.</string>
     <string name="d5_consent_allow">Toestaan</string>
     <string name="d5_consent_not_now">Niet nu</string>
     <string name="d5_vehicle_access_section">Toegang tot voertuiggegevens</string>

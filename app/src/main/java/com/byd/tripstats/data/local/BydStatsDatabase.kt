@@ -380,6 +380,10 @@ abstract class BydStatsDatabase : RoomDatabase() {
                 "BydTripStats"
             )
 
+        /**
+         * The safety-net copy taken before an in-app update installs. Gzip-compressed like
+         * every other backup — nothing prunes this folder, so a raw copy per update adds up.
+         */
         fun backupDatabase(context: Context): File? {
             // Close the instance so WAL is fully flushed before we copy the file.
             INSTANCE?.close()
@@ -393,8 +397,17 @@ abstract class BydStatsDatabase : RoomDatabase() {
                 }
                 // Save to Download/BydTripStats — survives uninstalls
                 val backupDir = getBackupDir().also { it.mkdirs() }
-                val backupFile = File(backupDir, BackupNaming.fileName(prefix = "${DB_NAME}_backup"))
-                dbFile.copyTo(backupFile, overwrite = true)
+                val backupFile = File(
+                    backupDir,
+                    BackupNaming.fileName(prefix = "${DB_NAME}_backup", extension = BackupCodec.COMPRESSED_EXTENSION)
+                )
+                try {
+                    BackupCodec.compress(dbFile, backupFile)
+                } catch (e: IOException) {
+                    // A partial archive would sit in the restore list looking like a backup.
+                    backupFile.delete()
+                    throw e
+                }
                 Log.i(TAG, "Backed up to: ${backupFile.absolutePath}")
                 backupFile
             } catch (e: IOException) {

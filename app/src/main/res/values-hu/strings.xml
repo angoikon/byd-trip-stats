@@ -1109,6 +1109,8 @@
     <string name="about_author_label">Szerző</string>
     <string name="about_platform_label">Platform</string>
     <string name="about_license_label">Licenc</string>
+    <string name="about_disclaimer_title">Jogi nyilatkozat</string>
+    <string name="about_disclaimer_body">A BYD Trip Stats független projekt, nem áll kapcsolatban a BYD-vel. Az alkalmazás „ahogy van” formában, mindenféle garancia nélkül érhető el, használata saját felelősségre történik. A szerző nem felel a jármű sérüléséért vagy az adatvesztésért. A hatótáv, az akkumulátor állapota és a fogyasztás becsült értékek. A biztonságos vezetés mindig az első.</string>
     <string name="about_site_label">Weboldal</string>
     <string name="about_github_label">Github</string>
     <string name="about_discord_label">Discord</string>
@@ -1244,11 +1246,17 @@
     <string name="adb_granting_title">Engedélyek megadása…</string>
     <string name="adb_failed_title">A beállítás nem sikerült</string>
     <string name="adb_setup_required_title">Beállítás szükséges</string>
-    <string name="adb_idle_msg">A BYD Trip Stats egyszeri ADB-engedélyezést igényel a háttérben futáshoz.\n\nLépések:\n1. Beállítások → Fejlesztői beállítások\n2. Kapcsolja be az USB-hibakeresést\n3. Térjen vissza ide, és koppintson az Engedélyezésre</string>
+    <string name="adb_idle_msg">A BYD Trip Stats egyszeri ADB-engedélyezést igényel a háttérben futáshoz.\n\nKoppintson az alábbi Engedélyezés gombra, majd az Engedélyezésre, amikor az autó az USB-hibakeresés engedélyezését kéri.</string>
     <string name="adb_connecting_msg">Csatlakozás az ADB daemonhoz…</string>
     <string name="adb_waiting_msg">A képernyőn párbeszédnek kell megjelennie az USB-hibakeresés engedélyezéséről. Koppintson az Engedélyezésre, majd térjen vissza ide.\n\nEz egyszeri művelet. A jövőbeli frissítések teljesen automatikusak.</string>
     <string name="adb_granting_msg">Háttérengedélyek megadása…</string>
     <string name="authorize_action">Engedélyezés</string>
+    <string name="adb_failed_retry_hint">Új próbálkozáshoz koppintson az Újra gombra.</string>
+    <string name="adb_fail_not_enabled">Az ADB nincs engedélyezve ezen a fejegységen. Kapcsolja be úgy, ahogy az Ön DiLink-verziója megköveteli.</string>
+    <string name="adb_fail_auth_timeout">Az engedélyezés időtúllépés miatt megszakadt. Koppintson az Engedélyezés gombra, amikor az USB-hibakeresés párbeszédablaka megjelenik az autó képernyőjén, majd indítsa újra az alkalmazást.</string>
+    <string name="adb_fail_connection">Kapcsolódási hiba: %1$s</string>
+    <string name="adb_fail_partial_grant">Néhány engedélyt nem sikerült megadni</string>
+    <string name="adb_fail_grant">Az engedélyek megadása sikertelen: %1$s</string>
 
     <!-- Dashboard CARDS layout (Pro) -->
     <string name="stat_tyres">Gumik</string>
@@ -1278,6 +1286,7 @@
     <string name="tyre_subtitle_pressure">°C · %1$s nyomás</string>
     <string name="d5_consent_title">Engedélyezi a járműadatokhoz való hozzáférést?</string>
     <string name="d5_consent_body">Az autó élő adatainak olvasásához (akkumulátor, hatótáv, sebesség, gumiabroncsok…) a BYD Trip Statsnak lazítania kell a fejegység egy rendszerbeállításán (a hidden-API-korlátozáson), a BYD járműkönyvtárakra korlátozva.\n\nEz eszközszintű beállítás. Újraindításkor visszaáll, és az alkalmazás csak szükség esetén alkalmazza újra. Ezt később a Beállításokban módosíthatja.\n\nNélküle az alkalmazás fut, de nem jelenít meg járműadatokat.\n\nAz alkalmazás az ADB-t is folyamatosan bekapcsolva tartja, és ez a rész nem választható. Az autó minden leállításkor kikapcsolja az ADB-t; az alkalmazás induláskor visszakapcsolja, mert ez teszi lehetővé, hogy magától elkezdje a rögzítést, amikor elindítja az autót.</string>
+    <string name="consent_own_risk">Ezt a módosítást saját felelősségére végzi. A BYD Trip Stats „ahogy van” formában, mindenféle garancia nélkül érhető el.</string>
     <string name="d5_consent_allow">Engedélyezés</string>
     <string name="d5_consent_not_now">Most nem</string>
     <string name="d5_vehicle_access_section">Járműadatokhoz való hozzáférés</string>

@@ -1112,6 +1112,8 @@
     <string name="about_author_label">Tekijä</string>
     <string name="about_platform_label">Alusta</string>
     <string name="about_license_label">Lisenssi</string>
+    <string name="about_disclaimer_title">Vastuuvapauslauseke</string>
+    <string name="about_disclaimer_body">BYD Trip Stats on itsenäinen projekti, eikä se liity BYD:hen. Sovellus tarjotaan \"sellaisenaan\" ilman minkäänlaista takuuta, ja käytät sitä omalla vastuullasi. Tekijä ei vastaa ajoneuvon vahingoista tai tietojen menetyksestä. Toimintamatka, akun kunto ja kulutus ovat arvioita. Turvallinen ajaminen on aina etusijalla.</string>
     <string name="about_license_value" translatable="false">BUSL 1.1</string>
     <string name="about_site_label">Sivusto</string>
     <string name="about_github_label">Github</string>
@@ -1248,11 +1250,17 @@
     <string name="adb_granting_title">Myönnetään lupia…</string>
     <string name="adb_failed_title">Asennus epäonnistui</string>
     <string name="adb_setup_required_title">Asennus vaaditaan</string>
-    <string name="adb_idle_msg">BYD Trip Stats tarvitsee kertaluonteisen ADB-valtuutuksen toimiakseen taustalla.\n\nVaiheet:\n1. Asetukset → Kehittäjäasetukset\n2. Ota USB-virheenkorjaus käyttöön\n3. Palaa tänne ja napauta Valtuuta</string>
+    <string name="adb_idle_msg">BYD Trip Stats tarvitsee kertaluonteisen ADB-valtuutuksen toimiakseen taustalla.\n\nNapauta Valtuuta ja sitten Salli, kun auto pyytää sallimaan USB-virheenkorjauksen.</string>
     <string name="adb_connecting_msg">Yhdistetään ADB-demoniin…</string>
     <string name="adb_waiting_msg">Näytölle pitäisi ilmestyä valintaikkuna joka pyytää sallimaan USB-virheenkorjauksen. Napauta Salli, sitten palaa tänne.\n\nTämä on kertaluonteinen toimenpide. Tulevat päivitykset ovat täysin automaattisia.</string>
     <string name="adb_granting_msg">Myönnetään taustalupia…</string>
     <string name="authorize_action">Valtuuta</string>
+    <string name="adb_failed_retry_hint">Yritä uudelleen napauttamalla Yritä uudelleen.</string>
+    <string name="adb_fail_not_enabled">ADB ei ole käytössä tässä keskusyksikössä. Ota se käyttöön DiLink-versiosi edellyttämällä tavalla.</string>
+    <string name="adb_fail_auth_timeout">Valtuutus aikakatkaistiin. Napauta Salli, kun USB-virheenkorjauksen valintaikkuna tulee auton näytölle, ja käynnistä sitten sovellus uudelleen.</string>
+    <string name="adb_fail_connection">Yhteysvirhe: %1$s</string>
+    <string name="adb_fail_partial_grant">Joitakin lupia ei voitu myöntää</string>
+    <string name="adb_fail_grant">Lupien myöntäminen epäonnistui: %1$s</string>
 
     <!-- Dashboard CARDS layout (Pro) -->
     <string name="stat_tyres">Renkaat</string>
@@ -1282,6 +1290,7 @@
     <string name="tyre_subtitle_pressure">°C · %1$s paine</string>
     <string name="d5_consent_title">Sallitaanko ajoneuvon tietojen käyttö?</string>
     <string name="d5_consent_body">Lukeakseen tämän auton reaaliaikaisia tietoja (akku, toimintamatka, nopeus, renkaat…) BYD Trip Stats -sovelluksen on löysättävä yhtä pääyksikön järjestelmäasetusta (hidden-API-rajoitusta), rajattuna BYD:n ajoneuvokirjastoihin.\n\nTämä on koko laitteen laajuinen asetus. Se palautuu uudelleenkäynnistyksessä, ja sovellus ottaa sen uudelleen käyttöön vain tarvittaessa. Voit muuttaa tätä myöhemmin Asetuksista.\n\nIlman sitä sovellus toimii, mutta ei näytä ajoneuvon tietoja.\n\nSovellus pitää myös ADB:n jatkuvasti päällä, eikä tämä osa ole valinnainen. Auto kytkee ADB:n pois aina sammuessaan; sovellus kytkee sen takaisin päälle käynnistyessään, koska juuri sen ansiosta sovellus voi aloittaa tallennuksen itsestään, kun käynnistät auton.</string>
+    <string name="consent_own_risk">Teet tämän muutoksen omalla vastuullasi. BYD Trip Stats tarjotaan \"sellaisenaan\" ilman minkäänlaista takuuta.</string>
     <string name="d5_consent_allow">Salli</string>
     <string name="d5_consent_not_now">Ei nyt</string>
     <string name="d5_vehicle_access_section">Ajoneuvon tietojen käyttö</string>

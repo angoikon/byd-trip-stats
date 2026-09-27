@@ -195,6 +195,16 @@ internal fun AboutTab(viewModel: DashboardViewModel) {
 
         buildFaqList(context).forEach { (q, a, u) -> FaqItem(question = q, answer = a, url = u) }
 
+        // Always visible, not a collapsed FAQ entry: an APK sideloaded from Releases never shows
+        // anyone the README, so this is the one place every user can see the as-is terms.
+        HorizontalDivider()
+        SectionHeader(icon = Icons.Filled.Gavel, title = stringResource(R.string.about_disclaimer_title))
+        Text(
+            stringResource(R.string.about_disclaimer_body),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
         Spacer(Modifier.height(8.dp))
     }
 }

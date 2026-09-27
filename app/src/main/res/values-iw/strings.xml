@@ -1109,6 +1109,8 @@
     <string name="about_author_label">מחבר</string>
     <string name="about_platform_label">פלטפורמה</string>
     <string name="about_license_label">רישיון</string>
+    <string name="about_disclaimer_title">כתב ויתור</string>
+    <string name="about_disclaimer_body">BYD Trip Stats הוא פרויקט עצמאי שאינו קשור ל-BYD. האפליקציה מסופקת \"כמות שהיא\", ללא אחריות מכל סוג, והשימוש בה על אחריותך בלבד. המפתח אינו אחראי לנזק לרכב או לאובדן נתונים. נתוני הטווח, מצב הסוללה והצריכה הם הערכות. נהיגה בטוחה תמיד קודמת לכול.</string>
     <string name="about_site_label">אתר</string>
     <string name="about_github_label">Github</string>
     <string name="about_discord_label">Discord</string>
@@ -1244,11 +1246,17 @@
     <string name="adb_granting_title">מעניק הרשאות…</string>
     <string name="adb_failed_title">ההגדרה נכשלה</string>
     <string name="adb_setup_required_title">נדרשת הגדרה</string>
-    <string name="adb_idle_msg">BYD Trip Stats זקוקה להרשאת ADB חד-פעמית כדי לפעול ברקע.\n\nשלבים:\n1. הגדרות ← אפשרויות מפתחים\n2. הפעילו ניפוי USB\n3. חזרו לכאן והקישו הרשה</string>
+    <string name="adb_idle_msg">BYD Trip Stats זקוקה להרשאת ADB חד-פעמית כדי לפעול ברקע.\n\nהקישו הרשה, ואז הקישו אפשר כשהרכב מבקש לאפשר ניפוי USB.</string>
     <string name="adb_connecting_msg">מתחבר ל-ADB daemon…</string>
     <string name="adb_waiting_msg">תיבת דו-שיח אמורה להופיע על המסך ולבקש לאפשר ניפוי USB. הקישו אפשר, ואז חזרו לכאן.\n\nזוהי פעולה חד-פעמית. עדכונים עתידיים אוטומטיים לחלוטין.</string>
     <string name="adb_granting_msg">מעניק הרשאות רקע…</string>
     <string name="authorize_action">הרשה</string>
+    <string name="adb_failed_retry_hint">הקישו על ניסיון חוזר כדי לנסות שוב.</string>
+    <string name="adb_fail_not_enabled">ADB אינו מופעל ביחידת המולטימדיה הזו. הפעילו אותו בדרך שגרסת ה-DiLink שלכם דורשת.</string>
+    <string name="adb_fail_auth_timeout">תם הזמן לאישור. הקישו על אפשר כשתיבת הדו-שיח של ניפוי USB מופיעה במסך הרכב, ואז הפעילו מחדש את האפליקציה.</string>
+    <string name="adb_fail_connection">שגיאת חיבור: %1$s</string>
+    <string name="adb_fail_partial_grant">חלק מההרשאות לא הוענקו</string>
+    <string name="adb_fail_grant">הענקת ההרשאות נכשלה: %1$s</string>
 
     <!-- Dashboard CARDS layout (Pro) -->
     <string name="stat_tyres">צמיגים</string>
@@ -1278,6 +1286,7 @@
     <string name="tyre_subtitle_pressure">°C · %1$s לחץ</string>
     <string name="d5_consent_title">לאפשר גישה לנתוני הרכב?</string>
     <string name="d5_consent_body">כדי לקרוא נתונים חיים מהרכב הזה (סוללה, טווח, מהירות, צמיגים…), על BYD Trip Stats להקל על הגדרת מערכת אחת ביחידה הראשית (הגבלת hidden-API), מוגבלת לספריות הרכב של BYD.\n\nזוהי הגדרה ברמת המכשיר כולו. היא מתאפסת באתחול והאפליקציה מחילה אותה מחדש רק בעת הצורך. ניתן לשנות זאת מאוחר יותר בהגדרות.\n\nבלעדיה האפליקציה פועלת אך אינה מציגה נתוני רכב.\n\nהאפליקציה גם שומרת את ADB מופעל כל הזמן, והחלק הזה אינו אופציונלי. הרכב מכבה את ADB בכל כיבוי; האפליקציה מפעילה אותו מחדש עם עלייתה, כי זה מה שמאפשר לה להתחיל להקליט מעצמה כשמתניעים את הרכב.</string>
+    <string name="consent_own_risk">השינוי הזה נעשה על אחריותך בלבד. BYD Trip Stats מסופק \"כמות שהוא\", ללא אחריות מכל סוג.</string>
     <string name="d5_consent_allow">אפשר</string>
     <string name="d5_consent_not_now">לא עכשיו</string>
     <string name="d5_vehicle_access_section">גישה לנתוני הרכב</string>

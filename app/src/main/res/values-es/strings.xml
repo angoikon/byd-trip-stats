@@ -1112,6 +1112,8 @@
     <string name="about_author_label">Autor</string>
     <string name="about_platform_label">Plataforma</string>
     <string name="about_license_label">Licencia</string>
+    <string name="about_disclaimer_title">Aviso legal</string>
+    <string name="about_disclaimer_body">BYD Trip Stats es un proyecto independiente, sin relación con BYD. Se ofrece «tal cual», sin garantía de ningún tipo, y lo usas bajo tu propia responsabilidad. El autor no se hace responsable de daños al vehículo ni de pérdidas de datos. La autonomía, el estado de la batería y el consumo son estimaciones. La conducción segura siempre es lo primero.</string>
     <string name="about_license_value" translatable="false">BUSL 1.1</string>
     <string name="about_site_label">Sitio</string>
     <string name="about_github_label">Github</string>
@@ -1248,11 +1250,17 @@
     <string name="adb_granting_title">Concediendo permisos…</string>
     <string name="adb_failed_title">Configuración fallida</string>
     <string name="adb_setup_required_title">Configuración requerida</string>
-    <string name="adb_idle_msg">BYD Trip Stats necesita autorización ADB única para ejecutarse en segundo plano.\n\nPasos:\n1. Ajustes → Opciones de desarrollador\n2. Activar depuración USB\n3. Vuelve aquí y toca Autorizar</string>
+    <string name="adb_idle_msg">BYD Trip Stats necesita autorización ADB única para ejecutarse en segundo plano.\n\nToca Autorizar y luego toca Permitir cuando el coche pida permitir la depuración USB.</string>
     <string name="adb_connecting_msg">Conectando al demonio ADB…</string>
     <string name="adb_waiting_msg">Debería aparecer un diálogo en pantalla solicitando permitir la depuración USB. Toca Permitir y vuelve aquí.\n\nEsta es una acción única. Las actualizaciones futuras son completamente automáticas.</string>
     <string name="adb_granting_msg">Concediendo permisos en segundo plano…</string>
     <string name="authorize_action">Autorizar</string>
+    <string name="adb_failed_retry_hint">Toca Reintentar para volver a intentarlo.</string>
+    <string name="adb_fail_not_enabled">ADB no está activado en esta unidad principal. Actívalo del modo que requiera tu versión de DiLink.</string>
+    <string name="adb_fail_auth_timeout">Se agotó el tiempo de autorización. Toca Permitir cuando aparezca el diálogo de depuración USB en la pantalla del coche y luego reinicia la app.</string>
+    <string name="adb_fail_connection">Error de conexión: %1$s</string>
+    <string name="adb_fail_partial_grant">No se pudieron conceder algunos permisos</string>
+    <string name="adb_fail_grant">Error al conceder permisos: %1$s</string>
 
     <!-- Dashboard CARDS layout (Pro) -->
     <string name="stat_tyres">Neumáticos</string>
@@ -1282,6 +1290,7 @@
     <string name="tyre_subtitle_pressure">°C · %1$s presión</string>
     <string name="d5_consent_title">¿Permitir el acceso a los datos del vehículo?</string>
     <string name="d5_consent_body">Para leer datos en vivo de este coche (batería, autonomía, velocidad, neumáticos…), BYD Trip Stats necesita relajar un ajuste del sistema en la unidad central (la restricción de hidden-API), limitado a las bibliotecas de vehículos de BYD.\n\nEs un ajuste de todo el dispositivo. Se restablece al reiniciar y la app solo lo vuelve a aplicar cuando es necesario. Puedes cambiar esto más tarde en Ajustes.\n\nSin él, la app funciona pero no muestra datos del vehículo.\n\nLa app también mantiene ADB activado en todo momento, y esta parte no es opcional. El coche desactiva ADB cada vez que se apaga; la app lo vuelve a activar al arrancar, porque es lo que le permite empezar a registrar por sí sola cuando arrancas el coche.</string>
+    <string name="consent_own_risk">Haces este cambio bajo tu propia responsabilidad. BYD Trip Stats se ofrece «tal cual», sin garantía de ningún tipo.</string>
     <string name="d5_consent_allow">Permitir</string>
     <string name="d5_consent_not_now">Ahora no</string>
     <string name="d5_vehicle_access_section">Acceso a datos del vehículo</string>
