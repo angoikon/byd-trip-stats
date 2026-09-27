@@ -37,7 +37,10 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
-@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@OptIn(
+    androidx.compose.foundation.ExperimentalFoundationApi::class,
+    androidx.compose.foundation.layout.ExperimentalLayoutApi::class,
+)
 @Composable
 internal fun ChargingSessionCard(
     session      : ChargingSessionEntity,
@@ -210,15 +213,43 @@ internal fun ChargingSessionCard(
 
             Spacer(Modifier.height(6.dp))
 
-            Row(
+            // Cost is the real price when set, otherwise the global-tariff estimate (shown with a
+            // "~" and muted). It prices the energy added, so it sits beside the kWh — next to the
+            // distance it read as "these km cost this much", which it isn't: most of that distance
+            // ran on earlier charges.
+            val explicitCost = session.explicitCost
+            val estimatedCost = if (explicitCost == null && defaultTariff > 0.0)
+                (session.kwhAdded ?: 0.0) * defaultTariff else null
+            val displayCost = explicitCost ?: estimatedCost
+            val isEstimated = explicitCost == null && estimatedCost != null
+
+            // Flow, not Row: with the cost added a live session carries four chips, which a
+            // narrow card can't fit on one line.
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 SessionMetricChip(
                     icon  = Icons.Filled.ElectricalServices,
                     label = kwhText,
                     tint  = RegenGreen
                 )
+                if (!isActive) displayCost?.let { cost ->
+                    SessionMetricChip(
+                        icon  = Icons.Filled.Payments,
+                        label = when {
+                            cost <= 0.0 -> stringResource(R.string.free_label)
+                            isEstimated -> "~$currencySymbol%.2f".format(cost)
+                            else        -> "$currencySymbol%.2f".format(cost)
+                        },
+                        tint  = when {
+                            cost <= 0.0 -> RegenGreen
+                            isEstimated -> MaterialTheme.colorScheme.onSurfaceVariant
+                            else        -> AccelerationOrange
+                        }
+                    )
+                }
                 if (session.peakKw > 0) {
                     SessionMetricChip(
                         icon  = Icons.Filled.Bolt,
@@ -249,45 +280,18 @@ internal fun ChargingSessionCard(
                 }
             }
 
-            // Distance-since-last-charge + cost. Cost is the real price when set, otherwise the
-            // global-tariff estimate (shown with a "~" and muted). Only rendered when known.
-            val explicitCost = session.explicitCost
-            val estimatedCost = if (explicitCost == null && defaultTariff > 0.0)
-                (session.kwhAdded ?: 0.0) * defaultTariff else null
-            val displayCost = explicitCost ?: estimatedCost
-            val isEstimated = explicitCost == null && estimatedCost != null
-            if (!isActive && (distanceSinceLastCharge != null || displayCost != null)) {
+            // Distance driven since the previous charge — on its own row, see the cost note above.
+            val distanceKm = distanceSinceLastCharge?.takeIf { it >= 0.0 }
+            if (!isActive && distanceKm != null) {
                 Spacer(Modifier.height(6.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    distanceSinceLastCharge?.takeIf { it >= 0.0 }?.let { km ->
-                        SessionMetricChip(
-                            icon  = Icons.Filled.Route,
-                            label = stringResource(
-                                R.string.since_last_charge_chip,
-                                "%.0f %s".format(unitSystem.convertDistance(km), unitSystem.distanceUnit)
-                            ),
-                            tint  = BatteryBlue
-                        )
-                    }
-                    displayCost?.let { cost ->
-                        SessionMetricChip(
-                            icon  = Icons.Filled.Payments,
-                            label = when {
-                                cost <= 0.0 -> stringResource(R.string.free_label)
-                                isEstimated -> "~$currencySymbol%.2f".format(cost)
-                                else        -> "$currencySymbol%.2f".format(cost)
-                            },
-                            tint  = when {
-                                cost <= 0.0 -> RegenGreen
-                                isEstimated -> MaterialTheme.colorScheme.onSurfaceVariant
-                                else        -> AccelerationOrange
-                            }
-                        )
-                    }
-                }
+                SessionMetricChip(
+                    icon  = Icons.Filled.Route,
+                    label = stringResource(
+                        R.string.since_last_charge_chip,
+                        "%.0f %s".format(unitSystem.convertDistance(distanceKm), unitSystem.distanceUnit)
+                    ),
+                    tint  = BatteryBlue
+                )
             }
         }
     }
