@@ -47,9 +47,9 @@
     <string name="settings_tab_pro">Pro</string>
     <string name="settings_tab_about">關於 &amp; 常見問題</string>
     <string name="pro_cards_layout_title">卡片式儀表板版面配置</string>
-    <string name="pro_cards_layout_info">更大、可完全自訂的儀表板：以大而間距合理的磚取代中央圖表。點擊鉛筆可拖曳重新排序磚、顯示或隱藏所需的磚，點擊續航磚可全螢幕開啟預測圖表。解鎖後在 偏好設定 → 儀表板版面配置 中選擇。</string>
+    <string name="pro_cards_layout_info">更大、可完全自訂的儀表板：以大而間距合理的磚取代中央圖表。點擊鉛筆可拖曳重新排序磚、顯示或隱藏所需的磚，點擊續航磚可全螢幕開啟預測圖表。解鎖後在 偏好設定 → 外觀 → 儀表板版面配置 中選擇。</string>
     <string name="pro_neon_theme_title">霓虹主題</string>
-    <string name="pro_neon_theme_info">純黑、適合 OLED 的深色主題，其功率指標數字和強調條紋如霓虹般發光，每張卡片都有細微的強調邊緣。解鎖後在 偏好設定 → 主題 中選擇。</string>
+    <string name="pro_neon_theme_info">純黑、適合 OLED 的深色主題，其功率指標數字和強調條紋如霓虹般發光，每張卡片都有細微的強調邊緣。解鎖後在 偏好設定 → 外觀 → 主題 中選擇。</string>
 
     <!-- Detail tabs -->
     <string name="tab_overview">總覽</string>
@@ -493,7 +493,6 @@
     <string name="trim_skip_vacuum_msg">精簡完成。（VACUUM 已略過；稍後重新啟動應用程式以釋放空間。）</string>
     <string name="trim_failed_msg">精簡失敗：%1$s</string>
     <string name="last_backup_label">上次備份：%1$s</string>
-    <string name="open_backup_restore_action">開啟備份 &amp; 還原</string>
     <string name="reset_all_data_label">重設所有行程資料</string>
     <string name="reset_confirm_title">重設所有行程資料？</string>
     <string name="reset_confirm_msg">這將永久刪除所有行程和統計資料。\n\n重設前將自動備份至下載目錄。應用程式將關閉並重新啟動。</string>
@@ -820,7 +819,7 @@
     <string name="schedule_monthly">每月</string>
     <string name="danger_zone_title">危險區域</string>
     <string name="danger_zone_desc">永久刪除所有行程、資料點和統計資料。重置前會自動建立本機備份。</string>
-    <string name="send_diag_log_desc">將完整診斷日誌（速度停滯和\'遙測重新整理卡死\'事件）直接傳送到已連線的 Telegram 機器人——不會在本機儲存或共用任何內容。請先在備份 &amp; 還原 → Telegram 備份中連線機器人。</string>
+    <string name="send_diag_log_desc">共有三種方式分享診斷日誌；如有背景助手本身的日誌，也會一併附上。Telegram 將完整日誌傳送到您的機器人（在 設定 → 連線 → Telegram 中設定）。儲存 將其複製到車機的 Download/BydTripStats/。透過 QR 碼傳送郵件 會上傳最新部分並顯示 QR 碼，用手機掃描即可透過郵件傳送其連結；連結 24 小時後失效。</string>
     <string name="compat_privacy_notice_body">報告擷取汽車主機每個資料來源的原始值——數值、字串和陣列。\n\n不包含 GPS 經緯度。\n\n包含其他所有內容：電池狀態、電機資料、檔位、速度、駕駛模式、空調狀態、充電狀態、PHEV 專用值等。\n\n不會自動傳送任何內容。"透過 QR 碼傳送郵件"將報告上傳到臨時公開主機（litterbox）並顯示一個 24 小時後自動刪除的連結；在此之前任何有連結的人都可以讀取。其他選項將報告儲存在您的裝置上。</string>
     <string name="compat_sending_label">傳送中…</string>
     <string name="compat_email_qr_label">透過 QR 碼傳送郵件</string>
@@ -890,7 +889,6 @@
     <string name="select_car_label">選擇車款</string>
 
     <!-- Settings — General section -->
-    <string name="section_general">一般</string>
     <string name="pref_theme">主題</string>
     <string name="theme_desc">選擇應用程式外觀。系統預設跟隨您裝置的深色/淺色設定。</string>
     <string name="theme_system">系統</string>
@@ -913,7 +911,6 @@
     <string name="dashboard_icons_desc">啟用後，續航預測卡片顯示液態填充電池圖示、含輪胎氣壓/溫度疊加的四驅/軸線圖，以及圖表上方的動態耗能縮圖。停用後，這些內容移至頂部列（電池和耗能圖示）以及側面板的專用輪胎統計卡片，從而為續航圖表釋放垂直空間並略過所有動畫。</string>
 
     <!-- Settings — Trips section -->
-    <string name="section_trips">行程</string>
     <string name="pref_engine_off_timeout">車輛關閉後行程逾時</string>
     <string name="engine_off_timeout_desc">車輛關閉後行程保持開啟的時長。如果車輛在此時間窗口內重新啟動，錄製將無縫恢復（同一行程，新增一段並在括號中顯示累計距離）。超過時間窗口後行程結束，下次駕駛將開始新的行程。預設為 3 分鐘。</string>
     <string name="current_timeout_value">目前：%1$s 分鐘</string>
@@ -930,12 +927,8 @@
     <string name="pref_goals_label">目標 &amp; 個人最佳</string>
     <string name="goal_consumption_value">耗能目標：%1$s</string>
     <string name="goal_monthly_distance_value">每月距離目標：%1$s</string>
-    <string name="best_consumption_value">最佳耗能：%1$s</string>
-    <string name="best_distance_value">最佳距離：%1$s</string>
-    <string name="open_goals_action">開啟目標 &amp; 個人最佳</string>
 
     <!-- Settings — Battery section -->
-    <string name="section_battery">電池 &amp; 遙測</string>
     <string name="pref_soc_source">SoC 來源</string>
     <string name="soc_source_desc">選擇在儀表板上顯示的電量百分比讀數。</string>
     <string name="soc_panel_option">面板</string>
@@ -1022,7 +1015,7 @@
     <string name="web_companion_label">Web 伴侶</string>
     <string name="web_companion_desc">在相同 WiFi 網路的任何裝置上瀏覽行程 &amp; 充電紀錄。</string>
     <string name="web_companion_disabled_desc">啟動本機伺服器，在瀏覽器中查看行程歷史。</string>
-    <string name="web_companion_wifi_info">透過本機 WiFi 提供服務，因此在車輛開啟且遙測服務執行時可存取。停車後，大多數比亞迪車款在關閉約 15 分鐘後會中斷 WiFi — 之後在任何背景活動模式下，伴侶均無法存取（本機伺服器無行動數據回退），直到車輛再次開啟。\n注意：Electro 應用程式有選項可無限期保持 WiFi 連線</string>
+    <string name="web_companion_wifi_info">透過本機 WiFi 提供服務，因此在車輛開啟且遙測服務執行時可存取。停車後，大多數比亞迪車款在關閉約 15 分鐘後會中斷 WiFi — 之後在任何背景活動模式下，伴侶均無法存取（本機伺服器無行動數據回退），直到車輛再次開啟。</string>
     <string name="web_companion_files_info">companion 還有一個 檔案 分頁：將資料庫備份、匯出和診斷日誌直接下載到你的手機或筆電，並在不插任何東西的情況下把備份上傳到車。它只顯示應用自己的資料夾，而非整個車機。</string>
     <string name="port_field_label">連接埠</string>
     <string name="port_hint_text">如連接埠被封鎖，請嘗試 8081、8888、9090。變更連接埠將重新啟動伺服器。</string>
@@ -1048,6 +1041,34 @@
     <string name="status_enabled_label">狀態：已啟用</string>
     <string name="status_disabled_label">狀態：已停用</string>
     <string name="back_to_overview_action">返回總覽</string>
+    <!-- Settings overview cards (App, Preferences, Connections → Web Companion) -->
+    <string name="settings_overview_desc">選擇要開啟的部分。下方卡片總覽顯示目前設定。</string>
+    <string name="web_companion_card_desc">在手機或筆電的瀏覽器中查看行程、充電和檔案。</string>
+    <string name="power_card_desc">車輛熄火後仍在執行的項目，以及保持 Wi-Fi 開啟。</string>
+    <string name="power_card_desc_d5">車輛熄火後仍在執行的項目，以及車輛資料存取。</string>
+    <string name="backup_card_title">備份 &amp; 還原</string>
+    <string name="backup_card_desc">行程、充電紀錄和設定 — 本機、SD 卡或透過 Telegram。</string>
+    <string name="compat_card_desc">錄製遙測報告，協助為您的車款新增支援。</string>
+    <string name="diagnostics_card_desc">傳送診斷記錄，並即時查看 CPU、記憶體和權限。</string>
+    <string name="wifi_keepalive_on_status">保持 Wi-Fi：開啟</string>
+    <string name="d5_vehicle_access_off_status">車輛資料存取：關閉</string>
+    <string name="diagnostics_live_on_status">即時詳情：開啟</string>
+    <string name="diagnostics_live_off_status">即時詳情：關閉</string>
+    <string name="pref_appearance_title">外觀</string>
+    <string name="pref_appearance_desc">主題、儀表板版面配置，以及儀表板圖示和動畫。</string>
+    <string name="pref_language_units_title">語言 &amp; 單位</string>
+    <string name="pref_language_units_desc">應用程式語言，以及公制或英制單位。</string>
+    <string name="pref_trip_recording_title">行程記錄</string>
+    <string name="pref_trip_recording_desc">車輛熄火後行程何時結束，以及行程最短可以多短。</string>
+    <string name="trip_recording_status">%1$d 分鐘後自動結束 • 最短 %2$s</string>
+    <string name="trip_recording_status_no_min">%1$d 分鐘後自動結束 • 無最短距離</string>
+    <string name="pref_battery_title">電池</string>
+    <string name="pref_battery_desc">顯示哪種電量讀數，以及電芯不平衡提醒。</string>
+    <string name="battery_status_alert_on">SoC：%1$s • 不平衡提醒：開啟</string>
+    <string name="battery_status_alert_off">SoC：%1$s • 不平衡提醒：關閉</string>
+    <string name="pref_costs_desc">您的電費費率和貨幣，用於計算行程和充電的費用。</string>
+    <string name="pref_goals_desc">能耗和里程目標，以及您的個人最佳紀錄。</string>
+    <string name="pro_cell_imbalance_info">當電池電芯電壓差持續高於您設定的上限時提醒您 — 這是電芯變弱的早期跡象。解鎖後在 偏好設定 → 電池 中開啟並設定上限。</string>
 
     <!-- ABRP settings -->
     <string name="abrp_link_desc">Link Generic token 將即時遙測資料上傳至 A Better Routeplanner。</string>
@@ -1137,8 +1158,6 @@
 
     <!-- FAQ -->
     <string name="faq_section_title">常見問題</string>
-    <string name="faq_q_no_electro">與舊版本不同，是否真的不再需要 Electro 應用程式了？</string>
-    <string name="faq_a_no_electro">是的。BYD Trip Stats 在支援的車輛上作為獨立應用程式執行，無需 Electro 即可記錄行程和充電紀錄。\n\nElectro 對於需要其功能的車主仍然是有用的伴侶應用程式，但不再是 BYD Trip Stats 執行的必要條件。</string>
     <string name="faq_q_internet">我需要網際網路或行動訊號嗎？</string>
     <string name="faq_a_internet">正常使用不需要。行程、充電紀錄、圖表和本機歷史記錄完全在裝置上儲存。\n\n僅在啟用應用程式更新檢查、開啟網頁連結、MQTT / ABRP 整合和 Telegram 備份等選用功能時才需要網際網路。</string>
     <string name="faq_q_pro">BYD Trip Stats Pro 是什麼，包含哪些內容？</string>
@@ -1148,9 +1167,9 @@
     <string name="faq_q_offline_trip">無網路連線意味著行程將在歷史記錄中缺失？</string>
     <string name="faq_a_offline_trip">不會。行程歷史記錄儲存在本機，不依賴行動訊號或 WiFi。\n\n只有在即時遙測本身中斷一段時間時，行程才可能稍晚關閉。在這種情況下，監視器將在遙測靜默 3 分鐘後關閉活躍行程，以應用程式收到的最後一個資料封包為基準。</string>
     <string name="faq_q_stops_restart">車輛重新啟動後應用程式停止運作</string>
-    <string name="faq_a_stops_restart">您需要將 BYD Trip Stats 排除在自動啟動終止器之外：\n\n1. 開啟「停用自動啟動」應用程式（比亞迪原生應用程式，通常在檔案總管附近）\n2. 找到 BYD Trip Stats 並將其切換為關閉 — 與 Electro 的操作相同\n3. 開啟應用程式並長按音量鍵約 10 秒以重新啟動車輛介面\n4. 重新開啟應用程式\n\n重要：每次應用程式更新後必須重複此步驟，因為重新安裝會重置權限。</string>
+    <string name="faq_a_stops_restart">您需要將 BYD Trip Stats 排除在自動啟動終止器之外：\n\n1. 開啟「停用自動啟動」應用程式（比亞迪原生應用程式，通常在檔案總管附近）\n2. 找到 BYD Trip Stats 並將其切換為關閉\n3. 開啟應用程式並長按音量鍵約 10 秒以重新啟動車輛介面\n4. 重新開啟應用程式\n\n重要：每次應用程式更新後必須重複此步驟，因為重新安裝會重置權限。</string>
     <string name="faq_q_backup">如何備份我的行程資料？</string>
-    <string name="faq_a_backup">有多種方法可用 — 均產生相同的標準 SQLite 檔案：\n\n本機（最簡單）：設定 → 資料 → 開啟備份 &amp; 還原 → 立即備份。\n\nSD 卡（Pro）：備份 &amp; 還原 → 備份至 SD 卡。解除安裝應用程式後仍保留。\n\nTelegram（建議）：透過備份 &amp; 還原 → Telegram 備份連線機器人，然後手動或依排程傳送。\n\nADB：adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
+    <string name="faq_a_backup">有多種方法可用 — 均產生相同的標準 SQLite 檔案：\n\n本機（最簡單）：設定 → 應用程式 → 備份 &amp; 還原 → 立即備份。\n\nSD 卡（Pro）：備份 &amp; 還原 → 備份至 SD 卡。解除安裝應用程式後仍保留。\n\nTelegram（建議）：在 設定 → 連線 → Telegram 中連線機器人，然後手動或依排程傳送。\n\nADB：adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
     <string name="faq_q_recover">我重新安裝了應用程式 — 能否還原我的備份？</string>
     <string name="faq_a_recover">可以。Telegram：重新連線您的機器人 token，然後從 Telegram 還原 → 重新整理圖示會自動重新探索所有備份。\n\n本機：Download/BydTripStats/ 中的 .db 檔案在重新安裝後仍保留。開啟備份 &amp; 還原，點擊本機還原下的重新整理圖示，檔案將重新出現。</string>
     <string name="faq_q_auto_backup">Telegram 自動備份如何運作？</string>
@@ -1169,8 +1188,6 @@
     <!-- App Management screen -->
     <string name="app_mgmt_backup_local_label">本機</string>
     <string name="app_mgmt_telegram_label">Telegram</string>
-    <string name="app_mgmt_private_bot_desc">私人機器人聊天</string>
-    <string name="app_mgmt_manual_scheduled">手動 &amp; 排程</string>
     <string name="app_mgmt_no_local_backup">未找到本機備份</string>
 
     <!-- Telemetry debug -->
@@ -1192,7 +1209,6 @@
     <string name="diagnostic_enabled_desc">即時程序、記憶體、畫面更新率、權限和 ADB 工具可見。</string>
     <string name="diagnostic_disabled_desc">預設關閉，以避免在您僅查看備份時此頁面持續輪詢。</string>
     <string name="send_diag_log_action">將診斷記錄傳送至 Telegram</string>
-    <string name="diag_log_info_desc">將完整診斷記錄直接傳送至您已連線的 Telegram 機器人 — 不在本機儲存或分享。請先在備份 &amp; 還原 → Telegram 備份中連線機器人。</string>
     <string name="enable_troubleshooting_hint">僅在排查問題時啟用；歷史圖表在可見時每 2 秒採樣一次。</string>
     <string name="background_readiness_label">背景就緒狀態</string>
     <string name="write_settings_perm_label">寫入設定</string>

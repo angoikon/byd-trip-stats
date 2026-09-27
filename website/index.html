@@ -54,7 +54,7 @@
     <div class="hero__glow" aria-hidden="true"></div>
     <div class="container hero__inner">
       <div class="hero__copy">
-        <span class="pill"><span id="appVersion">v2.9</span> · Runs on your car's screen</span>
+        <span class="pill"><span id="appVersion">v2.16</span> · Runs on your car's screen</span>
         <h1>Your BYD's hidden telemetry,<br><span class="grad">finally on the dashboard</span></h1>
         <p class="lede">
           BYD Trip Stats is a standalone analytics app that runs directly on your
@@ -90,9 +90,9 @@
   <section class="trust">
     <div class="container trust__grid">
       <div class="stat"><b>14</b><span>heatmap dimensions</span></div>
-      <div class="stat"><b>1&nbsp;Hz</b><span>live telemetry loop</span></div>
+      <div class="stat"><b>10&nbsp;Hz</b><span>live speed &amp; power</span></div>
       <div class="stat"><b>0</b><span>data leaves the car*</span></div>
-      <div class="stat"><b>20+</b><span>supported models</span></div>
+      <div class="stat"><b>45+</b><span>model variants</span></div>
     </div>
   </section>
 
@@ -110,22 +110,24 @@
         <article class="card">
           <div class="card__icon" data-i="trip"></div>
           <h3>Autonomous trip recording</h3>
-          <p>Trips start and stop on their own from gear-position events (D/R → P). Brief stops stitch
-             into one journey. Zero driver input, with manual override when you want it.</p>
+          <p>A trip starts when you drive off and ends a few minutes after you switch the car off — you
+             choose how long. Lights, queues and waits in P with the power on stay part of the same trip.
+             Zero driver input, with manual override when you want it.</p>
         </article>
 
         <article class="card">
           <div class="card__icon" data-i="range"></div>
           <h3>Real-time range projection</h3>
           <p>A consumption model fed from the BMS discharge counter — not the static factory estimate —
-             self-calibrates over a rolling 10&nbsp;km window and is bounded by WLTP.</p>
+             self-calibrates over a rolling 5&nbsp;km window, starts from your own driving history, and
+             is capped at WLTP.</p>
         </article>
 
         <article class="card">
           <div class="card__icon" data-i="motor"></div>
           <h3>Live motor &amp; power telemetry</h3>
-          <p>Per-axle motor RPM, power split, gear, speed, regen detection — plus HV/12&nbsp;V bus
-             voltage, tyre pressures and temperatures where the car exposes them.</p>
+          <p>Speed, gear, power and front-motor RPM updated up to 10 times a second, plus power split, regen
+             detection, HV/12&nbsp;V bus voltage, tyre pressures and temperatures where the car exposes them.</p>
         </article>
 
         <article class="card">
@@ -164,10 +166,33 @@
         </article>
 
         <article class="card">
+          <div class="card__icon" data-i="globe"></div>
+          <h3>Web companion &amp; remote access</h3>
+          <p>Browse trips, charging history and files from any phone or laptop on your Wi-Fi, behind a
+             PIN. Sign the car into your own Tailscale network and it's reachable from anywhere — with
+             nothing opened on your router.</p>
+        </article>
+
+        <article class="card">
+          <div class="card__icon" data-i="bell"></div>
+          <h3>Notifications</h3>
+          <p>Trip summaries, a note when a charge finishes and, with Pro, the cell-imbalance warning —
+             sent to your own Telegram bot and listed in the web companion. No server, no account, off
+             by default.</p>
+        </article>
+
+        <article class="card">
+          <div class="card__icon" data-i="backup"></div>
+          <h3>Backups you control</h3>
+          <p>Compressed database backups on the car, on an SD card (Pro) or in your own Telegram chat —
+             on demand or on a schedule, with your settings alongside — and restore from any of them.</p>
+        </article>
+
+        <article class="card">
           <div class="card__icon" data-i="link"></div>
-          <h3>Optional integrations</h3>
-          <p>Opt-in ABRP upload, outbound MQTT for Home Assistant, an offline-first PWA web companion,
-             and encrypted Telegram or local backups. All disabled by default.</p>
+          <h3>ABRP &amp; Home Assistant</h3>
+          <p>Opt-in live telemetry to ABRP with your own token, and to any MQTT broker — Home Assistant
+             included — over TCP, TLS or WebSocket. Both off by default.</p>
         </article>
       </div>
     </div>
@@ -181,20 +206,23 @@
         <h2>Range you can actually trust</h2>
         <p>Most cars show you a single static estimate. BYD Trip Stats models your <em>real</em> Wh/km
            from the same BMS total-discharge counter that feeds the live consumption readout — then
-           projects forward in three tiers.</p>
+           projects forward with the best of four tiers available at that moment.</p>
       </header>
       <div class="split">
       <div class="split__copy">
         <ol class="steps">
-          <li><b>Live trip</b> — a rolling 10&nbsp;km window with EMA smoothing and a 3&nbsp;km
-              stabilisation period for the current drive.</li>
-          <li><b>Historical speed bins</b> — engages within ~0.2&nbsp;km of moving, so the projection
-              leaves the catalog baseline almost immediately.</li>
-          <li><b>WLTP baseline</b> — an upper bound that prevents implausible numbers during slow
-              urban starts.</li>
+          <li><b>Live trip</b> — a rolling 5&nbsp;km window with EMA smoothing, trusted once the
+              current drive passes a 3&nbsp;km stabilisation period.</li>
+          <li><b>Trip average</b> — this drive's own consumption so far, available within ~0.2&nbsp;km
+              of setting off.</li>
+          <li><b>Lifetime average</b> — your long-run consumption across past trips, so even the first
+              few hundred metres start from how <em>you</em> drive rather than a brochure figure.</li>
+          <li><b>Baseline</b> — the catalogue rate for your model, used only until there is history to
+              go on.</li>
         </ol>
-        <p class="muted">Every projection is compared continuously against the BMS estimate with a
-           signed delta, so you always see how the model differs from the factory guess.</p>
+        <p class="muted">Every projection is capped at WLTP, so slow urban starts can't produce
+           implausible numbers, and compared continuously against the BMS estimate with a signed delta,
+           so you always see how the model differs from the factory guess.</p>
       </div>
       <div class="split__media">
         <figure class="shot" data-shot="assets/screenshots/range-projection.png">
@@ -307,8 +335,8 @@
         <span class="eyebrow">Data privacy</span>
         <h2>Local-first by design</h2>
         <p>By default, <strong>nothing leaves your car.</strong> All telemetry, trips and charging
-           data live in an on-device database. Network access only happens for integrations you
-           explicitly switch on.</p>
+           data live in an on-device database. Anything sent elsewhere goes only because you switched
+           it on, and only to a destination you chose.</p>
       </header>
 
       <div class="privacy">
@@ -316,14 +344,17 @@
           <div class="point"><span class="dot"></span><div><b>Zero default telemetry</b><p>No tracking, no crash reporting, no analytics, no ads.</p></div></div>
           <div class="point"><span class="dot"></span><div><b>GDPR-aligned</b><p>The app itself collects and transmits no personal data.</p></div></div>
           <div class="point"><span class="dot"></span><div><b>You own the destination</b><p>Opt-in flows send only to endpoints you configure.</p></div></div>
+          <div class="point"><span class="dot"></span><div><b>The web companion stays home</b><p>It is on by default, but it only answers browsers on your own network — or your own Tailscale network — and only with its PIN. It serves your data; it never sends it anywhere.</p></div></div>
         </div>
         <div class="privacy__table">
           <table>
             <thead><tr><th>Opt-in integration</th><th>What's sent</th><th>Where</th></tr></thead>
             <tbody>
-              <tr><td>Telegram backup</td><td>Encrypted database file</td><td>Your own private bot</td></tr>
+              <tr><td>Telegram</td><td>Database backups (compressed) and the notifications you switch on</td><td>Your own private bot</td></tr>
               <tr><td>MQTT</td><td>Live telemetry JSON</td><td>A broker you specify</td></tr>
               <tr><td>ABRP</td><td>Live snapshot (SoC, speed, GPS)</td><td>ABRP, via your token</td></tr>
+              <tr><td>Tailscale</td><td>Encrypted traffic between your own devices, to reach the web companion and ADB</td><td>Your own Tailscale network</td></tr>
+              <tr><td>Email via QR code</td><td>A compatibility report or diagnostics log, only when you tap it</td><td>A temporary file host; the link expires after 24&nbsp;h</td></tr>
             </tbody>
           </table>
         </div>
@@ -337,14 +368,15 @@
       <header class="section__head">
         <span class="eyebrow">Compatibility</span>
         <h2>Supported BYD models</h2>
-        <p>Any DiLink 3 vehicle on Android 10+, plus DiLink 5 head units on Android 11+ (the Sealion 7).
-           Tested primarily on the Seal; other models depend on how close their firmware is. BEV and PHEV
-           (DM-i) both supported.</p>
+        <p>Any DiLink 3 vehicle on Android 10+, plus DiLink 5 head units on Android 11+ (the Sealion 7),
+           which take their own build from the same Releases page. Tested primarily on the Seal; other
+           models depend on how close their firmware is. BEV and PHEV (DM-i) both supported.</p>
       </header>
       <ul class="chips">
         <li>Seal</li><li>Dolphin</li><li>Atto 2</li><li>Atto 3</li><li>Seal U</li>
-        <li>Seagull / Dolphin Surf / Atto 1</li><li>M6</li><li>Seal 6</li><li>Sealion 5</li>
-        <li>Sealion 6</li><li>Sealion 7 (DiLink 5)</li><li>Han</li><li>Tang</li><li>+ DM-i PHEV variants</li>
+        <li>Seagull / Dolphin Surf / Atto 1</li><li>M6</li><li>Seal 5 / Sealion 5</li><li>Seal 6</li>
+        <li>Seal 7 DM-i</li><li>Sealion 6</li><li>Sealion 7 (DiLink 5)</li><li>Han</li><li>Tang</li>
+        <li>Song Plus DM-i</li><li>Song Pro DM-i</li><li>Shark 6</li><li>+ DM-i PHEV variants</li>
       </ul>
     </div>
   </section>
@@ -380,7 +412,8 @@
           <div class="card__icon" data-i="battery"></div>
           <h3>Cell imbalance alert <span class="pro-badge">Pro</span></h3>
           <p>Get notified when your pack's cell-voltage spread stays above a limit you set — an early
-             warning for a weak or failing cell, watched while you drive or charge.</p>
+             warning for a weak or failing cell, watched while you drive or charge. It shows on the car's
+             screen, and in Telegram and the web companion if you use them.</p>
         </article>
 
         <article class="card">
@@ -465,23 +498,36 @@
         <details>
           <summary>Can I use the app without side-loading?</summary>
           <p>Not currently. The long-term goal is for BYD to ship something like this natively. For now
-             it's a side-loaded APK. If you want assistance with how to side-load, you can visit this page here
-             (https://github.com/DeBondor/byd-unlocking-guide/blob/main/README_EN.md)</p>
+             it's a side-loaded APK. If you want assistance with how to side-load, see
+             <a href="https://github.com/DeBondor/byd-unlocking-guide/blob/main/README_EN.md" target="_blank" rel="noopener">this unlocking guide</a>.</p>
         </details>
         <details>
           <summary>How do I install it?</summary>
-          <p>Download the signed APK from GitHub Releases, enable installation from unknown sources on
-             your DiLink unit, accept permissions by following the on-screen prompts, then pick your model on first launch.</p>
+          <p>Download the signed APK from GitHub Releases (DiLink 5 cars take the <code>dilink5</code> build),
+             enable installation from unknown sources on your DiLink unit, accept permissions by following the
+             on-screen prompts, then pick your model on first launch. After that, new versions can be installed
+             from inside the app, under Settings → About &amp; FAQ.</p>
         </details>
         <details>
           <summary>Will it drain my 12&nbsp;V battery?</summary>
           <p>Impact is minimal — the 12&nbsp;V is continuously topped up from the high-voltage pack
-             while the car is off. You can always set the app to minimal (reduced functionality) or off.</p>
+             while the car is off. You can always set the app to Minimal (reduced functionality) or Deep Sleep
+             under Settings → App → Power &amp; background.</p>
         </details>
         <details>
           <summary>Is my data secure?</summary>
-          <p>Yes. Everything stays on-device by default. The only outbound traffic is the opt-in
-             Telegram, MQTT and ABRP integrations you configure yourself, plus a read-only update check.</p>
+          <p>Yes. Everything stays on-device by default. The only outbound traffic is what you set up
+             yourself — Telegram, MQTT, ABRP or Tailscale — a report you choose to send with Email via QR code,
+             plus a read-only update check. The web companion is on by default, but it only answers browsers
+             on your own network, with a PIN.</p>
+        </details>
+        <details>
+          <summary>Can I check on the car when I'm away from home?</summary>
+          <p>Yes, with Tailscale (free for personal use). Under Settings → Connections → Tailscale, tap
+             <em>Sign in with your phone</em>, scan the QR code and approve — the web companion and ADB are
+             then reachable from anywhere, with nothing opened on your router. It needs the same one-time ADB
+             setup as instant telemetry. On DiLink 5 the head unit powers down about ten minutes after you
+             switch the car off, so access lasts until then.</p>
         </details>
         <details>
           <summary>Does it work on other BYD EVs besides the Seal?</summary>

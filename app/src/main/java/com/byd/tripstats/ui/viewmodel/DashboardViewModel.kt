@@ -299,6 +299,24 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             CostAttribution.distancesSincePreviousCharge(sessions, trips)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
+    /**
+     * Distance (km) driven since the most recent charge — the dashboard Distance tile's other
+     * view (a tap toggles it with the session distance). Live odometer minus the charge's anchor
+     * ([CostAttribution.lastChargeOdometer]), so a charge in progress reads about 0. Null when
+     * there is no charge yet, no odometer reading (0 while the car wakes), or the delta is
+     * negative (odometer glitch / reset).
+     */
+    val distanceSinceLastChargeKm: StateFlow<Double?> =
+        combine(
+            combine(allChargingSessions, allTrips) { sessions, trips ->
+                CostAttribution.lastChargeOdometer(sessions, trips)
+            }.distinctUntilChanged(),
+            displayTelemetry.map { it?.odometer }.distinctUntilChanged()
+        ) { anchor, odometer ->
+            if (anchor == null || odometer == null || odometer <= 0.0) null
+            else (odometer - anchor).takeIf { it >= 0.0 }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
     // Level 3 prior (LIFETIME_AVERAGE): the driver's own lifetime Wh/km, recomputed only
     // when the trip list changes. Eagerly so the projection/telemetry loop can read .value
     // synchronously (same reasoning as selectedCarConfig); null until lifetime distance

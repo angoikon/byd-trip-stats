@@ -135,7 +135,7 @@ fun SettingsScreen(
                         onNavigateToTripGoals = onNavigateToTripGoals,
                         onNavigateToProTab = { selectedTab = proTabIndex }
                     )
-                    3 -> ProTab(preferencesManager = preferencesManager)
+                    3 -> ProTab()
                     4 -> AboutTab(viewModel = viewModel)
                 }
             }

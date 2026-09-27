@@ -77,6 +77,7 @@ fun EnergyFlowDiagram(
     yearlyEfficiency: List<DashboardViewModel.DailyEfficiency>,
     sessionDistanceKm: Double = 0.0,
     tripDistanceKm: Double = 0.0,
+    distanceSinceChargeKm: Double? = null,
     consumptionExpanded: Boolean = false,
     onConsumptionExpand: () -> Unit = {},
     onConsumptionClose: () -> Unit = {},
@@ -118,6 +119,15 @@ fun EnergyFlowDiagram(
     )
     val toggleBatteryReadout: () -> Unit = {
         scope.launch { appPrefs.saveDashboardShowRemainingKwh(!showRemainingKwh) }
+    }
+
+    // Distance readout: a tap toggles between this session's distance and the distance since
+    // the last charge (the same view flag as the CARDS layout's Distance tile).
+    val showDistanceSinceCharge by appPrefs.dashboardShowDistanceSinceCharge.collectAsState(
+        initial = appPrefs.getCachedDashboardShowDistanceSinceCharge()
+    )
+    val toggleDistanceReadout: () -> Unit = {
+        scope.launch { appPrefs.saveDashboardShowDistanceSinceCharge(!showDistanceSinceCharge) }
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -348,11 +358,24 @@ fun EnergyFlowDiagram(
                             color = AccelerationOrange
                         )
                     }
+                    // No subtitle here, so the label says which distance is showing — as the
+                    // battery metric's label does for SoC vs remaining kWh.
                     PowerMetric(
-                        label = stringResource(R.string.stat_distance),
-                        value = formatDistanceDisplay(unitSystem.convertDistance(sessionDistanceKm), unitSystem.convertDistance(tripDistanceKm), isFullScreen),
+                        label = stringResource(
+                            if (showDistanceSinceCharge) R.string.distance_since_last_charge_label
+                            else R.string.stat_distance
+                        ),
+                        value = if (showDistanceSinceCharge) {
+                            distanceSinceChargeKm?.let {
+                                val d = unitSystem.convertDistance(it)
+                                if (isFullScreen) "%.1f".format(d) else "${d.toInt()}"
+                            } ?: "—"
+                        } else {
+                            formatDistanceDisplay(unitSystem.convertDistance(sessionDistanceKm), unitSystem.convertDistance(tripDistanceKm), isFullScreen)
+                        },
                         unit = distanceUnit,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.secondary,
+                        onClick = toggleDistanceReadout
                     )
                 }
             }

@@ -93,8 +93,7 @@ internal fun WebCompanionSection(context: Context, scope: CoroutineScope) {
         }
     }
 
-    SectionHeader(icon = Icons.Filled.Language, title = stringResource(R.string.web_companion_label))
-
+    // No section heading: like the other Connections pages, the card's own title names it.
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors   = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)

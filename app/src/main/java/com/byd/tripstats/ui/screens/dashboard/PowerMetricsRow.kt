@@ -58,7 +58,7 @@ private val PowerTileHeight = 150.dp
  * The top power-metric row (Power / Speed / SoC / Range / Distance) rendered as
  * large tiles for the CARDS layout. Each tile has a static, thin accent stripe flush
  * to its left edge and a dynamic subtitle. The Range tile is clickable — it opens the
- * range-projection chart.
+ * range-projection chart; the battery and Distance tiles toggle their readout on a tap.
  */
 @Composable
 fun PowerMetricsRow(
@@ -67,6 +67,7 @@ fun PowerMetricsRow(
     tripDataPoints: List<RangeDataPoint>,
     sessionDistanceKm: Double,
     tripDistanceKm: Double,
+    distanceSinceChargeKm: Double? = null,
     socSource: SocSource,
     editMode: Boolean = false,
     compact: Boolean = false,
@@ -118,6 +119,15 @@ fun PowerMetricsRow(
         scope.launch { prefs.saveDashboardShowRemainingKwh(!showRemainingKwh) }
     }
 
+    // Distance tile: a tap toggles the view between this session's distance and the distance
+    // driven since the last charge — the same kind of view flag as the battery tile's.
+    val showDistanceSinceCharge by prefs.dashboardShowDistanceSinceCharge.collectAsState(
+        initial = prefs.getCachedDashboardShowDistanceSinceCharge()
+    )
+    val toggleDistanceReadout: () -> Unit = {
+        scope.launch { prefs.saveDashboardShowDistanceSinceCharge(!showDistanceSinceCharge) }
+    }
+
     // PHEV: the tile keeps the EV projection as its headline figure, and the
     // subtitle carries the petrol + combined range instead of the generic hint.
     val selectedCar by prefs.selectedCarConfig.collectAsState(initial = prefs.getCachedSelectedCarConfig())
@@ -162,12 +172,21 @@ fun PowerMetricsRow(
         ),
         PowerMetricId.DISTANCE to PowerTileData(
             label = stringResource(R.string.stat_distance),
-            value = formatSessionDistance(
-                unitSystem.convertDistance(sessionDistanceKm),
-                unitSystem.convertDistance(tripDistanceKm)
+            value = if (showDistanceSinceCharge) {
+                // An em dash when there is no charge to measure from yet, as the kWh view does.
+                distanceSinceChargeKm?.let { "%.1f".format(unitSystem.convertDistance(it)) } ?: "—"
+            } else {
+                formatSessionDistance(
+                    unitSystem.convertDistance(sessionDistanceKm),
+                    unitSystem.convertDistance(tripDistanceKm)
+                )
+            },
+            unit = distanceUnit,
+            subtitle = stringResource(
+                if (showDistanceSinceCharge) R.string.distance_since_last_charge_label
+                else R.string.distance_subtitle_session
             ),
-            unit = distanceUnit, subtitle = stringResource(R.string.distance_subtitle_session),
-            accent = MaterialTheme.colorScheme.secondary, onClick = null
+            accent = MaterialTheme.colorScheme.secondary, onClick = toggleDistanceReadout
         ),
     )
 

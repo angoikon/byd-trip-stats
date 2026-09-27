@@ -47,9 +47,9 @@
     <string name="settings_tab_pro">Pro</string>
     <string name="settings_tab_about">Hakkında &amp; SSS</string>
     <string name="pro_cards_layout_title">Kartlı gösterge paneli düzeni</string>
-    <string name="pro_cards_layout_info">Daha büyük, tamamen özelleştirilebilir bir gösterge paneli: merkezi grafik yerine büyük, iyi aralıklı döşemeler. Döşemeleri sürükleyerek yeniden sıralamak, istediklerinizi göstermek veya gizlemek için kaleme dokunun; projeksiyon grafiğini tam boyutta açmak için Menzil döşemesine dokunun. Kilidi açıldıktan sonra Tercihler → Gösterge paneli düzeni altından seçin.</string>
+    <string name="pro_cards_layout_info">Daha büyük, tamamen özelleştirilebilir bir gösterge paneli: merkezi grafik yerine büyük, iyi aralıklı döşemeler. Döşemeleri sürükleyerek yeniden sıralamak, istediklerinizi göstermek veya gizlemek için kaleme dokunun; projeksiyon grafiğini tam boyutta açmak için Menzil döşemesine dokunun. Kilidi açıldıktan sonra Tercihler → Görünüm → Gösterge paneli düzeni altından seçin.</string>
     <string name="pro_neon_theme_title">Neon teması</string>
-    <string name="pro_neon_theme_info">Güç ölçüm rakamları ve vurgu şeritleri neon gibi parlayan, her kartta ince bir vurgu kenarı olan saf siyah, OLED dostu koyu bir tema. Kilidi açıldıktan sonra Tercihler → Tema altından seçin.</string>
+    <string name="pro_neon_theme_info">Güç ölçüm rakamları ve vurgu şeritleri neon gibi parlayan, her kartta ince bir vurgu kenarı olan saf siyah, OLED dostu koyu bir tema. Kilidi açıldıktan sonra Tercihler → Görünüm → Tema altından seçin.</string>
 
     <!-- Detail tabs -->
     <string name="tab_overview">Genel Bakış</string>
@@ -493,7 +493,6 @@
     <string name="trim_skip_vacuum_msg">Kırpma tamamlandı. (VACUUM atlandı; alanı geri kazanmak için uygulamayı daha sonra yeniden başlatın.)</string>
     <string name="trim_failed_msg">Kırpma başarısız: %1$s</string>
     <string name="last_backup_label">Son yedek: %1$s</string>
-    <string name="open_backup_restore_action">Yedekleme &amp; Geri Yüklemeyi Aç</string>
     <string name="reset_all_data_label">Tüm seyahat verilerini sıfırla</string>
     <string name="reset_confirm_title">Tüm seyahat verileri sıfırlansın mı?</string>
     <string name="reset_confirm_msg">Bu işlem tüm seyahatları ve istatistikleri kalıcı olarak siler.\n\nSıfırlamadan önce İndirilenler\'e otomatik olarak yedek alınır. Uygulama kapanıp yeniden açılacak.</string>
@@ -820,7 +819,7 @@
     <string name="schedule_monthly">Aylık</string>
     <string name="danger_zone_title">TEHLİKE BÖLGESİ</string>
     <string name="danger_zone_desc">Tüm gezileri, veri noktalarını ve istatistikleri kalıcı olarak siler. Sıfırlama öncesinde otomatik olarak yerel bir yedek oluşturulur.</string>
-    <string name="send_diag_log_desc">Tam tanılama günlüğünü (speed-stall ve \'telemetri yenileme takıldı\' olayları) doğrudan bağlı Telegram botunuza gönderir — yerel olarak hiçbir şey kaydedilmez veya paylaşılmaz. Önce Backup &amp; Restore → Telegram Backup altında bir bot bağlayın.</string>
+    <string name="send_diag_log_desc">Tanılama günlüğünü paylaşmanın üç yolu; varsa arka plan yardımcısının kendi günlüğü de birlikte gider. Telegram günlüğün tamamını botunuza gönderir (Ayarlar → Bağlantılar → Telegram altından bir bot kurun). Kaydet, günlüğü araçtaki Download/BydTripStats/ klasörüne kopyalar. QR koduyla e-posta en son bölümü yükler ve telefonunuzla tarayıp bağlantısını e-postayla göndereceğiniz bir kod gösterir; bağlantı 24 saat sonra geçerliliğini yitirir.</string>
     <string name="compat_privacy_notice_body">Rapor, aracınızın kafa ünitesindeki her veri kaynağından ham değerleri yakalar — sayısal değerler, dizeler ve diziler.\n\nGPS enlem ve boylamı DAHİL DEĞİLDİR.\n\nDiğer her şey dahildir: akü durumu, motor verileri, vites, hız, sürüş modları, klima durumu, şarj durumu, PHEV\'e özgü değerler vb.\n\nHiçbir şey otomatik olarak gönderilmez. "QR koduyla e-posta" raporu geçici bir genel sunucuya (litterbox) yükler ve 24 saat sonra otomatik olarak silinen bir bağlantı gösterir; o zamana kadar bağlantıya sahip olan herkes okuyabilir. Diğer seçenekler raporu cihazınızda tutar.</string>
     <string name="compat_sending_label">Gönderiliyor…</string>
     <string name="compat_email_qr_label">QR koduyla e-posta</string>
@@ -890,7 +889,6 @@
     <string name="select_car_label">Araç seçin</string>
 
     <!-- Settings — General section -->
-    <string name="section_general">Genel</string>
     <string name="pref_theme">Tema</string>
     <string name="theme_desc">Uygulamanın görünümünü seçin. Sistem varsayılanı cihazınızın koyu/açık ayarını takip eder.</string>
     <string name="theme_system">Sistem</string>
@@ -913,7 +911,6 @@
     <string name="dashboard_icons_desc">Etkinleştirildiğinde, menzil projeksiyon kartı sıvı dolgulu bir pil simgesi, lastik basıncı/sıcaklık katmanlarına sahip AWD/aks çizimi ve grafiğin üzerinde animasyonlu bir tüketim küçük resmi gösterir. Devre dışı bırakıldığında, bunlar üst çubuğa (pil ve tüketim simgeleri) ve yan paneldeki ayrı bir Lastikler istat kartına taşınır — menzil grafiği için dikey alan kazanır ve tüm animasyonlar atlanır.</string>
 
     <!-- Settings — Trips section -->
-    <string name="section_trips">Seyahatler</string>
     <string name="pref_engine_off_timeout">Motor kapalı seyahat zaman aşımı</string>
     <string name="engine_off_timeout_desc">Araç kapandıktan sonra seyahatin açık kalma süresi. Araç bu süre içinde yeniden açılırsa kayıt sorunsuz devam eder (aynı seyahat, parantez içinde kümülatif mesafeyle birlikte yeni bir segment görünür). Süre aşıldıktan sonra seyahat biter ve sonraki sürüş yeni bir seyahat başlatır. Varsayılan 3 dakikadır.</string>
     <string name="current_timeout_value">Mevcut: %1$s dk</string>
@@ -930,12 +927,8 @@
     <string name="pref_goals_label">Hedefler &amp; kişisel rekorlar</string>
     <string name="goal_consumption_value">Tüketim hedefi: %1$s</string>
     <string name="goal_monthly_distance_value">Aylık mesafe hedefi: %1$s</string>
-    <string name="best_consumption_value">En iyi tüketim: %1$s</string>
-    <string name="best_distance_value">En iyi mesafe: %1$s</string>
-    <string name="open_goals_action">Hedefleri &amp; kişisel rekorları aç</string>
 
     <!-- Settings — Battery section -->
-    <string name="section_battery">Pil &amp; telemetri</string>
     <string name="pref_soc_source">SoC kaynağı</string>
     <string name="soc_source_desc">Gösterge panelinde görüntülenecek pil yüzdesi okumasını seçin.</string>
     <string name="soc_panel_option">Panel</string>
@@ -1022,7 +1015,7 @@
     <string name="web_companion_label">Web Arkadaşı</string>
     <string name="web_companion_desc">Seyahatlere &amp; şarjlara aynı WiFi\'daki herhangi bir cihazdan göz atın.</string>
     <string name="web_companion_disabled_desc">Bir tarayıcıda seyahat geçmişini açmak için yerel bir sunucu başlatın.</string>
-    <string name="web_companion_wifi_info">Yerel WiFi üzerinden sunulur, bu nedenle araç açıkken ve telemetri hizmeti etkinken erişilebilir. Park edildikten sonra çoğu BYD birimi araç kapandıktan ~15 dk sonra WiFi\'ı keser — bundan sonra arka plan etkinlik modundan bağımsız olarak araç yeniden açılana kadar arkadaşa erişilemez (yerel sunucu için mobil veri yedeklemesi yoktur).\nNot: Electro uygulamasının WiFi\'ı süresiz açık tutma seçeneği vardır</string>
+    <string name="web_companion_wifi_info">Yerel WiFi üzerinden sunulur, bu nedenle araç açıkken ve telemetri hizmeti etkinken erişilebilir. Park edildikten sonra çoğu BYD birimi araç kapandıktan ~15 dk sonra WiFi\'ı keser — bundan sonra arka plan etkinlik modundan bağımsız olarak araç yeniden açılana kadar arkadaşa erişilemez (yerel sunucu için mobil veri yedeklemesi yoktur).</string>
     <string name="web_companion_files_info">Companion\'da ayrıca bir Dosyalar sekmesi var: veritabanı yedeklerini, dışa aktarımları ve tanılama günlüğünü doğrudan telefonunuza veya dizüstünüze indirin ve hiçbir şey bağlamadan araca bir yedek yükleyin. Yalnızca uygulamanın kendi klasörlerini gösterir, tüm ana üniteyi değil.</string>
     <string name="port_field_label">Port</string>
     <string name="port_hint_text">Bir port engelliyse 8081, 8888, 9090\'ı deneyin. Değişiklikler sunucuyu yeniden başlatır.</string>
@@ -1048,6 +1041,34 @@
     <string name="status_enabled_label">Durum: Etkin</string>
     <string name="status_disabled_label">Durum: Devre Dışı</string>
     <string name="back_to_overview_action">Genel bakışa dön</string>
+    <!-- Settings overview cards (App, Preferences, Connections → Web Companion) -->
+    <string name="settings_overview_desc">Açmak için bir bölüm seçin. Aşağıdaki kartlar geçerli ayarları bir bakışta gösterir.</string>
+    <string name="web_companion_card_desc">Seyahatlere, şarjlara ve dosyalara telefon veya dizüstü bilgisayarın tarayıcısından göz atın.</string>
+    <string name="power_card_desc">Araç kapatıldıktan sonra neyin çalışmaya devam ettiği ve Wi-Fi\'yi açık tutma.</string>
+    <string name="power_card_desc_d5">Araç kapatıldıktan sonra neyin çalışmaya devam ettiği ve araç verisi erişimi.</string>
+    <string name="backup_card_title">Yedekleme &amp; Geri Yükleme</string>
+    <string name="backup_card_desc">Seyahatler, şarj geçmişi ve ayarlar — yerel olarak, SD karta veya Telegram ile.</string>
+    <string name="compat_card_desc">Modelinize destek eklenmesine yardımcı olan bir telemetri raporu kaydedin.</string>
+    <string name="diagnostics_card_desc">Tanılama günlüğünü gönderin; CPU, bellek ve izinleri canlı izleyin.</string>
+    <string name="wifi_keepalive_on_status">Wi-Fi\'yi açık tutma açık</string>
+    <string name="d5_vehicle_access_off_status">Araç verisi erişimi kapalı</string>
+    <string name="diagnostics_live_on_status">Canlı ayrıntılar açık</string>
+    <string name="diagnostics_live_off_status">Canlı ayrıntılar kapalı</string>
+    <string name="pref_appearance_title">Görünüm</string>
+    <string name="pref_appearance_desc">Tema, gösterge paneli düzeni ve gösterge paneli simgeleri &amp; animasyonları.</string>
+    <string name="pref_language_units_title">Dil &amp; birimler</string>
+    <string name="pref_language_units_desc">Uygulamanın dili ve metrik ya da emperyal birimler.</string>
+    <string name="pref_trip_recording_title">Seyahat kaydı</string>
+    <string name="pref_trip_recording_desc">Araç kapatıldıktan sonra seyahatin ne zaman biteceği ve bir seyahatin ne kadar kısa olabileceği.</string>
+    <string name="trip_recording_status">%1$d dk sonra otomatik durdur • en az %2$s</string>
+    <string name="trip_recording_status_no_min">%1$d dk sonra otomatik durdur • minimum yok</string>
+    <string name="pref_battery_title">Pil</string>
+    <string name="pref_battery_desc">Hangi şarj durumu okumasının gösterileceği ve hücre dengesizlik uyarısı.</string>
+    <string name="battery_status_alert_on">SoC: %1$s • dengesizlik uyarısı açık</string>
+    <string name="battery_status_alert_off">SoC: %1$s • dengesizlik uyarısı kapalı</string>
+    <string name="pref_costs_desc">Seyahat ve şarj maliyetini hesaplamak için kullanılan elektrik tarifeniz ve para biriminiz.</string>
+    <string name="pref_goals_desc">Tüketim ve mesafe hedefleri ile kişisel rekorlarınız.</string>
+    <string name="pro_cell_imbalance_info">Batarya hücre gerilimleri arasındaki fark sınırınızın üzerinde kaldığında sizi uyarır — zayıf bir hücrenin erken işareti. Kilidi açıldıktan sonra Tercihler → Pil altından açın ve sınırı ayarlayın.</string>
 
     <!-- ABRP settings -->
     <string name="abrp_link_desc">Link Generic token canlı telemetriyi A Better Routeplanner\'a yükler.</string>
@@ -1137,8 +1158,6 @@
 
     <!-- FAQ -->
     <string name="faq_section_title">SSS</string>
-    <string name="faq_q_no_electro">Eski sürümlerin aksine, artık Electro uygulamasına ihtiyaç duymadığım doğru mu?</string>
-    <string name="faq_a_no_electro">Doğru. BYD Trip Stats, desteklenen araçlarda bağımsız bir uygulama olarak çalışır; dolayısıyla Electro olmadan da seyahat kaydı ve şarj oturumları çalışır.\n\nElectro, kendi özelliklerini isteyen araç sahipleri için hâlâ kullanışlı bir yardımcı uygulamadır, ancak artık BYD Trip Stats\'ın çalışması için gerekli değildir.</string>
     <string name="faq_q_internet">İnternet veya mobil sinyal gerekiyor mu?</string>
     <string name="faq_a_internet">Normal kullanım için hayır. Seyahatler, şarj oturumları, grafikler ve yerel geçmiş tamamen cihazda kaydedilir.\n\nİnternet yalnızca uygulama güncelleme kontrolleri, web bağlantılarını açma, MQTT / ABRP entegrasyonu ve etkinleştirdiğinizde Telegram yedeklemeleri gibi isteğe bağlı özellikler için gereklidir.</string>
     <string name="faq_q_pro">BYD Trip Stats Pro nedir ve ne içerir?</string>
@@ -1148,9 +1167,9 @@
     <string name="faq_q_offline_trip">Ağ bağlantısı olmaması seyahatin geçmişte eksik olacağı anlamına mı gelir?</string>
     <string name="faq_a_offline_trip">Hayır. Seyahat geçmişi yerel olarak depolanır ve mobil sinyal veya WiFi\'a bağlı değildir.\n\nBir seyahat yalnızca canlı telemetri bir süre durduğunda biraz daha geç kapanabilir. Bu durumda bekçi, uygulamanın aldığı son pakete sabitlenmiş şekilde 3 dakika telemetri sessizliğinin ardından etkin seyahati kapatır.</string>
     <string name="faq_q_stops_restart">Araç yeniden başlatıldıktan sonra uygulama çalışmayı durduruyor</string>
-    <string name="faq_a_stops_restart">BYD Trip Stats\'ı otomatik başlatma kaldırıcısından hariç tutmanız gerekiyor:\n\n1. Otomatik Başlatmayı Devre Dışı Bırak uygulamasını açın (yerel BYD uygulaması, genellikle dosya gezgininin yakınında)\n2. BYD Trip Stats\'ı bulun ve girişini KAPALI konuma getirin — Electro için yaptığınız gibi\n3. Uygulamayı açın ve araç arayüzünü yeniden başlatmak için ses düğmesini ~10 saniye basılı tutun\n4. Uygulamayı yeniden açın\n\nÖnemli: Bu adımı her uygulama güncellemesinden sonra tekrarlamanız gerekir çünkü yeniden yüklemede izin sıfırlanır.</string>
+    <string name="faq_a_stops_restart">BYD Trip Stats\'ı otomatik başlatma kaldırıcısından hariç tutmanız gerekiyor:\n\n1. Otomatik Başlatmayı Devre Dışı Bırak uygulamasını açın (yerel BYD uygulaması, genellikle dosya gezgininin yakınında)\n2. BYD Trip Stats\'ı bulun ve girişini KAPALI konuma getirin\n3. Uygulamayı açın ve araç arayüzünü yeniden başlatmak için ses düğmesini ~10 saniye basılı tutun\n4. Uygulamayı yeniden açın\n\nÖnemli: Bu adımı her uygulama güncellemesinden sonra tekrarlamanız gerekir çünkü yeniden yüklemede izin sıfırlanır.</string>
     <string name="faq_q_backup">Seyahat verilerimi nasıl yedeklerim?</string>
-    <string name="faq_a_backup">Çeşitli yöntemler mevcuttur — tümü aynı standart SQLite dosyasını üretir:\n\nYerel (en basit): Ayarlar → Veri → Yedekleme &amp; Geri Yüklemeyi Aç → Şimdi Yedekle.\n\nSD kart (Pro): Yedekleme &amp; Geri Yükleme → SD karta yedekle. Uygulama kaldırılmasına karşı dayanıklıdır.\n\nTelegram (önerilir): Yedekleme &amp; Geri Yükleme → Telegram Yedekleme aracılığıyla bir bot bağlayın, ardından manuel olarak veya programla gönderin.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/DOSYAADI.db &gt; yerel.db</string>
+    <string name="faq_a_backup">Çeşitli yöntemler mevcuttur — tümü aynı standart SQLite dosyasını üretir:\n\nYerel (en basit): Ayarlar → Uygulama → Yedekleme &amp; Geri Yükleme → Şimdi Yedekle.\n\nSD kart (Pro): Yedekleme &amp; Geri Yükleme → SD karta yedekle. Uygulama kaldırılmasına karşı dayanıklıdır.\n\nTelegram (önerilir): Ayarlar → Bağlantılar → Telegram altından bir bot bağlayın, ardından manuel olarak veya programla gönderin.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/DOSYAADI.db &gt; yerel.db</string>
     <string name="faq_q_recover">Uygulamayı yeniden yükledim — yedeklerimi kurtarabilir miyim?</string>
     <string name="faq_a_recover">Evet. Telegram: bot token\'ınızı yeniden bağlayın, ardından Telegram\'dan Geri Yükle → yenile simgesi tüm yedekleri otomatik olarak yeniden keşfeder.\n\nYerel: Download/BydTripStats/ içindeki .db dosyaları yeniden yüklemeden sonra hayatta kalır. Yedekleme &amp; Geri Yükleme\'yi açın, Yerel Geri Yükleme altındaki yenile simgesine dokunun ve yeniden görünürler.</string>
     <string name="faq_q_auto_backup">Telegram otomatik yedekleme nasıl çalışır?</string>
@@ -1169,8 +1188,6 @@
     <!-- App Management screen -->
     <string name="app_mgmt_backup_local_label">Yerel</string>
     <string name="app_mgmt_telegram_label">Telegram</string>
-    <string name="app_mgmt_private_bot_desc">Özel bot sohbeti</string>
-    <string name="app_mgmt_manual_scheduled">Manuel &amp; zamanlanmış</string>
     <string name="app_mgmt_no_local_backup">Yerel yedek bulunamadı</string>
 
     <!-- Telemetry debug -->
@@ -1192,7 +1209,6 @@
     <string name="diagnostic_enabled_desc">Canlı süreç, bellek, kare, izin ve ADB araçları görünür.</string>
     <string name="diagnostic_disabled_desc">Yalnızca yedekleri kontrol ederken bu ekranın yoklama yapmaması için varsayılan olarak kapalıdır.</string>
     <string name="send_diag_log_action">Tanılama günlüğünü Telegram\'a gönder</string>
-    <string name="diag_log_info_desc">Tam tanılama günlüğünü doğrudan bağlı Telegram botunuza gönderir — yerel olarak kaydedilmez veya paylaşılmaz. Önce Yedekleme &amp; Geri Yükleme → Telegram Yedekleme altında bir bot bağlayın.</string>
     <string name="enable_troubleshooting_hint">Yalnızca sorun giderirken etkinleştirin; geçmiş grafikler görünürken her 2 saniyede bir örnek alır.</string>
     <string name="background_readiness_label">Arka Plan Hazırlığı</string>
     <string name="write_settings_perm_label">Ayarları yaz</string>

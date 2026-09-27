@@ -108,6 +108,7 @@ internal fun VehicleCompatibilitySection(context: Context, scope: CoroutineScope
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
     ) {
+        val isSending = telegramState is TelegramManager.TelegramState.InProgress
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -130,6 +131,23 @@ internal fun VehicleCompatibilitySection(context: Context, scope: CoroutineScope
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+                // Clearing the captured data sits with the switch that records it, not among the
+                // ways of sending it.
+                IconButton(
+                    onClick = {
+                        VehicleCompatibilityProbe.clear()
+                        statusMessage = context.getString(R.string.compat_probe_cleared)
+                    },
+                    enabled = entryCount > 0 && !isSending,
+                ) {
+                    Icon(
+                        Icons.Filled.Delete,
+                        contentDescription = stringResource(R.string.delete),
+                        tint = if (entryCount > 0 && !isSending) MaterialTheme.colorScheme.error
+                               else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
+                    )
+                }
+                Spacer(Modifier.width(4.dp))
                 BrandSwitch(
                     checked = isEnabled,
                     onCheckedChange = { next ->
@@ -138,9 +156,13 @@ internal fun VehicleCompatibilitySection(context: Context, scope: CoroutineScope
                 )
             }
 
-            // Action buttons
-            val isSending = telegramState is TelegramManager.TelegramState.InProgress
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Ways to send the report: Telegram, Save to Downloads, and the recommended QR route
+            // (upload the report and show a QR the user scans with their phone to email the
+            // download link — no Telegram/adb/file transfer).
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 Button(
                     onClick = {
                         if (telegramConfig == null) {
@@ -166,7 +188,7 @@ internal fun VehicleCompatibilitySection(context: Context, scope: CoroutineScope
                         }
                     },
                     enabled = entryCount > 0 && !isSending,
-                    modifier = Modifier.weight(2f),
+                    modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = BydElectricAzure)
                 ) {
                     if (isSending) {
@@ -198,7 +220,7 @@ internal fun VehicleCompatibilitySection(context: Context, scope: CoroutineScope
                         }
                     },
                     enabled = entryCount > 0 && !isSending,
-                    modifier = Modifier.weight(2f),
+                    modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = BydElectricAzure)
                 ) {
                     Icon(Icons.Filled.Download, null, modifier = Modifier.size(16.dp))
@@ -208,52 +230,38 @@ internal fun VehicleCompatibilitySection(context: Context, scope: CoroutineScope
 
                 Button(
                     onClick = {
-                        VehicleCompatibilityProbe.clear()
-                        statusMessage = context.getString(R.string.compat_probe_cleared)
-                    },
-                    enabled = entryCount > 0 && !isSending,
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Icon(Icons.Filled.Delete, null, modifier = Modifier.size(16.dp))
-                }
-            }
-
-            // Recommended path: upload the report and show a QR the user scans with
-            // their phone to email the download link — no Telegram/adb/file transfer.
-            Button(
-                onClick = {
-                    scope.launch(Dispatchers.IO) {
-                        launch(Dispatchers.Main) { uploadInProgress = true; statusMessage = null }
-                        try {
-                            val url = VehicleCompatibilityProbe.uploadReport(retention = "24h")
-                            launch(Dispatchers.Main) {
-                                uploadInProgress = false
-                                qrUrl = url
-                            }
-                        } catch (e: Exception) {
-                            launch(Dispatchers.Main) {
-                                uploadInProgress = false
-                                statusMessage = context.getString(R.string.compat_upload_failed, e.message ?: "")
+                        scope.launch(Dispatchers.IO) {
+                            launch(Dispatchers.Main) { uploadInProgress = true; statusMessage = null }
+                            try {
+                                val url = VehicleCompatibilityProbe.uploadReport(retention = "24h")
+                                launch(Dispatchers.Main) {
+                                    uploadInProgress = false
+                                    qrUrl = url
+                                }
+                            } catch (e: Exception) {
+                                launch(Dispatchers.Main) {
+                                    uploadInProgress = false
+                                    statusMessage = context.getString(R.string.compat_upload_failed, e.message ?: "")
+                                }
                             }
                         }
+                    },
+                    enabled = entryCount > 0 && !uploadInProgress && !isSending,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = BydElectricAzure)
+                ) {
+                    if (uploadInProgress) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp,
+                            color = Color.White
+                        )
+                    } else {
+                        Icon(Icons.Filled.QrCode2, null, modifier = Modifier.size(16.dp))
                     }
-                },
-                enabled = entryCount > 0 && !uploadInProgress && !isSending,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = BydElectricAzure)
-            ) {
-                if (uploadInProgress) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        strokeWidth = 2.dp,
-                        color = Color.White
-                    )
-                } else {
-                    Icon(Icons.Filled.QrCode2, null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(if (uploadInProgress) stringResource(R.string.compat_uploading_label) else stringResource(R.string.compat_email_qr_label))
                 }
-                Spacer(Modifier.width(6.dp))
-                Text(if (uploadInProgress) stringResource(R.string.compat_uploading_label) else stringResource(R.string.compat_email_qr_label))
             }
 
             if (telegramConfig == null) {

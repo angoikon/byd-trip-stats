@@ -47,9 +47,9 @@
     <string name="settings_tab_pro">Pro</string>
     <string name="settings_tab_about">Sobre &amp; FAQ</string>
     <string name="pro_cards_layout_title">Layout do painel em cartões</string>
-    <string name="pro_cards_layout_info">Um painel maior e totalmente personalizável: blocos grandes e bem espaçados em vez do gráfico central. Toque no lápis para reordenar os blocos arrastando, mostrar ou ocultar os que quiser, e toque no bloco Autonomia para abrir o gráfico de projeção em tamanho completo. Escolha-o em Preferências → Layout do painel depois de desbloqueado.</string>
+    <string name="pro_cards_layout_info">Um painel maior e totalmente personalizável: blocos grandes e bem espaçados em vez do gráfico central. Toque no lápis para reordenar os blocos arrastando, mostrar ou ocultar os que quiser, e toque no bloco Autonomia para abrir o gráfico de projeção em tamanho completo. Escolha-o em Preferências → Aparência → Layout do painel depois de desbloqueado.</string>
     <string name="pro_neon_theme_title">Tema Néon</string>
-    <string name="pro_neon_theme_info">Um tema escuro preto puro, compatível com OLED, cujos dígitos das métricas de potência e faixas de destaque brilham como néon, com uma sutil borda de destaque em cada cartão. Escolha-o em Preferências → Tema depois de desbloqueado.</string>
+    <string name="pro_neon_theme_info">Um tema escuro preto puro, compatível com OLED, cujos dígitos das métricas de potência e faixas de destaque brilham como néon, com uma sutil borda de destaque em cada cartão. Escolha-o em Preferências → Aparência → Tema depois de desbloqueado.</string>
 
     <!-- Detail tabs -->
     <string name="tab_overview">Visão geral</string>
@@ -493,7 +493,6 @@
     <string name="trim_skip_vacuum_msg">Compactação concluída. (VACUUM foi ignorado; reinicie o aplicativo mais tarde para recuperar espaço.)</string>
     <string name="trim_failed_msg">Falha na compactação: %1$s</string>
     <string name="last_backup_label">Último backup: %1$s</string>
-    <string name="open_backup_restore_action">Abrir Backup &amp; Restauração</string>
     <string name="reset_all_data_label">Redefinir todos os dados de viagem</string>
     <string name="reset_confirm_title">Redefinir todos os dados de viagem?</string>
     <string name="reset_confirm_msg">Isso excluirá permanentemente todas as viagens e estatísticas.\n\nUm backup será salvo em Downloads automaticamente antes da redefinição. O aplicativo fechará e reabrirá.</string>
@@ -820,7 +819,7 @@
     <string name="schedule_monthly">Mensal</string>
     <string name="danger_zone_title">ZONA DE PERIGO</string>
     <string name="danger_zone_desc">Exclui permanentemente todas as viagens, pontos de dados e estatísticas. Um backup local é criado automaticamente antes da redefinição.</string>
-    <string name="send_diag_log_desc">Envia o log de diagnóstico completo (eventos de speed-stall e \'telemetria refresh travada\') diretamente para o seu bot Telegram conectado — nada é salvo ou compartilhado localmente. Conecte primeiro um bot em Backup &amp; Restore → Backup Telegram.</string>
+    <string name="send_diag_log_desc">Três formas de compartilhar o log de diagnóstico, junto com o log do assistente em segundo plano quando houver. Telegram envia o log completo para o seu bot (configure um em Configurações → Conexões → Telegram). Salvar copia-o para Download/BydTripStats/ no carro. E-mail via código QR envia a parte mais recente e mostra um código que você escaneia com o celular para enviar um link por e-mail; o link expira após 24 horas.</string>
     <string name="compat_privacy_notice_body">O relatório captura valores brutos de todas as fontes de dados da unidade principal do seu carro — valores numéricos, strings e arrays.\n\nLatitude e longitude GPS NÃO estão incluídas.\n\nTudo o mais está incluído: estado da bateria, dados do motor, marcha, velocidade, modos de condução, estado do clima, estado de carregamento, valores específicos do PHEV, etc.\n\nNada é enviado automaticamente. "E-mail via código QR" carrega o relatório em um host público temporário (litterbox) e mostra um link que é excluído automaticamente após 24 horas; qualquer pessoa com o link pode lê-lo até lá. As outras opções mantêm o relatório no seu dispositivo.</string>
     <string name="compat_sending_label">Enviando…</string>
     <string name="compat_email_qr_label">E-mail via código QR</string>
@@ -890,7 +889,6 @@
     <string name="select_car_label">Selecionar carro</string>
 
     <!-- Settings — General section -->
-    <string name="section_general">Geral</string>
     <string name="pref_theme">Tema</string>
     <string name="theme_desc">Escolha a aparência do aplicativo. O padrão do sistema segue a configuração claro/escuro do seu dispositivo.</string>
     <string name="theme_system">Sistema</string>
@@ -913,7 +911,6 @@
     <string name="dashboard_icons_desc">Quando ativado, o cartão de projeção de alcance mostra um ícone de bateria com preenchimento líquido, um desenho de eixo/4x4 com sobreposições de pressão/temperatura dos pneus e uma miniatura de consumo animada acima do gráfico. Quando desativado, esses elementos vão para a barra superior (ícones de bateria e consumo) e um cartão dedicado de estatísticas de pneus no painel lateral — liberando espaço vertical para o gráfico de alcance e ignorando todas as animações.</string>
 
     <!-- Settings — Trips section -->
-    <string name="section_trips">Viagens</string>
     <string name="pref_engine_off_timeout">Tempo limite de viagem com motor desligado</string>
     <string name="engine_off_timeout_desc">Quanto tempo a viagem permanece aberta após o carro desligar. Se o carro ligar novamente dentro desta janela, a gravação retoma sem interrupção (mesma viagem, um novo segmento aparece junto com a distância acumulada entre parênteses). Após a janela, a viagem termina e a próxima condução inicia uma nova. O padrão é 3 minutos.</string>
     <string name="current_timeout_value">Atual: %1$s min</string>
@@ -930,12 +927,8 @@
     <string name="pref_goals_label">Metas &amp; recordes pessoais</string>
     <string name="goal_consumption_value">Meta de consumo: %1$s</string>
     <string name="goal_monthly_distance_value">Meta de distância mensal: %1$s</string>
-    <string name="best_consumption_value">Melhor consumo: %1$s</string>
-    <string name="best_distance_value">Melhor distância: %1$s</string>
-    <string name="open_goals_action">Abrir metas &amp; recordes pessoais</string>
 
     <!-- Settings — Battery section -->
-    <string name="section_battery">Bateria &amp; telemetria</string>
     <string name="pref_soc_source">Fonte de SoC</string>
     <string name="soc_source_desc">Escolha qual leitura de percentagem de bateria exibir no painel.</string>
     <string name="soc_panel_option">Painel</string>
@@ -1022,7 +1015,7 @@
     <string name="web_companion_label">Web Companion</string>
     <string name="web_companion_desc">Consulte viagens &amp; carregamentos de qualquer dispositivo na mesma WiFi.</string>
     <string name="web_companion_disabled_desc">Inicie um servidor local para poder abrir o histórico de viagens em um navegador.</string>
-    <string name="web_companion_wifi_info">Servido pela sua WiFi local, então acessível enquanto o carro está ligado e o serviço de telemetria está ativo. Uma vez estacionado, a maioria das unidades BYD corta o WiFi ~15 min após o carro desligar — depois disso o companion fica inacessível (sem fallback para dados móveis em um servidor local) até o carro ligar novamente, em todos os modos de atividade em segundo plano.\nNota: o aplicativo Electro tem uma opção para manter o WiFi ativo indefinidamente</string>
+    <string name="web_companion_wifi_info">Servido pela sua WiFi local, então acessível enquanto o carro está ligado e o serviço de telemetria está ativo. Uma vez estacionado, a maioria das unidades BYD corta o WiFi ~15 min após o carro desligar — depois disso o companion fica inacessível (sem fallback para dados móveis em um servidor local) até o carro ligar novamente, em todos os modos de atividade em segundo plano.</string>
     <string name="web_companion_files_info">O companion também tem uma aba Arquivos: baixe backups do banco de dados, exportações e o log de diagnóstico direto para o seu celular ou notebook, e envie um backup para o carro sem conectar nada. Mostra apenas as pastas do próprio app, não a unidade inteira.</string>
     <string name="port_field_label">Porta</string>
     <string name="port_hint_text">Tente 8081, 8888, 9090 se uma porta estiver bloqueada. Alterações reiniciam o servidor.</string>
@@ -1048,6 +1041,34 @@
     <string name="status_enabled_label">Status: Habilitado</string>
     <string name="status_disabled_label">Status: Desabilitado</string>
     <string name="back_to_overview_action">Voltar à visão geral</string>
+    <!-- Settings overview cards (App, Preferences, Connections → Web Companion) -->
+    <string name="settings_overview_desc">Escolha uma seção para abrir. Os cartões abaixo mostram as configurações atuais de relance.</string>
+    <string name="web_companion_card_desc">Veja viagens, recargas e arquivos no navegador do celular ou notebook.</string>
+    <string name="power_card_desc">O que continua rodando depois que o carro é desligado, e manter o Wi-Fi ativo.</string>
+    <string name="power_card_desc_d5">O que continua rodando depois que o carro é desligado, e o acesso aos dados do veículo.</string>
+    <string name="backup_card_title">Backup &amp; Restauração</string>
+    <string name="backup_card_desc">Viagens, histórico de recarga e configurações — localmente, no cartão SD ou via Telegram.</string>
+    <string name="compat_card_desc">Grave um relatório de telemetria que ajuda a adicionar suporte ao seu modelo.</string>
+    <string name="diagnostics_card_desc">Envie o log de diagnóstico e veja CPU, memória e permissões ao vivo.</string>
+    <string name="wifi_keepalive_on_status">Manter Wi-Fi ativo: ligado</string>
+    <string name="d5_vehicle_access_off_status">Acesso aos dados do veículo desligado</string>
+    <string name="diagnostics_live_on_status">Detalhes ao vivo ligados</string>
+    <string name="diagnostics_live_off_status">Detalhes ao vivo desligados</string>
+    <string name="pref_appearance_title">Aparência</string>
+    <string name="pref_appearance_desc">Tema, layout do painel, e ícones &amp; animações do painel.</string>
+    <string name="pref_language_units_title">Idioma &amp; unidades</string>
+    <string name="pref_language_units_desc">O idioma do app, e unidades métricas ou imperiais.</string>
+    <string name="pref_trip_recording_title">Registro de viagens</string>
+    <string name="pref_trip_recording_desc">Quando uma viagem termina depois que o carro é desligado, e quão curta uma viagem pode ser.</string>
+    <string name="trip_recording_status">Parada automática após %1$d min • mínimo %2$s</string>
+    <string name="trip_recording_status_no_min">Parada automática após %1$d min • sem mínimo</string>
+    <string name="pref_battery_title">Bateria</string>
+    <string name="pref_battery_desc">Qual leitura do estado de carga mostrar, e o alerta de desequilíbrio de células.</string>
+    <string name="battery_status_alert_on">SoC: %1$s • alerta de desequilíbrio ligado</string>
+    <string name="battery_status_alert_off">SoC: %1$s • alerta de desequilíbrio desligado</string>
+    <string name="pref_costs_desc">Sua tarifa de eletricidade e moeda, usadas para calcular o custo de viagens e recargas.</string>
+    <string name="pref_goals_desc">Metas de consumo e distância, e seus recordes pessoais.</string>
+    <string name="pro_cell_imbalance_info">Avisa quando a diferença de tensão entre as células da bateria fica acima do seu limite — um sinal precoce de célula fraca. Ative-o e defina o limite em Preferências → Bateria depois de desbloqueado.</string>
 
     <!-- ABRP settings -->
     <string name="abrp_link_desc">O token Link Generic envia telemetria ao vivo para o A Better Routeplanner.</string>
@@ -1137,8 +1158,6 @@
 
     <!-- FAQ -->
     <string name="faq_section_title">FAQ</string>
-    <string name="faq_q_no_electro">Ao contrário de versões mais antigas, é verdade que eu não preciso mais do aplicativo Electro?</string>
-    <string name="faq_a_no_electro">Correto. O BYD Trip Stats funciona como um aplicativo independente nos veículos suportados, então o registro de viagens e as sessões de carregamento funcionam sem o Electro.\n\nO Electro ainda é um aplicativo complementar útil para proprietários que queiram seus próprios recursos, mas não é mais necessário para o BYD Trip Stats funcionar.</string>
     <string name="faq_q_internet">Preciso de internet ou sinal de celular?</string>
     <string name="faq_a_internet">Não para uso normal. Viagens, sessões de carregamento, gráficos e histórico local são gravados inteiramente no dispositivo.\n\nA internet só é necessária para recursos opcionais como verificações de atualização do aplicativo, abertura de links web, integração MQTT / ABRP e backups no Telegram se você os habilitar.</string>
     <string name="faq_q_pro">O que é o BYD Trip Stats Pro e o que inclui?</string>
@@ -1148,9 +1167,9 @@
     <string name="faq_q_offline_trip">A falta de conectividade de rede significa que a viagem ficará ausente do histórico?</string>
     <string name="faq_a_offline_trip">Não. O histórico de viagens é armazenado localmente e não depende de sinal de celular ou Wi-Fi.\n\nUma viagem pode fechar um pouco mais tarde apenas se a própria telemetria ao vivo parar por um tempo. Nesse caso, o watchdog fecha a viagem ativa após 3 minutos de silêncio de telemetria, ancorado ao último pacote recebido pelo aplicativo.</string>
     <string name="faq_q_stops_restart">O aplicativo para de funcionar após uma reinicialização do carro</string>
-    <string name="faq_a_stops_restart">Você precisa excluir o BYD Trip Stats do eliminador de inicialização automática:\n\n1. Abra o aplicativo Desativar Inicialização Automática (aplicativo nativo BYD, geralmente perto do explorador de arquivos)\n2. Encontre o BYD Trip Stats e desative sua entrada — assim como você fez para o Electro\n3. Abra o aplicativo e segure o botão de volume por ~10 segundos para reiniciar a interface do carro\n4. Reabra o aplicativo\n\nImportante: você deve repetir esta etapa após cada atualização do aplicativo, pois a permissão é redefinida na reinstalação.</string>
+    <string name="faq_a_stops_restart">Você precisa excluir o BYD Trip Stats do eliminador de inicialização automática:\n\n1. Abra o aplicativo Desativar Inicialização Automática (aplicativo nativo BYD, geralmente perto do explorador de arquivos)\n2. Encontre o BYD Trip Stats e desative sua entrada\n3. Abra o aplicativo e segure o botão de volume por ~10 segundos para reiniciar a interface do carro\n4. Reabra o aplicativo\n\nImportante: você deve repetir esta etapa após cada atualização do aplicativo, pois a permissão é redefinida na reinstalação.</string>
     <string name="faq_q_backup">Como faço backup dos meus dados de viagem?</string>
-    <string name="faq_a_backup">Vários métodos estão disponíveis — todos produzem o mesmo arquivo SQLite padrão:\n\nLocal (mais simples): Configurações → Dados → Abrir Backup &amp; Restauração → Fazer Backup Agora.\n\nCartão SD (Pro): Backup &amp; Restauração → Backup para SD. Sobrevive a uma desinstalação do aplicativo.\n\nTelegram (recomendado): Conecte um bot em Backup &amp; Restauração → Backup via Telegram, depois envie manualmente ou em uma agenda.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/ARQUIVO.db &gt; local.db</string>
+    <string name="faq_a_backup">Vários métodos estão disponíveis — todos produzem o mesmo arquivo SQLite padrão:\n\nLocal (mais simples): Configurações → Aplicativo → Backup &amp; Restauração → Fazer Backup Agora.\n\nCartão SD (Pro): Backup &amp; Restauração → Backup para SD. Sobrevive a uma desinstalação do aplicativo.\n\nTelegram (recomendado): Conecte um bot em Configurações → Conexões → Telegram, depois envie manualmente ou em uma agenda.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/ARQUIVO.db &gt; local.db</string>
     <string name="faq_q_recover">Reinstalei o aplicativo — posso recuperar meus backups?</string>
     <string name="faq_a_recover">Sim. Telegram: reconecte seu token de bot, depois Restaurar do Telegram → o ícone de atualização redescobre todos os backups automaticamente.\n\nLocal: Os arquivos .db em Download/BydTripStats/ sobrevivem a uma reinstalação. Abra Backup &amp; Restauração, toque no ícone de atualização em Restauração Local e eles reaparecerão.</string>
     <string name="faq_q_auto_backup">Como funciona o backup automático do Telegram?</string>
@@ -1169,8 +1188,6 @@
     <!-- App Management screen -->
     <string name="app_mgmt_backup_local_label">Local</string>
     <string name="app_mgmt_telegram_label">Telegram</string>
-    <string name="app_mgmt_private_bot_desc">Chat de bot privado</string>
-    <string name="app_mgmt_manual_scheduled">Manual &amp; agendado</string>
     <string name="app_mgmt_no_local_backup">Nenhum backup local encontrado</string>
 
     <!-- Telemetry debug -->
@@ -1192,7 +1209,6 @@
     <string name="diagnostic_enabled_desc">Ferramentas ao vivo de processo, memória, frame, permissão e ADB estão visíveis.</string>
     <string name="diagnostic_disabled_desc">Desativado por padrão para que esta tela não fique pesquisando enquanto você está apenas verificando backups.</string>
     <string name="send_diag_log_action">Enviar log de diagnóstico para o Telegram</string>
-    <string name="diag_log_info_desc">Envia o log de diagnóstico completo direto para o seu bot Telegram conectado — nada é salvo ou compartilhado localmente. Conecte um bot em Backup &amp; Restauração → Backup via Telegram primeiro.</string>
     <string name="enable_troubleshooting_hint">Ative isso apenas quando estiver solucionando problemas; os gráficos do histórico amostragem a cada 2 segundos enquanto visíveis.</string>
     <string name="background_readiness_label">Prontidão em segundo plano</string>
     <string name="write_settings_perm_label">Escrever configurações</string>

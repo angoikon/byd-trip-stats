@@ -44,9 +44,9 @@
     <string name="settings_tab_pro">Pro</string>
     <string name="settings_tab_about">אודות ושאלות נפוצות</string>
     <string name="pro_cards_layout_title">פריסת לוח מחוונים בכרטיסים</string>
-    <string name="pro_cards_layout_info">לוח מחוונים גדול יותר וניתן להתאמה מלאה: אריחים גדולים ומרווחים היטב במקום הגרף המרכזי. הקישו על העיפרון כדי לסדר מחדש אריחים בגרירה, להציג או להסתיר את אלה שתרצו, והקישו על אריח הטווח כדי לפתוח את גרף התחזית בגודל מלא. בחרו זאת תחת העדפות ← פריסת לוח המחוונים לאחר השחרור.</string>
+    <string name="pro_cards_layout_info">לוח מחוונים גדול יותר וניתן להתאמה מלאה: אריחים גדולים ומרווחים היטב במקום הגרף המרכזי. הקישו על העיפרון כדי לסדר מחדש אריחים בגרירה, להציג או להסתיר את אלה שתרצו, והקישו על אריח הטווח כדי לפתוח את גרף התחזית בגודל מלא. בחרו זאת תחת העדפות ← מראה ← פריסת לוח המחוונים לאחר השחרור.</string>
     <string name="pro_neon_theme_title">ערכת נושא ניאון</string>
-    <string name="pro_neon_theme_info">ערכת נושא כהה בשחור מוחלט, ידידותית ל-OLED, שבה ספרות מדדי ההספק ופסי ההדגשה זוהרים כמו ניאון, עם קצה הדגשה עדין בכל כרטיס. בחרו אותה תחת העדפות ← ערכת נושא לאחר השחרור.</string>
+    <string name="pro_neon_theme_info">ערכת נושא כהה בשחור מוחלט, ידידותית ל-OLED, שבה ספרות מדדי ההספק ופסי ההדגשה זוהרים כמו ניאון, עם קצה הדגשה עדין בכל כרטיס. בחרו אותה תחת העדפות ← מראה ← ערכת נושא לאחר השחרור.</string>
 
     <!-- Detail tabs -->
     <string name="tab_overview">סקירה</string>
@@ -490,7 +490,6 @@
     <string name="trim_skip_vacuum_msg">הדילול הושלם. (VACUUM דולג; הפעילו את האפליקציה מחדש מאוחר יותר לפינוי מקום.)</string>
     <string name="trim_failed_msg">הדילול נכשל: %1$s</string>
     <string name="last_backup_label">גיבוי אחרון: %1$s</string>
-    <string name="open_backup_restore_action">פתח גיבוי ושחזור</string>
     <string name="reset_all_data_label">איפוס כל נתוני הנסיעות</string>
     <string name="reset_confirm_title">לאפס את כל נתוני הנסיעות?</string>
     <string name="reset_confirm_msg">פעולה זו תמחק לצמיתות את כל הנסיעות והסטטיסטיקות.\n\nגיבוי יישמר ל-Download אוטומטית לפני האיפוס. האפליקציה תיסגר ותיפתח מחדש.</string>
@@ -817,7 +816,7 @@
     <string name="schedule_monthly">חודשי</string>
     <string name="danger_zone_title">אזור סכנה</string>
     <string name="danger_zone_desc">מוחק לצמיתות את כל הנסיעות, נקודות הנתונים והסטטיסטיקות. גיבוי מקומי נוצר אוטומטית לפני האיפוס.</string>
-    <string name="send_diag_log_desc">שולח את יומן האבחון המלא (אירועי תקיעת מהירות ו-\'רענון טלמטריה תקוע\') ישירות לבוט ה-Telegram המחובר — שום דבר לא נשמר או משותף מקומית. חברו בוט קודם בגיבוי ושחזור ← גיבוי Telegram.</string>
+    <string name="send_diag_log_desc">שלוש דרכים לשתף את יומן האבחון, יחד עם היומן של רכיב הרקע כשיש כזה. Telegram שולח אותו במלואו לבוט שלכם (הגדירו בוט תחת הגדרות ← חיבורים ← Telegram). שמור מעתיק אותו אל Download/BydTripStats/ ברכב. אימייל דרך קוד QR מעלה את החלק האחרון שלו ומציג קוד שסורקים בטלפון כדי לשלוח קישור אליו באימייל; הקישור פג תוקף אחרי 24 שעות.</string>
     <string name="compat_privacy_notice_body">הדו"ח לוכד ערכים גולמיים מכל מקור נתונים ביחידת הראש של הרכב — ערכים מספריים, מחרוזות ומערכים.\n\nקווי אורך ורוחב GPS אינם כלולים.\n\nכל השאר כלול: מצב סוללה, נתוני מנוע, הילוך, מהירות, מצבי נהיגה, מצב מיזוג, מצב טעינה, ערכים ייחודיים ל-PHEV וכו׳.\n\nשום דבר לא נשלח אוטומטית. \"אימייל דרך קוד QR\" מעלה את הדו"ח למארח ציבורי זמני (litterbox) ומציג קישור שנמחק אוטומטית אחרי 24 שעות; עד אז כל מי שיש לו את הקישור יכול לקרוא אותו. שאר האפשרויות שומרות את הדו"ח על המכשיר.</string>
     <string name="compat_sending_label">שולח…</string>
     <string name="compat_email_qr_label">אימייל דרך קוד QR</string>
@@ -887,7 +886,6 @@
     <string name="select_car_label">בחר רכב</string>
 
     <!-- Settings — General section -->
-    <string name="section_general">כללי</string>
     <string name="pref_theme">ערכת נושא</string>
     <string name="theme_desc">בחרו את מראה האפליקציה. ברירת מחדל של המערכת עוקבת אחר הגדרת הכהה/בהיר של המכשיר.</string>
     <string name="theme_system">מערכת</string>
@@ -910,7 +908,6 @@
     <string name="dashboard_icons_desc">כשמופעל, כרטיס תחזית הטווח מציג אייקון סוללה עם מילוי נוזלי, שרטוט AWD/סרנים עם שכבות לחץ/טמפרטורת צמיגים, ותמונה ממוזערת מונפשת של צריכה מעל הגרף. כשמושבת, אלה עוברים לסרגל העליון (אייקוני סוללה וצריכה) ולכרטיס סטטיסטיקת צמיגים ייעודי בפאנל הצדדי — מפנה מקום אנכי לגרף הטווח ומדלג על כל האנימציות.</string>
 
     <!-- Settings — Trips section -->
-    <string name="section_trips">נסיעות</string>
     <string name="pref_engine_off_timeout">פסק זמן לנסיעה לאחר כיבוי מנוע</string>
     <string name="engine_off_timeout_desc">כמה זמן הנסיעה נשארת פתוחה לאחר כיבוי הרכב. אם הרכב חוזר לפעול בתוך חלון זה, ההקלטה מתחדשת בצורה חלקה (אותה נסיעה, מופיע קטע חדש יחד עם המרחק המצטבר בסוגריים). לאחר החלון הנסיעה מסתיימת והנסיעה הבאה מתחילה חדשה. ברירת המחדל היא 3 דקות.</string>
     <string name="current_timeout_value">נוכחי: %1$s דקות</string>
@@ -927,12 +924,8 @@
     <string name="pref_goals_label">יעדים ושיאים אישיים</string>
     <string name="goal_consumption_value">יעד צריכה: %1$s</string>
     <string name="goal_monthly_distance_value">יעד מרחק חודשי: %1$s</string>
-    <string name="best_consumption_value">הצריכה הטובה ביותר: %1$s</string>
-    <string name="best_distance_value">המרחק הטוב ביותר: %1$s</string>
-    <string name="open_goals_action">פתח יעדים ושיאים אישיים</string>
 
     <!-- Settings — Battery section -->
-    <string name="section_battery">סוללה וטלמטריה</string>
     <string name="pref_soc_source">מקור SoC</string>
     <string name="soc_source_desc">בחרו איזו קריאת אחוז סוללה תוצג בלוח המחוונים.</string>
     <string name="soc_panel_option">לוח</string>
@@ -1019,7 +1012,7 @@
     <string name="web_companion_label">Web Companion</string>
     <string name="web_companion_desc">עיינו בנסיעות ובטעינות מכל מכשיר באותה רשת WiFi.</string>
     <string name="web_companion_disabled_desc">הפעילו שרת מקומי כדי לפתוח את היסטוריית הנסיעות בדפדפן.</string>
-    <string name="web_companion_wifi_info">מוגש דרך ה-WiFi המקומי שלכם, ולכן נגיש כל עוד הרכב דלוק ושירות הטלמטריה חי. לאחר חנייה, רוב יחידות ה-BYD מנתקות WiFi ~15 דקות לאחר כיבוי הרכב — לאחר מכן ה-companion בלתי נגיש (אין גיבוי נתונים סלולריים לשרת מקומי) עד שהרכב נדלק שוב, בכל מצב פעילות רקע.\nהערה: לאפליקציית Electro יש אפשרות לשמור על WiFi פעיל ללא הגבלה</string>
+    <string name="web_companion_wifi_info">מוגש דרך ה-WiFi המקומי שלכם, ולכן נגיש כל עוד הרכב דלוק ושירות הטלמטריה חי. לאחר חנייה, רוב יחידות ה-BYD מנתקות WiFi ~15 דקות לאחר כיבוי הרכב — לאחר מכן ה-companion בלתי נגיש (אין גיבוי נתונים סלולריים לשרת מקומי) עד שהרכב נדלק שוב, בכל מצב פעילות רקע.</string>
     <string name="web_companion_files_info">ל-companion יש גם לשונית קבצים: הורד גיבויים של מסד הנתונים, ייצוא ואת יומן האבחון ישירות לטלפון או למחשב הנייד שלך, והעלה גיבוי לרכב בלי לחבר כלום. הוא מציג רק את התיקיות של האפליקציה עצמה, לא את כל היחידה.</string>
     <string name="port_field_label">פורט</string>
     <string name="port_hint_text">נסו 8081, 8888, 9090 אם פורט חסום. שינויים מפעילים מחדש את השרת.</string>
@@ -1045,6 +1038,34 @@
     <string name="status_enabled_label">מצב: מופעל</string>
     <string name="status_disabled_label">מצב: מושבת</string>
     <string name="back_to_overview_action">חזרה לסקירה</string>
+    <!-- Settings overview cards (App, Preferences, Connections → Web Companion) -->
+    <string name="settings_overview_desc">בחרו מקטע לפתיחה. הכרטיסים למטה מציגים את ההגדרות הנוכחיות במבט חטוף.</string>
+    <string name="web_companion_card_desc">עיינו בנסיעות, בטעינות ובקבצים בדפדפן בטלפון או במחשב הנייד.</string>
+    <string name="power_card_desc">מה ממשיך לפעול אחרי כיבוי הרכב, ושמירת ה-Wi-Fi פעיל.</string>
+    <string name="power_card_desc_d5">מה ממשיך לפעול אחרי כיבוי הרכב, וגישה לנתוני הרכב.</string>
+    <string name="backup_card_title">גיבוי ושחזור</string>
+    <string name="backup_card_desc">נסיעות, היסטוריית טעינה והגדרות — מקומית, לכרטיס SD או דרך Telegram.</string>
+    <string name="compat_card_desc">הקליטו דוח טלמטריה שעוזר להוסיף תמיכה בדגם שלכם.</string>
+    <string name="diagnostics_card_desc">שלחו את יומן האבחון, וצפו בזמן אמת ב-CPU, בזיכרון ובהרשאות.</string>
+    <string name="wifi_keepalive_on_status">שמירת Wi-Fi פעילה</string>
+    <string name="d5_vehicle_access_off_status">גישה לנתוני הרכב כבויה</string>
+    <string name="diagnostics_live_on_status">פרטים חיים פעילים</string>
+    <string name="diagnostics_live_off_status">פרטים חיים כבויים</string>
+    <string name="pref_appearance_title">מראה</string>
+    <string name="pref_appearance_desc">ערכת נושא, פריסת לוח המחוונים, וסמלים ואנימציות בלוח המחוונים.</string>
+    <string name="pref_language_units_title">שפה ויחידות</string>
+    <string name="pref_language_units_desc">שפת האפליקציה, ויחידות מטריות או אימפריאליות.</string>
+    <string name="pref_trip_recording_title">הקלטת נסיעות</string>
+    <string name="pref_trip_recording_desc">מתי נסיעה מסתיימת אחרי כיבוי הרכב, וכמה קצרה נסיעה יכולה להיות.</string>
+    <string name="trip_recording_status">עצירה אוטומטית אחרי %1$d דקות • מינימום %2$s</string>
+    <string name="trip_recording_status_no_min">עצירה אוטומטית אחרי %1$d דקות • ללא מינימום</string>
+    <string name="pref_battery_title">סוללה</string>
+    <string name="pref_battery_desc">איזו קריאת מצב טעינה להציג, והתראת חוסר איזון תאים.</string>
+    <string name="battery_status_alert_on">SoC: %1$s • התראת חוסר איזון פעילה</string>
+    <string name="battery_status_alert_off">SoC: %1$s • התראת חוסר איזון כבויה</string>
+    <string name="pref_costs_desc">תעריף החשמל והמטבע שלכם, שלפיהם מתומחרות נסיעות וטעינות.</string>
+    <string name="pref_goals_desc">יעדי צריכה ומרחק, והשיאים האישיים שלכם.</string>
+    <string name="pro_cell_imbalance_info">מתריעה כשהפער בין מתחי התאים בסוללה נשאר מעל הגבול שלכם — סימן מוקדם לתא חלש. הפעילו אותה וקבעו את הגבול תחת העדפות ← סוללה לאחר השחרור.</string>
 
     <!-- ABRP settings -->
     <string name="abrp_link_desc">טוקן Link Generic מעלה טלמטריה חיה אל A Better Routeplanner.</string>
@@ -1133,8 +1154,6 @@
 
     <!-- FAQ -->
     <string name="faq_section_title">שאלות נפוצות</string>
-    <string name="faq_q_no_electro">בניגוד לגרסאות ישנות, האם נכון שכבר אין לי צורך באפליקציית Electro?</string>
-    <string name="faq_a_no_electro">נכון. BYD Trip Stats פועלת כאפליקציה עצמאית ברכבים נתמכים, כך שהקלטת נסיעות ומפגשי טעינה עובדים ללא Electro.\n\nElectro עדיין אפליקציה נלווית שימושית לבעלים שרוצים את התכונות שלה, אך היא כבר לא נדרשת לתפקוד של BYD Trip Stats.</string>
     <string name="faq_q_internet">האם אני צריך אינטרנט או קליטה סלולרית?</string>
     <string name="faq_a_internet">לא לשימוש רגיל. נסיעות, מפגשי טעינה, גרפים והיסטוריה מקומית מוקלטים כולם על המכשיר.\n\nאינטרנט נדרש רק לתכונות אופציונליות כמו בדיקת עדכוני אפליקציה, פתיחת קישורים, שילוב MQTT / ABRP וגיבויי Telegram אם תפעילו אותם.</string>
     <string name="faq_q_pro">מה זה BYD Trip Stats Pro ומה הוא כולל?</string>
@@ -1144,9 +1163,9 @@
     <string name="faq_q_offline_trip">האם היעדר קישוריות רשת אומר שהנסיעה תיעדר מההיסטוריה?</string>
     <string name="faq_a_offline_trip">לא. היסטוריית הנסיעות נשמרת מקומית ואינה תלויה בקליטה סלולרית או Wi-Fi.\n\nנסיעה עשויה להיסגר מעט מאוחר יותר רק אם הטלמטריה החיה עצמה נעצרת לזמן מה. במקרה כזה ה-watchdog סוגר את הנסיעה הפעילה לאחר 3 דקות של שקט טלמטריה, מעוגן לחבילה האחרונה שהאפליקציה קיבלה.</string>
     <string name="faq_q_stops_restart">האפליקציה מפסיקה לעבוד לאחר הפעלה מחדש של הרכב</string>
-    <string name="faq_a_stops_restart">צריך להחריג את BYD Trip Stats ממנגנון עצירת ההפעלה האוטומטית:\n\n1. פתחו את אפליקציית Disable Autostart (אפליקציית BYD מובנית, בדרך כלל ליד סייר הקבצים)\n2. מצאו את BYD Trip Stats והעבירו את הרשומה שלה למצב כבוי — בדיוק כמו שעשיתם ל-Electro\n3. פתחו את האפליקציה והחזיקו את כפתור עוצמת הקול ~10 שניות כדי להפעיל מחדש את ממשק הרכב\n4. פתחו מחדש את האפליקציה\n\nחשוב: צריך לחזור על שלב זה לאחר כל עדכון אפליקציה, כי ההרשאה מתאפסת בהתקנה מחדש.</string>
+    <string name="faq_a_stops_restart">צריך להחריג את BYD Trip Stats ממנגנון עצירת ההפעלה האוטומטית:\n\n1. פתחו את אפליקציית Disable Autostart (אפליקציית BYD מובנית, בדרך כלל ליד סייר הקבצים)\n2. מצאו את BYD Trip Stats והעבירו את הרשומה שלה למצב כבוי\n3. פתחו את האפליקציה והחזיקו את כפתור עוצמת הקול ~10 שניות כדי להפעיל מחדש את ממשק הרכב\n4. פתחו מחדש את האפליקציה\n\nחשוב: צריך לחזור על שלב זה לאחר כל עדכון אפליקציה, כי ההרשאה מתאפסת בהתקנה מחדש.</string>
     <string name="faq_q_backup">איך אני מגבה את נתוני הנסיעות שלי?</string>
-    <string name="faq_a_backup">זמינות מספר שיטות — כולן מייצרות את אותו קובץ SQLite סטנדרטי:\n\nמקומי (הפשוט ביותר): הגדרות ← נתונים ← פתח גיבוי ושחזור ← גבה עכשיו.\n\nכרטיס SD (Pro): גיבוי ושחזור ← גיבוי לכרטיס SD. שורד הסרת אפליקציה.\n\nTelegram (מומלץ): חברו בוט דרך גיבוי ושחזור ← גיבוי Telegram, ואז שלחו ידנית או לפי תזמון.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
+    <string name="faq_a_backup">זמינות מספר שיטות — כולן מייצרות את אותו קובץ SQLite סטנדרטי:\n\nמקומי (הפשוט ביותר): הגדרות ← אפליקציה ← גיבוי ושחזור ← גבה עכשיו.\n\nכרטיס SD (Pro): גיבוי ושחזור ← גיבוי לכרטיס SD. שורד הסרת אפליקציה.\n\nTelegram (מומלץ): חברו בוט תחת הגדרות ← חיבורים ← Telegram, ואז שלחו ידנית או לפי תזמון.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
     <string name="faq_q_recover">התקנתי מחדש את האפליקציה — האם אני יכול לשחזר את הגיבויים?</string>
     <string name="faq_a_recover">כן. Telegram: חברו מחדש את טוקן הבוט, ואז שחזור מ-Telegram ← אייקון הרענון מגלה מחדש את כל הגיבויים אוטומטית.\n\nמקומי: קבצי ה-.db ב-Download/BydTripStats/ שורדים התקנה מחדש. פתחו גיבוי ושחזור, הקישו על אייקון הרענון תחת שחזור מקומי והם יופיעו שוב.</string>
     <string name="faq_q_auto_backup">איך עובד גיבוי Telegram אוטומטי?</string>
@@ -1165,8 +1184,6 @@
     <!-- App Management screen -->
     <string name="app_mgmt_backup_local_label">מקומי</string>
     <string name="app_mgmt_telegram_label">Telegram</string>
-    <string name="app_mgmt_private_bot_desc">צ׳אט בוט פרטי</string>
-    <string name="app_mgmt_manual_scheduled">ידני ומתוזמן</string>
     <string name="app_mgmt_no_local_backup">לא נמצא גיבוי מקומי</string>
 
     <!-- Telemetry debug -->
@@ -1188,7 +1205,6 @@
     <string name="diagnostic_enabled_desc">כלי תהליך, זיכרון, פריימים, הרשאות ו-ADB חיים גלויים.</string>
     <string name="diagnostic_disabled_desc">כבוי כברירת מחדל כדי שמסך זה לא ימשיך לתשאל בזמן שאתם רק בודקים גיבויים.</string>
     <string name="send_diag_log_action">שלח יומן אבחון ל-Telegram</string>
-    <string name="diag_log_info_desc">שולח את יומן האבחון המלא ישירות לבוט ה-Telegram המחובר — שום דבר לא נשמר או משותף מקומית. חברו בוט קודם בגיבוי ושחזור ← גיבוי Telegram.</string>
     <string name="enable_troubleshooting_hint">הפעילו רק בעת פתרון בעיות; גרפי ההיסטוריה דוגמים כל 2 שניות כשהם גלויים.</string>
     <string name="background_readiness_label">מוכנות רקע</string>
     <string name="write_settings_perm_label">כתיבת הגדרות</string>

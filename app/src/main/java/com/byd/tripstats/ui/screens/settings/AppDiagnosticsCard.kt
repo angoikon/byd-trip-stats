@@ -363,71 +363,72 @@ internal fun AppDiagnosticsCard() {
             // diag.log — which records speed-stall and "telemetry refresh wedged"
             // events — can be sent from the head unit after parking, no PC needed.
             HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f))
-            OutlinedButton(
-                onClick = {
-                    val telegram = TelegramManager.getInstance(context)
-                    val f = java.io.File(context.getExternalFilesDir(null), "diag.log")
-                    when {
-                        telegram.config.value == null ->
-                            android.widget.Toast.makeText(
-                                context,
-                                context.getString(R.string.no_telegram_configured),
-                                android.widget.Toast.LENGTH_LONG,
-                            ).show()
-                        !f.exists() || f.length() == 0L ->
-                            android.widget.Toast.makeText(
-                                context,
-                                "diag.log is empty (no diagnostic events recorded yet).",
-                                android.widget.Toast.LENGTH_SHORT,
-                            ).show()
-                        else -> scope.launch {
-                            try {
-                                telegram.sendFile(f, caption = "BYD Trip Stats — diagnostics log")
-                                // Ship the supervisor-log snapshot alongside it when one exists. It is
-                                // taken just before the app re-dispatches the background restarter
-                                // (which truncates the original), so it is the only post-hoc record of
-                                // whether that restarter was alive through a failed auto-start.
-                                // Best-effort: a failure here must not lose the diagnostics send above.
-                                val supd = java.io.File(
-                                    context.getExternalFilesDir(null),
-                                    com.byd.tripstats.util.RtDispatch.SNAPSHOT_FILE,
-                                )
-                                val supdSent = supd.exists() && supd.length() > 0L && runCatching {
-                                    telegram.sendFile(
-                                        supd,
-                                        caption = "BYD Trip Stats — supervisor log snapshot",
-                                    )
-                                }.isSuccess
-                                android.widget.Toast.makeText(
-                                    context,
-                                    if (supdSent) "Diagnostics + supervisor log sent via Telegram ✓"
-                                    else "Diagnostics log sent via Telegram ✓",
-                                    android.widget.Toast.LENGTH_SHORT,
-                                ).show()
-                            } catch (e: Exception) {
-                                android.widget.Toast.makeText(
-                                    context, context.getString(R.string.telegram_send_failed, e.message),
-                                    android.widget.Toast.LENGTH_LONG,
-                                ).show()
-                            }
-                        }
-                    }
-                }
-            ) {
-                Icon(Icons.AutoMirrored.Filled.Send, null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.send_diag_log_action))
-            }
-
-            // Two network-independent routes alongside Telegram, mirroring the compatibility probe.
-            // Telegram alone strands a car with no working DNS — observed on a DiLink 5 head unit
-            // (2026-08-19, "Unable to resolve api.telegram.org") at exactly the moment the log was
-            // needed. Saving to Downloads needs no network at all (pull it off with a USB stick);
-            // the QR route needs only the upload, not a configured bot.
+            // Telegram, Save and the QR route side by side, as on Vehicle Compatibility. Save and QR
+            // are there because Telegram alone strands a car with no working DNS — observed on a
+            // DiLink 5 head unit (2026-08-19, "Unable to resolve api.telegram.org") at exactly the
+            // moment the log was needed. Saving to Downloads needs no network at all (pull it off
+            // with a USB stick); the QR route needs only the upload, not a configured bot.
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth(),
             ) {
+                OutlinedButton(
+                    modifier = Modifier.weight(1f),
+                    onClick = {
+                        val telegram = TelegramManager.getInstance(context)
+                        val f = java.io.File(context.getExternalFilesDir(null), "diag.log")
+                        when {
+                            telegram.config.value == null ->
+                                android.widget.Toast.makeText(
+                                    context,
+                                    context.getString(R.string.no_telegram_configured),
+                                    android.widget.Toast.LENGTH_LONG,
+                                ).show()
+                            !f.exists() || f.length() == 0L ->
+                                android.widget.Toast.makeText(
+                                    context,
+                                    "diag.log is empty (no diagnostic events recorded yet).",
+                                    android.widget.Toast.LENGTH_SHORT,
+                                ).show()
+                            else -> scope.launch {
+                                try {
+                                    telegram.sendFile(f, caption = "BYD Trip Stats — diagnostics log")
+                                    // Ship the supervisor-log snapshot alongside it when one exists. It is
+                                    // taken just before the app re-dispatches the background restarter
+                                    // (which truncates the original), so it is the only post-hoc record of
+                                    // whether that restarter was alive through a failed auto-start.
+                                    // Best-effort: a failure here must not lose the diagnostics send above.
+                                    val supd = java.io.File(
+                                        context.getExternalFilesDir(null),
+                                        com.byd.tripstats.util.RtDispatch.SNAPSHOT_FILE,
+                                    )
+                                    val supdSent = supd.exists() && supd.length() > 0L && runCatching {
+                                        telegram.sendFile(
+                                            supd,
+                                            caption = "BYD Trip Stats — supervisor log snapshot",
+                                        )
+                                    }.isSuccess
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        if (supdSent) "Diagnostics + supervisor log sent via Telegram ✓"
+                                        else "Diagnostics log sent via Telegram ✓",
+                                        android.widget.Toast.LENGTH_SHORT,
+                                    ).show()
+                                } catch (e: Exception) {
+                                    android.widget.Toast.makeText(
+                                        context, context.getString(R.string.telegram_send_failed, e.message),
+                                        android.widget.Toast.LENGTH_LONG,
+                                    ).show()
+                                }
+                            }
+                        }
+                    }
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.Send, null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(stringResource(R.string.telegram_title_label))
+                }
+
                 OutlinedButton(
                     onClick = {
                         scope.launch(Dispatchers.IO) {

@@ -44,9 +44,9 @@
     <string name="settings_tab_pro">Pro</string>
     <string name="settings_tab_about">Giới thiệu &amp; FAQ</string>
     <string name="pro_cards_layout_title">Bố cục bảng điều khiển dạng thẻ</string>
-    <string name="pro_cards_layout_info">Bảng điều khiển lớn hơn, tùy chỉnh hoàn toàn: các ô lớn, giãn cách hợp lý thay cho biểu đồ trung tâm. Chạm bút chì để sắp xếp lại ô bằng cách kéo, hiện hoặc ẩn các ô bạn muốn, và chạm ô Tầm hoạt động để mở biểu đồ dự báo ở kích thước đầy đủ. Chọn trong Tùy chọn → Bố cục bảng điều khiển sau khi mở khóa.</string>
+    <string name="pro_cards_layout_info">Bảng điều khiển lớn hơn, tùy chỉnh hoàn toàn: các ô lớn, giãn cách hợp lý thay cho biểu đồ trung tâm. Chạm bút chì để sắp xếp lại ô bằng cách kéo, hiện hoặc ẩn các ô bạn muốn, và chạm ô Tầm hoạt động để mở biểu đồ dự báo ở kích thước đầy đủ. Chọn trong Tùy chọn → Hiển thị → Bố cục bảng điều khiển sau khi mở khóa.</string>
     <string name="pro_neon_theme_title">Giao diện Neon</string>
-    <string name="pro_neon_theme_info">Giao diện tối đen tuyền, thân thiện với OLED, có các chữ số chỉ số công suất và các dải nhấn phát sáng như đèn neon, với viền nhấn tinh tế trên mỗi thẻ. Chọn trong Tùy chọn → Giao diện sau khi mở khóa.</string>
+    <string name="pro_neon_theme_info">Giao diện tối đen tuyền, thân thiện với OLED, có các chữ số chỉ số công suất và các dải nhấn phát sáng như đèn neon, với viền nhấn tinh tế trên mỗi thẻ. Chọn trong Tùy chọn → Hiển thị → Giao diện sau khi mở khóa.</string>
 
     <!-- Detail tabs -->
     <string name="tab_overview">Tổng quan</string>
@@ -490,7 +490,6 @@
     <string name="trim_skip_vacuum_msg">Cắt gọn hoàn tất. (Đã bỏ qua VACUUM; khởi động lại ứng dụng sau để thu hồi dung lượng.)</string>
     <string name="trim_failed_msg">Cắt gọn thất bại: %1$s</string>
     <string name="last_backup_label">Sao lưu lần cuối: %1$s</string>
-    <string name="open_backup_restore_action">Mở Sao lưu &amp; Khôi phục</string>
     <string name="reset_all_data_label">Đặt lại tất cả dữ liệu chuyến đi</string>
     <string name="reset_confirm_title">Đặt lại tất cả dữ liệu chuyến đi?</string>
     <string name="reset_confirm_msg">Thao tác này sẽ xóa vĩnh viễn tất cả chuyến đi và thống kê.\n\nMột bản sao lưu sẽ được lưu vào Download tự động trước khi đặt lại. Ứng dụng sẽ đóng và mở lại.</string>
@@ -817,7 +816,7 @@
     <string name="schedule_monthly">Hàng tháng</string>
     <string name="danger_zone_title">VÙNG NGUY HIỂM</string>
     <string name="danger_zone_desc">Xóa vĩnh viễn tất cả chuyến đi, điểm dữ liệu và thống kê. Một bản sao lưu cục bộ được tạo tự động trước khi đặt lại.</string>
-    <string name="send_diag_log_desc">Gửi nhật ký chẩn đoán đầy đủ (sự kiện kẹt tốc độ và \'làm mới đo từ xa bị kẹt\') thẳng tới bot Telegram đã kết nối — không có gì được lưu hoặc chia sẻ cục bộ. Kết nối bot trước trong Sao lưu &amp; Khôi phục → Sao lưu Telegram.</string>
+    <string name="send_diag_log_desc">Ba cách chia sẻ nhật ký chẩn đoán, kèm nhật ký riêng của trình trợ giúp nền nếu có. Telegram gửi toàn bộ nhật ký tới bot của bạn (thiết lập bot trong Cài đặt → Kết nối → Telegram). Lưu sao chép nhật ký vào Download/BydTripStats/ trên xe. Email qua mã QR tải lên phần mới nhất và hiển thị mã để bạn quét bằng điện thoại và gửi liên kết qua email; liên kết hết hạn sau 24 giờ.</string>
     <string name="compat_privacy_notice_body">Báo cáo thu thập giá trị thô từ mọi nguồn dữ liệu trên đầu máy xe của bạn — giá trị số, chuỗi và mảng.\n\nVĩ độ và kinh độ GPS KHÔNG được bao gồm.\n\nMọi thứ khác đều được bao gồm: trạng thái pin, dữ liệu mô-tơ, số, tốc độ, chế độ lái, trạng thái điều hòa, trạng thái sạc, giá trị riêng của PHEV, v.v.\n\nKhông có gì được gửi tự động. \"Email qua mã QR\" tải báo cáo lên máy chủ công cộng tạm thời (litterbox) và hiển thị liên kết tự xóa sau 24 giờ; đến lúc đó ai có liên kết đều có thể đọc. Các tùy chọn khác giữ báo cáo trên thiết bị của bạn.</string>
     <string name="compat_sending_label">Đang gửi…</string>
     <string name="compat_email_qr_label">Email qua mã QR</string>
@@ -887,7 +886,6 @@
     <string name="select_car_label">Chọn xe</string>
 
     <!-- Settings — General section -->
-    <string name="section_general">Chung</string>
     <string name="pref_theme">Giao diện</string>
     <string name="theme_desc">Chọn giao diện ứng dụng. Mặc định hệ thống theo cài đặt tối/sáng của thiết bị.</string>
     <string name="theme_system">Hệ thống</string>
@@ -910,7 +908,6 @@
     <string name="dashboard_icons_desc">Khi bật, thẻ dự báo tầm hoạt động hiển thị biểu tượng pin đổ chất lỏng, hình vẽ AWD/trục với lớp phủ áp suất/nhiệt độ lốp, và ảnh thu nhỏ tiêu thụ có hoạt ảnh phía trên biểu đồ. Khi tắt, chúng chuyển lên thanh trên (biểu tượng pin và tiêu thụ) và một thẻ thống kê Lốp riêng ở bảng bên — giải phóng không gian dọc cho biểu đồ tầm hoạt động và bỏ qua mọi hoạt ảnh.</string>
 
     <!-- Settings — Trips section -->
-    <string name="section_trips">Chuyến đi</string>
     <string name="pref_engine_off_timeout">Thời gian chờ chuyến đi sau khi tắt máy</string>
     <string name="engine_off_timeout_desc">Chuyến đi mở trong bao lâu sau khi xe tắt. Nếu xe bật lại trong khoảng này, việc ghi tiếp tục liền mạch (cùng chuyến đi, một đoạn mới xuất hiện cùng quãng đường tích lũy trong ngoặc). Quá khoảng đó, chuyến đi kết thúc và lần lái tiếp theo bắt đầu chuyến mới. Mặc định là 3 phút.</string>
     <string name="current_timeout_value">Hiện tại: %1$s phút</string>
@@ -927,12 +924,8 @@
     <string name="pref_goals_label">Mục tiêu &amp; kỷ lục cá nhân</string>
     <string name="goal_consumption_value">Mục tiêu tiêu thụ: %1$s</string>
     <string name="goal_monthly_distance_value">Mục tiêu quãng đường hàng tháng: %1$s</string>
-    <string name="best_consumption_value">Tiêu thụ tốt nhất: %1$s</string>
-    <string name="best_distance_value">Quãng đường tốt nhất: %1$s</string>
-    <string name="open_goals_action">Mở mục tiêu &amp; kỷ lục cá nhân</string>
 
     <!-- Settings — Battery section -->
-    <string name="section_battery">Pin &amp; đo từ xa</string>
     <string name="pref_soc_source">Nguồn SoC</string>
     <string name="soc_source_desc">Chọn số đọc phần trăm pin nào hiển thị trên bảng điều khiển.</string>
     <string name="soc_panel_option">Bảng</string>
@@ -1019,7 +1012,7 @@
     <string name="web_companion_label">Web Companion</string>
     <string name="web_companion_desc">Duyệt chuyến đi &amp; sạc từ bất kỳ thiết bị nào trên cùng WiFi.</string>
     <string name="web_companion_disabled_desc">Khởi động máy chủ cục bộ để bạn có thể mở lịch sử chuyến đi trong trình duyệt.</string>
-    <string name="web_companion_wifi_info">Phục vụ qua WiFi cục bộ của bạn, nên truy cập được khi xe bật và dịch vụ đo từ xa còn hoạt động. Khi đã đỗ, hầu hết bộ BYD ngắt WiFi ~15 phút sau khi tắt xe — sau đó companion không truy cập được (không có dự phòng dữ liệu di động cho máy chủ cục bộ) cho đến khi xe bật lại, ở mọi chế độ hoạt động nền.\nLưu ý: ứng dụng Electro có tùy chọn giữ WiFi bật vô thời hạn</string>
+    <string name="web_companion_wifi_info">Phục vụ qua WiFi cục bộ của bạn, nên truy cập được khi xe bật và dịch vụ đo từ xa còn hoạt động. Khi đã đỗ, hầu hết bộ BYD ngắt WiFi ~15 phút sau khi tắt xe — sau đó companion không truy cập được (không có dự phòng dữ liệu di động cho máy chủ cục bộ) cho đến khi xe bật lại, ở mọi chế độ hoạt động nền.</string>
     <string name="web_companion_files_info">Companion cũng có tab Tệp: tải bản sao lưu cơ sở dữ liệu, các bản xuất và nhật ký chẩn đoán thẳng về điện thoại hoặc máy tính xách tay, và tải một bản sao lưu lên xe mà không cần cắm gì cả. Nó chỉ hiển thị các thư mục của riêng ứng dụng, không phải toàn bộ head unit.</string>
     <string name="port_field_label">Cổng</string>
     <string name="port_hint_text">Thử 8081, 8888, 9090 nếu một cổng bị chặn. Thay đổi sẽ khởi động lại máy chủ.</string>
@@ -1045,6 +1038,34 @@
     <string name="status_enabled_label">Trạng thái: Đã bật</string>
     <string name="status_disabled_label">Trạng thái: Đã tắt</string>
     <string name="back_to_overview_action">Về tổng quan</string>
+    <!-- Settings overview cards (App, Preferences, Connections → Web Companion) -->
+    <string name="settings_overview_desc">Chọn một mục để mở. Các thẻ bên dưới hiển thị cài đặt hiện tại trong nháy mắt.</string>
+    <string name="web_companion_card_desc">Xem chuyến đi, lần sạc và tệp trong trình duyệt trên điện thoại hoặc máy tính xách tay.</string>
+    <string name="power_card_desc">Những gì tiếp tục chạy sau khi tắt xe, và giữ Wi-Fi hoạt động.</string>
+    <string name="power_card_desc_d5">Những gì tiếp tục chạy sau khi tắt xe, và quyền truy cập dữ liệu xe.</string>
+    <string name="backup_card_title">Sao lưu &amp; Khôi phục</string>
+    <string name="backup_card_desc">Chuyến đi, lịch sử sạc và cài đặt — cục bộ, vào thẻ SD hoặc qua Telegram.</string>
+    <string name="compat_card_desc">Ghi lại báo cáo đo từ xa giúp bổ sung hỗ trợ cho mẫu xe của bạn.</string>
+    <string name="diagnostics_card_desc">Gửi nhật ký chẩn đoán, và xem CPU, bộ nhớ, quyền theo thời gian thực.</string>
+    <string name="wifi_keepalive_on_status">Giữ Wi-Fi: bật</string>
+    <string name="d5_vehicle_access_off_status">Truy cập dữ liệu xe: tắt</string>
+    <string name="diagnostics_live_on_status">Chi tiết trực tiếp: bật</string>
+    <string name="diagnostics_live_off_status">Chi tiết trực tiếp: tắt</string>
+    <string name="pref_appearance_title">Hiển thị</string>
+    <string name="pref_appearance_desc">Giao diện, bố cục bảng điều khiển, và biểu tượng &amp; hiệu ứng của bảng điều khiển.</string>
+    <string name="pref_language_units_title">Ngôn ngữ &amp; đơn vị</string>
+    <string name="pref_language_units_desc">Ngôn ngữ của ứng dụng, và đơn vị hệ mét hoặc hệ Anh.</string>
+    <string name="pref_trip_recording_title">Ghi chuyến đi</string>
+    <string name="pref_trip_recording_desc">Khi nào chuyến đi kết thúc sau khi tắt xe, và chuyến đi có thể ngắn đến mức nào.</string>
+    <string name="trip_recording_status">Tự dừng sau %1$d phút • tối thiểu %2$s</string>
+    <string name="trip_recording_status_no_min">Tự dừng sau %1$d phút • không tối thiểu</string>
+    <string name="pref_battery_title">Pin</string>
+    <string name="pref_battery_desc">Hiển thị giá trị trạng thái sạc nào, và cảnh báo mất cân bằng cell.</string>
+    <string name="battery_status_alert_on">SoC: %1$s • cảnh báo mất cân bằng: bật</string>
+    <string name="battery_status_alert_off">SoC: %1$s • cảnh báo mất cân bằng: tắt</string>
+    <string name="pref_costs_desc">Biểu giá điện và đơn vị tiền tệ của bạn, dùng để tính chi phí chuyến đi và lần sạc.</string>
+    <string name="pref_goals_desc">Mục tiêu tiêu thụ và quãng đường, và kỷ lục cá nhân của bạn.</string>
+    <string name="pro_cell_imbalance_info">Cảnh báo khi chênh lệch điện áp giữa các cell của pin vẫn cao hơn giới hạn của bạn — dấu hiệu sớm của một cell yếu. Bật và đặt giới hạn trong Tùy chọn → Pin sau khi mở khóa.</string>
 
     <!-- ABRP settings -->
     <string name="abrp_link_desc">Token Link Generic tải lên đo từ xa trực tiếp tới A Better Routeplanner.</string>
@@ -1133,8 +1154,6 @@
 
     <!-- FAQ -->
     <string name="faq_section_title">FAQ</string>
-    <string name="faq_q_no_electro">Khác với các phiên bản cũ, có đúng là tôi không còn cần ứng dụng Electro?</string>
-    <string name="faq_a_no_electro">Đúng vậy. BYD Trip Stats hoạt động như một ứng dụng độc lập trên các xe được hỗ trợ, nên ghi chuyến đi và phiên sạc hoạt động mà không cần Electro.\n\nElectro vẫn là ứng dụng đồng hành hữu ích cho chủ xe muốn các tính năng riêng của nó, nhưng không còn bắt buộc để BYD Trip Stats hoạt động.</string>
     <string name="faq_q_internet">Tôi có cần internet hoặc tín hiệu di động không?</string>
     <string name="faq_a_internet">Không, cho việc dùng thông thường. Chuyến đi, phiên sạc, biểu đồ và lịch sử cục bộ được ghi hoàn toàn trên thiết bị.\n\nInternet chỉ cần cho các tính năng tùy chọn như kiểm tra cập nhật ứng dụng, mở liên kết web, tích hợp MQTT / ABRP và sao lưu Telegram nếu bạn bật chúng.</string>
     <string name="faq_q_pro">BYD Trip Stats Pro là gì và bao gồm những gì?</string>
@@ -1144,9 +1163,9 @@
     <string name="faq_q_offline_trip">Không có kết nối mạng nghĩa là chuyến đi sẽ vắng khỏi lịch sử?</string>
     <string name="faq_a_offline_trip">Không. Lịch sử chuyến đi được lưu cục bộ và không phụ thuộc vào tín hiệu di động hay Wi-Fi.\n\nMột chuyến đi có thể đóng muộn hơn một chút chỉ khi chính đo từ xa trực tiếp dừng một lúc. Trong trường hợp đó, watchdog đóng chuyến đi đang hoạt động sau 3 phút im lặng đo từ xa, neo theo gói tin cuối cùng ứng dụng nhận được.</string>
     <string name="faq_q_stops_restart">Ứng dụng ngừng hoạt động sau khi khởi động lại xe</string>
-    <string name="faq_a_stops_restart">Bạn cần loại BYD Trip Stats khỏi trình chặn tự khởi động:\n\n1. Mở ứng dụng Disable Autostart (ứng dụng BYD gốc, thường gần trình quản lý tệp)\n2. Tìm BYD Trip Stats và chuyển mục của nó thành TẮT — giống như bạn đã làm cho Electro\n3. Mở ứng dụng và giữ nút âm lượng ~10 giây để khởi động lại giao diện xe\n4. Mở lại ứng dụng\n\nQuan trọng: bạn phải lặp lại bước này sau mỗi lần cập nhật ứng dụng, vì quyền được đặt lại khi cài lại.</string>
+    <string name="faq_a_stops_restart">Bạn cần loại BYD Trip Stats khỏi trình chặn tự khởi động:\n\n1. Mở ứng dụng Disable Autostart (ứng dụng BYD gốc, thường gần trình quản lý tệp)\n2. Tìm BYD Trip Stats và chuyển mục của nó thành TẮT\n3. Mở ứng dụng và giữ nút âm lượng ~10 giây để khởi động lại giao diện xe\n4. Mở lại ứng dụng\n\nQuan trọng: bạn phải lặp lại bước này sau mỗi lần cập nhật ứng dụng, vì quyền được đặt lại khi cài lại.</string>
     <string name="faq_q_backup">Làm sao để sao lưu dữ liệu chuyến đi của tôi?</string>
-    <string name="faq_a_backup">Có sẵn nhiều phương pháp — tất cả đều tạo cùng một tệp SQLite chuẩn:\n\nCục bộ (đơn giản nhất): Cài đặt → Dữ liệu → Mở Sao lưu &amp; Khôi phục → Sao lưu Ngay.\n\nThẻ SD (Pro): Sao lưu &amp; Khôi phục → Sao lưu vào thẻ SD. Tồn tại sau khi gỡ ứng dụng.\n\nTelegram (khuyến nghị): Kết nối bot qua Sao lưu &amp; Khôi phục → Sao lưu Telegram, rồi gửi thủ công hoặc theo lịch.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/TÊNTỆP.db &gt; local.db</string>
+    <string name="faq_a_backup">Có sẵn nhiều phương pháp — tất cả đều tạo cùng một tệp SQLite chuẩn:\n\nCục bộ (đơn giản nhất): Cài đặt → Ứng dụng → Sao lưu &amp; Khôi phục → Sao lưu Ngay.\n\nThẻ SD (Pro): Sao lưu &amp; Khôi phục → Sao lưu vào thẻ SD. Tồn tại sau khi gỡ ứng dụng.\n\nTelegram (khuyến nghị): Kết nối bot trong Cài đặt → Kết nối → Telegram, rồi gửi thủ công hoặc theo lịch.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/TÊNTỆP.db &gt; local.db</string>
     <string name="faq_q_recover">Tôi cài lại ứng dụng — có thể khôi phục các bản sao lưu không?</string>
     <string name="faq_a_recover">Có. Telegram: kết nối lại token bot của bạn, rồi Khôi phục từ Telegram → biểu tượng làm mới tự động phát hiện lại mọi bản sao lưu.\n\nCục bộ: các tệp .db trong Download/BydTripStats/ tồn tại sau khi cài lại. Mở Sao lưu &amp; Khôi phục, chạm biểu tượng làm mới dưới Khôi phục Cục bộ và chúng xuất hiện lại.</string>
     <string name="faq_q_auto_backup">Sao lưu Telegram tự động hoạt động thế nào?</string>
@@ -1165,8 +1184,6 @@
     <!-- App Management screen -->
     <string name="app_mgmt_backup_local_label">Cục bộ</string>
     <string name="app_mgmt_telegram_label">Telegram</string>
-    <string name="app_mgmt_private_bot_desc">Trò chuyện bot riêng</string>
-    <string name="app_mgmt_manual_scheduled">Thủ công &amp; theo lịch</string>
     <string name="app_mgmt_no_local_backup">Không tìm thấy bản sao lưu cục bộ</string>
 
     <!-- Telemetry debug -->
@@ -1188,7 +1205,6 @@
     <string name="diagnostic_enabled_desc">Các công cụ tiến trình, bộ nhớ, khung hình, quyền và ADB trực tiếp đều hiển thị.</string>
     <string name="diagnostic_disabled_desc">Tắt theo mặc định để màn hình này không liên tục thăm dò khi bạn chỉ đang kiểm tra các bản sao lưu.</string>
     <string name="send_diag_log_action">Gửi nhật ký chẩn đoán tới Telegram</string>
-    <string name="diag_log_info_desc">Gửi nhật ký chẩn đoán đầy đủ thẳng tới bot Telegram đã kết nối — không có gì được lưu hoặc chia sẻ cục bộ. Kết nối bot trước trong Sao lưu &amp; Khôi phục → Sao lưu Telegram.</string>
     <string name="enable_troubleshooting_hint">Chỉ bật khi khắc phục sự cố; các biểu đồ lịch sử lấy mẫu mỗi 2 giây khi hiển thị.</string>
     <string name="background_readiness_label">Sẵn sàng Nền</string>
     <string name="write_settings_perm_label">Ghi cài đặt</string>

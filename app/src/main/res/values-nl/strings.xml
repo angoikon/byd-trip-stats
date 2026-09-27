@@ -47,9 +47,9 @@
     <string name="settings_tab_pro">Pro</string>
     <string name="settings_tab_about">Over &amp; FAQ</string>
     <string name="pro_cards_layout_title">Kaarten-dashboardindeling</string>
-    <string name="pro_cards_layout_info">Een groter, volledig aanpasbaar dashboard: grote, goed verdeelde tegels in plaats van de centrale grafiek. Tik op het potlood om tegels te herordenen door slepen, de gewenste te tonen of verbergen, en tik op de tegel Bereik om de projectiegrafiek op volledig formaat te openen. Kies het onder Voorkeuren → Dashboardindeling zodra het is ontgrendeld.</string>
+    <string name="pro_cards_layout_info">Een groter, volledig aanpasbaar dashboard: grote, goed verdeelde tegels in plaats van de centrale grafiek. Tik op het potlood om tegels te herordenen door slepen, de gewenste te tonen of verbergen, en tik op de tegel Bereik om de projectiegrafiek op volledig formaat te openen. Kies het onder Voorkeuren → Weergave → Dashboardindeling zodra het is ontgrendeld.</string>
     <string name="pro_neon_theme_title">Neon-thema</string>
-    <string name="pro_neon_theme_info">Een gitzwart, OLED-vriendelijk donker thema waarvan de cijfers van de vermogensmetingen en accentstrepen als neon oplichten, met een subtiele accentrand op elke kaart. Kies het onder Voorkeuren → Thema zodra het is ontgrendeld.</string>
+    <string name="pro_neon_theme_info">Een gitzwart, OLED-vriendelijk donker thema waarvan de cijfers van de vermogensmetingen en accentstrepen als neon oplichten, met een subtiele accentrand op elke kaart. Kies het onder Voorkeuren → Weergave → Thema zodra het is ontgrendeld.</string>
 
     <!-- Detail tabs -->
     <string name="tab_overview">Overzicht</string>
@@ -493,7 +493,6 @@
     <string name="trim_skip_vacuum_msg">Inkorten voltooid. (VACUUM is overgeslagen; herstart de app later om ruimte vrij te geven.)</string>
     <string name="trim_failed_msg">Inkorten mislukt: %1$s</string>
     <string name="last_backup_label">Laatste back-up: %1$s</string>
-    <string name="open_backup_restore_action">Back-up &amp; herstellen openen</string>
     <string name="reset_all_data_label">Alle ritgegevens resetten</string>
     <string name="reset_confirm_title">Alle ritgegevens resetten?</string>
     <string name="reset_confirm_msg">Dit verwijdert alle ritten en statistieken permanent.\n\nEen back-up wordt automatisch opgeslagen in Downloads vóór de reset. De app sluit en heropent.</string>
@@ -820,7 +819,7 @@
     <string name="schedule_monthly">Maandelijks</string>
     <string name="danger_zone_title">GEVAARZONE</string>
     <string name="danger_zone_desc">Verwijdert permanent alle ritten, datapunten en statistieken. Voor het resetten wordt automatisch een lokale back-up gemaakt.</string>
-    <string name="send_diag_log_desc">Stuurt het volledige diagnoselogboek (speed-stall en \'telemetrie refresh vastgelopen\'-gebeurtenissen) rechtstreeks naar uw verbonden Telegram-bot — er wordt niets lokaal opgeslagen of gedeeld. Verbind eerst een bot via Backup &amp; Restore → Telegram Backup.</string>
+    <string name="send_diag_log_desc">Drie manieren om het diagnoselogboek te delen, samen met het eigen logboek van de achtergrondhelper als dat er is. Telegram stuurt het volledig naar je bot (stel er een in onder Instellingen → Verbindingen → Telegram). Opslaan kopieert het naar Download/BydTripStats/ in de auto. E-mail via QR-code uploadt het recentste deel en toont een code die je met je telefoon scant om er een link naar te e-mailen; de link verloopt na 24 uur.</string>
     <string name="compat_privacy_notice_body">Het rapport bevat ruwe waarden van elke gegevensbron van de head unit van uw auto — numerieke waarden, tekenreeksen en arrays.\n\nGPS-breedte- en lengtegraad zijn NIET inbegrepen.\n\nAl het andere is inbegrepen: batterijstatus, motorgegevens, versnelling, snelheid, rijmodi, klimaatstatus, laadstatus, PHEV-specifieke waarden, enz.\n\nEr wordt niets automatisch verzonden. "E-mail via QR-code" uploadt het rapport naar een tijdelijke openbare host (litterbox) en toont een link die na 24 uur automatisch wordt verwijderd; iedereen met de link kan het tot dan lezen. De andere opties houden het rapport op uw apparaat.</string>
     <string name="compat_sending_label">Verzenden…</string>
     <string name="compat_email_qr_label">E-mail via QR-code</string>
@@ -890,7 +889,6 @@
     <string name="select_car_label">Auto selecteren</string>
 
     <!-- Settings — General section -->
-    <string name="section_general">Algemeen</string>
     <string name="pref_theme">Thema</string>
     <string name="theme_desc">Kies hoe de app eruitziet. Systeemstandaard volgt de donker-/lichtinstelling van je apparaat.</string>
     <string name="theme_system">Systeem</string>
@@ -913,7 +911,6 @@
     <string name="dashboard_icons_desc">Wanneer ingeschakeld toont de reikweidteprojectiekaart een vloeibaar-vul-batterijpictogram, een AWD/as-tekening met bandenspanning-/temperatuuroverlays en een geanimeerde verbruiksminiatuur boven de grafiek. Wanneer uitgeschakeld gaan die naar de bovenbalk (batterij- en verbruikspictogrammen) en een speciale Banden-statistiekenkaart op het zijpaneel — waardoor verticale ruimte vrijkomt voor de bereikgrafiek en alle animaties worden overgeslagen.</string>
 
     <!-- Settings — Trips section -->
-    <string name="section_trips">Ritten</string>
     <string name="pref_engine_off_timeout">Time-out na motoruitschakeling</string>
     <string name="engine_off_timeout_desc">Hoe lang de rit open blijft nadat de auto uitschakelt. Als de auto binnen dit venster weer aangaat, wordt de opname naadloos hervat (dezelfde rit, een nieuw segment verschijnt samen met de cumulatieve afstand tussen haakjes). Na het venster eindigt de rit en start de volgende rit een nieuwe. Standaard is 3 minuten.</string>
     <string name="current_timeout_value">Huidig: %1$s min</string>
@@ -930,12 +927,8 @@
     <string name="pref_goals_label">Doelen &amp; persoonlijke records</string>
     <string name="goal_consumption_value">Verbruiksdoel: %1$s</string>
     <string name="goal_monthly_distance_value">Maandelijks afstandsdoel: %1$s</string>
-    <string name="best_consumption_value">Beste verbruik: %1$s</string>
-    <string name="best_distance_value">Beste afstand: %1$s</string>
-    <string name="open_goals_action">Doelen &amp; persoonlijke records openen</string>
 
     <!-- Settings — Battery section -->
-    <string name="section_battery">Batterij &amp; telemetrie</string>
     <string name="pref_soc_source">SoC-bron</string>
     <string name="soc_source_desc">Kies welke batterijpercentagelezing op het dashboard wordt weergegeven.</string>
     <string name="soc_panel_option">Paneel</string>
@@ -1022,7 +1015,7 @@
     <string name="web_companion_label">Webcompanion</string>
     <string name="web_companion_desc">Bekijk ritten &amp; opladen vanaf elk apparaat op hetzelfde WiFi-netwerk.</string>
     <string name="web_companion_disabled_desc">Start een lokale server zodat je ritgeschiedenis in een browser kunt openen.</string>
-    <string name="web_companion_wifi_info">Bediend via je lokale WiFi, dus bereikbaar terwijl de auto aan is en de telemetrieservice actief is. Eenmaal geparkeerd snijden de meeste BYD-eenheden WiFi ~15 min nadat de auto uit is af — daarna is de companion onbereikbaar (er is geen mobiele-data-fallback voor een lokale server) totdat de auto inschakelt, in elke achtergrondactiviteitsmodus.\nNoot: de Electro-app heeft een optie om WiFi onbeperkt actief te houden</string>
+    <string name="web_companion_wifi_info">Bediend via je lokale WiFi, dus bereikbaar terwijl de auto aan is en de telemetrieservice actief is. Eenmaal geparkeerd snijden de meeste BYD-eenheden WiFi ~15 min nadat de auto uit is af — daarna is de companion onbereikbaar (er is geen mobiele-data-fallback voor een lokale server) totdat de auto inschakelt, in elke achtergrondactiviteitsmodus.</string>
     <string name="web_companion_files_info">De companion heeft ook een tabblad Bestanden: download databaseback-ups, exports en het diagnoselogboek rechtstreeks naar je telefoon of laptop, en upload een back-up naar de auto zonder iets aan te sluiten. Het toont alleen de eigen mappen van de app, niet de hele head-unit.</string>
     <string name="port_field_label">Poort</string>
     <string name="port_hint_text">Probeer 8081, 8888, 9090 als een poort geblokkeerd is. Wijzigingen herstarten de server.</string>
@@ -1048,6 +1041,34 @@
     <string name="status_enabled_label">Status: Ingeschakeld</string>
     <string name="status_disabled_label">Status: Uitgeschakeld</string>
     <string name="back_to_overview_action">Terug naar overzicht</string>
+    <!-- Settings overview cards (App, Preferences, Connections → Web Companion) -->
+    <string name="settings_overview_desc">Kies een onderdeel om te openen. De kaarten hieronder tonen de huidige instellingen in één oogopslag.</string>
+    <string name="web_companion_card_desc">Bekijk ritten, laadbeurten en bestanden in de browser van je telefoon of laptop.</string>
+    <string name="power_card_desc">Wat blijft draaien nadat de auto is uitgeschakeld, en Wi-Fi actief houden.</string>
+    <string name="power_card_desc_d5">Wat blijft draaien nadat de auto is uitgeschakeld, en toegang tot voertuiggegevens.</string>
+    <string name="backup_card_title">Back-up &amp; herstellen</string>
+    <string name="backup_card_desc">Ritten, laadgeschiedenis en instellingen — lokaal, op een SD-kaart of via Telegram.</string>
+    <string name="compat_card_desc">Neem een telemetrierapport op dat helpt je model te ondersteunen.</string>
+    <string name="diagnostics_card_desc">Verstuur het diagnoselogboek en bekijk CPU, geheugen en rechten live.</string>
+    <string name="wifi_keepalive_on_status">Wi-Fi actief houden aan</string>
+    <string name="d5_vehicle_access_off_status">Toegang tot voertuiggegevens uit</string>
+    <string name="diagnostics_live_on_status">Livedetails aan</string>
+    <string name="diagnostics_live_off_status">Livedetails uit</string>
+    <string name="pref_appearance_title">Weergave</string>
+    <string name="pref_appearance_desc">Thema, dashboardindeling, en dashboardpictogrammen &amp; animaties.</string>
+    <string name="pref_language_units_title">Taal &amp; eenheden</string>
+    <string name="pref_language_units_desc">De taal van de app, en metrische of imperiale eenheden.</string>
+    <string name="pref_trip_recording_title">Ritregistratie</string>
+    <string name="pref_trip_recording_desc">Wanneer een rit eindigt nadat de auto is uitgeschakeld, en hoe kort een rit mag zijn.</string>
+    <string name="trip_recording_status">Automatisch stoppen na %1$d min • minimaal %2$s</string>
+    <string name="trip_recording_status_no_min">Automatisch stoppen na %1$d min • geen minimum</string>
+    <string name="pref_battery_title">Batterij</string>
+    <string name="pref_battery_desc">Welke laadtoestandwaarde wordt getoond, en de celonbalanswaarschuwing.</string>
+    <string name="battery_status_alert_on">SoC: %1$s • onbalanswaarschuwing aan</string>
+    <string name="battery_status_alert_off">SoC: %1$s • onbalanswaarschuwing uit</string>
+    <string name="pref_costs_desc">Je elektriciteitstarief en valuta, waarmee ritten en laadbeurten worden geprijsd.</string>
+    <string name="pref_goals_desc">Doelen voor verbruik en afstand, en je persoonlijke records.</string>
+    <string name="pro_cell_imbalance_info">Waarschuwt je wanneer de spreiding in celspanning van het accupakket boven je limiet blijft — een vroeg teken van een zwakke cel. Zet het aan en stel de limiet in onder Voorkeuren → Batterij zodra het is ontgrendeld.</string>
 
     <!-- ABRP settings -->
     <string name="abrp_link_desc">Link Generic-token uploadt live telemetrie naar A Better Routeplanner.</string>
@@ -1137,8 +1158,6 @@
 
     <!-- FAQ -->
     <string name="faq_section_title">FAQ</string>
-    <string name="faq_q_no_electro">In tegenstelling tot oudere versies, is het waar dat ik de Electro-app niet meer nodig heb?</string>
-    <string name="faq_a_no_electro">Correct. BYD Trip Stats werkt als zelfstandige app op ondersteunde voertuigen, dus ritregistratie en laadsessies werken zonder Electro.\n\nElectro is nog steeds een nuttige companion-app voor eigenaren die zijn eigen functies willen, maar het is niet langer vereist voor het functioneren van BYD Trip Stats.</string>
     <string name="faq_q_internet">Heb ik internet of mobiel signaal nodig?</string>
     <string name="faq_a_internet">Nee voor normaal gebruik. Ritten, laadsessies, grafieken en lokale geschiedenis worden volledig op het apparaat opgeslagen.\n\nInternet is alleen nodig voor optionele functies zoals controles op app-updates, het openen van weblinks, MQTT/ABRP-integratie en Telegram-back-ups als je die inschakelt.</string>
     <string name="faq_q_pro">Wat is BYD Trip Stats Pro en wat bevat het?</string>
@@ -1148,9 +1167,9 @@
     <string name="faq_q_offline_trip">Geen netwerkverbinding betekent dat de rit ontbreekt in de geschiedenis?</string>
     <string name="faq_a_offline_trip">Nee. Ritgeschiedenis wordt lokaal opgeslagen en is niet afhankelijk van mobiel signaal of Wi-Fi.\n\nEen rit kan alleen iets later sluiten als live telemetrie zelf een tijdje stopt. In dat geval sluit de waakhond de actieve rit na 3 minuten telemetriestilte, verankerd aan het laatste pakket dat de app heeft ontvangen.</string>
     <string name="faq_q_stops_restart">De app stopt met werken na een herstart van de auto</string>
-    <string name="faq_a_stops_restart">Je moet BYD Trip Stats uitsluiten van de autostart-killer:\n\n1. Open de app Autostart uitschakelen (native BYD-app, gewoonlijk bij de bestandsverkenner)\n2. Zoek BYD Trip Stats en schakel de vermelding UIT — net zoals je voor Electro hebt gedaan\n3. Open de app en houd de volumeknop ~10 seconden ingedrukt om de auto-UI te herstarten\n4. Open de app opnieuw\n\nBelangrijk: je moet deze stap herhalen na elke app-update, omdat de machtiging bij herinstallatie wordt gereset.</string>
+    <string name="faq_a_stops_restart">Je moet BYD Trip Stats uitsluiten van de autostart-killer:\n\n1. Open de app Autostart uitschakelen (native BYD-app, gewoonlijk bij de bestandsverkenner)\n2. Zoek BYD Trip Stats en schakel de vermelding UIT\n3. Open de app en houd de volumeknop ~10 seconden ingedrukt om de auto-UI te herstarten\n4. Open de app opnieuw\n\nBelangrijk: je moet deze stap herhalen na elke app-update, omdat de machtiging bij herinstallatie wordt gereset.</string>
     <string name="faq_q_backup">Hoe maak ik een back-up van mijn ritgegevens?</string>
-    <string name="faq_a_backup">Er zijn verschillende methoden beschikbaar — alle produceren hetzelfde standaard SQLite-bestand:\n\nLokaal (eenvoudigst): Instellingen → Gegevens → Back-up &amp; herstellen openen → Nu back-up maken.\n\nSD-kaart (Pro): Back-up &amp; herstellen → Back-up naar SD-kaart. Overleeft een app-verwijdering.\n\nTelegram (aanbevolen): Verbind een bot via Back-up &amp; herstellen → Telegram-back-up, stuur dan handmatig of op schema.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
+    <string name="faq_a_backup">Er zijn verschillende methoden beschikbaar — alle produceren hetzelfde standaard SQLite-bestand:\n\nLokaal (eenvoudigst): Instellingen → App → Back-up &amp; herstellen → Nu back-up maken.\n\nSD-kaart (Pro): Back-up &amp; herstellen → Back-up naar SD-kaart. Overleeft een app-verwijdering.\n\nTelegram (aanbevolen): Verbind een bot onder Instellingen → Verbindingen → Telegram, stuur dan handmatig of op schema.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
     <string name="faq_q_recover">Ik heb de app opnieuw geïnstalleerd — kan ik mijn back-ups herstellen?</string>
     <string name="faq_a_recover">Ja. Telegram: verbind je bot-token opnieuw, daarna ontdekt Herstellen vanuit Telegram → vernieuwingspictogram automatisch alle back-ups.\n\nLokaal: de .db-bestanden in Download/BydTripStats/ overleven een herinstallatie. Open Back-up &amp; herstellen, tik op het vernieuwingspictogram onder Lokaal herstellen en ze verschijnen opnieuw.</string>
     <string name="faq_q_auto_backup">Hoe werkt de automatische Telegram-back-up?</string>
@@ -1169,8 +1188,6 @@
     <!-- App Management screen -->
     <string name="app_mgmt_backup_local_label">Lokaal</string>
     <string name="app_mgmt_telegram_label">Telegram</string>
-    <string name="app_mgmt_private_bot_desc">Privébot-chat</string>
-    <string name="app_mgmt_manual_scheduled">Handmatig &amp; gepland</string>
     <string name="app_mgmt_no_local_backup">Geen lokale back-up gevonden</string>
 
     <!-- Telemetry debug -->
@@ -1192,7 +1209,6 @@
     <string name="diagnostic_enabled_desc">Live proces-, geheugen-, frame-, machtigings- en ADB-hulpmiddelen zijn zichtbaar.</string>
     <string name="diagnostic_disabled_desc">Standaard uitgeschakeld zodat dit scherm niet blijft pollen terwijl je alleen back-ups controleert.</string>
     <string name="send_diag_log_action">Diagnostieklogboek naar Telegram sturen</string>
-    <string name="diag_log_info_desc">Stuurt het volledige diagnostieklogboek rechtstreeks naar je verbonden Telegram-bot — niets wordt lokaal opgeslagen of gedeeld. Verbind eerst een bot onder Back-up &amp; herstellen → Telegram-back-up.</string>
     <string name="enable_troubleshooting_hint">Schakel dit alleen in bij het oplossen van problemen; de geschiedenisgrafieken nemen elk 2 seconden een monster terwijl ze zichtbaar zijn.</string>
     <string name="background_readiness_label">Achtergrondgereedheid</string>
     <string name="write_settings_perm_label">Instellingen schrijven</string>

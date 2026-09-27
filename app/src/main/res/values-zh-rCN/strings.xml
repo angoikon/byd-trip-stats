@@ -47,9 +47,9 @@
     <string name="settings_tab_pro">Pro</string>
     <string name="settings_tab_about">关于 &amp; 常见问题</string>
     <string name="pro_cards_layout_title">卡片式仪表板布局</string>
-    <string name="pro_cards_layout_info">更大、可完全自定义的仪表板：以大而间距合理的磁贴取代中央图表。点击铅笔可拖动重新排序磁贴、显示或隐藏所需磁贴，点击续航磁贴可全屏打开预测图表。解锁后在 偏好设置 → 仪表板布局 中选择。</string>
+    <string name="pro_cards_layout_info">更大、可完全自定义的仪表板：以大而间距合理的磁贴取代中央图表。点击铅笔可拖动重新排序磁贴、显示或隐藏所需磁贴，点击续航磁贴可全屏打开预测图表。解锁后在 偏好设置 → 外观 → 仪表板布局 中选择。</string>
     <string name="pro_neon_theme_title">霓虹主题</string>
-    <string name="pro_neon_theme_info">纯黑、适合 OLED 的深色主题，其功率指标数字和强调条纹如霓虹般发光，每张卡片都有细微的强调边缘。解锁后在 偏好设置 → 主题 中选择。</string>
+    <string name="pro_neon_theme_info">纯黑、适合 OLED 的深色主题，其功率指标数字和强调条纹如霓虹般发光，每张卡片都有细微的强调边缘。解锁后在 偏好设置 → 外观 → 主题 中选择。</string>
 
     <!-- Detail tabs -->
     <string name="tab_overview">概览</string>
@@ -493,7 +493,6 @@
     <string name="trim_skip_vacuum_msg">精简完成。（VACUUM 已跳过；稍后重启应用以释放空间。）</string>
     <string name="trim_failed_msg">精简失败：%1$s</string>
     <string name="last_backup_label">上次备份：%1$s</string>
-    <string name="open_backup_restore_action">打开备份 &amp; 恢复</string>
     <string name="reset_all_data_label">重置所有行程数据</string>
     <string name="reset_confirm_title">重置所有行程数据？</string>
     <string name="reset_confirm_msg">这将永久删除所有行程和统计数据。\n\n重置前将自动备份到下载目录。应用将关闭并重新启动。</string>
@@ -820,7 +819,7 @@
     <string name="schedule_monthly">每月</string>
     <string name="danger_zone_title">危险区域</string>
     <string name="danger_zone_desc">永久删除所有行程、数据点和统计信息。重置前会自动创建本地备份。</string>
-    <string name="send_diag_log_desc">将完整诊断日志（速度停滞和\'遥测刷新卡死\'事件）直接发送到已连接的 Telegram 机器人——不会在本地保存或共享任何内容。请先在备份 &amp; 恢复 → Telegram 备份中连接一个机器人。</string>
+    <string name="send_diag_log_desc">共有三种方式分享诊断日志；如有后台助手自身的日志，也会一并附上。Telegram 将完整日志发送到您的机器人（在 设置 → 连接 → Telegram 中设置）。保存 将其复制到车机的 Download/BydTripStats/。通过二维码发送邮件 会上传最新部分并显示二维码，用手机扫描即可通过邮件发送其链接；链接 24 小时后失效。</string>
     <string name="compat_privacy_notice_body">报告捕获汽车主机每个数据源的原始值——数值、字符串和数组。\n\n不包含 GPS 经纬度。\n\n包含其他所有内容：电池状态、电机数据、档位、速度、驾驶模式、空调状态、充电状态、PHEV 专用值等。\n\n不会自动发送任何内容。"通过二维码发送邮件"将报告上传到临时公共主机（litterbox）并显示一个 24 小时后自动删除的链接；在此之前任何有链接的人都可以读取。其他选项将报告保存在您的设备上。</string>
     <string name="compat_sending_label">发送中…</string>
     <string name="compat_email_qr_label">通过二维码发送邮件</string>
@@ -890,7 +889,6 @@
     <string name="select_car_label">选择车型</string>
 
     <!-- Settings — General section -->
-    <string name="section_general">常规</string>
     <string name="pref_theme">主题</string>
     <string name="theme_desc">选择应用外观。系统默认跟随您设备的深色/浅色设置。</string>
     <string name="theme_system">系统</string>
@@ -913,7 +911,6 @@
     <string name="dashboard_icons_desc">启用后，续航预测卡片显示液态填充电池图标、含轮胎气压/温度叠加的四驱/轴线图，以及图表上方的动态能耗缩略图。禁用后，这些内容移至顶部栏（电池和能耗图标）以及侧面板的专用轮胎统计卡片，从而为续航图表释放垂直空间并跳过所有动画。</string>
 
     <!-- Settings — Trips section -->
-    <string name="section_trips">行程</string>
     <string name="pref_engine_off_timeout">车辆关闭后行程超时</string>
     <string name="engine_off_timeout_desc">车辆关闭后行程保持开启的时长。如果车辆在此时间窗口内重新启动，录制将无缝恢复（同一行程，新增一段并在括号中显示累计距离）。超过时间窗口后行程结束，下次驾驶将开始新的行程。默认为 3 分钟。</string>
     <string name="current_timeout_value">当前：%1$s 分钟</string>
@@ -930,12 +927,8 @@
     <string name="pref_goals_label">目标 &amp; 个人最佳</string>
     <string name="goal_consumption_value">能耗目标：%1$s</string>
     <string name="goal_monthly_distance_value">每月距离目标：%1$s</string>
-    <string name="best_consumption_value">最佳能耗：%1$s</string>
-    <string name="best_distance_value">最佳距离：%1$s</string>
-    <string name="open_goals_action">打开目标 &amp; 个人最佳</string>
 
     <!-- Settings — Battery section -->
-    <string name="section_battery">电池 &amp; 遥测</string>
     <string name="pref_soc_source">SoC 来源</string>
     <string name="soc_source_desc">选择在仪表盘上显示的电量百分比读数。</string>
     <string name="soc_panel_option">面板</string>
@@ -1022,7 +1015,7 @@
     <string name="web_companion_label">Web 伴侣</string>
     <string name="web_companion_desc">在同一 WiFi 网络的任何设备上浏览行程 &amp; 充电记录。</string>
     <string name="web_companion_disabled_desc">启动本地服务器，在浏览器中查看行程历史。</string>
-    <string name="web_companion_wifi_info">通过本地 WiFi 提供服务，因此在车辆开启且遥测服务运行时可访问。停车后，大多数比亚迪车型在关闭约 15 分钟后会断开 WiFi — 之后在任何后台活动模式下，伴侣均无法访问（本地服务器无移动数据回退），直到车辆再次开启。\n注意：Electro 应用有选项可无限期保持 WiFi 连接</string>
+    <string name="web_companion_wifi_info">通过本地 WiFi 提供服务，因此在车辆开启且遥测服务运行时可访问。停车后，大多数比亚迪车型在关闭约 15 分钟后会断开 WiFi — 之后在任何后台活动模式下，伴侣均无法访问（本地服务器无移动数据回退），直到车辆再次开启。</string>
     <string name="web_companion_files_info">companion 还有一个 文件 标签页：将数据库备份、导出和诊断日志直接下载到你的手机或笔记本，并在不插任何东西的情况下把备份上传到车。它只显示应用自己的文件夹，而非整个车机。</string>
     <string name="port_field_label">端口</string>
     <string name="port_hint_text">如端口被封锁，请尝试 8081、8888、9090。更改端口将重启服务器。</string>
@@ -1048,6 +1041,34 @@
     <string name="status_enabled_label">状态：已启用</string>
     <string name="status_disabled_label">状态：已禁用</string>
     <string name="back_to_overview_action">返回概览</string>
+    <!-- Settings overview cards (App, Preferences, Connections → Web Companion) -->
+    <string name="settings_overview_desc">选择要打开的部分。下方卡片概览显示当前设置。</string>
+    <string name="web_companion_card_desc">在手机或笔记本电脑的浏览器中查看行程、充电和文件。</string>
+    <string name="power_card_desc">车辆熄火后仍在运行的内容，以及保持 Wi-Fi 开启。</string>
+    <string name="power_card_desc_d5">车辆熄火后仍在运行的内容，以及车辆数据访问。</string>
+    <string name="backup_card_title">备份 &amp; 恢复</string>
+    <string name="backup_card_desc">行程、充电历史和设置 — 本地、SD 卡或通过 Telegram。</string>
+    <string name="compat_card_desc">录制遥测报告，帮助为您的车型添加支持。</string>
+    <string name="diagnostics_card_desc">发送诊断日志，并实时查看 CPU、内存和权限。</string>
+    <string name="wifi_keepalive_on_status">保持 Wi-Fi：开启</string>
+    <string name="d5_vehicle_access_off_status">车辆数据访问：关闭</string>
+    <string name="diagnostics_live_on_status">实时详情：开启</string>
+    <string name="diagnostics_live_off_status">实时详情：关闭</string>
+    <string name="pref_appearance_title">外观</string>
+    <string name="pref_appearance_desc">主题、仪表板布局，以及仪表板图标和动画。</string>
+    <string name="pref_language_units_title">语言 &amp; 单位</string>
+    <string name="pref_language_units_desc">应用语言，以及公制或英制单位。</string>
+    <string name="pref_trip_recording_title">行程记录</string>
+    <string name="pref_trip_recording_desc">车辆熄火后行程何时结束，以及行程最短可以多短。</string>
+    <string name="trip_recording_status">%1$d 分钟后自动结束 • 最短 %2$s</string>
+    <string name="trip_recording_status_no_min">%1$d 分钟后自动结束 • 无最短距离</string>
+    <string name="pref_battery_title">电池</string>
+    <string name="pref_battery_desc">显示哪种电量读数，以及电芯不平衡提醒。</string>
+    <string name="battery_status_alert_on">SoC：%1$s • 不平衡提醒：开启</string>
+    <string name="battery_status_alert_off">SoC：%1$s • 不平衡提醒：关闭</string>
+    <string name="pref_costs_desc">您的电价和货币，用于计算行程和充电的费用。</string>
+    <string name="pref_goals_desc">能耗和里程目标，以及您的个人最佳记录。</string>
+    <string name="pro_cell_imbalance_info">当电池电芯电压差持续高于您设定的上限时提醒您 — 这是电芯变弱的早期迹象。解锁后在 偏好设置 → 电池 中开启并设置上限。</string>
 
     <!-- ABRP settings -->
     <string name="abrp_link_desc">Link Generic token 将实时遥测数据上传到 A Better Routeplanner。</string>
@@ -1137,8 +1158,6 @@
 
     <!-- FAQ -->
     <string name="faq_section_title">常见问题</string>
-    <string name="faq_q_no_electro">与旧版本不同，是否真的不再需要 Electro 应用了？</string>
-    <string name="faq_a_no_electro">是的。BYD Trip Stats 在支持的车辆上作为独立应用运行，无需 Electro 即可记录行程和充电记录。\n\nElectro 对于需要其功能的车主仍然是有用的伴侣应用，但不再是 BYD Trip Stats 运行的必要条件。</string>
     <string name="faq_q_internet">我需要互联网或移动信号吗？</string>
     <string name="faq_a_internet">正常使用不需要。行程、充电记录、图表和本地历史记录完全在设备上存储。\n\n仅在启用应用更新检查、打开网页链接、MQTT / ABRP 集成和 Telegram 备份等可选功能时才需要互联网。</string>
     <string name="faq_q_pro">BYD Trip Stats Pro 是什么，包含哪些内容？</string>
@@ -1148,9 +1167,9 @@
     <string name="faq_q_offline_trip">无网络连接意味着行程将在历史记录中缺失？</string>
     <string name="faq_a_offline_trip">不会。行程历史记录存储在本地，不依赖移动信号或 WiFi。\n\n只有在实时遥测本身中断一段时间时，行程才可能稍晚关闭。在这种情况下，监视器将在遥测静默 3 分钟后关闭活跃行程，以应用收到的最后一个数据包为基准。</string>
     <string name="faq_q_stops_restart">车辆重启后应用停止工作</string>
-    <string name="faq_a_stops_restart">您需要将 BYD Trip Stats 排除在自动启动杀手之外：\n\n1. 打开"禁用自动启动"应用（比亚迪原生应用，通常在文件管理器附近）\n2. 找到 BYD Trip Stats 并将其切换为关闭 — 与 Electro 的操作相同\n3. 打开应用并长按音量键约 10 秒以重启车辆界面\n4. 重新打开应用\n\n重要：每次应用更新后必须重复此步骤，因为重新安装会重置权限。</string>
+    <string name="faq_a_stops_restart">您需要将 BYD Trip Stats 排除在自动启动杀手之外：\n\n1. 打开"禁用自动启动"应用（比亚迪原生应用，通常在文件管理器附近）\n2. 找到 BYD Trip Stats 并将其切换为关闭\n3. 打开应用并长按音量键约 10 秒以重启车辆界面\n4. 重新打开应用\n\n重要：每次应用更新后必须重复此步骤，因为重新安装会重置权限。</string>
     <string name="faq_q_backup">如何备份我的行程数据？</string>
-    <string name="faq_a_backup">有多种方法可用 — 均生成相同的标准 SQLite 文件：\n\n本地（最简单）：设置 → 数据 → 打开备份 &amp; 恢复 → 立即备份。\n\nSD 卡（Pro）：备份 &amp; 恢复 → 备份到 SD 卡。卸载应用后仍保留。\n\nTelegram（推荐）：通过备份 &amp; 恢复 → Telegram 备份连接机器人，然后手动或按计划发送。\n\nADB：adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
+    <string name="faq_a_backup">有多种方法可用 — 均生成相同的标准 SQLite 文件：\n\n本地（最简单）：设置 → 应用 → 备份 &amp; 恢复 → 立即备份。\n\nSD 卡（Pro）：备份 &amp; 恢复 → 备份到 SD 卡。卸载应用后仍保留。\n\nTelegram（推荐）：在 设置 → 连接 → Telegram 中连接机器人，然后手动或按计划发送。\n\nADB：adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
     <string name="faq_q_recover">我重新安装了应用 — 能否恢复我的备份？</string>
     <string name="faq_a_recover">可以。Telegram：重新连接您的机器人 token，然后从 Telegram 恢复 → 刷新图标会自动重新发现所有备份。\n\n本地：Download/BydTripStats/ 中的 .db 文件在重新安装后仍保留。打开备份 &amp; 恢复，点击本地恢复下的刷新图标，文件将重新出现。</string>
     <string name="faq_q_auto_backup">Telegram 自动备份如何工作？</string>
@@ -1169,8 +1188,6 @@
     <!-- App Management screen -->
     <string name="app_mgmt_backup_local_label">本地</string>
     <string name="app_mgmt_telegram_label">Telegram</string>
-    <string name="app_mgmt_private_bot_desc">私人机器人聊天</string>
-    <string name="app_mgmt_manual_scheduled">手动 &amp; 计划</string>
     <string name="app_mgmt_no_local_backup">未找到本地备份</string>
 
     <!-- Telemetry debug -->
@@ -1192,7 +1209,6 @@
     <string name="diagnostic_enabled_desc">实时进程、内存、帧率、权限和 ADB 工具可见。</string>
     <string name="diagnostic_disabled_desc">默认关闭，以避免在您仅查看备份时此页面持续轮询。</string>
     <string name="send_diag_log_action">将诊断日志发送到 Telegram</string>
-    <string name="diag_log_info_desc">将完整诊断日志直接发送到您已连接的 Telegram 机器人 — 不在本地保存或分享。请先在备份 &amp; 恢复 → Telegram 备份中连接机器人。</string>
     <string name="enable_troubleshooting_hint">仅在排查问题时启用；历史图表在可见时每 2 秒采样一次。</string>
     <string name="background_readiness_label">后台就绪状态</string>
     <string name="write_settings_perm_label">写入设置</string>

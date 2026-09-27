@@ -110,17 +110,11 @@ internal fun TelegramConnectionSection(context: Context, scope: CoroutineScope) 
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                TextButton(
-                    onClick = { manager.clearConfig() },
+                DisconnectButton(
+                    text = stringResource(R.string.disconnect_bot_action),
                     enabled = !busy,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        stringResource(R.string.disconnect_bot_action),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
+                    onClick = { manager.clearConfig() },
+                )
             } else {
                 Text(
                     stringResource(R.string.telegram_instructions),

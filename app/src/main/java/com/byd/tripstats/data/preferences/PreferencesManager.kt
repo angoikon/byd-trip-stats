@@ -49,6 +49,7 @@ private val DASHBOARD_CHART_HIDDEN       = booleanPreferencesKey("dashboard_char
 private val DASHBOARD_POWER_ORDER        = stringPreferencesKey("dashboard_power_order")
 private val SOC_SOURCE                   = stringPreferencesKey("soc_source")
 private val DASHBOARD_SHOW_REMAINING_KWH = booleanPreferencesKey("dashboard_show_remaining_kwh")
+private val DASHBOARD_SHOW_DISTANCE_SINCE_CHARGE = booleanPreferencesKey("dashboard_show_distance_since_charge")
 private val CAR_OFF_TIMEOUT_MINUTES      = intPreferencesKey("car_off_timeout_minutes")
 private val CONFIRM_BEFORE_AUTO_STOP     = booleanPreferencesKey("confirm_before_auto_stop")
 private val MIN_TRIP_DISTANCE_KM         = doublePreferencesKey("min_trip_distance_km")
@@ -428,6 +429,23 @@ class PreferencesManager(private val context: Context) {
     suspend fun saveDashboardShowRemainingKwh(show: Boolean) {
         context.dataStore.edit { it[DASHBOARD_SHOW_REMAINING_KWH] = show }
         cache.edit().putBoolean("dashboard_show_remaining_kwh", show).apply()
+    }
+
+    // ── Dashboard distance readout: distance since the last charge ─────────────
+    // Dashboard-only view flag on the Distance tile, the counterpart of
+    // [dashboardShowRemainingKwh] on the SoC tile. When true the tile shows the distance
+    // driven since the most recent charge instead of the current session's; tapping the
+    // tile toggles it. Nothing recorded depends on it.
+    val dashboardShowDistanceSinceCharge: Flow<Boolean> = context.dataStore.data
+        .map { it[DASHBOARD_SHOW_DISTANCE_SINCE_CHARGE] ?: false }
+        .onEach { cache.edit().putBoolean("dashboard_show_distance_since_charge", it).apply() }
+
+    fun getCachedDashboardShowDistanceSinceCharge(): Boolean =
+        cache.getBoolean("dashboard_show_distance_since_charge", false)
+
+    suspend fun saveDashboardShowDistanceSinceCharge(show: Boolean) {
+        context.dataStore.edit { it[DASHBOARD_SHOW_DISTANCE_SINCE_CHARGE] = show }
+        cache.edit().putBoolean("dashboard_show_distance_since_charge", show).apply()
     }
 
     // ── Engine-off timeout (trip auto-end) ────────────────────────────────────

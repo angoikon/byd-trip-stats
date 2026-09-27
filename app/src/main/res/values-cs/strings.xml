@@ -44,9 +44,9 @@
     <string name="settings_tab_pro">Pro</string>
     <string name="settings_tab_about">O aplikaci a FAQ</string>
     <string name="pro_cards_layout_title">Rozvržení přehledu s kartami</string>
-    <string name="pro_cards_layout_info">Větší, plně přizpůsobitelný přehled: velké, dobře rozmístěné dlaždice místo centrálního grafu. Klepnutím na tužku přeuspořádáte dlaždice tažením a zobrazíte nebo skryjete ty, které chcete; klepnutím na dlaždici Dojezd otevřete projekční graf na celou obrazovku. Po odemčení jej zvolte v Předvolby → Rozvržení přehledu.</string>
+    <string name="pro_cards_layout_info">Větší, plně přizpůsobitelný přehled: velké, dobře rozmístěné dlaždice místo centrálního grafu. Klepnutím na tužku přeuspořádáte dlaždice tažením a zobrazíte nebo skryjete ty, které chcete; klepnutím na dlaždici Dojezd otevřete projekční graf na celou obrazovku. Po odemčení jej zvolte v Předvolby → Vzhled → Rozvržení přehledu.</string>
     <string name="pro_neon_theme_title">Motiv Neon</string>
-    <string name="pro_neon_theme_info">Čistě černý, pro OLED přívětivý tmavý motiv, jehož číslice ukazatelů výkonu a akcentní pruhy září jako neon, s jemným akcentním okrajem na každé kartě. Po odemčení jej zvolte v Předvolby → Motiv.</string>
+    <string name="pro_neon_theme_info">Čistě černý, pro OLED přívětivý tmavý motiv, jehož číslice ukazatelů výkonu a akcentní pruhy září jako neon, s jemným akcentním okrajem na každé kartě. Po odemčení jej zvolte v Předvolby → Vzhled → Motiv.</string>
 
     <!-- Detail tabs -->
     <string name="tab_overview">Přehled</string>
@@ -490,7 +490,6 @@
     <string name="trim_skip_vacuum_msg">Zeštíhlení dokončeno. (VACUUM byl přeskočen; restartujte aplikaci později pro uvolnění místa.)</string>
     <string name="trim_failed_msg">Zeštíhlení se nezdařilo: %1$s</string>
     <string name="last_backup_label">Poslední záloha: %1$s</string>
-    <string name="open_backup_restore_action">Otevřít zálohu a obnovení</string>
     <string name="reset_all_data_label">Resetovat všechna data jízd</string>
     <string name="reset_confirm_title">Resetovat všechna data jízd?</string>
     <string name="reset_confirm_msg">Všechny jízdy a statistiky budou trvale smazány.\n\nPřed resetem se záloha automaticky uloží do Download. Aplikace se zavře a znovu otevře.</string>
@@ -817,7 +816,7 @@
     <string name="schedule_monthly">Měsíčně</string>
     <string name="danger_zone_title">NEBEZPEČNÁ ZÓNA</string>
     <string name="danger_zone_desc">Trvale smaže všechny jízdy, datové body a statistiky. Před resetem se automaticky vytvoří lokální záloha.</string>
-    <string name="send_diag_log_desc">Odešle úplný diagnostický protokol (události zamrznutí rychlosti a \'zaseknutého obnovení telemetrie\') přímo připojenému Telegram botovi — lokálně se nic neukládá ani nesdílí. Nejprve připojte bota v Záloha a obnovení → Záloha na Telegram.</string>
+    <string name="send_diag_log_desc">Tři způsoby, jak sdílet diagnostický protokol, spolu s vlastním protokolem pomocníka na pozadí, pokud existuje. Telegram jej odešle celý vašemu botovi (nastavte jej v Nastavení → Připojení → Telegram). Uložit jej zkopíruje do Download/BydTripStats/ v autě. E-mail přes QR kód nahraje jeho nejnovější část a zobrazí kód, který naskenujete telefonem a odkaz na něj odešlete e-mailem; odkaz vyprší po 24 hodinách.</string>
     <string name="compat_privacy_notice_body">Zpráva zachycuje surové hodnoty z každého zdroje dat hlavní jednotky vozu — číselné hodnoty, řetězce a pole.\n\nZeměpisná šířka a délka GPS NEJSOU zahrnuty.\n\nVše ostatní zahrnuto je: stav baterie, data motoru, zařazený stupeň, rychlost, jízdní režimy, stav klimatizace, stav nabíjení, hodnoty specifické pro PHEV atd.\n\nNic se neodesílá automaticky. \"E-mail přes QR kód\" nahraje zprávu na dočasný veřejný hosting (litterbox) a zobrazí odkaz, který se sám smaže po 24 hodinách; do té doby ji může číst kdokoli s odkazem. Ostatní možnosti ponechávají zprávu na zařízení.</string>
     <string name="compat_sending_label">Odesílání…</string>
     <string name="compat_email_qr_label">E-mail přes QR kód</string>
@@ -887,7 +886,6 @@
     <string name="select_car_label">Vybrat vůz</string>
 
     <!-- Settings — General section -->
-    <string name="section_general">Obecné</string>
     <string name="pref_theme">Motiv</string>
     <string name="theme_desc">Vyberte vzhled aplikace. Systémový výchozí následuje nastavení tmavý/světlý vašeho zařízení.</string>
     <string name="theme_system">Systémový</string>
@@ -910,7 +908,6 @@
     <string name="dashboard_icons_desc">Když je zapnuto, karta projekce dojezdu zobrazuje ikonu baterie s tekutou výplní, kresbu AWD/náprav s překryvy tlaku/teploty pneumatik a animovanou miniaturu spotřeby nad grafem. Když je vypnuto, přesunou se do horní lišty (ikony baterie a spotřeby) a do vyhrazené statistické karty Pneumatiky na bočním panelu — uvolní se svislé místo pro graf dojezdu a přeskočí se všechny animace.</string>
 
     <!-- Settings — Trips section -->
-    <string name="section_trips">Jízdy</string>
     <string name="pref_engine_off_timeout">Časový limit jízdy po vypnutí</string>
     <string name="engine_off_timeout_desc">Jak dlouho zůstane jízda otevřená po vypnutí vozu. Pokud se vůz v tomto okně znovu zapne, nahrávání plynule pokračuje (stejná jízda, objeví se nový úsek spolu s kumulativní vzdáleností v závorce). Po uplynutí okna jízda končí a další jízda začne novou. Výchozí jsou 3 minuty.</string>
     <string name="current_timeout_value">Aktuální: %1$s min</string>
@@ -927,12 +924,8 @@
     <string name="pref_goals_label">Cíle a osobní rekordy</string>
     <string name="goal_consumption_value">Cíl spotřeby: %1$s</string>
     <string name="goal_monthly_distance_value">Měsíční cíl vzdálenosti: %1$s</string>
-    <string name="best_consumption_value">Nejlepší spotřeba: %1$s</string>
-    <string name="best_distance_value">Nejlepší vzdálenost: %1$s</string>
-    <string name="open_goals_action">Otevřít cíle a osobní rekordy</string>
 
     <!-- Settings — Battery section -->
-    <string name="section_battery">Baterie a telemetrie</string>
     <string name="pref_soc_source">Zdroj SoC</string>
     <string name="soc_source_desc">Vyberte, které čtení procenta baterie zobrazovat na přehledu.</string>
     <string name="soc_panel_option">Panel</string>
@@ -1019,7 +1012,7 @@
     <string name="web_companion_label">Web Companion</string>
     <string name="web_companion_desc">Procházejte jízdy a nabíjení z libovolného zařízení ve stejné WiFi.</string>
     <string name="web_companion_disabled_desc">Spusťte lokální server, abyste mohli otevřít historii jízd v prohlížeči.</string>
-    <string name="web_companion_wifi_info">Běží přes vaši lokální WiFi, takže je dosažitelný, dokud je vůz zapnutý a telemetrická služba běží. Po zaparkování většina jednotek BYD odpojí WiFi ~15 min po vypnutí — poté je companion nedostupný (pro lokální server neexistuje záloha přes mobilní data), dokud se vůz znovu nezapne, a to v každém režimu aktivity na pozadí.\nPoznámka: aplikace Electro má možnost udržet WiFi zapnuté neomezeně</string>
+    <string name="web_companion_wifi_info">Běží přes vaši lokální WiFi, takže je dosažitelný, dokud je vůz zapnutý a telemetrická služba běží. Po zaparkování většina jednotek BYD odpojí WiFi ~15 min po vypnutí — poté je companion nedostupný (pro lokální server neexistuje záloha přes mobilní data), dokud se vůz znovu nezapne, a to v každém režimu aktivity na pozadí.</string>
     <string name="web_companion_files_info">Companion má také kartu Soubory: stáhněte zálohy databáze, exporty a diagnostický protokol přímo do telefonu nebo notebooku a nahrajte zálohu do auta bez připojování čehokoli. Zobrazuje pouze vlastní složky aplikace, ne celou jednotku.</string>
     <string name="port_field_label">Port</string>
     <string name="port_hint_text">Zkuste 8081, 8888, 9090, pokud je port blokován. Změny restartují server.</string>
@@ -1045,6 +1038,34 @@
     <string name="status_enabled_label">Stav: Zapnuto</string>
     <string name="status_disabled_label">Stav: Vypnuto</string>
     <string name="back_to_overview_action">Zpět na přehled</string>
+    <!-- Settings overview cards (App, Preferences, Connections → Web Companion) -->
+    <string name="settings_overview_desc">Vyberte sekci, kterou chcete otevřít. Karty níže ukazují aktuální nastavení na první pohled.</string>
+    <string name="web_companion_card_desc">Procházejte jízdy, nabíjení a soubory v prohlížeči na telefonu nebo notebooku.</string>
+    <string name="power_card_desc">Co běží po vypnutí auta a udržování Wi-Fi.</string>
+    <string name="power_card_desc_d5">Co běží po vypnutí auta a přístup k datům vozidla.</string>
+    <string name="backup_card_title">Záloha a obnovení</string>
+    <string name="backup_card_desc">Jízdy, historie nabíjení a nastavení — lokálně, na SD kartu nebo přes Telegram.</string>
+    <string name="compat_card_desc">Zaznamenejte telemetrickou zprávu, která pomůže přidat podporu vašeho modelu.</string>
+    <string name="diagnostics_card_desc">Odešlete diagnostický protokol a sledujte živě CPU, paměť a oprávnění.</string>
+    <string name="wifi_keepalive_on_status">Udržování Wi-Fi zapnuto</string>
+    <string name="d5_vehicle_access_off_status">Přístup k datům vozidla vypnut</string>
+    <string name="diagnostics_live_on_status">Živé detaily zapnuty</string>
+    <string name="diagnostics_live_off_status">Živé detaily vypnuty</string>
+    <string name="pref_appearance_title">Vzhled</string>
+    <string name="pref_appearance_desc">Motiv, rozvržení přehledu a ikony a animace přehledu.</string>
+    <string name="pref_language_units_title">Jazyk a jednotky</string>
+    <string name="pref_language_units_desc">Jazyk aplikace a metrické nebo imperiální jednotky.</string>
+    <string name="pref_trip_recording_title">Záznam jízd</string>
+    <string name="pref_trip_recording_desc">Kdy jízda skončí po vypnutí auta a jak krátká jízda může být.</string>
+    <string name="trip_recording_status">Automatické ukončení po %1$d min • minimum %2$s</string>
+    <string name="trip_recording_status_no_min">Automatické ukončení po %1$d min • bez minima</string>
+    <string name="pref_battery_title">Baterie</string>
+    <string name="pref_battery_desc">Který údaj o stavu nabití zobrazit a upozornění na nerovnováhu článků.</string>
+    <string name="battery_status_alert_on">SoC: %1$s • upozornění na nerovnováhu zapnuto</string>
+    <string name="battery_status_alert_off">SoC: %1$s • upozornění na nerovnováhu vypnuto</string>
+    <string name="pref_costs_desc">Váš tarif elektřiny a měna, podle kterých se oceňují jízdy a nabíjení.</string>
+    <string name="pref_goals_desc">Cíle spotřeby a vzdálenosti a vaše osobní rekordy.</string>
+    <string name="pro_cell_imbalance_info">Upozorní vás, když rozptyl napětí článků v baterii zůstává nad vaším limitem — včasná známka slabého článku. Po odemčení jej zapněte a nastavte limit v Předvolby → Baterie.</string>
 
     <!-- ABRP settings -->
     <string name="abrp_link_desc">Token Link Generic nahrává živou telemetrii do A Better Routeplanner.</string>
@@ -1133,8 +1154,6 @@
 
     <!-- FAQ -->
     <string name="faq_section_title">FAQ</string>
-    <string name="faq_q_no_electro">Je pravda, že na rozdíl od starších verzí už nepotřebuji aplikaci Electro?</string>
-    <string name="faq_a_no_electro">Správně. BYD Trip Stats funguje na podporovaných vozidlech jako samostatná aplikace, takže nahrávání jízd a nabíjecí relace fungují bez Electro.\n\nElectro zůstává užitečnou doprovodnou aplikací pro majitele, kteří chtějí její vlastní funkce, ale pro fungování BYD Trip Stats už není potřeba.</string>
     <string name="faq_q_internet">Potřebuji internet nebo mobilní signál?</string>
     <string name="faq_a_internet">Pro běžné použití ne. Jízdy, nabíjecí relace, grafy a lokální historie se nahrávají výhradně na zařízení.\n\nInternet je potřeba jen pro volitelné funkce, jako je kontrola aktualizací, otevírání odkazů, integrace MQTT / ABRP a zálohy na Telegram, pokud je zapnete.</string>
     <string name="faq_q_pro">Co je BYD Trip Stats Pro a co obsahuje?</string>
@@ -1144,9 +1163,9 @@
     <string name="faq_q_offline_trip">Znamená výpadek sítě, že jízda bude v historii chybět?</string>
     <string name="faq_a_offline_trip">Ne. Historie jízd se ukládá lokálně a nezávisí na mobilním signálu ani Wi-Fi.\n\nJízda se může uzavřít o něco později jen tehdy, když se na chvíli zastaví samotná živá telemetrie. V tom případě watchdog uzavře aktivní jízdu po 3 minutách ticha telemetrie, počítáno od posledního paketu, který aplikace přijala.</string>
     <string name="faq_q_stops_restart">Aplikace přestává fungovat po restartu vozu</string>
-    <string name="faq_a_stops_restart">Musíte vyjmout BYD Trip Stats z blokátoru autostartu:\n\n1. Otevřete aplikaci Disable Autostart (nativní aplikace BYD, obvykle poblíž průzkumníka souborů)\n2. Najděte BYD Trip Stats a přepněte její záznam na VYP — stejně jako jste to udělali pro Electro\n3. Otevřete aplikaci a podržte tlačítko hlasitosti ~10 sekund pro restart UI vozu\n4. Znovu otevřete aplikaci\n\nDůležité: tento krok musíte opakovat po každé aktualizaci aplikace, protože oprávnění se při reinstalaci resetuje.</string>
+    <string name="faq_a_stops_restart">Musíte vyjmout BYD Trip Stats z blokátoru autostartu:\n\n1. Otevřete aplikaci Disable Autostart (nativní aplikace BYD, obvykle poblíž průzkumníka souborů)\n2. Najděte BYD Trip Stats a přepněte její záznam na VYP\n3. Otevřete aplikaci a podržte tlačítko hlasitosti ~10 sekund pro restart UI vozu\n4. Znovu otevřete aplikaci\n\nDůležité: tento krok musíte opakovat po každé aktualizaci aplikace, protože oprávnění se při reinstalaci resetuje.</string>
     <string name="faq_q_backup">Jak zálohuji data jízd?</string>
-    <string name="faq_a_backup">K dispozici je několik metod — všechny vytvářejí stejný standardní soubor SQLite:\n\nLokálně (nejjednodušší): Nastavení → Data → Otevřít zálohu a obnovení → Zálohovat nyní.\n\nSD karta (Pro): Záloha a obnovení → Záloha na SD kartu. Přežije odinstalaci aplikace.\n\nTelegram (doporučeno): Připojte bota přes Záloha a obnovení → Záloha na Telegram a pak odesílejte ručně nebo podle plánu.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/NAZEVSOUBORU.db &gt; local.db</string>
+    <string name="faq_a_backup">K dispozici je několik metod — všechny vytvářejí stejný standardní soubor SQLite:\n\nLokálně (nejjednodušší): Nastavení → Aplikace → Záloha a obnovení → Zálohovat nyní.\n\nSD karta (Pro): Záloha a obnovení → Záloha na SD kartu. Přežije odinstalaci aplikace.\n\nTelegram (doporučeno): Připojte bota v Nastavení → Připojení → Telegram a pak odesílejte ručně nebo podle plánu.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/NAZEVSOUBORU.db &gt; local.db</string>
     <string name="faq_q_recover">Přeinstaloval jsem aplikaci — mohu obnovit zálohy?</string>
     <string name="faq_a_recover">Ano. Telegram: znovu připojte token bota, pak Obnovit z Telegramu → ikona obnovení automaticky znovu objeví všechny zálohy.\n\nLokálně: soubory .db v Download/BydTripStats/ přežijí reinstalaci. Otevřete Zálohu a obnovení, klepněte na ikonu obnovení pod Lokálním obnovením a znovu se objeví.</string>
     <string name="faq_q_auto_backup">Jak funguje automatická záloha na Telegram?</string>
@@ -1165,8 +1184,6 @@
     <!-- App Management screen -->
     <string name="app_mgmt_backup_local_label">Lokální</string>
     <string name="app_mgmt_telegram_label">Telegram</string>
-    <string name="app_mgmt_private_bot_desc">Soukromý chat s botem</string>
-    <string name="app_mgmt_manual_scheduled">Ručně i plánovaně</string>
     <string name="app_mgmt_no_local_backup">Lokální záloha nenalezena</string>
 
     <!-- Telemetry debug -->
@@ -1188,7 +1205,6 @@
     <string name="diagnostic_enabled_desc">Jsou viditelné živé nástroje procesů, paměti, snímků, oprávnění a ADB.</string>
     <string name="diagnostic_disabled_desc">Ve výchozím stavu vypnuto, aby tato obrazovka neustále nedotazovala, když jen kontrolujete zálohy.</string>
     <string name="send_diag_log_action">Odeslat diagnostický protokol na Telegram</string>
-    <string name="diag_log_info_desc">Odešle úplný diagnostický protokol přímo připojenému Telegram botovi — lokálně se nic neukládá ani nesdílí. Nejprve připojte bota v Záloha a obnovení → Záloha na Telegram.</string>
     <string name="enable_troubleshooting_hint">Zapínejte jen při řešení problémů; grafy historie vzorkují každé 2 sekundy, dokud jsou viditelné.</string>
     <string name="background_readiness_label">Připravenost pozadí</string>
     <string name="write_settings_perm_label">Zápis nastavení</string>

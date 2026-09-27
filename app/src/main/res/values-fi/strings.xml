@@ -47,9 +47,9 @@
     <string name="settings_tab_pro">Pro</string>
     <string name="settings_tab_about">Tietoja &amp; FAQ</string>
     <string name="pro_cards_layout_title">Korttikojelaudan asettelu</string>
-    <string name="pro_cards_layout_info">Suurempi, täysin mukautettava kojelauta: suuria, hyvin aseteltuja ruutuja keskuskaavion sijaan. Napauta kynää järjestelläksesi ruutuja vetämällä sekä näyttääksesi tai piilottaaksesi haluamasi, ja napauta Toimintasäde-ruutua avataksesi ennustekaavion täysikokoisena. Valitse se kohdasta Asetukset → Kojelaudan asettelu, kun se on avattu.</string>
+    <string name="pro_cards_layout_info">Suurempi, täysin mukautettava kojelauta: suuria, hyvin aseteltuja ruutuja keskuskaavion sijaan. Napauta kynää järjestelläksesi ruutuja vetämällä sekä näyttääksesi tai piilottaaksesi haluamasi, ja napauta Toimintasäde-ruutua avataksesi ennustekaavion täysikokoisena. Valitse se kohdasta Asetukset → Ulkoasu → Kojelaudan asettelu, kun se on avattu.</string>
     <string name="pro_neon_theme_title">Neon-teema</string>
-    <string name="pro_neon_theme_info">Puhtaan musta, OLED-ystävällinen tumma teema, jonka tehomittarien numerot ja korostusraidat hehkuvat kuin neon, ja jokaisessa kortissa on hienovarainen korostusreuna. Valitse se kohdasta Asetukset → Teema, kun se on avattu.</string>
+    <string name="pro_neon_theme_info">Puhtaan musta, OLED-ystävällinen tumma teema, jonka tehomittarien numerot ja korostusraidat hehkuvat kuin neon, ja jokaisessa kortissa on hienovarainen korostusreuna. Valitse se kohdasta Asetukset → Ulkoasu → Teema, kun se on avattu.</string>
 
     <!-- Detail tabs -->
     <string name="tab_overview">Yleiskatsaus</string>
@@ -493,7 +493,6 @@
     <string name="trim_skip_vacuum_msg">Karsinta valmis. (VACUUM ohitettiin; käynnistä sovellus myöhemmin uudelleen vapauttaaksesi tilaa.)</string>
     <string name="trim_failed_msg">Karsinta epäonnistui: %1$s</string>
     <string name="last_backup_label">Viimeisin varmuuskopio: %1$s</string>
-    <string name="open_backup_restore_action">Avaa varmuuskopio &amp; palautus</string>
     <string name="reset_all_data_label">Nollaa kaikki matkatiedot</string>
     <string name="reset_confirm_title">Nollataanko kaikki matkatiedot?</string>
     <string name="reset_confirm_msg">Tämä poistaa pysyvästi kaikki matkat ja tilastot.\n\nVarmuuskopio tallennetaan automaattisesti Latauksiin ennen nollausta. Sovellus sulkeutuu ja avautuu uudelleen.</string>
@@ -820,7 +819,7 @@
     <string name="schedule_monthly">Kuukausittain</string>
     <string name="danger_zone_title">VAARAVYÖHYKE</string>
     <string name="danger_zone_desc">Poistaa pysyvästi kaikki matkat, datapisteet ja tilastot. Paikallinen varmuuskopio luodaan automaattisesti ennen nollauksen suorittamista.</string>
-    <string name="send_diag_log_desc">Lähettää koko diagnoosilokin (speed-stall ja \'telemetrian päivitys jumissa\'-tapahtumat) suoraan yhdistettyyn Telegram-bottiisi — mitään ei tallenneta tai jaeta paikallisesti. Yhdistä ensin botti kohdassa Backup &amp; Restore → Telegram Backup.</string>
+    <string name="send_diag_log_desc">Kolme tapaa jakaa diagnoosiloki sekä taustatoiminnon oma loki, jos sellainen on. Telegram lähettää sen kokonaan bottiisi (määritä botti kohdassa Asetukset → Yhteydet → Telegram). Tallenna kopioi sen autossa kansioon Download/BydTripStats/. Sähköposti QR-koodilla lataa uusimman osan ja näyttää koodin, jonka skannaat puhelimella lähettääksesi linkin siihen sähköpostilla; linkki vanhenee 24 tunnin kuluttua.</string>
     <string name="compat_privacy_notice_body">Raportti tallentaa raakaarvoja jokaisesta auton head unitin tietolähteestä — numeeriset arvot, merkkijonot ja taulukot.\n\nGPS-leveyttä ja -pituutta EI sisällytetä.\n\nKaikki muu sisällytetään: akun tila, moottorin tiedot, vaihde, nopeus, ajotilat, ilmastointitila, latausastatus, PHEV-kohtaiset arvot jne.\n\nMitään ei lähetetä automaattisesti. "Sähköposti QR-koodin kautta" lataa raportin väliaikaiselle julkiselle palvelimelle (litterbox) ja näyttää linkin, joka poistetaan automaattisesti 24 tunnin jälkeen; kuka tahansa linkin saaneista voi lukea sen siihen asti. Muut vaihtoehdot pitävät raportin laitteellasi.</string>
     <string name="compat_sending_label">Lähetetään…</string>
     <string name="compat_email_qr_label">Sähköposti QR-koodilla</string>
@@ -890,7 +889,6 @@
     <string name="select_car_label">Valitse auto</string>
 
     <!-- Settings — General section -->
-    <string name="section_general">Yleiset</string>
     <string name="pref_theme">Teema</string>
     <string name="theme_desc">Valitse sovelluksen ulkoasu. Järjestelmän oletus seuraa laitteesi tumma/vaalea-asetusta.</string>
     <string name="theme_system">Järjestelmä</string>
@@ -913,7 +911,6 @@
     <string name="dashboard_icons_desc">Kun käytössä, kantamaprojektion kortti näyttää nestetäyttöisen akkukuvakkeen, AWD/akselin piirroksen rengas-/lämpötilaoverlayllä ja animoidun kulutusminiatyyrin kaavion yläpuolella. Kun ei käytössä, nämä siirtyvät yläpalkkiin (akku- ja kulutuskuvakkeet) ja erilliseen Renkaat-tilastokorttiin sivupaneelissa — vapauttaen pystysuuntaista tilaa kantamakaaviolle ja ohittaen kaikki animaatiot.</string>
 
     <!-- Settings — Trips section -->
-    <string name="section_trips">Matkat</string>
     <string name="pref_engine_off_timeout">Moottorin sammutuksen aikakatkaisu</string>
     <string name="engine_off_timeout_desc">Kuinka kauan matka pysyy auki auton sammumisen jälkeen. Jos auto käynnistyy uudelleen tämän ikkunan sisällä, tallennus jatkuu saumattomasti (sama matka, uusi segmentti ilmestyy kumulatiivisen matkan kanssa suluissa). Ikkunan jälkeen matka päättyy ja seuraava ajo aloittaa uuden. Oletus on 3 minuuttia.</string>
     <string name="current_timeout_value">Nykyinen: %1$s min</string>
@@ -930,12 +927,8 @@
     <string name="pref_goals_label">Tavoitteet &amp; henkilökohtaiset ennätykset</string>
     <string name="goal_consumption_value">Kulutuksen tavoite: %1$s</string>
     <string name="goal_monthly_distance_value">Kuukausittainen matkatavoite: %1$s</string>
-    <string name="best_consumption_value">Paras kulutus: %1$s</string>
-    <string name="best_distance_value">Paras matka: %1$s</string>
-    <string name="open_goals_action">Avaa tavoitteet &amp; henkilökohtaiset ennätykset</string>
 
     <!-- Settings — Battery section -->
-    <string name="section_battery">Akku &amp; telemetria</string>
     <string name="pref_soc_source">SoC-lähde</string>
     <string name="soc_source_desc">Valitse mikä akkuprosenttilukema näytetään kojelaudalla.</string>
     <string name="soc_panel_option">Paneeli</string>
@@ -1022,7 +1015,7 @@
     <string name="web_companion_label">Web Companion</string>
     <string name="web_companion_desc">Selaa matkoja &amp; latauksia mistä tahansa samaan WiFiin yhdistetystä laitteesta.</string>
     <string name="web_companion_disabled_desc">Käynnistä paikallinen palvelin avataksesi matkahistorian selaimessa.</string>
-    <string name="web_companion_wifi_info">Tarjoillaan paikallisen WiFin kautta, joten se on saavutettavissa auton ollessa päällä ja telemetriapalvelun ollessa toiminnassa. Pysäköinnin jälkeen suurin osa BYD:n yksiköistä katkaisee WiFin ~15 min auton sammumisen jälkeen — sen jälkeen companion ei ole saavutettavissa (paikalliselle palvelimelle ei ole mobiiliverkkofallbackia) kunnes auto käynnistyy, missä tahansa taustatoimintatilassa.\nHuom.: Electro-sovelluksessa on vaihtoehto pitää WiFi päällä loputtomasti</string>
+    <string name="web_companion_wifi_info">Tarjoillaan paikallisen WiFin kautta, joten se on saavutettavissa auton ollessa päällä ja telemetriapalvelun ollessa toiminnassa. Pysäköinnin jälkeen suurin osa BYD:n yksiköistä katkaisee WiFin ~15 min auton sammumisen jälkeen — sen jälkeen companion ei ole saavutettavissa (paikalliselle palvelimelle ei ole mobiiliverkkofallbackia) kunnes auto käynnistyy, missä tahansa taustatoimintatilassa.</string>
     <string name="web_companion_files_info">Companionissa on myös Tiedostot-välilehti: lataa tietokantavarmuuskopiot, viennit ja diagnostiikkaloki suoraan puhelimeesi tai kannettavaan ja lähetä varmuuskopio autoon liittämättä mitään. Se näyttää vain sovelluksen omat kansiot, ei koko pääyksikköä.</string>
     <string name="port_field_label">Portti</string>
     <string name="port_hint_text">Kokeile 8081, 8888, 9090 jos portti on estetty. Muutokset käynnistävät palvelimen uudelleen.</string>
@@ -1048,6 +1041,34 @@
     <string name="status_enabled_label">Tila: Käytössä</string>
     <string name="status_disabled_label">Tila: Pois käytöstä</string>
     <string name="back_to_overview_action">Takaisin yleiskatsaukseen</string>
+    <!-- Settings overview cards (App, Preferences, Connections → Web Companion) -->
+    <string name="settings_overview_desc">Valitse avattava osio. Alla olevat kortit näyttävät nykyiset asetukset yhdellä silmäyksellä.</string>
+    <string name="web_companion_card_desc">Selaa matkoja, latauksia ja tiedostoja puhelimen tai kannettavan selaimessa.</string>
+    <string name="power_card_desc">Mikä jatkaa toimintaa auton sammuttamisen jälkeen, ja Wi-Fin pitäminen päällä.</string>
+    <string name="power_card_desc_d5">Mikä jatkaa toimintaa auton sammuttamisen jälkeen, ja ajoneuvon tietojen käyttö.</string>
+    <string name="backup_card_title">Varmuuskopio &amp; palautus</string>
+    <string name="backup_card_desc">Matkat, lataushistoria ja asetukset — paikallisesti, SD-kortille tai Telegramin kautta.</string>
+    <string name="compat_card_desc">Tallenna telemetriaraportti, joka auttaa lisäämään tuen mallillesi.</string>
+    <string name="diagnostics_card_desc">Lähetä diagnostiikkaloki ja seuraa suoritinta, muistia ja käyttöoikeuksia reaaliajassa.</string>
+    <string name="wifi_keepalive_on_status">Wi-Fin ylläpito päällä</string>
+    <string name="d5_vehicle_access_off_status">Ajoneuvon tietojen käyttö pois</string>
+    <string name="diagnostics_live_on_status">Reaaliaikaiset tiedot päällä</string>
+    <string name="diagnostics_live_off_status">Reaaliaikaiset tiedot pois</string>
+    <string name="pref_appearance_title">Ulkoasu</string>
+    <string name="pref_appearance_desc">Teema, kojelaudan asettelu sekä kojelaudan kuvakkeet ja animaatiot.</string>
+    <string name="pref_language_units_title">Kieli &amp; yksiköt</string>
+    <string name="pref_language_units_desc">Sovelluksen kieli sekä metriset tai brittiläiset yksiköt.</string>
+    <string name="pref_trip_recording_title">Matkojen tallennus</string>
+    <string name="pref_trip_recording_desc">Milloin matka päättyy auton sammuttamisen jälkeen, ja kuinka lyhyt matka saa olla.</string>
+    <string name="trip_recording_status">Automaattinen lopetus %1$d min kuluttua • vähintään %2$s</string>
+    <string name="trip_recording_status_no_min">Automaattinen lopetus %1$d min kuluttua • ei vähimmäispituutta</string>
+    <string name="pref_battery_title">Akku</string>
+    <string name="pref_battery_desc">Mikä varaustilan lukema näytetään, ja kennon epätasapainohälytys.</string>
+    <string name="battery_status_alert_on">SoC: %1$s • epätasapainohälytys päällä</string>
+    <string name="battery_status_alert_off">SoC: %1$s • epätasapainohälytys pois</string>
+    <string name="pref_costs_desc">Sähkötariffisi ja valuuttasi, joilla matkojen ja latausten hinta lasketaan.</string>
+    <string name="pref_goals_desc">Kulutus- ja matkatavoitteet sekä omat ennätyksesi.</string>
+    <string name="pro_cell_imbalance_info">Varoittaa, kun akun kennojännitteiden hajonta pysyy rajasi yläpuolella — varhainen merkki heikosta kennosta. Ota se käyttöön ja aseta raja kohdassa Asetukset → Akku, kun se on avattu.</string>
 
     <!-- ABRP settings -->
     <string name="abrp_link_desc">Link Generic -token lataa live-telemetriaa A Better Routeplanneriin.</string>
@@ -1137,8 +1158,6 @@
 
     <!-- FAQ -->
     <string name="faq_section_title">FAQ</string>
-    <string name="faq_q_no_electro">Toisin kuin vanhemmissa versioissa, onko totta etten enää tarvitse Electro-sovellusta?</string>
-    <string name="faq_a_no_electro">Kyllä. BYD Trip Stats toimii itsenäisenä sovelluksena tuetuilla ajoneuvoilla, joten matkojen tallennus ja latausistunnot toimivat ilman Electroa.\n\nElectro on edelleen hyödyllinen kumppanisovellus omistajille jotka haluavat sen omat ominaisuudet, mutta se ei ole enää pakollinen BYD Trip Statsin toiminnalle.</string>
     <string name="faq_q_internet">Tarvitsenko internetin tai mobiilisignaalin?</string>
     <string name="faq_a_internet">Ei normaalikäyttöön. Matkat, latausistunnot, kaaviot ja paikallinen historia tallennetaan kokonaan laitteelle.\n\nInternet tarvitaan vain valinnaisille ominaisuuksille kuten sovelluspäivitystarkistuksille, weblinkkien avaamiselle, MQTT / ABRP -integraatiolle ja Telegram-varmuuskopioille jos otat ne käyttöön.</string>
     <string name="faq_q_pro">Mikä on BYD Trip Stats Pro ja mitä se sisältää?</string>
@@ -1148,9 +1167,9 @@
     <string name="faq_q_offline_trip">Tarkoittaako verkkoyhteyden puuttuminen että matka puuttuu historiasta?</string>
     <string name="faq_a_offline_trip">Ei. Matkahistoria tallennetaan paikallisesti eikä riipu mobiilisignaalista tai WiFistä.\n\nMatka voi sulkeutua hieman myöhemmin vain jos live-telemetria itsessään lakkaa hetkeksi. Siinä tapauksessa watchdog sulkee aktiivisen matkan 3 minuutin telemetriakatkon jälkeen, ankkuroituna viimeiseen sovelluksen vastaanottamaan pakettiin.</string>
     <string name="faq_q_stops_restart">Sovellus lakkaa toimimasta auton uudelleenkäynnistyksen jälkeen</string>
-    <string name="faq_a_stops_restart">Sinun täytyy sulkea BYD Trip Stats pois autostart-estäjästä:\n\n1. Avaa Poista autostart käytöstä -sovellus (natiivi BYD-sovellus, yleensä tiedostonhallitsijan lähellä)\n2. Etsi BYD Trip Stats ja kytke sen merkintä POIS — samoin kuin teit Electrolle\n3. Avaa sovellus ja pidä äänenvoimakkuuspainiketta painettuna ~10 sekuntia käynnistääksesi auton käyttöliittymän uudelleen\n4. Avaa sovellus uudelleen\n\nTärkeää: sinun täytyy toistaa tämä vaihe jokaisen sovelluspäivityksen jälkeen, koska lupa nollautuu uudelleenasennuksen yhteydessä.</string>
+    <string name="faq_a_stops_restart">Sinun täytyy sulkea BYD Trip Stats pois autostart-estäjästä:\n\n1. Avaa Poista autostart käytöstä -sovellus (natiivi BYD-sovellus, yleensä tiedostonhallitsijan lähellä)\n2. Etsi BYD Trip Stats ja kytke sen merkintä POIS\n3. Avaa sovellus ja pidä äänenvoimakkuuspainiketta painettuna ~10 sekuntia käynnistääksesi auton käyttöliittymän uudelleen\n4. Avaa sovellus uudelleen\n\nTärkeää: sinun täytyy toistaa tämä vaihe jokaisen sovelluspäivityksen jälkeen, koska lupa nollautuu uudelleenasennuksen yhteydessä.</string>
     <string name="faq_q_backup">Kuinka varmuuskopioin matkatietoni?</string>
-    <string name="faq_a_backup">Useita menetelmiä on saatavilla — kaikki tuottavat saman vakio-SQLite-tiedoston:\n\nPaikallinen (yksinkertaisin): Asetukset → Data → Avaa varmuuskopio &amp; palautus → Tee varmuuskopio nyt.\n\nSD-kortti (Pro): Varmuuskopio &amp; palautus → Varmuuskopio SD-kortille. Selviää sovelluksen asennuksen poistamisesta.\n\nTelegram (suositeltu): Yhdistä botti kohdassa Varmuuskopio &amp; palautus → Telegram-varmuuskopio, sitten lähetä manuaalisesti tai aikataulun mukaan.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
+    <string name="faq_a_backup">Useita menetelmiä on saatavilla — kaikki tuottavat saman vakio-SQLite-tiedoston:\n\nPaikallinen (yksinkertaisin): Asetukset → Sovellus → Varmuuskopio &amp; palautus → Tee varmuuskopio nyt.\n\nSD-kortti (Pro): Varmuuskopio &amp; palautus → Varmuuskopio SD-kortille. Selviää sovelluksen asennuksen poistamisesta.\n\nTelegram (suositeltu): Yhdistä botti kohdassa Asetukset → Yhteydet → Telegram, sitten lähetä manuaalisesti tai aikataulun mukaan.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
     <string name="faq_q_recover">Asensin sovelluksen uudelleen — voinko palauttaa varmuuskopioni?</string>
     <string name="faq_a_recover">Kyllä. Telegram: yhdistä bottitokenisi uudelleen, sitten Palauta Telegramista → päivityskuvake löytää kaikki varmuuskopiot automaattisesti uudelleen.\n\nPaikallinen: .db-tiedostot kansiossa Lataukset/BydTripStats/ selviävät uudelleenasennuksesta. Avaa Varmuuskopio &amp; palautus, napauta päivityskuvaketta Paikallinen palautus -kohdassa ja ne ilmestyvät uudelleen.</string>
     <string name="faq_q_auto_backup">Kuinka Telegram-automaattivarmuuskopio toimii?</string>
@@ -1169,8 +1188,6 @@
     <!-- App Management screen -->
     <string name="app_mgmt_backup_local_label">Paikallinen</string>
     <string name="app_mgmt_telegram_label">Telegram</string>
-    <string name="app_mgmt_private_bot_desc">Yksityinen bottichatti</string>
-    <string name="app_mgmt_manual_scheduled">Manuaalinen &amp; aikataulutettu</string>
     <string name="app_mgmt_no_local_backup">Paikallista varmuuskopiota ei löydy</string>
 
     <!-- Telemetry debug -->
@@ -1192,7 +1209,6 @@
     <string name="diagnostic_enabled_desc">Live-prosessi, muisti, kehykset, luvat ja ADB-työ-kalut ovat näkyvissä.</string>
     <string name="diagnostic_disabled_desc">Oletuksena pois päältä jottei tämä näyttö jatka kyselyä kun vain tarkistat varmuuskopioita.</string>
     <string name="send_diag_log_action">Lähetä diagnostiikkaloki Telegramiin</string>
-    <string name="diag_log_info_desc">Lähettää koko diagnostiikkalog-i suoraan yhdistetylle Telegram-botillesi — mitään ei tallenneta tai jaeta paikallisesti. Yhdistä ensin botti kohdassa Varmuuskopio &amp; palautus → Telegram-varmuuskopio.</string>
     <string name="enable_troubleshooting_hint">Ota käyttöön vain vian-etsinnän aikana; historiakaaviot näytteistavat 2 sekunnin välein näkyvissä ollessaan.</string>
     <string name="background_readiness_label">Taustavalmius</string>
     <string name="write_settings_perm_label">Kirjoita asetukset</string>

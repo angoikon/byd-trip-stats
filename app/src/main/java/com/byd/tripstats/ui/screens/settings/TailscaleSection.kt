@@ -192,22 +192,16 @@ internal fun TailscaleSection(context: Context, scope: CoroutineScope) {
             }
 
             if (status.state == TailscaleManager.State.RUNNING) {
-                TextButton(
+                DisconnectButton(
+                    text = stringResource(R.string.tailscale_disconnect),
+                    enabled = !busy,
                     onClick = {
                         busy = true
                         scope.launch {
                             try { TailscaleManager.disconnect(context) } finally { busy = false }
                         }
                     },
-                    enabled = !busy,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        stringResource(R.string.tailscale_disconnect),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
+                )
             } else if (status.state != TailscaleManager.State.NEEDS_ADB &&
                 status.state != TailscaleManager.State.AWAITING_LOGIN
             ) {

@@ -254,6 +254,9 @@ img { max-width: 100%; display: block; }
 .card__icon[data-i="map"]     { --ic: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="m15 4-6-2-6 2v16l6-2 6 2 6-2V2l-6 2Zm0 14-6-2V6l6 2v10Z"/></svg>'); }
 .card__icon[data-i="export"]  { --ic: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M12 2 7 7h3v8h4V7h3l-5-5ZM5 19v-6H3v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6h-2v6H5Z"/></svg>'); }
 .card__icon[data-i="link"]    { --ic: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M10.6 13.4a3 3 0 0 0 4.2 0l3-3a3 3 0 0 0-4.2-4.2l-1.3 1.3 1.4 1.4 1.3-1.3a1 1 0 0 1 1.4 1.4l-3 3a1 1 0 0 1-1.4 0l-1.4 1.4Zm2.8-2.8a3 3 0 0 0-4.2 0l-3 3a3 3 0 0 0 4.2 4.2l1.3-1.3-1.4-1.4-1.3 1.3a1 1 0 0 1-1.4-1.4l3-3a1 1 0 0 1 1.4 0l1.4-1.4Z"/></svg>'); }
+.card__icon[data-i="globe"]   { --ic: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1 17.9A8 8 0 0 1 4 12c0-.6.1-1.2.2-1.8L9 15v1a2 2 0 0 0 2 2v1.9Zm6.9-2.5A2 2 0 0 0 16 16h-1v-3a1 1 0 0 0-1-1H8v-2h2a1 1 0 0 0 1-1V7h2a2 2 0 0 0 2-2v-.4a8 8 0 0 1 2.9 12.8Z"/></svg>'); }
+.card__icon[data-i="bell"]    { --ic: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2Zm6-6v-5c0-3.1-1.6-5.6-4.5-6.3V4a1.5 1.5 0 0 0-3 0v.7C7.6 5.4 6 7.9 6 11v5l-2 2v1h16v-1l-2-2Z"/></svg>'); }
+.card__icon[data-i="backup"]  { --ic: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M19.4 10A7.5 7.5 0 0 0 5.4 8 6 6 0 0 0 6 20h13a5 5 0 0 0 .4-10ZM14 13v4h-4v-4H7l5-5 5 5h-3Z"/></svg>'); }
 
 /* ───────────────────────── Split spotlight ───────────────────────── */
 .split { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
@@ -289,7 +292,7 @@ img { max-width: 100%; display: block; }
   -webkit-column-break-inside: avoid;
 }
 .gallery__note { text-align: center; margin-top: 22px; color: var(--text-mute); font-size: .9rem; }
-.gallery__note code, .lede code {
+.gallery__note code, .lede code, .faq code {
   background: var(--surface); border: 1px solid var(--outline);
   padding: 2px 7px; border-radius: 6px; font-size: .85em;
 }

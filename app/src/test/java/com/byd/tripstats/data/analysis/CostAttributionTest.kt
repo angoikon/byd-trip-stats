@@ -262,4 +262,38 @@ class CostAttributionTest {
         assertNull(d[2])              // active session not keyed
         assertEquals(1, d.size)
     }
+
+    // ── lastChargeOdometer (dashboard "since last charge") ────────────────────
+
+    @Test fun lastChargeOdometerIsTheMostRecentChargesAnchor() {
+        val sessions = listOf(
+            charge(2, start = 200, startOdo = 1150.0),
+            charge(1, start = 100, startOdo = 1000.0),
+        )
+        assertEquals(1150.0, CostAttribution.lastChargeOdometer(sessions, emptyList())!!, 1e-9)
+    }
+
+    @Test fun lastChargeOdometerCountsAChargeInProgress() {
+        val sessions = listOf(
+            charge(1, start = 100, startOdo = 1000.0),
+            charge(2, start = 200, startOdo = 1100.0, active = true),
+        )
+        assertEquals(1100.0, CostAttribution.lastChargeOdometer(sessions, emptyList())!!, 1e-9)
+    }
+
+    @Test fun lastChargeOdometerFallsBackToTripForLegacyAndZeroAnchors() {
+        val trips = listOf(
+            trip(50, start = 150, endOdo = 1200.0, endTime = 250),
+            trip(51, start = 400, endOdo = 1300.0, endTime = 450), // after the charge — ignored
+        )
+        val legacy = listOf(charge(1, start = 300, startOdo = null))
+        assertEquals(1200.0, CostAttribution.lastChargeOdometer(legacy, trips)!!, 1e-9)
+        // 0 is the car's "no reading yet" on waking, not an odometer.
+        val zero = listOf(charge(1, start = 300, startOdo = 0.0))
+        assertEquals(1200.0, CostAttribution.lastChargeOdometer(zero, trips)!!, 1e-9)
+    }
+
+    @Test fun lastChargeOdometerIsNullWithoutACharge() {
+        assertNull(CostAttribution.lastChargeOdometer(emptyList(), emptyList()))
+    }
 }

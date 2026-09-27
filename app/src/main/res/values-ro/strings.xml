@@ -44,9 +44,9 @@
     <string name="settings_tab_pro">Pro</string>
     <string name="settings_tab_about">Despre și FAQ</string>
     <string name="pro_cards_layout_title">Aspect de bord cu carduri</string>
-    <string name="pro_cards_layout_info">Un bord mai mare, complet personalizabil: plăci mari, bine distanțate în locul graficului central. Atingeți creionul pentru a reordona plăcile prin glisare, a afișa sau ascunde cele dorite, și atingeți placa Autonomie pentru a deschide graficul de proiecție la dimensiune completă. Alegeți-l din Preferințe → Aspectul bordului după deblocare.</string>
+    <string name="pro_cards_layout_info">Un bord mai mare, complet personalizabil: plăci mari, bine distanțate în locul graficului central. Atingeți creionul pentru a reordona plăcile prin glisare, a afișa sau ascunde cele dorite, și atingeți placa Autonomie pentru a deschide graficul de proiecție la dimensiune completă. Alegeți-l din Preferințe → Afișare → Aspectul bordului după deblocare.</string>
     <string name="pro_neon_theme_title">Temă Neon</string>
-    <string name="pro_neon_theme_info">O temă întunecată negru pur, prietenoasă cu OLED, ale cărei cifre ale indicatorilor de putere și dungi de accent strălucesc ca neonul, cu o margine de accent subtilă pe fiecare card. Alegeți-o din Preferințe → Temă după deblocare.</string>
+    <string name="pro_neon_theme_info">O temă întunecată negru pur, prietenoasă cu OLED, ale cărei cifre ale indicatorilor de putere și dungi de accent strălucesc ca neonul, cu o margine de accent subtilă pe fiecare card. Alegeți-o din Preferințe → Afișare → Temă după deblocare.</string>
 
     <!-- Detail tabs -->
     <string name="tab_overview">Prezentare</string>
@@ -490,7 +490,6 @@
     <string name="trim_skip_vacuum_msg">Comprimare finalizată. (VACUUM a fost omis; reporniți aplicația mai târziu pentru a recupera spațiul.)</string>
     <string name="trim_failed_msg">Comprimarea a eșuat: %1$s</string>
     <string name="last_backup_label">Ultimul backup: %1$s</string>
-    <string name="open_backup_restore_action">Deschide Backup și restaurare</string>
     <string name="reset_all_data_label">Resetează toate datele călătoriilor</string>
     <string name="reset_confirm_title">Resetați toate datele călătoriilor?</string>
     <string name="reset_confirm_msg">Aceasta va șterge definitiv toate călătoriile și statisticile.\n\nUn backup va fi salvat automat în Download înainte de resetare. Aplicația se va închide și se va redeschide.</string>
@@ -817,7 +816,7 @@
     <string name="schedule_monthly">Lunar</string>
     <string name="danger_zone_title">ZONĂ PERICULOASĂ</string>
     <string name="danger_zone_desc">Șterge definitiv toate călătoriile, punctele de date și statisticile. Un backup local se creează automat înainte de resetare.</string>
-    <string name="send_diag_log_desc">Trimite jurnalul complet de diagnostic (evenimente de blocare a vitezei și \'reîmprospătare telemetrie blocată\') direct botului Telegram conectat — nimic nu se salvează sau partajează local. Conectați mai întâi un bot în Backup și restaurare → Backup Telegram.</string>
+    <string name="send_diag_log_desc">Trei moduri de a partaja jurnalul de diagnostic, împreună cu jurnalul propriu al asistentului de fundal, când există. Telegram îl trimite complet botului dvs. (configurați unul din Setări → Conexiuni → Telegram). Salvează îl copiază în Download/BydTripStats/ pe mașină. Email prin cod QR încarcă partea cea mai recentă și afișează un cod pe care îl scanați cu telefonul pentru a trimite prin email un link către el; linkul expiră după 24 de ore.</string>
     <string name="compat_privacy_notice_body">Raportul capturează valori brute din fiecare sursă de date a unității principale a mașinii — valori numerice, șiruri și vectori.\n\nLatitudinea și longitudinea GPS NU sunt incluse.\n\nTot restul este inclus: starea bateriei, datele motorului, treapta, viteza, modurile de condus, starea climatizării, starea încărcării, valori specifice PHEV etc.\n\nNimic nu se trimite automat. \"Email prin cod QR\" încarcă raportul pe o gazdă publică temporară (litterbox) și afișează un link care se șterge singur după 24 ore; până atunci oricine are linkul îl poate citi. Celelalte opțiuni păstrează raportul pe dispozitiv.</string>
     <string name="compat_sending_label">Se trimite…</string>
     <string name="compat_email_qr_label">Email prin cod QR</string>
@@ -887,7 +886,6 @@
     <string name="select_car_label">Selectează mașina</string>
 
     <!-- Settings — General section -->
-    <string name="section_general">General</string>
     <string name="pref_theme">Temă</string>
     <string name="theme_desc">Alegeți aspectul aplicației. Implicit sistem urmează setarea întunecat/luminos a dispozitivului.</string>
     <string name="theme_system">Sistem</string>
@@ -910,7 +908,6 @@
     <string name="dashboard_icons_desc">Când e activat, cardul proiecției de autonomie arată o pictogramă de baterie cu umplere lichidă, un desen AWD/punți cu suprapuneri de presiune/temperatură anvelope și o miniatură animată de consum deasupra graficului. Când e dezactivat, acestea se mută în bara de sus (pictogramele de baterie și consum) și într-un card dedicat de statistici Anvelope pe panoul lateral — eliberând spațiu vertical pentru graficul de autonomie și omițând toate animațiile.</string>
 
     <!-- Settings — Trips section -->
-    <string name="section_trips">Călătorii</string>
     <string name="pref_engine_off_timeout">Timp de așteptare după oprirea motorului</string>
     <string name="engine_off_timeout_desc">Cât rămâne deschisă călătoria după oprirea mașinii. Dacă mașina repornește în această fereastră, înregistrarea se reia fără întrerupere (aceeași călătorie, apare un segment nou împreună cu distanța cumulată în paranteză). După fereastră, călătoria se încheie și următorul drum începe una nouă. Implicit 3 minute.</string>
     <string name="current_timeout_value">Curent: %1$s min</string>
@@ -927,12 +924,8 @@
     <string name="pref_goals_label">Obiective și recorduri personale</string>
     <string name="goal_consumption_value">Obiectiv de consum: %1$s</string>
     <string name="goal_monthly_distance_value">Obiectiv lunar de distanță: %1$s</string>
-    <string name="best_consumption_value">Cel mai bun consum: %1$s</string>
-    <string name="best_distance_value">Cea mai bună distanță: %1$s</string>
-    <string name="open_goals_action">Deschide obiective și recorduri personale</string>
 
     <!-- Settings — Battery section -->
-    <string name="section_battery">Baterie și telemetrie</string>
     <string name="pref_soc_source">Sursă SoC</string>
     <string name="soc_source_desc">Alegeți ce citire a procentului bateriei se afișează pe bord.</string>
     <string name="soc_panel_option">Panou</string>
@@ -1019,7 +1012,7 @@
     <string name="web_companion_label">Web Companion</string>
     <string name="web_companion_desc">Răsfoiți călătoriile și încărcările de pe orice dispozitiv din aceeași rețea WiFi.</string>
     <string name="web_companion_disabled_desc">Porniți un server local ca să deschideți istoricul călătoriilor într-un browser.</string>
-    <string name="web_companion_wifi_info">Servit prin WiFi-ul local, deci accesibil cât timp mașina e pornită și serviciul de telemetrie e activ. Odată parcat, majoritatea unităților BYD taie WiFi ~15 min după oprirea mașinii — apoi companion-ul e inaccesibil (nu există rezervă pe date mobile pentru un server local) până când mașina repornește, în orice mod de activitate în fundal.\nNotă: aplicația Electro are o opțiune de a menține WiFi activ nelimitat</string>
+    <string name="web_companion_wifi_info">Servit prin WiFi-ul local, deci accesibil cât timp mașina e pornită și serviciul de telemetrie e activ. Odată parcat, majoritatea unităților BYD taie WiFi ~15 min după oprirea mașinii — apoi companion-ul e inaccesibil (nu există rezervă pe date mobile pentru un server local) până când mașina repornește, în orice mod de activitate în fundal.</string>
     <string name="web_companion_files_info">Companion are și o filă Fișiere: descarcă copiile bazei de date, exporturile și jurnalul de diagnosticare direct pe telefon sau laptop și încarcă o copie de rezervă pe mașină fără să conectezi nimic. Afișează doar folderele proprii ale aplicației, nu întreaga unitate.</string>
     <string name="port_field_label">Port</string>
     <string name="port_hint_text">Încercați 8081, 8888, 9090 dacă un port e blocat. Modificările repornesc serverul.</string>
@@ -1045,6 +1038,34 @@
     <string name="status_enabled_label">Stare: Activat</string>
     <string name="status_disabled_label">Stare: Dezactivat</string>
     <string name="back_to_overview_action">Înapoi la prezentare</string>
+    <!-- Settings overview cards (App, Preferences, Connections → Web Companion) -->
+    <string name="settings_overview_desc">Alegeți o secțiune de deschis. Cardurile de mai jos arată setările curente dintr-o privire.</string>
+    <string name="web_companion_card_desc">Răsfoiți călătoriile, încărcările și fișierele în browserul telefonului sau laptopului.</string>
+    <string name="power_card_desc">Ce rămâne pornit după oprirea mașinii și menținerea Wi-Fi activ.</string>
+    <string name="power_card_desc_d5">Ce rămâne pornit după oprirea mașinii și accesul la datele vehiculului.</string>
+    <string name="backup_card_title">Backup și restaurare</string>
+    <string name="backup_card_desc">Călătorii, istoric de încărcare și setări — local, pe card SD sau prin Telegram.</string>
+    <string name="compat_card_desc">Înregistrați un raport de telemetrie care ajută la adăugarea suportului pentru modelul dvs.</string>
+    <string name="diagnostics_card_desc">Trimiteți jurnalul de diagnostic și urmăriți live CPU, memoria și permisiunile.</string>
+    <string name="wifi_keepalive_on_status">Menținere Wi-Fi activă</string>
+    <string name="d5_vehicle_access_off_status">Acces la datele vehiculului dezactivat</string>
+    <string name="diagnostics_live_on_status">Detalii live activate</string>
+    <string name="diagnostics_live_off_status">Detalii live dezactivate</string>
+    <string name="pref_appearance_title">Afișare</string>
+    <string name="pref_appearance_desc">Temă, aspectul bordului, și pictogramele &amp; animațiile bordului.</string>
+    <string name="pref_language_units_title">Limbă și unități</string>
+    <string name="pref_language_units_desc">Limba aplicației și unitățile metrice sau imperiale.</string>
+    <string name="pref_trip_recording_title">Înregistrarea călătoriilor</string>
+    <string name="pref_trip_recording_desc">Când se încheie o călătorie după oprirea mașinii și cât de scurtă poate fi o călătorie.</string>
+    <string name="trip_recording_status">Oprire automată după %1$d min • minim %2$s</string>
+    <string name="trip_recording_status_no_min">Oprire automată după %1$d min • fără minim</string>
+    <string name="pref_battery_title">Baterie</string>
+    <string name="pref_battery_desc">Ce citire a stării de încărcare se afișează și alerta de dezechilibru al celulelor.</string>
+    <string name="battery_status_alert_on">SoC: %1$s • alertă de dezechilibru activă</string>
+    <string name="battery_status_alert_off">SoC: %1$s • alertă de dezechilibru dezactivată</string>
+    <string name="pref_costs_desc">Tariful dvs. de energie și moneda, folosite pentru a calcula costul călătoriilor și încărcărilor.</string>
+    <string name="pref_goals_desc">Obiective de consum și distanță, și recordurile dvs. personale.</string>
+    <string name="pro_cell_imbalance_info">Vă avertizează când diferența de tensiune dintre celulele bateriei rămâne peste limita dvs. — un semn timpuriu al unei celule slabe. Activați-o și setați limita din Preferințe → Baterie după deblocare.</string>
 
     <!-- ABRP settings -->
     <string name="abrp_link_desc">Tokenul Link Generic încarcă telemetrie live în A Better Routeplanner.</string>
@@ -1133,8 +1154,6 @@
 
     <!-- FAQ -->
     <string name="faq_section_title">FAQ</string>
-    <string name="faq_q_no_electro">Spre deosebire de versiunile vechi, e adevărat că nu mai am nevoie de aplicația Electro?</string>
-    <string name="faq_a_no_electro">Corect. BYD Trip Stats funcționează ca aplicație de sine stătătoare pe vehiculele acceptate, deci înregistrarea călătoriilor și sesiunile de încărcare funcționează fără Electro.\n\nElectro rămâne o aplicație însoțitoare utilă pentru proprietarii care vor funcțiile ei proprii, dar nu mai e necesară pentru funcționarea BYD Trip Stats.</string>
     <string name="faq_q_internet">Am nevoie de internet sau semnal mobil?</string>
     <string name="faq_a_internet">Nu pentru utilizarea normală. Călătoriile, sesiunile de încărcare, graficele și istoricul local se înregistrează integral pe dispozitiv.\n\nInternetul e necesar doar pentru funcții opționale precum verificarea actualizărilor, deschiderea linkurilor web, integrarea MQTT / ABRP și backupurile Telegram, dacă le activați.</string>
     <string name="faq_q_pro">Ce este BYD Trip Stats Pro și ce include?</string>
@@ -1144,9 +1163,9 @@
     <string name="faq_q_offline_trip">Lipsa conectivității înseamnă că o călătorie va lipsi din istoric?</string>
     <string name="faq_a_offline_trip">Nu. Istoricul călătoriilor se stochează local și nu depinde de semnal mobil sau Wi-Fi.\n\nO călătorie se poate închide puțin mai târziu doar dacă telemetria live în sine se oprește o vreme. În acest caz, watchdog-ul închide călătoria activă după 3 minute de tăcere a telemetriei, raportat la ultimul pachet primit de aplicație.</string>
     <string name="faq_q_stops_restart">Aplicația nu mai funcționează după repornirea mașinii</string>
-    <string name="faq_a_stops_restart">Trebuie să excludeți BYD Trip Stats din blocatorul de autostart:\n\n1. Deschideți aplicația Disable Autostart (aplicație nativă BYD, de obicei lângă exploratorul de fișiere)\n2. Găsiți BYD Trip Stats și comutați intrarea ei pe OPRIT — la fel cum ați făcut pentru Electro\n3. Deschideți aplicația și țineți apăsat butonul de volum ~10 secunde pentru a reporni interfața mașinii\n4. Redeschideți aplicația\n\nImportant: trebuie să repetați acest pas după fiecare actualizare a aplicației, deoarece permisiunea se resetează la reinstalare.</string>
+    <string name="faq_a_stops_restart">Trebuie să excludeți BYD Trip Stats din blocatorul de autostart:\n\n1. Deschideți aplicația Disable Autostart (aplicație nativă BYD, de obicei lângă exploratorul de fișiere)\n2. Găsiți BYD Trip Stats și comutați intrarea ei pe OPRIT\n3. Deschideți aplicația și țineți apăsat butonul de volum ~10 secunde pentru a reporni interfața mașinii\n4. Redeschideți aplicația\n\nImportant: trebuie să repetați acest pas după fiecare actualizare a aplicației, deoarece permisiunea se resetează la reinstalare.</string>
     <string name="faq_q_backup">Cum îmi fac backup la datele călătoriilor?</string>
-    <string name="faq_a_backup">Sunt disponibile mai multe metode — toate produc același fișier SQLite standard:\n\nLocal (cel mai simplu): Setări → Date → Deschide Backup și restaurare → Backup acum.\n\nCard SD (Pro): Backup și restaurare → Backup pe card SD. Supraviețuiește dezinstalării aplicației.\n\nTelegram (recomandat): Conectați un bot prin Backup și restaurare → Backup Telegram, apoi trimiteți manual sau programat.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/NUMEFISIER.db &gt; local.db</string>
+    <string name="faq_a_backup">Sunt disponibile mai multe metode — toate produc același fișier SQLite standard:\n\nLocal (cel mai simplu): Setări → Aplicație → Backup și restaurare → Backup acum.\n\nCard SD (Pro): Backup și restaurare → Backup pe card SD. Supraviețuiește dezinstalării aplicației.\n\nTelegram (recomandat): Conectați un bot din Setări → Conexiuni → Telegram, apoi trimiteți manual sau programat.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/NUMEFISIER.db &gt; local.db</string>
     <string name="faq_q_recover">Am reinstalat aplicația — pot recupera backupurile?</string>
     <string name="faq_a_recover">Da. Telegram: reconectați tokenul botului, apoi Restaurează de pe Telegram → pictograma de reîmprospătare redescoperă automat toate backupurile.\n\nLocal: fișierele .db din Download/BydTripStats/ supraviețuiesc reinstalării. Deschideți Backup și restaurare, atingeți pictograma de reîmprospătare din Restaurare locală și reapar.</string>
     <string name="faq_q_auto_backup">Cum funcționează backupul automat Telegram?</string>
@@ -1165,8 +1184,6 @@
     <!-- App Management screen -->
     <string name="app_mgmt_backup_local_label">Local</string>
     <string name="app_mgmt_telegram_label">Telegram</string>
-    <string name="app_mgmt_private_bot_desc">Chat privat cu botul</string>
-    <string name="app_mgmt_manual_scheduled">Manual și programat</string>
     <string name="app_mgmt_no_local_backup">Niciun backup local găsit</string>
 
     <!-- Telemetry debug -->
@@ -1188,7 +1205,6 @@
     <string name="diagnostic_enabled_desc">Instrumentele live de proces, memorie, cadre, permisiuni și ADB sunt vizibile.</string>
     <string name="diagnostic_disabled_desc">Oprit implicit pentru ca acest ecran să nu interogheze continuu când doar verificați backupurile.</string>
     <string name="send_diag_log_action">Trimite jurnalul de diagnostic pe Telegram</string>
-    <string name="diag_log_info_desc">Trimite jurnalul complet de diagnostic direct botului Telegram conectat — nimic nu se salvează sau partajează local. Conectați mai întâi un bot în Backup și restaurare → Backup Telegram.</string>
     <string name="enable_troubleshooting_hint">Activați doar la depanare; graficele de istoric eșantionează la fiecare 2 secunde cât sunt vizibile.</string>
     <string name="background_readiness_label">Pregătire fundal</string>
     <string name="write_settings_perm_label">Scriere setări</string>

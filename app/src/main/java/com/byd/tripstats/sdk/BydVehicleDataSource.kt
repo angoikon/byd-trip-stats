@@ -1581,7 +1581,7 @@ class BydVehicleDataSource(context: Context) {
         // Bodywork is the only device exposing getBatteryCapacity(), which is how other apps
         // derive SoH on PHEV/DM-i (where the statistic "soh" feature is bogus). On these
         // firmwares the reflective s10 class name doesn't resolve, so also try the canonical
-        // SDK class directly (Electro registers it this way). BEV-safe: purely additive — BEV
+        // SDK class directly (other apps register it this way). BEV-safe: purely additive — BEV
         // SoH still comes from the statistic feature, this only adds a capacity source.
         tryDynamicDeviceCandidates(
             label = "Bodywork",
@@ -2653,7 +2653,7 @@ class BydVehicleDataSource(context: Context) {
      * DiLink-3 only, diagnostic. Some DiLink-3 cars never report the power state (`carOn=-` on the
      * dev car), so this bodywork power level is now their carOn (carOnFromBodyworkPowerLevel; SDK
      * §6.1.9 `int getPowerLevel()`: 0x0 OFF / 0x1 ACC / 0x2 ON, listener adds 3 = OK/READY — the
-     * signal Overdrive and Electro use). This line keeps both sources on record, so a car where they
+     * signal other apps use). This line keeps both sources on record, so a car where they
      * disagree, or where the value never moves, can be told apart from a log alone. Runs every 5 s,
      * so it writes only when a value changes.
      */
@@ -5130,11 +5130,11 @@ class BydVehicleDataSource(context: Context) {
                 Log.d(TAG, "🚗 bodyworkPowerLevel=$level")
                 // Capture the off→on power-level transitions to diag.log so the
                 // value→state mapping can be learned (this bodywork power level is the
-                // car-on signal Electro uses; the power-device MCU status is silent on
+                // car-on signal other apps use; the power-device MCU status is silent on
                 // these firmwares). Once mapped, derive carOn from it for instant on/off.
                 // DORMANT (see CLAUDE.md): BodyworkDevice doesn't register in-process on this
                 // firmware, so onPowerLevelChanged never fires here (car-on via power level was
-                // Electro's/Kinex's approach via a different API). Harmless capture; keep it.
+                // other apps' approach via a different API). Harmless capture; keep it.
                 if (level != prevLevel) {
                     DiagLog.event(appContext, TAG, "🚗 bodyworkPowerLevel: $prevLevel → $level")
                 }

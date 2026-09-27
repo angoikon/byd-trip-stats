@@ -8,7 +8,7 @@ A plain-language guide for using the app in its current **Phase 2** form, where 
 
 You need:
 
-1. **A BYD vehicle with DiLink 3.0** (tested on Seal; should work on Atto 3, Dolphin, Seal U)
+1. **A BYD vehicle with DiLink 3.0** (tested on Seal; should work on Atto 3, Dolphin, Seal U), or **DiLink 5.0** (Sealion 7), which uses its own build
 2. **BYD Trip Stats installed on the DiLink unit**
 
 You do **not** need Electro or an MQTT topic for normal operation.
@@ -17,10 +17,15 @@ You do **not** need Electro or an MQTT topic for normal operation.
 
 ## Installation
 
-1. Download the latest `.apk` from the [Releases page](https://github.com/angoikon/byd-trip-stats/releases)
+1. Download the latest `.apk` from the [Releases page](https://github.com/angoikon/byd-trip-stats/releases) — on a DiLink 5 car, the `dilink5` one
 2. On the DiLink unit, enable installation from unknown sources when prompted
 3. Grant the requested permissions
 4. Open **BYD Trip Stats**
+5. When it asks for the **one-time ADB authorisation**, tap **Authorize**, then **Allow** when the car asks to allow USB debugging
+
+The ADB authorisation lets the app keep running in the background and restart itself after the car stops it, and on DiLink 3 it streams live speed and power up to 10 times a second. The Wi-Fi keepalive, Tailscale remote access and (on DiLink 5) in-app updates also run through it.
+
+Later versions can be installed from inside the app: **Settings → About & FAQ** shows when one is available, with **Download update** and **Install now**. A database backup is taken before every install.
 
 ---
 
@@ -51,7 +56,7 @@ The dashboard is the live vehicle screen.
 
 ### Energy Flow Area
 
-With **Dashboard icons & animations** enabled (Settings → Preferences — the default):
+With **Dashboard icons & animations** enabled (Settings → Preferences → Appearance — the default):
 
 - **Battery icon** — live SoC, animated while charging
 - **Drivetrain graphic** — tyre pressure overview
@@ -67,7 +72,7 @@ The main chart compares:
 - **Dashed line** — the car's own BMS estimate
 - **Solid line** — BYD Trip Stats projection from your actual driving
 
-Before you move off, the chart shows a **SCANNING…** placeholder. Once you start driving, the projection leaves the catalog baseline within the first few hundred metres and keeps refining as the trip continues. A small badge shows which model tier is currently driving the projection — **Live trip**, **Speed bins**, or **Baseline**.
+Before you move off, the chart shows a **SCANNING…** placeholder. Once you start driving, the projection leaves the catalog baseline within the first few hundred metres and keeps refining as the trip continues. A small badge shows which model tier is currently driving the projection — **Live trip**, **Trip average**, **Lifetime avg** or **Baseline**.
 
 ### Right-side Stat Cards
 
@@ -88,9 +93,15 @@ Notes:
 
 - **Power** — live motor output or regen
 - **Speed**
-- **Battery (SoC)**
-- **Range (BMS)**
-- **Distance** — current engine-on segment distance; when a trip survives a brief stop the cumulative trip distance is shown alongside it
+- **Battery (SoC)** — tap to switch between the state of charge and the energy left in kWh
+- **Range** — the projected range (the car's own estimate until a projection exists)
+- **Distance** — current engine-on segment distance; when a trip survives a brief stop the cumulative trip distance is shown alongside it. Tap to switch to the distance driven since your last charge
+
+On DiLink 3, speed, gear, power and front-motor RPM update up to 10 times a second once the one-time ADB authorisation is done.
+
+### Cards layout (Pro)
+
+**Settings → Preferences → Appearance → Dashboard Layout** switches to **Cards**: big tiles instead of the central chart. Tap the pencil to drag tiles into a new order or hide the ones you don't need, and tap the Range tile for the projection chart full-size.
 
 ---
 
@@ -101,10 +112,10 @@ Notes:
 Recommended mode.
 
 When **Auto** is enabled:
-- gear changes to **D** or **R** → trip starts
-- gear returns to **P** → trip ends
+- you drive off (car on, in **D** or **R**, moving) → trip starts
+- you switch the car off → trip ends once the **Engine-off trip timeout** has passed (Settings → Preferences → Trip recording — default 3 minutes)
 
-Short engine-off breaks continue the same trip rather than ending it, as long as you return within the **Engine-off trip timeout** (Settings → Preferences — default 30 minutes). The current engine-on segment distance and the cumulative trip distance are then shown side by side in the dashboard's Distance metric.
+Stops with the car still on — lights, queues, waiting in **P** — are part of the trip. Short engine-off breaks continue the same trip too, as long as you return within the timeout. If you'd rather be asked, turn on **Ask before auto-stopping** on the same page. The current engine-on segment distance and the cumulative trip distance are then shown side by side in the dashboard's Distance metric.
 
 ### Manual recording
 
@@ -196,16 +207,17 @@ Charging sessions are recorded separately from trips and cover two scenarios:
 
 ### Charging Detail
 
-Four tabs:
-- **Overview** — summary: kWh added, SoC start/end, peak/avg kW, duration
+Five tabs:
+- **Overview** — summary: kWh added, SoC start/end, peak/avg kW, duration, cost, and the distance driven since the previous charge
 - **Power + SoC** — dual-axis chart; switch between Time and SoC x-axis (SoC mode is useful for DC taper analysis)
 - **Voltage** — HV bus voltage over time
+- **Cells** — each cell's high and low voltage, and the spread between them
 - **Temperature** — battery temperature rise during the session
 
 ### Charging Costs
 
 Trip details can account for:
-- **Fixed home tariff** — set once in Settings → Preferences → Electricity tariff
+- **Fixed home tariff** — set once in Settings → Preferences → Costs → Electricity tariff
 - **Custom DC charging cost override** — enter the real amount paid for a public charging stop on any individual trip
 
 ---
@@ -238,7 +250,7 @@ Groups all trips by meteorological season (Spring / Summer / Autumn / Winter) an
 
 ### Trip Goals & Personal Bests
 
-Accessible from the 🏆 icon in the Trip History toolbar.
+Accessible from **Settings → Preferences → Goals & personal bests**.
 
 - **Personal bests** — lowest efficiency, longest trip, longest consecutive daily driving streak
 - **Goals** — set a consumption target and/or a monthly distance goal; animated progress bars update in real time
@@ -247,44 +259,57 @@ Accessible from the 🏆 icon in the Trip History toolbar.
 
 ## Settings
 
-Open from the gear icon. Three top-level tabs:
+Open from the gear icon. Five tabs. **App**, **Connections** and **Preferences** each open on an
+overview of cards that show the current state at a glance — tap a card for that topic on its own
+page, and use the back arrow (or the car's back gesture) to return.
 
-### Data
+### App
 
-- Backup and restore (local filesystem or Telegram bot)
-- Update tools
-- Reset tools
-- Vehicle snapshot / telemetry diagnostics
-
-### Preferences
-
-- Electricity tariff (price/kWh + currency symbol)
-- Goals & Personal Bests
-- Units and app behaviour preferences
-- Engine-off trip timeout — how long a trip stays open across an engine-off break before it closes (default 30 minutes)
-- Minimum trip distance — trips shorter than this are discarded automatically when they end (set to 0 to keep every trip)
-- Dashboard icons & animations — switches between the animated icon layout and the compact top-bar layout; off also lowers CPU usage on older firmware
+| Card | What's inside |
+|---|---|
+| **Power & background** | What keeps running when the car is off (**Always On** / **Minimal** / **Deep Sleep**), and on DiLink 3 **Keep Wi-Fi alive when car is off**. On DiLink 5, also **Allow reading vehicle data** |
+| **Backup & Restore** | Opens the backup screen — local, SD card (Pro) and Telegram backups, restore, settings backup, and reset |
+| **Vehicle Compatibility** | Records a telemetry report that helps add support for your model; send it by Telegram, save it, or email it via a QR code |
+| **App Diagnostics** | Sends the diagnostics log the same three ways, and shows live CPU / memory, permissions and an ADB shell |
 
 ### Connections
 
-Everything the app talks to outside the car. **All are disabled by default.** Four cards show live
-status at a glance; **tap one** to configure that connection on its own page.
+Everything the app talks to outside the car. **All are off by default except the web companion**,
+which only answers on your own network. Five cards show live status at a glance; **tap one** to
+configure that connection on its own page.
 
 | Connection | What it does |
 |---|---|
 | **ABRP** | Sends a live telemetry snapshot (SoC, speed, power, GPS) to ABRP servers via the Link Generic API, using your user token |
 | **MQTT** | Publishes full telemetry JSON at a configurable interval to a broker you specify (host, port, topic, credentials) |
-| **Telegram** | Links your own bot — used for backups, notifications, diagnostics and trip exports |
+| **Web Companion** | The companion's on/off switch, port and PIN, and every address it can be reached at |
 | **Tailscale** | Puts the car on your private network so the web companion and ADB work from anywhere |
+| **Telegram** | Links your own bot — used for backups, notifications, diagnostics and trip exports |
 
 ABRP and MQTT each have a **Test** action and show a last-sync timestamp. Disabling any of them has
 no effect on local trip recording or the dashboard.
 
+### Preferences
+
+| Card | What's inside |
+|---|---|
+| **Appearance** | Theme (System / Light / Dark / Neon *Pro*), dashboard layout (Classic / Cards *Pro*), dashboard icons & animations — off moves the icons into the top bar and lowers CPU use on older firmware |
+| **Language & units** | App language (overrides the head unit's for this app only), metric or imperial |
+| **Trip recording** | Engine-off trip timeout (default 3 minutes), ask before auto-stopping, minimum trip distance (shorter trips are discarded; 0 keeps every trip) |
+| **Battery** | SoC source (dashboard **Panel** percentage or the **BMS** reading), and the cell-imbalance alert *(Pro)* |
+| **Costs** | Electricity tariff (price per kWh and currency) |
+| **Goals & personal bests** | Opens the Goals screen |
+
+### Pro
+
+The unlock card, and what each Pro feature does. See the website or the in-app card for how to get a
+code.
+
 ### About & FAQ
 
-- App version and build info
+- App version, and **Download update** / **Install now** when a new version is out
 - In-app FAQ covering common DiLink behaviour, autostart survival, and charging-session caveats
-- Troubleshooting notes
+- Disclaimer
 
 ---
 
@@ -292,19 +317,37 @@ no effect on local trip recording or the dashboard.
 
 ### Local backup
 
-`Settings → Data → Open Backup & Restore`
+`Settings → App → Backup & Restore`
 
-Backups are stored in `Download/BydTripStats/` on the car's internal storage.
+Backups are stored in `Download/BydTripStats/` on the car's internal storage, as compressed
+`.db.gz` files with a small settings file beside each one. Restore reads both `.db.gz` and older
+`.db` backups. With Pro, **Backup to SD card** writes to a removable card as well, which survives an
+app uninstall.
 
 ### Telegram backup
 
 Connect a private Telegram bot for remote personal backups. This is optional.
 
-Setup: link the bot once in **Settings → Connections**, alongside MQTT and ABRP — paste the token from @BotFather and the app finds your chat ID itself. Backups then live in **Settings → Data → Backup & Restore**, where you can send one manually or set a schedule (daily / weekly / monthly).
+Setup: link the bot once in **Settings → Connections**, alongside MQTT and ABRP — paste the token from @BotFather and the app finds your chat ID itself. Backups then live in **Settings → App → Backup & Restore**, where you can send one manually or set a schedule (daily / weekly / monthly).
 
-The same bot carries **notifications** if you want them (Connections → Telegram Notifications): a summary after each drive, a note when a charge finishes, and the Pro cell-imbalance alert. Each has its own switch and all are off until you turn them on.
+The same bot carries **notifications** if you want them (Connections → Telegram Notifications): a summary after each drive, a note when a charge finishes, and the Pro cell-imbalance alert. Each has its own switch and all are off until you turn them on. On DiLink 5, trip summaries are sent only when you end the trip yourself with **Stop** — the car closes the app at switch-off, so the app can't announce a trip it only finishes later.
 
-**Note:** When enabled, your encrypted database file is sent to Telegram's servers as a file attachment to your bot. If you prefer to keep data entirely off third-party servers, use local filesystem backup instead.
+**Note:** When enabled, your database backup is sent to Telegram's servers as a file attachment to your bot. It is compressed, **not encrypted** — anyone with access to that chat can read your trip history. If you prefer to keep data entirely off third-party servers, use local or SD-card backup instead.
+
+Telegram lets a bot download files of at most **20 MB**, so restoring from the in-app Telegram list only works for backups up to that size. A larger one: save it from the chat on your phone, upload it to *Backups (Download)* in the web companion's **Files** tab, and restore it from the backup list.
+
+---
+
+## Web companion
+
+The app runs a small web server so you can look at your data from a phone or laptop on the same
+Wi-Fi. It is **on by default**. **Settings → Connections → Web Companion** shows its PIN and every
+address it answers on — open one in a browser and enter the PIN.
+
+It shows your trips and charging history, a **notification feed** (the bell in the header: trip
+summaries, finished charges, the Pro cell-imbalance alert — it works with no Telegram bot at all),
+the **battery history** chart and a **Files** tab (both below). Away from home, use
+[Tailscale](#remote-access-tailscale).
 
 ---
 
@@ -438,12 +481,16 @@ does and comes back when the car next wakes. While the car is on it works normal
 
 By default, **nothing leaves the car**. The following are opt-in only:
 
-- **Telegram backup** — encrypted DB file sent to your own private Telegram bot when you configure it and trigger a backup
+- **Telegram backup** — a compressed (not encrypted) database file sent to your own private Telegram bot when you configure it and trigger a backup
 - **Telegram notifications** — a short text card (trip summary, charge finished, battery alert) sent to that same bot, only for the events you switch on
 - **MQTT** — live telemetry JSON published to a broker you specify, at the interval you set
 - **ABRP** — live telemetry snapshot sent to ABRP using the token you provide
-- **Tailscale** — when you paste an auth key, the car joins your own private network; traffic goes to your devices and to Tailscale's coordination servers, and nothing is exposed publicly
+- **Tailscale** — once you sign the car in, it joins your own private network; traffic goes to your devices (end-to-end encrypted) and sign-in to Tailscale's servers, and nothing is exposed publicly
+- **Email via QR code** — when you tap it on Vehicle Compatibility or App Diagnostics, that report or log is uploaded to a temporary file host so you can email its link; the link expires after 24 hours
 - **Update checks** — the app can check for new APK releases; this is the only network call made without explicit user setup
+
+The **web companion** is on by default, but it only *answers* browsers on your own network (or your
+tailnet) that know its PIN — it never sends anything out.
 
 ---
 
@@ -459,7 +506,7 @@ DiLink may kill background apps aggressively. To improve survival:
 
 **Important:** this setting often resets after app updates. Re-check it after every install.
 
-The app uses a foreground telemetry service, wake lock, Wi-Fi lock, boot receiver, and a watchdog worker — but survival still depends on the OEM system behaviour.
+The app uses a foreground telemetry service, wake lock, Wi-Fi lock, boot receiver, and a watchdog worker — but survival still depends on the OEM system behaviour. With the one-time ADB authorisation, a small background helper also brings the app back after the car has stopped it.
 
 ---
 
@@ -502,7 +549,7 @@ The app uses a foreground telemetry service, wake lock, Wi-Fi lock, boot receive
 ## Tips
 
 - Re-check Autostart after every app update
-- The range projection leaves the catalog baseline within the first few hundred metres — the model-tier badge tells you when it's running on real trip data (Speed bins / Live trip) rather than the WLTP baseline
+- The range projection starts from your own lifetime average and moves to this trip's data within the first few hundred metres — the model-tier badge tells you when it's running on the current trip (Trip average / Live trip) rather than your history (Lifetime avg) or the catalogue figure (Baseline)
 - Use the **SoC x-axis** mode in the charging Power + SoC chart for DC taper analysis
 - Use **Heatmaps** to spot correlations — e.g. speed vs consumption to find your car's efficiency sweet spot
 - Use the **Seasonal Analysis** view after your first winter to see the real cold-weather efficiency penalty

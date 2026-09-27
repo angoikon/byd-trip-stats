@@ -47,9 +47,9 @@
     <string name="settings_tab_pro">Pro</string>
     <string name="settings_tab_about">概要 &amp; FAQ</string>
     <string name="pro_cards_layout_title">カード式ダッシュボードレイアウト</string>
-    <string name="pro_cards_layout_info">より大きく、完全にカスタマイズ可能なダッシュボード：中央のグラフの代わりに、大きく間隔の空いたタイルを表示します。鉛筆をタップしてタイルをドラッグで並べ替え、必要なものを表示・非表示にできます。航続距離タイルをタップすると予測グラフを全画面で開けます。ロック解除後、設定 → ダッシュボードのレイアウトで選択してください。</string>
+    <string name="pro_cards_layout_info">より大きく、完全にカスタマイズ可能なダッシュボード：中央のグラフの代わりに、大きく間隔の空いたタイルを表示します。鉛筆をタップしてタイルをドラッグで並べ替え、必要なものを表示・非表示にできます。航続距離タイルをタップすると予測グラフを全画面で開けます。ロック解除後、設定 → 外観 → ダッシュボードのレイアウトで選択してください。</string>
     <string name="pro_neon_theme_title">ネオンテーマ</string>
-    <string name="pro_neon_theme_info">純黒でOLEDに優しいダークテーマで、電力メトリクスの数字とアクセントのストライプがネオンのように光り、各カードに繊細なアクセントの縁取りが付きます。ロック解除後、設定 → テーマで選択してください。</string>
+    <string name="pro_neon_theme_info">純黒でOLEDに優しいダークテーマで、電力メトリクスの数字とアクセントのストライプがネオンのように光り、各カードに繊細なアクセントの縁取りが付きます。ロック解除後、設定 → 外観 → テーマで選択してください。</string>
 
     <!-- Detail tabs -->
     <string name="tab_overview">概要</string>
@@ -493,7 +493,6 @@
     <string name="trim_skip_vacuum_msg">トリミング完了。（VACUUMはスキップされました。後でアプリを再起動してスペースを回収してください。）</string>
     <string name="trim_failed_msg">トリミングに失敗しました：%1$s</string>
     <string name="last_backup_label">最終バックアップ：%1$s</string>
-    <string name="open_backup_restore_action">バックアップ &amp; 復元を開く</string>
     <string name="reset_all_data_label">すべての走行データをリセット</string>
     <string name="reset_confirm_title">すべての走行データをリセットしますか？</string>
     <string name="reset_confirm_msg">すべてのトリップと統計が完全に削除されます。\n\nリセット前にバックアップが自動的にダウンロードに保存されます。アプリは終了して再起動します。</string>
@@ -820,7 +819,7 @@
     <string name="schedule_monthly">毎月</string>
     <string name="danger_zone_title">危険ゾーン</string>
     <string name="danger_zone_desc">すべての旅行、データポイント、統計を完全に削除します。リセット前にローカルバックアップが自動的に作成されます。</string>
-    <string name="send_diag_log_desc">診断ログ全体（speed-stallおよび\'テレメトリ更新停止\'イベント）を接続されたTelegramボットに直接送信します—ローカルに保存または共有されるものはありません。まずBackup &amp; Restore → Telegramバックアップでボットを接続してください。</string>
+    <string name="send_diag_log_desc">診断ログを共有する方法は3つあり、バックグラウンドヘルパー自身のログがあればそれも一緒に送ります。Telegram はボットにログ全体を送信します（設定 → 接続 → Telegram でボットを設定）。保存 は車内の Download/BydTripStats/ にコピーします。QRコードでメール は最新部分をアップロードしてコードを表示し、スマートフォンで読み取るとそのリンクをメールで送れます。リンクの有効期限は24時間です。</string>
     <string name="compat_privacy_notice_body">レポートは車のヘッドユニットのすべてのデータソースから生の値を取得します—数値、文字列、配列。\n\nGPSの緯度と経度は含まれません。\n\nその他すべてが含まれます：バッテリー状態、モーターデータ、ギア、速度、ドライブモード、空調状態、充電状態、PHEV固有の値など。\n\n自動送信されるものはありません。"QRコードでメール"はレポートを一時的な公開ホスト（litterbox）にアップロードし、24時間後に自動削除されるリンクを表示します；それまでリンクを持つ誰でも読めます。他のオプションはレポートをデバイスに保存します。</string>
     <string name="compat_sending_label">送信中…</string>
     <string name="compat_email_qr_label">QRコードでメール</string>
@@ -890,7 +889,6 @@
     <string name="select_car_label">車を選択</string>
 
     <!-- Settings — General section -->
-    <string name="section_general">一般</string>
     <string name="pref_theme">テーマ</string>
     <string name="theme_desc">アプリの外観を選択します。システムデフォルトはデバイスのダーク/ライト設定に従います。</string>
     <string name="theme_system">システム</string>
@@ -913,7 +911,6 @@
     <string name="dashboard_icons_desc">有効にすると、航続距離予測カードに液体充填バッテリーアイコン、タイヤ空気圧/温度オーバーレイ付きのAWD/アクスル図、チャート上のアニメーション消費サムネイルが表示されます。無効にすると、それらがトップバー（バッテリーと消費アイコン）とサイドパネルの専用タイヤ統計カードに移動し、航続距離チャートのための縦方向スペースを確保してアニメーションをスキップします。</string>
 
     <!-- Settings — Trips section -->
-    <string name="section_trips">トリップ</string>
     <string name="pref_engine_off_timeout">エンジンオフ後のタイムアウト</string>
     <string name="engine_off_timeout_desc">車がオフになった後、トリップが開いたままになる時間。この期間内に車が再びオンになると記録がシームレスに再開されます（同じトリップ、かっこ内の累積距離とともに新しいセグメントが表示されます）。期間を過ぎるとトリップが終了し、次の走行から新しいトリップが始まります。デフォルトは3分です。</string>
     <string name="current_timeout_value">現在：%1$s分</string>
@@ -930,12 +927,8 @@
     <string name="pref_goals_label">目標 &amp; 自己ベスト</string>
     <string name="goal_consumption_value">消費量目標：%1$s</string>
     <string name="goal_monthly_distance_value">月間距離目標：%1$s</string>
-    <string name="best_consumption_value">最良消費量：%1$s</string>
-    <string name="best_distance_value">最長距離：%1$s</string>
-    <string name="open_goals_action">目標 &amp; 自己ベストを開く</string>
 
     <!-- Settings — Battery section -->
-    <string name="section_battery">バッテリー &amp; テレメトリー</string>
     <string name="pref_soc_source">SoCソース</string>
     <string name="soc_source_desc">ダッシュボードに表示するバッテリー充電率を選択します。</string>
     <string name="soc_panel_option">パネル</string>
@@ -1022,7 +1015,7 @@
     <string name="web_companion_label">Webコンパニオン</string>
     <string name="web_companion_desc">同じWiFi上の任意のデバイスから走行 &amp; 充電を閲覧。</string>
     <string name="web_companion_disabled_desc">ブラウザで走行履歴を開けるローカルサーバーを起動します。</string>
-    <string name="web_companion_wifi_info">ローカルWiFi上で提供されるため、車がオンでテレメトリーサービスが動作している間はアクセス可能です。駐車後は、多くのBYDユニットが車がオフになった後約15分でWiFiを切断します — その後、コンパニオンはすべてのバックグラウンド動作モードで、車が再び電源オンになるまでアクセス不能です（ローカルサーバーにはモバイルデータのフォールバックがありません）。\n注意：Electroアプリには無制限にWiFiをオンに保つオプションがあります</string>
+    <string name="web_companion_wifi_info">ローカルWiFi上で提供されるため、車がオンでテレメトリーサービスが動作している間はアクセス可能です。駐車後は、多くのBYDユニットが車がオフになった後約15分でWiFiを切断します — その後、コンパニオンはすべてのバックグラウンド動作モードで、車が再び電源オンになるまでアクセス不能です（ローカルサーバーにはモバイルデータのフォールバックがありません）。</string>
     <string name="web_companion_files_info">companion には ファイル タブもあります：データベースのバックアップ、エクスポート、診断ログをスマートフォンやノートパソコンに直接ダウンロードでき、何も接続せずにバックアップを車にアップロードできます。表示されるのはアプリ自身のフォルダのみで、ヘッドユニット全体ではありません。</string>
     <string name="port_field_label">ポート</string>
     <string name="port_hint_text">ポートがブロックされている場合は8081、8888、9090をお試しください。変更するとサーバーが再起動します。</string>
@@ -1048,6 +1041,34 @@
     <string name="status_enabled_label">ステータス：有効</string>
     <string name="status_disabled_label">ステータス：無効</string>
     <string name="back_to_overview_action">概要に戻る</string>
+    <!-- Settings overview cards (App, Preferences, Connections → Web Companion) -->
+    <string name="settings_overview_desc">開くセクションを選択してください。以下のカードに現在の設定が一目で表示されます。</string>
+    <string name="web_companion_card_desc">スマートフォンやノートPCのブラウザでトリップ、充電、ファイルを閲覧します。</string>
+    <string name="power_card_desc">車の電源を切った後も動かし続けるものと、Wi-Fi の維持。</string>
+    <string name="power_card_desc_d5">車の電源を切った後も動かし続けるものと、車両データへのアクセス。</string>
+    <string name="backup_card_title">バックアップ &amp; 復元</string>
+    <string name="backup_card_desc">トリップ、充電履歴、設定 — ローカル、SDカード、または Telegram へ。</string>
+    <string name="compat_card_desc">お使いのモデルのサポート追加に役立つテレメトリーレポートを記録します。</string>
+    <string name="diagnostics_card_desc">診断ログを送信し、CPU・メモリ・権限をリアルタイムで確認します。</string>
+    <string name="wifi_keepalive_on_status">Wi-Fi 維持オン</string>
+    <string name="d5_vehicle_access_off_status">車両データへのアクセスオフ</string>
+    <string name="diagnostics_live_on_status">ライブ詳細オン</string>
+    <string name="diagnostics_live_off_status">ライブ詳細オフ</string>
+    <string name="pref_appearance_title">外観</string>
+    <string name="pref_appearance_desc">テーマ、ダッシュボードのレイアウト、ダッシュボードのアイコンとアニメーション。</string>
+    <string name="pref_language_units_title">言語 &amp; 単位</string>
+    <string name="pref_language_units_desc">アプリの言語と、メートル法またはヤード・ポンド法の単位。</string>
+    <string name="pref_trip_recording_title">トリップ記録</string>
+    <string name="pref_trip_recording_desc">車の電源を切った後にトリップを終了するタイミングと、記録するトリップの最短距離。</string>
+    <string name="trip_recording_status">%1$d 分後に自動停止 • 最短 %2$s</string>
+    <string name="trip_recording_status_no_min">%1$d 分後に自動停止 • 最短距離なし</string>
+    <string name="pref_battery_title">バッテリー</string>
+    <string name="pref_battery_desc">表示する充電状態の値と、セル不均衡アラート。</string>
+    <string name="battery_status_alert_on">SoC：%1$s • 不均衡アラートオン</string>
+    <string name="battery_status_alert_off">SoC：%1$s • 不均衡アラートオフ</string>
+    <string name="pref_costs_desc">トリップと充電の料金計算に使う電気料金と通貨。</string>
+    <string name="pref_goals_desc">消費量と距離の目標、そして自己ベスト。</string>
+    <string name="pro_cell_imbalance_info">バッテリーのセル電圧の差が上限を超えたままになると警告します — 弱いセルの早期サインです。ロック解除後、設定 → バッテリーでオンにして上限を設定してください。</string>
 
     <!-- ABRP settings -->
     <string name="abrp_link_desc">ABRPのリンクジェネリックトークンがA Better Routeplannerにライブテレメトリーをアップロードします。</string>
@@ -1137,8 +1158,6 @@
 
     <!-- FAQ -->
     <string name="faq_section_title">よくある質問</string>
-    <string name="faq_q_no_electro">以前のバージョンとは異なり、Electroアプリが不要になったのは本当ですか？</string>
-    <string name="faq_a_no_electro">その通りです。BYD Trip Statsはサポートされている車両でスタンドアロンアプリとして動作するため、Electroなしでもトリップ記録と充電セッションが機能します。\n\nElectroは独自の機能を求めるオーナーにとってまだ有用なコンパニオンアプリですが、BYD Trip Statsの機能に必要ではなくなりました。</string>
     <string name="faq_q_internet">インターネットやモバイル信号が必要ですか？</string>
     <string name="faq_a_internet">通常の使用では不要です。トリップ、充電セッション、チャート、ローカル履歴はすべてデバイス上で記録されます。\n\nインターネットは、アプリ更新確認、Webリンクを開く、MQTT / ABRP連携、Telegramバックアップなどのオプション機能にのみ必要です（有効にした場合）。</string>
     <string name="faq_q_pro">BYD Trip Stats Proとは何ですか、何が含まれますか？</string>
@@ -1148,9 +1167,9 @@
     <string name="faq_q_offline_trip">ネットワーク接続がないと、トリップが履歴から欠けますか？</string>
     <string name="faq_a_offline_trip">いいえ。トリップ履歴はローカルに保存されており、モバイル信号やWiFiに依存しません。\n\nトリップが少し遅れて終了する可能性があるのは、ライブテレメトリー自体がしばらく停止した場合のみです。その場合、ウォッチドッグはアプリが受け取った最後のパケットから3分間テレメトリーが無音の後、アクティブなトリップを終了します。</string>
     <string name="faq_q_stops_restart">車を再起動するとアプリが動作しなくなります</string>
-    <string name="faq_a_stops_restart">BYD Trip Statsを自動起動キラーから除外する必要があります：\n\n1. 自動起動を無効にするアプリを開く（BYDのネイティブアプリ、通常はファイルエクスプローラーの近く）\n2. BYD Trip Statsを見つけてエントリをオフに切り替え — Electroに対して行ったのと同じです\n3. アプリを開き、ボリュームボタンを約10秒間長押しして車のUIを再起動\n4. アプリを再度開く\n\n重要：この手順はアプリ更新のたびに繰り返す必要があります。再インストール時にアクセス許可がリセットされるためです。</string>
+    <string name="faq_a_stops_restart">BYD Trip Statsを自動起動キラーから除外する必要があります：\n\n1. 自動起動を無効にするアプリを開く（BYDのネイティブアプリ、通常はファイルエクスプローラーの近く）\n2. BYD Trip Statsを見つけてエントリをオフに切り替え\n3. アプリを開き、ボリュームボタンを約10秒間長押しして車のUIを再起動\n4. アプリを再度開く\n\n重要：この手順はアプリ更新のたびに繰り返す必要があります。再インストール時にアクセス許可がリセットされるためです。</string>
     <string name="faq_q_backup">走行データをバックアップするにはどうすればよいですか？</string>
-    <string name="faq_a_backup">いくつかの方法があります — すべて同じ標準SQLiteファイルを生成します：\n\nローカル（最も簡単）：設定 → データ → バックアップ &amp; 復元を開く → 今すぐバックアップ。\n\nSDカード（Pro）：バックアップ &amp; 復元 → SDカードにバックアップ。アプリのアンインストール後も残ります。\n\nTelegram（推奨）：バックアップ &amp; 復元 → Telegramバックアップでボットを接続し、手動またはスケジュールで送信。\n\nADB：adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
+    <string name="faq_a_backup">いくつかの方法があります — すべて同じ標準SQLiteファイルを生成します：\n\nローカル（最も簡単）：設定 → アプリ → バックアップ &amp; 復元 → 今すぐバックアップ。\n\nSDカード（Pro）：バックアップ &amp; 復元 → SDカードにバックアップ。アプリのアンインストール後も残ります。\n\nTelegram（推奨）：設定 → 接続 → Telegram でボットを接続し、手動またはスケジュールで送信。\n\nADB：adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
     <string name="faq_q_recover">アプリを再インストールしましたが、バックアップを復元できますか？</string>
     <string name="faq_a_recover">はい。Telegram：ボットトークンを再接続すると、「Telegramから復元」→ 更新アイコンですべてのバックアップが自動的に再検出されます。\n\nローカル：Download/BydTripStats/内の.dbファイルは再インストール後も残ります。バックアップ &amp; 復元を開き、ローカル復元の更新アイコンをタップすると再表示されます。</string>
     <string name="faq_q_auto_backup">Telegramの自動バックアップはどのように機能しますか？</string>
@@ -1169,8 +1188,6 @@
     <!-- App Management screen -->
     <string name="app_mgmt_backup_local_label">ローカル</string>
     <string name="app_mgmt_telegram_label">Telegram</string>
-    <string name="app_mgmt_private_bot_desc">プライベートボットチャット</string>
-    <string name="app_mgmt_manual_scheduled">手動 &amp; スケジュール</string>
     <string name="app_mgmt_no_local_backup">ローカルバックアップが見つかりません</string>
 
     <!-- Telemetry debug -->
@@ -1192,7 +1209,6 @@
     <string name="diagnostic_enabled_desc">ライブプロセス、メモリ、フレーム、アクセス許可、ADBツールが表示されます。</string>
     <string name="diagnostic_disabled_desc">バックアップを確認しているだけのときにこの画面がポーリングし続けないよう、デフォルトでオフです。</string>
     <string name="send_diag_log_action">診断ログをTelegramに送信</string>
-    <string name="diag_log_info_desc">完全な診断ログを接続済みのTelegramボットに直接送信します — ローカルに保存または共有されません。最初にバックアップ &amp; 復元 → TelegramバックアップでボットをCONNECTしてください。</string>
     <string name="enable_troubleshooting_hint">トラブルシューティング時のみ有効にしてください。履歴チャートは表示中に2秒ごとにサンプリングされます。</string>
     <string name="background_readiness_label">バックグラウンド準備状況</string>
     <string name="write_settings_perm_label">設定の書き込み</string>

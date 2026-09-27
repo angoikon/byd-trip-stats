@@ -121,6 +121,7 @@ object SettingsBackup {
                 put("dashboardPowerOrder",       JSONArray(pm.dashboardPowerOrder.first().map { it.name }))
                 put("dashboardChartHidden",      pm.dashboardChartHidden.first())
                 put("dashboardShowRemainingKwh", pm.dashboardShowRemainingKwh.first())
+                put("dashboardShowDistanceSinceCharge", pm.dashboardShowDistanceSinceCharge.first())
                 put("electricityPricePerKwh",    pm.electricityPricePerKwh.first())
                 put("currencySymbol",            pm.currencySymbol.first())
                 put("carOffTimeoutMinutes",      pm.carOffTimeoutMinutes.first())
@@ -371,6 +372,7 @@ object SettingsBackup {
         if (p.has("dashboardAnimations")) pm.saveDashboardAnimationsEnabled(p.getBoolean("dashboardAnimations"))
         if (p.has("dashboardChartHidden")) pm.saveDashboardChartHidden(p.getBoolean("dashboardChartHidden"))
         if (p.has("dashboardShowRemainingKwh")) pm.saveDashboardShowRemainingKwh(p.getBoolean("dashboardShowRemainingKwh"))
+        if (p.has("dashboardShowDistanceSinceCharge")) pm.saveDashboardShowDistanceSinceCharge(p.getBoolean("dashboardShowDistanceSinceCharge"))
 
         if (p.has("dashboardCardOrder") || p.has("dashboardHiddenCards")) {
             val order  = DashboardCardId.parseOrder(p.csv("dashboardCardOrder")

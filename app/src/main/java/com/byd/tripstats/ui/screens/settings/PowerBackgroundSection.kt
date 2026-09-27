@@ -27,9 +27,10 @@ import kotlinx.coroutines.launch
 
 /**
  * "Power & background" settings: the off-state background-activity mode (Always On / Minimal /
- * Deep Sleep) and the Wi-Fi keepalive that runs while the car is off. These are system/vehicle behaviours rather than
- * display preferences, so they live on the App Management tab (alongside backups, diagnostics and
- * the web companion) rather than in Preferences.
+ * Deep Sleep), the Wi-Fi keepalive that runs while the car is off, and — DiLink-5 only — the
+ * vehicle-data access switch. These are system behaviours on the head unit rather than display
+ * preferences, so they are a page of the App tab (beside backups, compatibility and diagnostics)
+ * rather than of Preferences.
  */
 @Composable
 internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
@@ -206,6 +207,62 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                                 WifiKeepalive.apply(context, enabled)
                             }
                         },
+                    )
+                }
+            }
+        }
+    }
+
+    // DiLink-5 only: opt-in for the global hidden-API exemption that lets the app read vehicle
+    // data. Lets a user who declined the first-run prompt enable it later (or turn it back off).
+    // It changes a device-wide head-unit setting, which is why it sits here and not in Preferences.
+    if (DiLink5Platform.isDiLink5) {
+        var vehicleAccessOn by remember {
+            mutableStateOf(AdbPermissionManager.hasHiddenApiConsent(context))
+        }
+        SettingsGroupLabel(stringResource(R.string.d5_vehicle_access_section))
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            stringResource(R.string.d5_vehicle_access_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            stringResource(R.string.d5_vehicle_access_desc),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Switch(
+                        checked = vehicleAccessOn,
+                        onCheckedChange = { on ->
+                            vehicleAccessOn = on
+                            AdbPermissionManager.setHiddenApiConsent(context, on)
+                            AdbPermissionManager.markHiddenApiPrompted(context)
+                            if (on) scope.launch {
+                                // Apply the exemption, then restart so the SDK binds on a fresh
+                                // fork (same fork-latch as the first-run consent dialog).
+                                val applied = AdbPermissionManager.ensureVehicleApiAccess(context)
+                                if (applied) AdbPermissionManager.restartApp(context)
+                            }
+                        }
                     )
                 }
             }

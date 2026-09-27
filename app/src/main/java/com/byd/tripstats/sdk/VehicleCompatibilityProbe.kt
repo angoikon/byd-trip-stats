@@ -771,7 +771,7 @@ object VehicleCompatibilityProbe {
             sohAnalysis.put("candidates", candidates)
             sohAnalysis.put("note",
                 "Feature IDs whose pushed value decodes to 90–110% — likely SoH registers. " +
-                "Compare against the SoH shown in-app and in Electro to pick the correct one.")
+                "Compare against the SoH shown in-app and in other apps to pick the correct one.")
             obj.put("sohAnalysis", sohAnalysis)
         }
 

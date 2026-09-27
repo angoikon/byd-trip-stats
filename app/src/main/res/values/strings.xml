@@ -47,9 +47,9 @@
     <string name="settings_tab_pro">Pro</string>
     <string name="settings_tab_about">About &amp; FAQ</string>
     <string name="pro_cards_layout_title">Cards dashboard layout</string>
-    <string name="pro_cards_layout_info">A larger, fully customisable dashboard: big, well-spaced tiles instead of the central chart. Tap the pencil to drag-reorder tiles, show or hide the ones you want, and tap the Range tile to open the projection chart full-size. Choose it under Preferences → Dashboard Layout once unlocked.</string>
+    <string name="pro_cards_layout_info">A larger, fully customisable dashboard: big, well-spaced tiles instead of the central chart. Tap the pencil to drag-reorder tiles, show or hide the ones you want, and tap the Range tile to open the projection chart full-size. Choose it under Preferences → Appearance → Dashboard Layout once unlocked.</string>
     <string name="pro_neon_theme_title">Neon theme</string>
-    <string name="pro_neon_theme_info">A pure-black, OLED-friendly dark theme whose power-metric digits and accent stripes glow like neon, with a subtle accent edge on every card. Pick it under Preferences → Theme once unlocked.</string>
+    <string name="pro_neon_theme_info">A pure-black, OLED-friendly dark theme whose power-metric digits and accent stripes glow like neon, with a subtle accent edge on every card. Pick it under Preferences → Appearance → Theme once unlocked.</string>
 
     <!-- Detail tabs -->
     <string name="tab_overview">Overview</string>
@@ -502,7 +502,6 @@
     <string name="trim_skip_vacuum_msg">Trim complete. (VACUUM was skipped; restart the app later to reclaim space.)</string>
     <string name="trim_failed_msg">Trim failed: %1$s</string>
     <string name="last_backup_label">Last backup: %1$s</string>
-    <string name="open_backup_restore_action">Open Backup &amp; Restore</string>
     <string name="reset_all_data_label">Reset all trip data</string>
     <string name="reset_confirm_title">Reset all trip data?</string>
     <string name="reset_confirm_msg">This will permanently delete all trips and statistics.\n\nA backup will be saved to Download automatically before the reset. The app will close and reopen.</string>
@@ -839,7 +838,7 @@
     <string name="schedule_monthly">Monthly</string>
     <string name="danger_zone_title">DANGER ZONE</string>
     <string name="danger_zone_desc">Permanently delete all trips, data points and statistics. A local backup is created automatically before the reset.</string>
-    <string name="send_diag_log_desc">Sends the full diagnostics log (speed-stall and \'telemetry refresh wedged\' events) straight to your connected Telegram bot — nothing is saved or shared locally. Connect a bot under Backup &amp; Restore → Telegram Backup first.</string>
+    <string name="send_diag_log_desc">Three ways to share the diagnostics log, together with the background helper\'s own log when there is one. Telegram sends it in full to your bot (set one up under Settings → Connections → Telegram). Save copies it to Download/BydTripStats/ on the car. Email via QR code uploads the most recent part and shows a code you scan with your phone to email a link to it; the link expires after 24 hours.</string>
     <string name="compat_privacy_notice_body">The report captures raw values from every data source on your car\'s head unit — numeric values, strings, and arrays.\n\nGPS latitude and longitude are NOT included.\n\nEverything else is included: battery state, motor data, gear, speed, drive modes, climate state, charging state, PHEV-specific values, etc.\n\nNothing is sent automatically. \"Email via QR code\" uploads the report to a temporary public host (litterbox) and shows a link that auto-deletes after 24 hours; anyone with the link can read it until then. The other options keep the report on your device.</string>
     <string name="compat_sending_label">Sending…</string>
     <string name="compat_email_qr_label">Email via QR code</string>
@@ -912,7 +911,6 @@
     <string name="select_car_label">Select car</string>
 
     <!-- Settings — General section -->
-    <string name="section_general">General</string>
     <string name="pref_theme">Theme</string>
     <string name="theme_desc">Choose how the app looks. System default follows your device\'s dark/light setting.</string>
     <string name="theme_system">System</string>
@@ -935,7 +933,6 @@
     <string name="dashboard_icons_desc">When enabled, the range-projection card shows a liquid-fill battery icon, an AWD/axle drawing with tyre pressure/temperature overlays, and an animated consumption thumbnail above the chart. When disabled, those move into the top bar (battery and consumption icons) and a dedicated Tyres stat card on the side panel — freeing vertical space for the range chart and skipping all animations.</string>
 
     <!-- Settings — Trips section -->
-    <string name="section_trips">Trips</string>
     <string name="pref_engine_off_timeout">Engine-off trip timeout</string>
     <string name="engine_off_timeout_desc">How long the trip stays open after the car turns off. If the car comes back on within this window the recording resumes seamlessly (same trip, a new segment appears along with the cumulative distance in parenthesis). Past the window the trip ends and the next drive starts a new one. Default is 3 minutes.</string>
     <string name="current_timeout_value">Current: %1$s min</string>
@@ -952,12 +949,8 @@
     <string name="pref_goals_label">Goals &amp; personal bests</string>
     <string name="goal_consumption_value">Consumption goal: %1$s</string>
     <string name="goal_monthly_distance_value">Monthly distance goal: %1$s</string>
-    <string name="best_consumption_value">Best consumption: %1$s</string>
-    <string name="best_distance_value">Best distance: %1$s</string>
-    <string name="open_goals_action">Open goals &amp; personal bests</string>
 
     <!-- Settings — Battery section -->
-    <string name="section_battery">Battery &amp; telemetry</string>
     <string name="pref_soc_source">SoC source</string>
     <string name="soc_source_desc">Choose which battery percentage reading to display on the dashboard.</string>
     <string name="soc_panel_option">Panel</string>
@@ -1044,7 +1037,7 @@
     <string name="web_companion_label">Web Companion</string>
     <string name="web_companion_desc">Browse trips &amp; charging from any device on the same WiFi.</string>
     <string name="web_companion_disabled_desc">Start a local server so you can open trip history in a browser.</string>
-    <string name="web_companion_wifi_info">Served over your local WiFi, so it\'s reachable while the car is on and the telemetry service is alive. Once parked, most BYD units cut WiFi ~15 min after the car is off — after that the companion is unreachable (there\'s no mobile-data fallback for a local server) until the car powers on again, in every Background activity mode.\nNote: Electro app has an option to keep WiFi alive indefinitely</string>
+    <string name="web_companion_wifi_info">Served over your local WiFi, so it\'s reachable while the car is on and the telemetry service is alive. Once parked, most BYD units cut WiFi ~15 min after the car is off — after that the companion is unreachable (there\'s no mobile-data fallback for a local server) until the car powers on again, in every Background activity mode.</string>
     <string name="web_companion_files_info">The companion also has a Files tab: download database backups, exports and the diagnostics log straight to your phone or laptop, and upload a backup to the car without plugging anything in. It shows the app\'s own folders only, not the whole head unit.</string>
     <string name="port_field_label">Port</string>
     <string name="port_hint_text">Try 8081, 8888, 9090 if a port is blocked. Changes restart the server.</string>
@@ -1070,6 +1063,34 @@
     <string name="status_enabled_label">Status: Enabled</string>
     <string name="status_disabled_label">Status: Disabled</string>
     <string name="back_to_overview_action">Back to overview</string>
+    <!-- Settings overview cards (App, Preferences, Connections → Web Companion) -->
+    <string name="settings_overview_desc">Choose a section to open. The cards below show the current settings at a glance.</string>
+    <string name="web_companion_card_desc">Open trips, charging and files in a browser on your phone or laptop.</string>
+    <string name="power_card_desc">What keeps running after the car is switched off, and the Wi-Fi keepalive.</string>
+    <string name="power_card_desc_d5">What keeps running after the car is switched off, and access to vehicle data.</string>
+    <string name="backup_card_title">Backup &amp; Restore</string>
+    <string name="backup_card_desc">Trips, charging history and settings — locally, to an SD card or via Telegram.</string>
+    <string name="compat_card_desc">Record a telemetry report that helps add support for your model.</string>
+    <string name="diagnostics_card_desc">Send the diagnostics log, and see live CPU, memory and permissions.</string>
+    <string name="wifi_keepalive_on_status">Wi-Fi keepalive on</string>
+    <string name="d5_vehicle_access_off_status">Vehicle data access off</string>
+    <string name="diagnostics_live_on_status">Live details on</string>
+    <string name="diagnostics_live_off_status">Live details off</string>
+    <string name="pref_appearance_title">Appearance</string>
+    <string name="pref_appearance_desc">Theme, dashboard layout, and dashboard icons &amp; animations.</string>
+    <string name="pref_language_units_title">Language &amp; units</string>
+    <string name="pref_language_units_desc">The app\'s language, and metric or imperial units.</string>
+    <string name="pref_trip_recording_title">Trip recording</string>
+    <string name="pref_trip_recording_desc">When a trip ends after the car is switched off, and how short a trip can be.</string>
+    <string name="trip_recording_status">Auto-stop after %1$d min • minimum %2$s</string>
+    <string name="trip_recording_status_no_min">Auto-stop after %1$d min • no minimum</string>
+    <string name="pref_battery_title">Battery</string>
+    <string name="pref_battery_desc">Which state-of-charge reading to show, and the cell-imbalance alert.</string>
+    <string name="battery_status_alert_on">SoC: %1$s • imbalance alert on</string>
+    <string name="battery_status_alert_off">SoC: %1$s • imbalance alert off</string>
+    <string name="pref_costs_desc">Your electricity tariff and currency, used to price trips and charges.</string>
+    <string name="pref_goals_desc">Consumption and distance targets, and your personal bests.</string>
+    <string name="pro_cell_imbalance_info">Warns you when the spread between the pack\'s cell voltages stays above your limit — an early sign of a weak cell. Switch it on and set the limit under Preferences → Battery once unlocked.</string>
 
     <!-- ABRP settings -->
     <string name="abrp_link_desc">Link Generic token uploads live telemetry to A Better Routeplanner.</string>
@@ -1159,8 +1180,6 @@
 
     <!-- FAQ -->
     <string name="faq_section_title">FAQ</string>
-    <string name="faq_q_no_electro">Contrary to older versions, is it true that I no longer need the Electro app?</string>
-    <string name="faq_a_no_electro">Correct. BYD Trip Stats works as a standalone app on supported vehicles, so trip recording and charging sessions work without Electro.\n\nElectro is still a useful companion app for owners who want its own features, but it is no longer required for BYD Trip Stats to function.</string>
     <string name="faq_q_internet">Do I need internet or mobile signal?</string>
     <string name="faq_a_internet">No for normal use. Trips, charging sessions, charts, and local history are recorded entirely on-device.\n\nInternet is only needed for optional features such as app update checks, opening web links, MQTT / ABRP integration and Telegram backups if you enable them.</string>
     <string name="faq_q_pro">What is BYD Trip Stats Pro and what does it include?</string>
@@ -1170,9 +1189,9 @@
     <string name="faq_q_offline_trip">No network connectivity means trip will be missing from the history?</string>
     <string name="faq_a_offline_trip">No. Trip history is stored locally and does not depend on mobile signal or Wi-Fi.\n\nA trip may close a little later only if live telemetry itself stops for a while. In that case the watchdog closes the active trip after 3 minutes of telemetry silence, anchored to the last packet the app received.</string>
     <string name="faq_q_stops_restart">The app stops working after a car restart</string>
-    <string name="faq_a_stops_restart">You need to exclude BYD Trip Stats from the autostart-killer:\n\n1. Open the Disable Autostart app (native BYD app, usually near the file explorer)\n2. Find BYD Trip Stats and toggle its entry OFF — same as you have done for Electro\n3. Open the app and hold the volume button for ~10 seconds to restart the car UI\n4. Reopen the app\n\nImportant: you must repeat this step after every app update, because the permission resets on reinstall.</string>
+    <string name="faq_a_stops_restart">You need to exclude BYD Trip Stats from the autostart-killer:\n\n1. Open the Disable Autostart app (native BYD app, usually near the file explorer)\n2. Find BYD Trip Stats and toggle its entry OFF\n3. Open the app and hold the volume button for ~10 seconds to restart the car UI\n4. Reopen the app\n\nImportant: you must repeat this step after every app update, because the permission resets on reinstall.</string>
     <string name="faq_q_backup">How do I back up my trip data?</string>
-    <string name="faq_a_backup">Several methods are available — all produce the same standard SQLite file:\n\nLocal (simplest): Settings → Data → Open Backup &amp; Restore → Backup Now.\n\nSD card (Pro): Backup &amp; Restore → Backup to SD card. Survives an app uninstall.\n\nTelegram (recommended): Connect a bot via Backup &amp; Restore → Telegram Backup, then send manually or on a schedule.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
+    <string name="faq_a_backup">Several methods are available — all produce the same standard SQLite file:\n\nLocal (simplest): Settings → App → Backup &amp; Restore → Backup Now.\n\nSD card (Pro): Backup &amp; Restore → Backup to SD card. Survives an app uninstall.\n\nTelegram (recommended): Connect a bot under Settings → Connections → Telegram, then send manually or on a schedule.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
     <string name="faq_q_recover">I reinstalled the app — can I recover my backups?</string>
     <string name="faq_a_recover">Yes. Telegram: reconnect your bot token, then Restore from Telegram → refresh icon rediscovers all backups automatically.\n\nLocal: The .db files in Download/BydTripStats/ survive a reinstall. Open Backup &amp; Restore, tap the refresh icon under Local Restore and they reappear.</string>
     <string name="faq_q_auto_backup">How does Telegram automatic backup work?</string>
@@ -1191,8 +1210,6 @@
     <!-- App Management screen -->
     <string name="app_mgmt_backup_local_label">Local</string>
     <string name="app_mgmt_telegram_label">Telegram</string>
-    <string name="app_mgmt_private_bot_desc">Private bot chat</string>
-    <string name="app_mgmt_manual_scheduled">Manual &amp; scheduled</string>
     <string name="app_mgmt_no_local_backup">No local backup found</string>
 
     <!-- Telemetry debug -->
@@ -1214,7 +1231,6 @@
     <string name="diagnostic_enabled_desc">Live process, memory, frame, permission, and ADB tools are visible.</string>
     <string name="diagnostic_disabled_desc">Off by default so this screen does not keep polling while you are just checking backups.</string>
     <string name="send_diag_log_action">Send diagnostics log to Telegram</string>
-    <string name="diag_log_info_desc">Sends the full diagnostics log straight to your connected Telegram bot — nothing is saved or shared locally. Connect a bot under Backup &amp; Restore → Telegram Backup first.</string>
     <string name="enable_troubleshooting_hint">Enable this only when troubleshooting; the history charts sample every 2 seconds while visible.</string>
     <string name="background_readiness_label">Background Readiness</string>
     <string name="write_settings_perm_label">Write settings</string>

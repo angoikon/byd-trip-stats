@@ -47,9 +47,9 @@
     <string name="settings_tab_pro">Pro</string>
     <string name="settings_tab_about">Om &amp; FAQ</string>
     <string name="pro_cards_layout_title">Kort-dashbordoppsett</string>
-    <string name="pro_cards_layout_info">Et større, fullt tilpassbart dashbord: store, godt fordelte ruter i stedet for det sentrale diagrammet. Trykk på blyanten for å endre rekkefølge på ruter ved å dra, vise eller skjule dem du vil, og trykk på Rekkevidde-ruten for å åpne projeksjonsdiagrammet i full størrelse. Velg det under Preferanser → Dashbordoppsett når det er låst opp.</string>
+    <string name="pro_cards_layout_info">Et større, fullt tilpassbart dashbord: store, godt fordelte ruter i stedet for det sentrale diagrammet. Trykk på blyanten for å endre rekkefølge på ruter ved å dra, vise eller skjule dem du vil, og trykk på Rekkevidde-ruten for å åpne projeksjonsdiagrammet i full størrelse. Velg det under Preferanser → Utseende → Dashbordoppsett når det er låst opp.</string>
     <string name="pro_neon_theme_title">Neon-tema</string>
-    <string name="pro_neon_theme_info">Et helsvart, OLED-vennlig mørkt tema der tallene for effektmålinger og aksentstriper lyser som neon, med en subtil aksentkant på hvert kort. Velg det under Preferanser → Tema når det er låst opp.</string>
+    <string name="pro_neon_theme_info">Et helsvart, OLED-vennlig mørkt tema der tallene for effektmålinger og aksentstriper lyser som neon, med en subtil aksentkant på hvert kort. Velg det under Preferanser → Utseende → Tema når det er låst opp.</string>
 
     <!-- Detail tabs -->
     <string name="tab_overview">Oversikt</string>
@@ -493,7 +493,6 @@
     <string name="trim_skip_vacuum_msg">Trimming fullført. (VACUUM ble hoppet over; start appen på nytt senere for å gjenvinne plass.)</string>
     <string name="trim_failed_msg">Trimming mislyktes: %1$s</string>
     <string name="last_backup_label">Siste sikkerhetskopiering: %1$s</string>
-    <string name="open_backup_restore_action">Åpne sikkerhetskopiering &amp; gjenoppretting</string>
     <string name="reset_all_data_label">Tilbakestill alle turdata</string>
     <string name="reset_confirm_title">Tilbakestille alle turdata?</string>
     <string name="reset_confirm_msg">Dette vil permanent slette alle turer og statistikk.\n\nEn sikkerhetskopi vil lagres automatisk til nedlasting før tilbakestillingen. Appen vil lukke og åpne igjen.</string>
@@ -820,7 +819,7 @@
     <string name="schedule_monthly">Månedlig</string>
     <string name="danger_zone_title">FARESONEN</string>
     <string name="danger_zone_desc">Sletter permanent alle turer, datapunkter og statistikker. En lokal sikkerhetskopi opprettes automatisk før tilbakestillingen.</string>
-    <string name="send_diag_log_desc">Sender hele diagnoseloggen (speed-stall og \'telemetri refresh fastlåst\'-hendelser) direkte til din tilkoblede Telegram-bot — ingenting lagres eller deles lokalt. Koble til en bot under Backup &amp; Restore → Telegram Backup først.</string>
+    <string name="send_diag_log_desc">Tre måter å dele diagnoseloggen på, sammen med bakgrunnshjelperens egen logg når den finnes. Telegram sender den i sin helhet til boten din (sett opp en under Innstillinger → Tilkoblinger → Telegram). Lagre kopierer den til Download/BydTripStats/ i bilen. E-post via QR-kode laster opp den nyeste delen og viser en kode du skanner med telefonen for å sende en lenke til den på e-post; lenken utløper etter 24 timer.</string>
     <string name="compat_privacy_notice_body">Rapporten fanger råverdier fra alle datakilder på bilens head unit — numeriske verdier, strenger og matriser.\n\nGPS-breddegrad og -lengdegrad er IKKE inkludert.\n\nAlt annet er inkludert: batteristatus, motordata, gir, hastighet, kjøremodi, klimatilstand, ladestatus, PHEV-spesifikke verdier osv.\n\nIngenting sendes automatisk. "E-post via QR-kode" laster opp rapporten til en midlertidig offentlig vert (litterbox) og viser en lenke som slettes automatisk etter 24 timer; alle med lenken kan lese den til da. De andre alternativene beholder rapporten på enheten din.</string>
     <string name="compat_sending_label">Sender…</string>
     <string name="compat_email_qr_label">E-post via QR-kode</string>
@@ -890,7 +889,6 @@
     <string name="select_car_label">Velg bil</string>
 
     <!-- Settings — General section -->
-    <string name="section_general">Generelt</string>
     <string name="pref_theme">Tema</string>
     <string name="theme_desc">Velg hvordan appen ser ut. Systemstandard følger enhetens mørk/lys-innstilling.</string>
     <string name="theme_system">System</string>
@@ -913,7 +911,6 @@
     <string name="dashboard_icons_desc">Når aktivert viser rekkevidde-projeksjonskortet et væskefylt batteriikon, en AWD/akseltegning med dekktrykk-/temperaturoverlegg, og en animert forbruksminiatyr over diagrammet. Når deaktivert flyttes disse til topplinjen (batteri- og forbruksikoner) og et dedikert Dekk-statistikkort på sidepanelet — frigjør vertikalt plass for rekkeviddekartet og hopper over alle animasjoner.</string>
 
     <!-- Settings — Trips section -->
-    <string name="section_trips">Turer</string>
     <string name="pref_engine_off_timeout">Tidsavbrudd for motor-av</string>
     <string name="engine_off_timeout_desc">Hvor lenge turen forblir åpen etter at bilen slår seg av. Hvis bilen slår seg på igjen innenfor dette vinduet gjenopptas opptaket sømløst (samme tur, et nytt segment vises sammen med den kumulative distansen i parentes). Etter vinduet avsluttes turen og neste kjøring starter en ny. Standard er 3 minutter.</string>
     <string name="current_timeout_value">Nåværende: %1$s min</string>
@@ -930,12 +927,8 @@
     <string name="pref_goals_label">Mål &amp; personlige rekorder</string>
     <string name="goal_consumption_value">Forbruksmål: %1$s</string>
     <string name="goal_monthly_distance_value">Månedlig distansemål: %1$s</string>
-    <string name="best_consumption_value">Beste forbruk: %1$s</string>
-    <string name="best_distance_value">Beste distanse: %1$s</string>
-    <string name="open_goals_action">Åpne mål &amp; personlige rekorder</string>
 
     <!-- Settings — Battery section -->
-    <string name="section_battery">Batteri &amp; telemetri</string>
     <string name="pref_soc_source">SoC-kilde</string>
     <string name="soc_source_desc">Velg hvilken batteriprosent-avlesning som vises på instrumentbordet.</string>
     <string name="soc_panel_option">Panel</string>
@@ -1022,7 +1015,7 @@
     <string name="web_companion_label">Webfølgesvenn</string>
     <string name="web_companion_desc">Bla gjennom turer &amp; lading fra en hvilken som helst enhet på samme WiFi.</string>
     <string name="web_companion_disabled_desc">Start en lokal server slik at du kan åpne turhistorikk i en nettleser.</string>
-    <string name="web_companion_wifi_info">Serveres over ditt lokale WiFi, slik at det er tilgjengelig mens bilen er på og telemetritjenesten er aktiv. Når parkert kutter de fleste BYD-enheter WiFi ~15 min etter at bilen er av — etter det er følgesvennen utilgjengelig (det er ingen mobildata-reserve for en lokal server) inntil bilen slår seg på igjen, i alle bakgrunnsaktivitetsmodi.\nMerk: Electro-appen har et alternativ for å holde WiFi aktivt på ubestemt tid</string>
+    <string name="web_companion_wifi_info">Serveres over ditt lokale WiFi, slik at det er tilgjengelig mens bilen er på og telemetritjenesten er aktiv. Når parkert kutter de fleste BYD-enheter WiFi ~15 min etter at bilen er av — etter det er følgesvennen utilgjengelig (det er ingen mobildata-reserve for en lokal server) inntil bilen slår seg på igjen, i alle bakgrunnsaktivitetsmodi.</string>
     <string name="web_companion_files_info">Companion har også en fane Filer: last ned databasesikkerhetskopier, eksporter og diagnostikkloggen rett til telefonen eller den bærbare, og last opp en sikkerhetskopi til bilen uten å koble til noe. Den viser bare appens egne mapper, ikke hele hovedenheten.</string>
     <string name="port_field_label">Port</string>
     <string name="port_hint_text">Prøv 8081, 8888, 9090 hvis en port er blokkert. Endringer starter serveren på nytt.</string>
@@ -1048,6 +1041,34 @@
     <string name="status_enabled_label">Status: Aktivert</string>
     <string name="status_disabled_label">Status: Deaktivert</string>
     <string name="back_to_overview_action">Tilbake til oversikt</string>
+    <!-- Settings overview cards (App, Preferences, Connections → Web Companion) -->
+    <string name="settings_overview_desc">Velg en seksjon å åpne. Kortene nedenfor viser gjeldende innstillinger på et øyeblikk.</string>
+    <string name="web_companion_card_desc">Bla gjennom turer, lading og filer i nettleseren på telefonen eller den bærbare.</string>
+    <string name="power_card_desc">Hva som fortsetter å kjøre etter at bilen er slått av, og å holde Wi-Fi aktivt.</string>
+    <string name="power_card_desc_d5">Hva som fortsetter å kjøre etter at bilen er slått av, og tilgang til kjøretøydata.</string>
+    <string name="backup_card_title">Sikkerhetskopiering &amp; gjenoppretting</string>
+    <string name="backup_card_desc">Turer, ladehistorikk og innstillinger — lokalt, på SD-kort eller via Telegram.</string>
+    <string name="compat_card_desc">Ta opp en telemetrirapport som hjelper med å legge til støtte for modellen din.</string>
+    <string name="diagnostics_card_desc">Send diagnostikkloggen, og se CPU, minne og tillatelser live.</string>
+    <string name="wifi_keepalive_on_status">Hold Wi-Fi aktivt: på</string>
+    <string name="d5_vehicle_access_off_status">Tilgang til kjøretøydata av</string>
+    <string name="diagnostics_live_on_status">Live-detaljer på</string>
+    <string name="diagnostics_live_off_status">Live-detaljer av</string>
+    <string name="pref_appearance_title">Utseende</string>
+    <string name="pref_appearance_desc">Tema, dashbordoppsett, og dashbordikoner &amp; animasjoner.</string>
+    <string name="pref_language_units_title">Språk &amp; enheter</string>
+    <string name="pref_language_units_desc">Appens språk, og metriske eller britiske enheter.</string>
+    <string name="pref_trip_recording_title">Turregistrering</string>
+    <string name="pref_trip_recording_desc">Når en tur avsluttes etter at bilen er slått av, og hvor kort en tur kan være.</string>
+    <string name="trip_recording_status">Auto-stopp etter %1$d min • minimum %2$s</string>
+    <string name="trip_recording_status_no_min">Auto-stopp etter %1$d min • ingen minimum</string>
+    <string name="pref_battery_title">Batteri</string>
+    <string name="pref_battery_desc">Hvilken avlesning av ladenivået som vises, og celleimbalansevarslingen.</string>
+    <string name="battery_status_alert_on">SoC: %1$s • imbalansevarsling på</string>
+    <string name="battery_status_alert_off">SoC: %1$s • imbalansevarsling av</string>
+    <string name="pref_costs_desc">Strømtariffen og valutaen din, som brukes til å prise turer og ladinger.</string>
+    <string name="pref_goals_desc">Mål for forbruk og distanse, og dine personlige rekorder.</string>
+    <string name="pro_cell_imbalance_info">Varsler deg når spredningen i batteriets cellespenninger holder seg over grensen din — et tidlig tegn på en svak celle. Slå den på og angi grensen under Preferanser → Batteri når den er låst opp.</string>
 
     <!-- ABRP settings -->
     <string name="abrp_link_desc">Koble til Generic-token for å laste opp live-telemetri til A Better Routeplanner.</string>
@@ -1137,8 +1158,6 @@
 
     <!-- FAQ -->
     <string name="faq_section_title">FAQ</string>
-    <string name="faq_q_no_electro">I motsetning til eldre versjoner, er det sant at jeg ikke lenger trenger Electro-appen?</string>
-    <string name="faq_a_no_electro">Riktig. BYD Trip Stats fungerer som en frittstående app på støttede kjøretøy, så turregistrering og ladesesjoner fungerer uten Electro.\n\nElectro er fortsatt en nyttig følgesvenneapp for eiere som ønsker dens egne funksjoner, men den er ikke lenger nødvendig for at BYD Trip Stats skal fungere.</string>
     <string name="faq_q_internet">Trenger jeg internett eller mobilt signal?</string>
     <string name="faq_a_internet">Nei for normal bruk. Turer, ladesesjoner, diagrammer og lokal historikk er registrert helt på enheten.\n\nInternett er kun nødvendig for valgfrie funksjoner som appoppdateringssjekker, åpning av weblenker, MQTT / ABRP-integrering og Telegram-sikkerhetskopiering hvis du aktiverer dem.</string>
     <string name="faq_q_pro">Hva er BYD Trip Stats Pro og hva inneholder det?</string>
@@ -1148,9 +1167,9 @@
     <string name="faq_q_offline_trip">Ingen nettverkstilkobling betyr at turen mangler i historikken?</string>
     <string name="faq_a_offline_trip">Nei. Turhistorikk lagres lokalt og er ikke avhengig av mobilsignal eller Wi-Fi.\n\nEn tur kan lukke litt senere bare hvis live-telemetri selv stopper en stund. I så fall lukker vakthunden den aktive turen etter 3 minutters telemetristillhet, forankret til den siste pakken appen mottok.</string>
     <string name="faq_q_stops_restart">Appen slutter å fungere etter en bilstart</string>
-    <string name="faq_a_stops_restart">Du må ekskludere BYD Trip Stats fra autostart-killeren:\n\n1. Åpne appen Deaktiver autostart (innebygd BYD-app, vanligvis nær filutforskeren)\n2. Finn BYD Trip Stats og slå av oppføringen — det samme som du har gjort for Electro\n3. Åpne appen og hold volum-knappen i ~10 sekunder for å starte bilets UI på nytt\n4. Åpne appen igjen\n\nViktig: du må gjenta dette trinnet etter hver appoppdatering, fordi tillatelsen tilbakestilles ved reinstallasjon.</string>
+    <string name="faq_a_stops_restart">Du må ekskludere BYD Trip Stats fra autostart-killeren:\n\n1. Åpne appen Deaktiver autostart (innebygd BYD-app, vanligvis nær filutforskeren)\n2. Finn BYD Trip Stats og slå av oppføringen\n3. Åpne appen og hold volum-knappen i ~10 sekunder for å starte bilets UI på nytt\n4. Åpne appen igjen\n\nViktig: du må gjenta dette trinnet etter hver appoppdatering, fordi tillatelsen tilbakestilles ved reinstallasjon.</string>
     <string name="faq_q_backup">Hvordan sikkerhetskopierer jeg turdata mine?</string>
-    <string name="faq_a_backup">Flere metoder er tilgjengelig — alle produserer den samme standard SQLite-filen:\n\nLokal (enklest): Innstillinger → Data → Åpne sikkerhetskopiering &amp; gjenoppretting → Sikkerhetskopier nå.\n\nSD-kort (Pro): Sikkerhetskopiering &amp; gjenoppretting → Sikkerhetskopier til SD-kort. Overlever en app-avinstallasjon.\n\nTelegram (anbefalt): Koble til en bot via Sikkerhetskopiering &amp; gjenoppretting → Telegram-sikkerhetskopiering, send deretter manuelt eller etter en plan.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FILNAVN.db &gt; local.db</string>
+    <string name="faq_a_backup">Flere metoder er tilgjengelig — alle produserer den samme standard SQLite-filen:\n\nLokal (enklest): Innstillinger → App → Sikkerhetskopiering &amp; gjenoppretting → Sikkerhetskopier nå.\n\nSD-kort (Pro): Sikkerhetskopiering &amp; gjenoppretting → Sikkerhetskopier til SD-kort. Overlever en app-avinstallasjon.\n\nTelegram (anbefalt): Koble til en bot under Innstillinger → Tilkoblinger → Telegram, send deretter manuelt eller etter en plan.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FILNAVN.db &gt; local.db</string>
     <string name="faq_q_recover">Jeg reinstallerte appen — kan jeg gjenopprette sikkerhetskopiene mine?</string>
     <string name="faq_a_recover">Ja. Telegram: koble til bottoken på nytt, deretter Gjenopprett fra Telegram → oppdateringsikon finner automatisk alle sikkerhetskopier igjen.\n\nLokal: .db-filene i Download/BydTripStats/ overlever en reinstallasjon. Åpne Sikkerhetskopiering &amp; gjenoppretting, trykk på oppdateringsikon under Lokal gjenoppretting og de dukker opp igjen.</string>
     <string name="faq_q_auto_backup">Hvordan fungerer automatisk Telegram-sikkerhetskopiering?</string>
@@ -1169,8 +1188,6 @@
     <!-- App Management screen -->
     <string name="app_mgmt_backup_local_label">Lokal</string>
     <string name="app_mgmt_telegram_label">Telegram</string>
-    <string name="app_mgmt_private_bot_desc">Privat bot-chat</string>
-    <string name="app_mgmt_manual_scheduled">Manuell &amp; planlagt</string>
     <string name="app_mgmt_no_local_backup">Ingen lokal sikkerhetskopi funnet</string>
 
     <!-- Telemetry debug -->
@@ -1192,7 +1209,6 @@
     <string name="diagnostic_enabled_desc">Live prosess, minne, rammer, tillatelser og ADB-verktøy er synlige.</string>
     <string name="diagnostic_disabled_desc">Av som standard slik at denne skjermen ikke fortsetter å polle mens du bare sjekker sikkerhetskopier.</string>
     <string name="send_diag_log_action">Send diagnostikklogg til Telegram</string>
-    <string name="diag_log_info_desc">Sender den fullstendige diagnostikkloggen direkte til den tilkoblede Telegram-boten din — ingenting lagres eller deles lokalt. Koble til en bot under Sikkerhetskopiering &amp; gjenoppretting → Telegram-sikkerhetskopiering først.</string>
     <string name="enable_troubleshooting_hint">Aktiver dette kun ved feilsøking; historikkdiagrammene tar prøver hvert 2. sekund mens de er synlige.</string>
     <string name="background_readiness_label">Bakgrunnsberedskap</string>
     <string name="write_settings_perm_label">Skriv innstillinger</string>

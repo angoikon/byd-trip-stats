@@ -578,11 +578,6 @@ private data class FaqEntry(val question: String, val answer: String, val url: S
 private fun buildFaqList(context: android.content.Context): List<FaqEntry> = listOf(
 
     FaqEntry(
-        context.getString(R.string.faq_q_no_electro),
-        context.getString(R.string.faq_a_no_electro)
-    ),
-
-    FaqEntry(
         context.getString(R.string.faq_q_internet),
         context.getString(R.string.faq_a_internet)
     ),

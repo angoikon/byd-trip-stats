@@ -48,7 +48,7 @@ Sends the backup file to a private Telegram chat. Accessible from any device wit
 6. Paste the token and tap **Validate & Save**
 7. The app contacts Telegram, confirms the token, and saves your chat ID automatically
 
-Everything below then happens in **Settings → Data → Backup & Restore**.
+Everything below then happens in **Settings → App → Backup & Restore**.
 
 **Manual backup:**
 1. Tap **Send Backup Now**
@@ -98,7 +98,7 @@ Configured in **Settings → Connections**, directly under the bot itself. It is
 
 **Send test message** confirms the whole path before you rely on it.
 
-*When a summary is sent.* It goes out **when the trip ends**, which is not the moment you park: a trip ends once the car has been off for the **auto-stop time** in *Settings → Preferences* (3 minutes by default). Set that to 45 minutes and the summary arrives 45 minutes after you park — that is the trip genuinely ending, not a delay. On **DiLink-3** in the default **Always On** background mode the app is still running then, so this is the normal case.
+*When a summary is sent.* It goes out **when the trip ends**, which is not the moment you park: a trip ends once the car has been off for the **auto-stop time** in *Settings → Preferences → Trip recording* (3 minutes by default). Set that to 45 minutes and the summary arrives 45 minutes after you park — that is the trip genuinely ending, not a delay. On **DiLink-3** in the default **Always On** background mode the app is still running then, so this is the normal case.
 
 A trip the app could only close **afterwards** is recorded in full but **not announced**. On **DiLink-5** the car force-stops the app at ignition-off, so a trip left to close on its own is closed at the next start, and a notification then would be about yesterday's drive arriving as you set off on today's. Tapping **Stop** to end the trip before you switch the car off closes it live, and that one does send a summary.
 

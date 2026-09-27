@@ -65,6 +65,7 @@ fun DashboardScreen(
     val liveDistanceKm by viewModel.liveDistanceKm.collectAsState()
     val liveOdometerDistanceKm by viewModel.liveOdometerDistanceKm.collectAsState()
     val liveSegmentDistanceKm by viewModel.liveSegmentDistanceKm.collectAsState()
+    val distanceSinceLastChargeKm by viewModel.distanceSinceLastChargeKm.collectAsState()
     val liveSessionStartMs by viewModel.liveSessionStartMs.collectAsState()
     val liveOffStateMs by viewModel.liveOffStateMs.collectAsState()
     val liveAccumulatedKwh by viewModel.liveAccumulatedKwh.collectAsState()
@@ -280,6 +281,7 @@ fun DashboardScreen(
                 widthSizeClass = widthSizeClass,
                 sessionDistanceKm = liveSegmentDistanceKm,
                 tripDistanceKm = liveDistanceKm,
+                distanceSinceChargeKm = distanceSinceLastChargeKm,
                 liveOdometerDistanceKm = liveOdometerDistanceKm,
                 liveSessionStartMs = liveSessionStartMs,
                 liveOffStateMs = liveOffStateMs,
@@ -474,6 +476,7 @@ fun DashboardContent(
     widthSizeClass: WindowWidthSizeClass = WindowWidthSizeClass.Expanded,
     sessionDistanceKm: Double = 0.0,
     tripDistanceKm: Double = 0.0,
+    distanceSinceChargeKm: Double? = null,
     liveOdometerDistanceKm: Double = 0.0,
     liveSessionStartMs: Long? = null,
     liveOffStateMs: Long = 0L,
@@ -498,6 +501,7 @@ fun DashboardContent(
             editMode = cardsEditMode,
             sessionDistanceKm = sessionDistanceKm,
             tripDistanceKm = tripDistanceKm,
+            distanceSinceChargeKm = distanceSinceChargeKm,
             tyreUnit = tyreUnit,
             isInTrip = isInTrip,
             autoTripDetection = autoTripDetection,
@@ -569,6 +573,7 @@ fun DashboardContent(
                     yearlyEfficiency = yearlyEfficiency,
                     sessionDistanceKm = sessionDistanceKm,
                     tripDistanceKm = tripDistanceKm,
+                    distanceSinceChargeKm = distanceSinceChargeKm,
                     consumptionExpanded = consumptionExpanded,
                     onConsumptionExpand = onConsumptionExpand,
                     onConsumptionClose = onConsumptionClose,
@@ -624,6 +629,7 @@ fun DashboardContent(
                         yearlyEfficiency = yearlyEfficiency,
                         sessionDistanceKm = sessionDistanceKm,
                         tripDistanceKm = tripDistanceKm,
+                        distanceSinceChargeKm = distanceSinceChargeKm,
                         consumptionExpanded = consumptionExpanded,
                         onConsumptionExpand = onConsumptionExpand,
                         onConsumptionClose = onConsumptionClose,
@@ -704,6 +710,7 @@ fun DashboardContent(
                         yearlyEfficiency = yearlyEfficiency,
                         sessionDistanceKm = sessionDistanceKm,
                         tripDistanceKm = tripDistanceKm,
+                        distanceSinceChargeKm = distanceSinceChargeKm,
                         consumptionExpanded = consumptionExpanded,
                         onConsumptionExpand = onConsumptionExpand,
                         onConsumptionClose = onConsumptionClose,

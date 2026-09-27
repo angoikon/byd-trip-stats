@@ -44,9 +44,9 @@
     <string name="settings_tab_pro">Pro</string>
     <string name="settings_tab_about">Tentang &amp; FAQ</string>
     <string name="pro_cards_layout_title">Tata letak dasbor kartu</string>
-    <string name="pro_cards_layout_info">Dasbor yang lebih besar dan sepenuhnya dapat disesuaikan: ubin besar dengan jarak yang baik alih-alih grafik tengah. Ketuk pensil untuk menyusun ulang ubin dengan menyeret, menampilkan atau menyembunyikan yang Anda inginkan, dan ketuk ubin Jangkauan untuk membuka grafik proyeksi ukuran penuh. Pilih di Preferensi → Tata Letak Dasbor setelah dibuka.</string>
+    <string name="pro_cards_layout_info">Dasbor yang lebih besar dan sepenuhnya dapat disesuaikan: ubin besar dengan jarak yang baik alih-alih grafik tengah. Ketuk pensil untuk menyusun ulang ubin dengan menyeret, menampilkan atau menyembunyikan yang Anda inginkan, dan ketuk ubin Jangkauan untuk membuka grafik proyeksi ukuran penuh. Pilih di Preferensi → Tampilan → Tata Letak Dasbor setelah dibuka.</string>
     <string name="pro_neon_theme_title">Tema Neon</string>
-    <string name="pro_neon_theme_info">Tema gelap hitam pekat yang ramah OLED, yang angka metrik dayanya dan garis aksennya menyala seperti neon, dengan tepi aksen halus di setiap kartu. Pilih di Preferensi → Tema setelah dibuka.</string>
+    <string name="pro_neon_theme_info">Tema gelap hitam pekat yang ramah OLED, yang angka metrik dayanya dan garis aksennya menyala seperti neon, dengan tepi aksen halus di setiap kartu. Pilih di Preferensi → Tampilan → Tema setelah dibuka.</string>
 
     <!-- Detail tabs -->
     <string name="tab_overview">Ringkasan</string>
@@ -490,7 +490,6 @@
     <string name="trim_skip_vacuum_msg">Pemangkasan selesai. (VACUUM dilewati; mulai ulang aplikasi nanti untuk memulihkan ruang.)</string>
     <string name="trim_failed_msg">Pemangkasan gagal: %1$s</string>
     <string name="last_backup_label">Cadangan terakhir: %1$s</string>
-    <string name="open_backup_restore_action">Buka Cadangkan &amp; Pulihkan</string>
     <string name="reset_all_data_label">Setel ulang semua data perjalanan</string>
     <string name="reset_confirm_title">Setel ulang semua data perjalanan?</string>
     <string name="reset_confirm_msg">Ini akan menghapus permanen semua perjalanan dan statistik.\n\nCadangan akan disimpan ke Download secara otomatis sebelum penyetelan ulang. Aplikasi akan menutup dan membuka kembali.</string>
@@ -817,7 +816,7 @@
     <string name="schedule_monthly">Bulanan</string>
     <string name="danger_zone_title">ZONA BAHAYA</string>
     <string name="danger_zone_desc">Menghapus permanen semua perjalanan, titik data, dan statistik. Cadangan lokal dibuat otomatis sebelum penyetelan ulang.</string>
-    <string name="send_diag_log_desc">Mengirim log diagnostik lengkap (peristiwa macet kecepatan dan \'penyegaran telemetri macet\') langsung ke bot Telegram yang terhubung — tidak ada yang disimpan atau dibagikan secara lokal. Hubungkan bot dulu di Cadangkan &amp; Pulihkan → Cadangan Telegram.</string>
+    <string name="send_diag_log_desc">Tiga cara membagikan log diagnostik, bersama log milik pembantu latar belakang jika ada. Telegram mengirimnya secara lengkap ke bot Anda (siapkan di Pengaturan → Koneksi → Telegram). Simpan menyalinnya ke Download/BydTripStats/ di mobil. Email via kode QR mengunggah bagian terbarunya dan menampilkan kode yang Anda pindai dengan ponsel untuk mengirim tautannya lewat email; tautan kedaluwarsa setelah 24 jam.</string>
     <string name="compat_privacy_notice_body">Laporan menangkap nilai mentah dari setiap sumber data di unit kepala mobil Anda — nilai numerik, string, dan larik.\n\nLintang dan bujur GPS TIDAK disertakan.\n\nSemua lainnya disertakan: status baterai, data motor, gigi, kecepatan, mode berkendara, status AC, status pengisian, nilai khusus PHEV, dll.\n\nTidak ada yang dikirim otomatis. \"Email via kode QR\" mengunggah laporan ke host publik sementara (litterbox) dan menampilkan tautan yang terhapus otomatis setelah 24 jam; hingga saat itu siapa pun dengan tautan dapat membacanya. Opsi lain menyimpan laporan di perangkat Anda.</string>
     <string name="compat_sending_label">Mengirim…</string>
     <string name="compat_email_qr_label">Email via kode QR</string>
@@ -887,7 +886,6 @@
     <string name="select_car_label">Pilih mobil</string>
 
     <!-- Settings — General section -->
-    <string name="section_general">Umum</string>
     <string name="pref_theme">Tema</string>
     <string name="theme_desc">Pilih tampilan aplikasi. Bawaan sistem mengikuti pengaturan gelap/terang perangkat Anda.</string>
     <string name="theme_system">Sistem</string>
@@ -910,7 +908,6 @@
     <string name="dashboard_icons_desc">Saat aktif, kartu proyeksi jangkauan menampilkan ikon baterai isian cair, gambar AWD/poros dengan hamparan tekanan/suhu ban, dan gambar mini konsumsi beranimasi di atas grafik. Saat nonaktif, itu berpindah ke bilah atas (ikon baterai dan konsumsi) dan kartu statistik Ban khusus di panel samping — mengosongkan ruang vertikal untuk grafik jangkauan dan melewati semua animasi.</string>
 
     <!-- Settings — Trips section -->
-    <string name="section_trips">Perjalanan</string>
     <string name="pref_engine_off_timeout">Batas waktu perjalanan mesin mati</string>
     <string name="engine_off_timeout_desc">Berapa lama perjalanan tetap terbuka setelah mobil dimatikan. Jika mobil menyala kembali dalam jendela ini, perekaman berlanjut mulus (perjalanan sama, segmen baru muncul beserta jarak kumulatif dalam tanda kurung). Melewati jendela, perjalanan berakhir dan berkendara berikutnya memulai yang baru. Bawaan adalah 3 menit.</string>
     <string name="current_timeout_value">Saat ini: %1$s mnt</string>
@@ -927,12 +924,8 @@
     <string name="pref_goals_label">Sasaran &amp; rekor pribadi</string>
     <string name="goal_consumption_value">Sasaran konsumsi: %1$s</string>
     <string name="goal_monthly_distance_value">Sasaran jarak bulanan: %1$s</string>
-    <string name="best_consumption_value">Konsumsi terbaik: %1$s</string>
-    <string name="best_distance_value">Jarak terbaik: %1$s</string>
-    <string name="open_goals_action">Buka sasaran &amp; rekor pribadi</string>
 
     <!-- Settings — Battery section -->
-    <string name="section_battery">Baterai &amp; telemetri</string>
     <string name="pref_soc_source">Sumber SoC</string>
     <string name="soc_source_desc">Pilih pembacaan persentase baterai mana yang ditampilkan di dasbor.</string>
     <string name="soc_panel_option">Panel</string>
@@ -1019,7 +1012,7 @@
     <string name="web_companion_label">Web Companion</string>
     <string name="web_companion_desc">Jelajahi perjalanan &amp; pengisian dari perangkat apa pun di WiFi yang sama.</string>
     <string name="web_companion_disabled_desc">Mulai server lokal agar Anda dapat membuka riwayat perjalanan di peramban.</string>
-    <string name="web_companion_wifi_info">Disajikan lewat WiFi lokal Anda, jadi dapat dijangkau selama mobil menyala dan layanan telemetri hidup. Setelah parkir, kebanyakan unit BYD memutus WiFi ~15 mnt setelah mobil mati — setelah itu companion tidak dapat dijangkau (tidak ada cadangan data seluler untuk server lokal) sampai mobil menyala lagi, di setiap mode aktivitas latar.\nCatatan: aplikasi Electro punya opsi menjaga WiFi tetap hidup tanpa batas</string>
+    <string name="web_companion_wifi_info">Disajikan lewat WiFi lokal Anda, jadi dapat dijangkau selama mobil menyala dan layanan telemetri hidup. Setelah parkir, kebanyakan unit BYD memutus WiFi ~15 mnt setelah mobil mati — setelah itu companion tidak dapat dijangkau (tidak ada cadangan data seluler untuk server lokal) sampai mobil menyala lagi, di setiap mode aktivitas latar.</string>
     <string name="web_companion_files_info">Companion juga memiliki tab Berkas: unduh cadangan basis data, ekspor, dan log diagnostik langsung ke ponsel atau laptop Anda, dan unggah cadangan ke mobil tanpa mencolokkan apa pun. Ini hanya menampilkan folder milik aplikasi, bukan seluruh unit kepala.</string>
     <string name="port_field_label">Port</string>
     <string name="port_hint_text">Coba 8081, 8888, 9090 jika port diblokir. Perubahan memulai ulang server.</string>
@@ -1045,6 +1038,34 @@
     <string name="status_enabled_label">Status: Aktif</string>
     <string name="status_disabled_label">Status: Nonaktif</string>
     <string name="back_to_overview_action">Kembali ke ringkasan</string>
+    <!-- Settings overview cards (App, Preferences, Connections → Web Companion) -->
+    <string name="settings_overview_desc">Pilih bagian untuk dibuka. Kartu di bawah menampilkan pengaturan saat ini sekilas.</string>
+    <string name="web_companion_card_desc">Jelajahi perjalanan, pengisian daya, dan file di browser ponsel atau laptop.</string>
+    <string name="power_card_desc">Apa yang tetap berjalan setelah mobil dimatikan, dan menjaga Wi-Fi tetap aktif.</string>
+    <string name="power_card_desc_d5">Apa yang tetap berjalan setelah mobil dimatikan, dan akses data kendaraan.</string>
+    <string name="backup_card_title">Cadangkan &amp; Pulihkan</string>
+    <string name="backup_card_desc">Perjalanan, riwayat pengisian daya, dan pengaturan — lokal, ke kartu SD, atau via Telegram.</string>
+    <string name="compat_card_desc">Rekam laporan telemetri yang membantu menambahkan dukungan untuk model Anda.</string>
+    <string name="diagnostics_card_desc">Kirim log diagnostik, dan lihat CPU, memori, serta izin secara langsung.</string>
+    <string name="wifi_keepalive_on_status">Jaga Wi-Fi aktif: nyala</string>
+    <string name="d5_vehicle_access_off_status">Akses data kendaraan mati</string>
+    <string name="diagnostics_live_on_status">Detail langsung nyala</string>
+    <string name="diagnostics_live_off_status">Detail langsung mati</string>
+    <string name="pref_appearance_title">Tampilan</string>
+    <string name="pref_appearance_desc">Tema, tata letak dasbor, serta ikon &amp; animasi dasbor.</string>
+    <string name="pref_language_units_title">Bahasa &amp; satuan</string>
+    <string name="pref_language_units_desc">Bahasa aplikasi, dan satuan metrik atau imperial.</string>
+    <string name="pref_trip_recording_title">Perekaman perjalanan</string>
+    <string name="pref_trip_recording_desc">Kapan perjalanan berakhir setelah mobil dimatikan, dan seberapa pendek sebuah perjalanan boleh.</string>
+    <string name="trip_recording_status">Berhenti otomatis setelah %1$d mnt • minimum %2$s</string>
+    <string name="trip_recording_status_no_min">Berhenti otomatis setelah %1$d mnt • tanpa minimum</string>
+    <string name="pref_battery_title">Baterai</string>
+    <string name="pref_battery_desc">Pembacaan status daya mana yang ditampilkan, dan peringatan ketidakseimbangan sel.</string>
+    <string name="battery_status_alert_on">SoC: %1$s • peringatan ketidakseimbangan nyala</string>
+    <string name="battery_status_alert_off">SoC: %1$s • peringatan ketidakseimbangan mati</string>
+    <string name="pref_costs_desc">Tarif listrik dan mata uang Anda, dipakai untuk menghitung biaya perjalanan dan pengisian.</string>
+    <string name="pref_goals_desc">Target konsumsi dan jarak, serta rekor pribadi Anda.</string>
+    <string name="pro_cell_imbalance_info">Memperingatkan Anda saat selisih tegangan sel baterai tetap di atas batas Anda — tanda awal sel yang lemah. Aktifkan dan atur batasnya di Preferensi → Baterai setelah dibuka.</string>
 
     <!-- ABRP settings -->
     <string name="abrp_link_desc">Token Link Generic mengunggah telemetri langsung ke A Better Routeplanner.</string>
@@ -1133,8 +1154,6 @@
 
     <!-- FAQ -->
     <string name="faq_section_title">FAQ</string>
-    <string name="faq_q_no_electro">Berbeda dari versi lama, benarkah saya tidak lagi memerlukan aplikasi Electro?</string>
-    <string name="faq_a_no_electro">Benar. BYD Trip Stats bekerja sebagai aplikasi mandiri pada kendaraan yang didukung, jadi perekaman perjalanan dan sesi pengisian bekerja tanpa Electro.\n\nElectro tetap menjadi aplikasi pendamping berguna bagi pemilik yang menginginkan fiturnya sendiri, tapi tidak lagi diperlukan agar BYD Trip Stats berfungsi.</string>
     <string name="faq_q_internet">Apakah saya perlu internet atau sinyal seluler?</string>
     <string name="faq_a_internet">Tidak untuk penggunaan normal. Perjalanan, sesi pengisian, grafik, dan riwayat lokal direkam sepenuhnya di perangkat.\n\nInternet hanya diperlukan untuk fitur opsional seperti pemeriksaan pembaruan aplikasi, membuka tautan web, integrasi MQTT / ABRP, dan cadangan Telegram jika Anda mengaktifkannya.</string>
     <string name="faq_q_pro">Apa itu BYD Trip Stats Pro dan apa isinya?</string>
@@ -1144,9 +1163,9 @@
     <string name="faq_q_offline_trip">Tidak ada konektivitas jaringan berarti perjalanan akan hilang dari riwayat?</string>
     <string name="faq_a_offline_trip">Tidak. Riwayat perjalanan disimpan secara lokal dan tidak bergantung pada sinyal seluler atau Wi-Fi.\n\nPerjalanan mungkin ditutup sedikit lebih lambat hanya jika telemetri langsung itu sendiri berhenti sejenak. Dalam hal itu watchdog menutup perjalanan aktif setelah 3 menit keheningan telemetri, ditambatkan ke paket terakhir yang aplikasi terima.</string>
     <string name="faq_q_stops_restart">Aplikasi berhenti bekerja setelah mobil dinyalakan ulang</string>
-    <string name="faq_a_stops_restart">Anda perlu mengecualikan BYD Trip Stats dari penghenti mulai-otomatis:\n\n1. Buka aplikasi Disable Autostart (aplikasi BYD bawaan, biasanya dekat penjelajah file)\n2. Temukan BYD Trip Stats dan alihkan entrinya ke MATI — sama seperti yang Anda lakukan untuk Electro\n3. Buka aplikasi dan tahan tombol volume ~10 detik untuk memulai ulang UI mobil\n4. Buka kembali aplikasi\n\nPenting: Anda harus mengulangi langkah ini setelah setiap pembaruan aplikasi, karena izin disetel ulang saat instal ulang.</string>
+    <string name="faq_a_stops_restart">Anda perlu mengecualikan BYD Trip Stats dari penghenti mulai-otomatis:\n\n1. Buka aplikasi Disable Autostart (aplikasi BYD bawaan, biasanya dekat penjelajah file)\n2. Temukan BYD Trip Stats dan alihkan entrinya ke MATI\n3. Buka aplikasi dan tahan tombol volume ~10 detik untuk memulai ulang UI mobil\n4. Buka kembali aplikasi\n\nPenting: Anda harus mengulangi langkah ini setelah setiap pembaruan aplikasi, karena izin disetel ulang saat instal ulang.</string>
     <string name="faq_q_backup">Bagaimana saya mencadangkan data perjalanan?</string>
-    <string name="faq_a_backup">Beberapa metode tersedia — semua menghasilkan file SQLite standar yang sama:\n\nLokal (paling sederhana): Pengaturan → Data → Buka Cadangkan &amp; Pulihkan → Cadangkan Sekarang.\n\nKartu SD (Pro): Cadangkan &amp; Pulihkan → Cadangkan ke kartu SD. Bertahan setelah aplikasi dihapus.\n\nTelegram (disarankan): Hubungkan bot via Cadangkan &amp; Pulihkan → Cadangan Telegram, lalu kirim manual atau terjadwal.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/NAMAFILE.db &gt; local.db</string>
+    <string name="faq_a_backup">Beberapa metode tersedia — semua menghasilkan file SQLite standar yang sama:\n\nLokal (paling sederhana): Pengaturan → Aplikasi → Cadangkan &amp; Pulihkan → Cadangkan Sekarang.\n\nKartu SD (Pro): Cadangkan &amp; Pulihkan → Cadangkan ke kartu SD. Bertahan setelah aplikasi dihapus.\n\nTelegram (disarankan): Hubungkan bot di Pengaturan → Koneksi → Telegram, lalu kirim manual atau terjadwal.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/NAMAFILE.db &gt; local.db</string>
     <string name="faq_q_recover">Saya instal ulang aplikasi — bisakah saya memulihkan cadangan?</string>
     <string name="faq_a_recover">Ya. Telegram: sambungkan kembali token bot Anda, lalu Pulihkan dari Telegram → ikon segarkan menemukan kembali semua cadangan otomatis.\n\nLokal: file .db di Download/BydTripStats/ bertahan setelah instal ulang. Buka Cadangkan &amp; Pulihkan, ketuk ikon segarkan di Pemulihan Lokal dan mereka muncul kembali.</string>
     <string name="faq_q_auto_backup">Bagaimana cadangan otomatis Telegram bekerja?</string>
@@ -1165,8 +1184,6 @@
     <!-- App Management screen -->
     <string name="app_mgmt_backup_local_label">Lokal</string>
     <string name="app_mgmt_telegram_label">Telegram</string>
-    <string name="app_mgmt_private_bot_desc">Obrolan bot pribadi</string>
-    <string name="app_mgmt_manual_scheduled">Manual &amp; terjadwal</string>
     <string name="app_mgmt_no_local_backup">Tidak ada cadangan lokal ditemukan</string>
 
     <!-- Telemetry debug -->
@@ -1188,7 +1205,6 @@
     <string name="diagnostic_enabled_desc">Alat proses, memori, bingkai, izin, dan ADB langsung terlihat.</string>
     <string name="diagnostic_disabled_desc">Mati secara bawaan agar layar ini tidak terus menyurvei saat Anda hanya memeriksa cadangan.</string>
     <string name="send_diag_log_action">Kirim log diagnostik ke Telegram</string>
-    <string name="diag_log_info_desc">Mengirim log diagnostik lengkap langsung ke bot Telegram yang terhubung — tidak ada yang disimpan atau dibagikan secara lokal. Hubungkan bot dulu di Cadangkan &amp; Pulihkan → Cadangan Telegram.</string>
     <string name="enable_troubleshooting_hint">Aktifkan ini hanya saat memecahkan masalah; grafik riwayat mengambil sampel setiap 2 detik saat terlihat.</string>
     <string name="background_readiness_label">Kesiapan Latar</string>
     <string name="write_settings_perm_label">Tulis pengaturan</string>

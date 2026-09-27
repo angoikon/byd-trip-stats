@@ -165,4 +165,23 @@ object CostAttribution {
         }
         return result
     }
+
+    /**
+     * Odometer (km) at the most recent charge — in progress or completed — for the dashboard's
+     * "since last charge" distance. Anchored as [distancesSincePreviousCharge] anchors a charge
+     * (plug-in odometer, else the last trip that ended before it), except that a 0 reading counts
+     * as missing: it is what the car reports for a moment after waking, and measuring from it
+     * would show the whole odometer as distance since the charge.
+     */
+    fun lastChargeOdometer(
+        sessions: List<ChargingSessionEntity>,
+        trips: List<TripEntity>
+    ): Double? {
+        val last = sessions.maxByOrNull { it.startTime } ?: return null
+        return last.startOdometer?.takeIf { it > 0.0 }
+            ?: trips
+                .filter { (it.endOdometer ?: 0.0) > 0.0 && it.endTime != null && it.endTime <= last.startTime }
+                .maxByOrNull { it.endTime ?: 0L }
+                ?.endOdometer
+    }
 }

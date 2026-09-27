@@ -44,9 +44,9 @@
     <string name="settings_tab_pro">Pro</string>
     <string name="settings_tab_about">Névjegy és GYIK</string>
     <string name="pro_cards_layout_title">Kártyás műszerfal-elrendezés</string>
-    <string name="pro_cards_layout_info">Nagyobb, teljesen testreszabható műszerfal: nagy, jól elrendezett csempék a központi diagram helyett. Koppintson a ceruzára a csempék húzással történő átrendezéséhez, a kívántak megjelenítéséhez vagy elrejtéséhez, és koppintson a Hatótáv csempére a projekciós diagram teljes méretű megnyitásához. Feloldás után válassza a Beállítások → Műszerfal elrendezése alatt.</string>
+    <string name="pro_cards_layout_info">Nagyobb, teljesen testreszabható műszerfal: nagy, jól elrendezett csempék a központi diagram helyett. Koppintson a ceruzára a csempék húzással történő átrendezéséhez, a kívántak megjelenítéséhez vagy elrejtéséhez, és koppintson a Hatótáv csempére a projekciós diagram teljes méretű megnyitásához. Feloldás után válassza a Beállítások → Megjelenés → Műszerfal elrendezése alatt.</string>
     <string name="pro_neon_theme_title">Neon téma</string>
-    <string name="pro_neon_theme_info">Tiszta fekete, OLED-barát sötét téma, amelynek teljesítménymérő számjegyei és kiemelő csíkjai neonként világítanak, minden kártyán finom kiemelő szegéllyel. Feloldás után válassza a Beállítások → Téma alatt.</string>
+    <string name="pro_neon_theme_info">Tiszta fekete, OLED-barát sötét téma, amelynek teljesítménymérő számjegyei és kiemelő csíkjai neonként világítanak, minden kártyán finom kiemelő szegéllyel. Feloldás után válassza a Beállítások → Megjelenés → Téma alatt.</string>
 
     <!-- Detail tabs -->
     <string name="tab_overview">Áttekintés</string>
@@ -490,7 +490,6 @@
     <string name="trim_skip_vacuum_msg">Karcsúsítás kész. (A VACUUM kimaradt; indítsa újra az alkalmazást később a hely visszanyeréséhez.)</string>
     <string name="trim_failed_msg">A karcsúsítás nem sikerült: %1$s</string>
     <string name="last_backup_label">Utolsó mentés: %1$s</string>
-    <string name="open_backup_restore_action">Mentés és visszaállítás megnyitása</string>
     <string name="reset_all_data_label">Összes útadat visszaállítása</string>
     <string name="reset_confirm_title">Visszaállítja az összes útadatot?</string>
     <string name="reset_confirm_msg">Ez véglegesen törli az összes utat és statisztikát.\n\nA visszaállítás előtt automatikusan mentés készül a Download mappába. Az alkalmazás bezárul és újranyílik.</string>
@@ -817,7 +816,7 @@
     <string name="schedule_monthly">Havonta</string>
     <string name="danger_zone_title">VESZÉLYZÓNA</string>
     <string name="danger_zone_desc">Véglegesen töröl minden utat, adatpontot és statisztikát. A visszaállítás előtt automatikusan helyi mentés készül.</string>
-    <string name="send_diag_log_desc">A teljes diagnosztikai naplót (sebesség-elakadás és \'beragadt telemetriafrissítés\' események) közvetlenül a csatlakoztatott Telegram botnak küldi — semmi sem kerül helyi mentésre vagy megosztásra. Először csatlakoztasson botot: Mentés és visszaállítás → Telegram-mentés.</string>
+    <string name="send_diag_log_desc">Három módja a diagnosztikai napló megosztásának, a háttérsegéd saját naplójával együtt, ha van ilyen. A Telegram teljes egészében elküldi a botjának (állítson be egyet a Beállítások → Kapcsolatok → Telegram alatt). A Mentés az autón a Download/BydTripStats/ mappába másolja. Az E-mail QR-kóddal feltölti a legfrissebb részét, és megjelenít egy kódot, amelyet a telefonjával beolvasva e-mailben elküldhet egy rá mutató linket; a link 24 óra után lejár.</string>
     <string name="compat_privacy_notice_body">A jelentés nyers értékeket rögzít az autó fejegységének minden adatforrásából — számértékeket, szövegeket és tömböket.\n\nA GPS szélesség és hosszúság NINCS benne.\n\nMinden más benne van: akkuállapot, motoradatok, fokozat, sebesség, vezetési módok, klímaállapot, töltési állapot, PHEV-specifikus értékek stb.\n\nSemmi sem kerül automatikus elküldésre. Az \"E-mail QR-kóddal\" ideiglenes nyilvános tárhelyre (litterbox) tölti fel a jelentést, és linket mutat, amely 24 óra után magától törlődik; addig bárki elolvashatja, akinek megvan a link. A többi lehetőség az eszközön tartja a jelentést.</string>
     <string name="compat_sending_label">Küldés…</string>
     <string name="compat_email_qr_label">E-mail QR-kóddal</string>
@@ -887,7 +886,6 @@
     <string name="select_car_label">Autó kiválasztása</string>
 
     <!-- Settings — General section -->
-    <string name="section_general">Általános</string>
     <string name="pref_theme">Téma</string>
     <string name="theme_desc">Válassza ki az alkalmazás kinézetét. A rendszer-alapértelmezés az eszköz sötét/világos beállítását követi.</string>
     <string name="theme_system">Rendszer</string>
@@ -910,7 +908,6 @@
     <string name="dashboard_icons_desc">Bekapcsolva a hatótáv-előrejelző kártya folyadékkitöltésű akkuikont, guminyomás/hőmérséklet-rátétes AWD/tengelyrajzot és animált fogyasztási miniatűrt mutat a grafikon felett. Kikapcsolva ezek a felső sávba (akku- és fogyasztásikonok) és az oldalpanel külön Gumik statisztikakártyájára kerülnek — függőleges helyet szabadítva a hatótávgrafikonnak és kihagyva minden animációt.</string>
 
     <!-- Settings — Trips section -->
-    <string name="section_trips">Utak</string>
     <string name="pref_engine_off_timeout">Út-időkorlát motor leállítása után</string>
     <string name="engine_off_timeout_desc">Meddig marad nyitva az út az autó kikapcsolása után. Ha az autó ezen az ablakon belül újra bekapcsol, a rögzítés zökkenőmentesen folytatódik (ugyanaz az út, új szakasz jelenik meg a zárójeles halmozott távolsággal). Az ablakon túl az út véget ér, és a következő vezetés újat indít. Alapértelmezés: 3 perc.</string>
     <string name="current_timeout_value">Jelenlegi: %1$s perc</string>
@@ -927,12 +924,8 @@
     <string name="pref_goals_label">Célok és egyéni csúcsok</string>
     <string name="goal_consumption_value">Fogyasztási cél: %1$s</string>
     <string name="goal_monthly_distance_value">Havi távolságcél: %1$s</string>
-    <string name="best_consumption_value">Legjobb fogyasztás: %1$s</string>
-    <string name="best_distance_value">Legjobb távolság: %1$s</string>
-    <string name="open_goals_action">Célok és egyéni csúcsok megnyitása</string>
 
     <!-- Settings — Battery section -->
-    <string name="section_battery">Akku és telemetria</string>
     <string name="pref_soc_source">SoC-forrás</string>
     <string name="soc_source_desc">Válassza ki, melyik akkuszázalék-értéket mutassa a műszerfal.</string>
     <string name="soc_panel_option">Panel</string>
@@ -1019,7 +1012,7 @@
     <string name="web_companion_label">Web Companion</string>
     <string name="web_companion_desc">Böngéssze az utakat és töltéseket bármely, ugyanazon WiFi-n lévő eszközről.</string>
     <string name="web_companion_disabled_desc">Indítson helyi szervert, hogy az úttörténetet böngészőben nyithassa meg.</string>
-    <string name="web_companion_wifi_info">A helyi WiFi-n keresztül szolgálja ki, így elérhető, amíg az autó be van kapcsolva és a telemetriaszolgáltatás él. Parkolás után a legtöbb BYD egység ~15 perccel a kikapcsolás után lekapcsolja a WiFi-t — ezután a companion elérhetetlen (helyi szervernél nincs mobiladat-tartalék), amíg az autó újra be nem kapcsol, minden háttértevékenységi módban.\nMegjegyzés: az Electro appnak van lehetősége a WiFi korlátlan fenntartására</string>
+    <string name="web_companion_wifi_info">A helyi WiFi-n keresztül szolgálja ki, így elérhető, amíg az autó be van kapcsolva és a telemetriaszolgáltatás él. Parkolás után a legtöbb BYD egység ~15 perccel a kikapcsolás után lekapcsolja a WiFi-t — ezután a companion elérhetetlen (helyi szervernél nincs mobiladat-tartalék), amíg az autó újra be nem kapcsol, minden háttértevékenységi módban.</string>
     <string name="web_companion_files_info">A companionnak van egy Fájlok füle is: töltsd le az adatbázis-mentéseket, exportokat és a diagnosztikai naplót közvetlenül a telefonodra vagy laptopodra, és tölts fel egy mentést az autóra anélkül, hogy bármit csatlakoztatnál. Csak az alkalmazás saját mappáit mutatja, nem az egész fejegységet.</string>
     <string name="port_field_label">Port</string>
     <string name="port_hint_text">Próbálja a 8081, 8888, 9090 portokat, ha egy port blokkolt. A módosítások újraindítják a szervert.</string>
@@ -1045,6 +1038,34 @@
     <string name="status_enabled_label">Állapot: Engedélyezve</string>
     <string name="status_disabled_label">Állapot: Letiltva</string>
     <string name="back_to_overview_action">Vissza az áttekintéshez</string>
+    <!-- Settings overview cards (App, Preferences, Connections → Web Companion) -->
+    <string name="settings_overview_desc">Válassza ki a megnyitandó részt. Az alábbi kártyák egy pillantással mutatják az aktuális beállításokat.</string>
+    <string name="web_companion_card_desc">Utak, töltések és fájlok böngészése a telefon vagy laptop böngészőjében.</string>
+    <string name="power_card_desc">Mi fut tovább az autó kikapcsolása után, és a Wi-Fi ébren tartása.</string>
+    <string name="power_card_desc_d5">Mi fut tovább az autó kikapcsolása után, és a járműadatokhoz való hozzáférés.</string>
+    <string name="backup_card_title">Mentés és visszaállítás</string>
+    <string name="backup_card_desc">Utak, töltési előzmények és beállítások — helyben, SD-kártyára vagy Telegramon.</string>
+    <string name="compat_card_desc">Rögzítsen egy telemetriai jelentést, amely segít támogatni az Ön modelljét.</string>
+    <string name="diagnostics_card_desc">Küldje el a diagnosztikai naplót, és kövesse élőben a CPU-t, a memóriát és az engedélyeket.</string>
+    <string name="wifi_keepalive_on_status">Wi-Fi ébren tartása be</string>
+    <string name="d5_vehicle_access_off_status">Járműadat-hozzáférés ki</string>
+    <string name="diagnostics_live_on_status">Élő részletek be</string>
+    <string name="diagnostics_live_off_status">Élő részletek ki</string>
+    <string name="pref_appearance_title">Megjelenés</string>
+    <string name="pref_appearance_desc">Téma, műszerfal elrendezése, valamint a műszerfal ikonjai és animációi.</string>
+    <string name="pref_language_units_title">Nyelv és mértékegységek</string>
+    <string name="pref_language_units_desc">Az alkalmazás nyelve, valamint metrikus vagy angolszász mértékegységek.</string>
+    <string name="pref_trip_recording_title">Utak rögzítése</string>
+    <string name="pref_trip_recording_desc">Mikor ér véget egy út az autó kikapcsolása után, és milyen rövid lehet egy út.</string>
+    <string name="trip_recording_status">Automatikus leállítás %1$d perc után • minimum %2$s</string>
+    <string name="trip_recording_status_no_min">Automatikus leállítás %1$d perc után • nincs minimum</string>
+    <string name="pref_battery_title">Akku</string>
+    <string name="pref_battery_desc">Melyik töltöttségi érték jelenjen meg, és a cella-kiegyensúlyozatlansági riasztás.</string>
+    <string name="battery_status_alert_on">SoC: %1$s • kiegyensúlyozatlansági riasztás be</string>
+    <string name="battery_status_alert_off">SoC: %1$s • kiegyensúlyozatlansági riasztás ki</string>
+    <string name="pref_costs_desc">Az áramtarifa és a pénznem, amelyekkel az utak és töltések ára számolódik.</string>
+    <string name="pref_goals_desc">Fogyasztási és távolsági célok, valamint az egyéni csúcsai.</string>
+    <string name="pro_cell_imbalance_info">Figyelmeztet, ha az akkumulátor cellafeszültségeinek szórása tartósan a határérték felett marad — egy gyenge cella korai jele. Feloldás után kapcsolja be és állítsa be a határértéket a Beállítások → Akku alatt.</string>
 
     <!-- ABRP settings -->
     <string name="abrp_link_desc">A Link Generic token élő telemetriát tölt fel az A Better Routeplannerbe.</string>
@@ -1133,8 +1154,6 @@
 
     <!-- FAQ -->
     <string name="faq_section_title">GYIK</string>
-    <string name="faq_q_no_electro">Igaz, hogy a régebbi verziókkal ellentétben már nincs szükségem az Electro appra?</string>
-    <string name="faq_a_no_electro">Így van. A BYD Trip Stats önálló alkalmazásként működik a támogatott járműveken, így az útrögzítés és a töltési munkamenetek Electro nélkül is működnek.\n\nAz Electro továbbra is hasznos kísérőapp azoknak a tulajdonosoknak, akik a saját funkcióit szeretnék, de a BYD Trip Stats működéséhez már nem szükséges.</string>
     <string name="faq_q_internet">Kell internet vagy mobiljel?</string>
     <string name="faq_a_internet">Normál használathoz nem. Az utak, töltési munkamenetek, grafikonok és a helyi előzmények teljes egészében az eszközön rögzülnek.\n\nInternet csak opcionális funkciókhoz kell, mint a frissítés-ellenőrzés, weblinkek megnyitása, MQTT / ABRP integráció és a Telegram-mentések, ha bekapcsolja őket.</string>
     <string name="faq_q_pro">Mi az a BYD Trip Stats Pro, és mit tartalmaz?</string>
@@ -1146,7 +1165,7 @@
     <string name="faq_q_stops_restart">Az alkalmazás az autó újraindítása után nem működik</string>
     <string name="faq_a_stops_restart">Ki kell vennie a BYD Trip Stats-ot az autostart-gyilkosból:\n\n1. Nyissa meg a Disable Autostart alkalmazást (natív BYD app, általában a fájlkezelő közelében)\n2. Keresse meg a BYD Trip Stats-ot, és kapcsolja KI a bejegyzését — ahogy az Electrónál is tette\n3. Nyissa meg az alkalmazást, és tartsa nyomva a hangerőgombot ~10 másodpercig az autó UI újraindításához\n4. Nyissa meg újra az alkalmazást\n\nFontos: ezt a lépést minden alkalmazásfrissítés után meg kell ismételnie, mert az engedély újratelepítéskor visszaáll.</string>
     <string name="faq_q_backup">Hogyan mentsem az útadataimat?</string>
-    <string name="faq_a_backup">Több módszer is elérhető — mind ugyanazt a szabványos SQLite fájlt hozza létre:\n\nHelyi (legegyszerűbb): Beállítások → Adatok → Mentés és visszaállítás megnyitása → Mentés most.\n\nSD-kártya (Pro): Mentés és visszaállítás → Mentés SD-kártyára. Túléli az alkalmazás eltávolítását.\n\nTelegram (ajánlott): Csatlakoztasson botot a Mentés és visszaállítás → Telegram-mentés úton, majd küldjön kézzel vagy ütemezve.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FÁJLNÉV.db &gt; local.db</string>
+    <string name="faq_a_backup">Több módszer is elérhető — mind ugyanazt a szabványos SQLite fájlt hozza létre:\n\nHelyi (legegyszerűbb): Beállítások → Alkalmazás → Mentés és visszaállítás → Mentés most.\n\nSD-kártya (Pro): Mentés és visszaállítás → Mentés SD-kártyára. Túléli az alkalmazás eltávolítását.\n\nTelegram (ajánlott): Csatlakoztasson botot a Beállítások → Kapcsolatok → Telegram alatt, majd küldjön kézzel vagy ütemezve.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FÁJLNÉV.db &gt; local.db</string>
     <string name="faq_q_recover">Újratelepítettem az alkalmazást — visszakaphatom a mentéseimet?</string>
     <string name="faq_a_recover">Igen. Telegram: csatlakoztassa újra a bot tokenjét, majd Visszaállítás Telegramról → a frissítés ikon automatikusan újra felfedezi az összes mentést.\n\nHelyi: a Download/BydTripStats/ .db fájljai túlélik az újratelepítést. Nyissa meg a Mentés és visszaállítást, koppintson a frissítés ikonra a Helyi visszaállításnál, és újra megjelennek.</string>
     <string name="faq_q_auto_backup">Hogyan működik a Telegram automatikus mentés?</string>
@@ -1165,8 +1184,6 @@
     <!-- App Management screen -->
     <string name="app_mgmt_backup_local_label">Helyi</string>
     <string name="app_mgmt_telegram_label">Telegram</string>
-    <string name="app_mgmt_private_bot_desc">Privát botcsevegés</string>
-    <string name="app_mgmt_manual_scheduled">Kézi és ütemezett</string>
     <string name="app_mgmt_no_local_backup">Nem található helyi mentés</string>
 
     <!-- Telemetry debug -->
@@ -1188,7 +1205,6 @@
     <string name="diagnostic_enabled_desc">Láthatók az élő folyamat-, memória-, képkocka-, engedély- és ADB-eszközök.</string>
     <string name="diagnostic_disabled_desc">Alapból kikapcsolva, hogy ez a képernyő ne kérdezgessen folyamatosan, amíg csak a mentéseket nézi.</string>
     <string name="send_diag_log_action">Diagnosztikai napló küldése Telegramra</string>
-    <string name="diag_log_info_desc">A teljes diagnosztikai naplót közvetlenül a csatlakoztatott Telegram botnak küldi — semmi sem kerül helyi mentésre vagy megosztásra. Először csatlakoztasson botot: Mentés és visszaállítás → Telegram-mentés.</string>
     <string name="enable_troubleshooting_hint">Csak hibakereséskor kapcsolja be; az előzménygrafikonok 2 másodpercenként mintavételeznek, amíg láthatók.</string>
     <string name="background_readiness_label">Háttérkészenlét</string>
     <string name="write_settings_perm_label">Beállítások írása</string>

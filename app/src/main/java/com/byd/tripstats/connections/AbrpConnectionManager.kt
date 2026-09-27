@@ -4,6 +4,8 @@ import android.content.Context
 import android.net.Uri
 import com.byd.tripstats.data.config.CarConfig
 import com.byd.tripstats.data.model.VehicleTelemetry
+import com.byd.tripstats.data.preferences.PreferencesManager
+import com.byd.tripstats.data.preferences.SocSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -20,8 +22,24 @@ import kotlin.math.abs
 
 class AbrpConnectionManager(context: Context) {
     private val appContext = context.applicationContext
+    private val prefs = PreferencesManager(appContext)
     private val inFlight = AtomicBoolean(false)
     @Volatile private var lastUploadAtMs: Long = 0L
+
+    companion object {
+        /**
+         * The state of charge to send in ABRP's `soc` field: the reading chosen under Settings →
+         * Preferences → Battery (Panel by default), as the dashboard, trip history and Telegram
+         * summaries already show it.
+         *
+         * This used to be the BMS reading regardless, so ABRP sat a few points below the car's own
+         * display — 2–3 points on a Sealion 7 at 80–90% (issue #24). ABRP's telemetry API asks
+         * for "what's displayed on the dashboard of the vehicle", which is the Panel figure. A car
+         * that reports no Panel figure (0) falls back to the BMS one rather than sending 0%.
+         */
+        internal fun socForAbrp(source: SocSource, socPanel: Int, socBms: Double): Double =
+            if (source == SocSource.PANEL && socPanel > 0) socPanel.toDouble() else socBms
+    }
 
     fun onTelemetry(
         telemetry: VehicleTelemetry,
@@ -96,7 +114,7 @@ class AbrpConnectionManager(context: Context) {
         val payload = JSONObject()
         val utcSeconds = System.currentTimeMillis() / 1000
         payload.put("utc", utcSeconds)
-        payload.put("soc", telemetry.soc)
+        payload.put("soc", socForAbrp(prefs.getCachedSocSource(), telemetry.socPanel, telemetry.soc))
         payload.put("power", when {
             telemetry.isCharging && telemetry.chargingPower > 0.0 -> -telemetry.chargingPower
             telemetry.enginePower != 0 -> telemetry.enginePower.toDouble()
@@ -122,6 +140,8 @@ class AbrpConnectionManager(context: Context) {
         telemetry.soh.takeIf { it > 0 }?.let { payload.put("soh", it) }
         val capacity = carConfig?.batteryKwh?.takeIf { it > 0.0 }
             ?: run {
+                // Always the BMS SoC here, whatever `soc` above sends: the remaining kWh is a BMS
+                // figure too, and dividing it by the dashboard percentage would skew the result.
                 val soc = telemetry.soc.takeIf { it > 0.0 } ?: 0.0
                 val remain = telemetry.batteryRemainPowerEV?.takeIf { it > 0.0 } ?: 0.0
                 if (soc > 0.0 && remain > 0.0) remain / (soc / 100.0) else null
