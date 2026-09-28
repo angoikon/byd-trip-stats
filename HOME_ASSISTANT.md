@@ -6,7 +6,7 @@ BYD Trip Stats publishes telemetry via MQTT using **Home Assistant MQTT Discover
 
 ## How it works
 
-- On every connect the app publishes **retained** discovery config messages to `homeassistant/sensor/<name>/<key>/config` and `homeassistant/binary_sensor/<name>/<key>/config`.
+- The app publishes **retained** discovery config messages to `homeassistant/sensor/<name>/<key>/config` and `homeassistant/binary_sensor/<name>/<key>/config`. Because they are retained, the broker keeps serving them to HA across reconnects and app restarts, so they are sent again only when they actually change — an app update that changes the sensor set, a different friendly name, or a different broker — and once a day regardless, so a broker that has lost its retained messages recovers on its own. The app also re-sends them whenever Home Assistant announces itself on `homeassistant/status`. Press **Test & Save** to force a resend if your broker has lost its retained messages.
 - Telemetry is published as a **single retained JSON blob** to `byd-trip-stats/<name>/state`.
 - Each discovery config uses a `value_template` to extract its field from that JSON (e.g. `{{ value_json.soc }}`), so HA always has the latest value even after a restart.
 - An availability topic (`byd-trip-stats/<name>/availability`) carries `online` / `offline` (Last Will and Testament), so HA marks entities unavailable on unexpected disconnect.

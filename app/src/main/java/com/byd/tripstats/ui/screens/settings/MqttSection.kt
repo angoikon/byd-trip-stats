@@ -315,6 +315,10 @@ internal fun MqttConnectionSection(context: Context, scope: CoroutineScope) {
                                     webSocketPath = wsPathInput
                                 )
                                 MqttConnectionStore.save(context, current)
+                                // HOME_ASSISTANT.md tells people to press this when the broker has
+                                // lost its retained configs, so it has to mean "send them again"
+                                // rather than "send them if we think you need them".
+                                manager.requestDiscoveryRepublish()
                                 testing = true
                                 result = null
                                 resultOk = false
