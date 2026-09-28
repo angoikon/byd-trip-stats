@@ -1452,27 +1452,34 @@ class BydVehicleDataSource(context: Context) {
         }
 
         ensureDilink5SdkInjected("pre-Charging")
+        // NOTE — on DiLink-5 this handle is never set. It is assigned THROUGH the listener registration,
+        // and this file's own chargingListener (an AbsBYDAutoChargingListener subclass) cannot link
+        // against the injected OEM classes there, so the registration throws and takes the assignment
+        // with it; the charging getters are never polled on that platform.
+        //
+        // Taking the handle first looks like a one-line fix. It was tried (948ee49) and withdrawn before
+        // release, because the null handle is quietly protecting two other places:
+        //
+        //  1. stop() unregisters inside `catch (_: Exception)`. With a null handle `?.` never evaluates
+        //     chargingListener; with a real one it does, the lazy subclass throws NoClassDefFoundError —
+        //     an Error, which that catch does not take — and it escapes VehicleTelemetryService.onDestroy
+        //     as a crash, having skipped the mirror-listener cleanup that prevents the next start's
+        //     event-delivery wedge. recoverEventDelivery's runCatching survives it, but would register the
+        //     listener on DiLink-5 if it ever did link.
+        //  2. The polled values start feeding charge detection. On a DiLink-5 Sealion 7 the m33 getter,
+        //     getChargingPower(), read 359.4 parked and unplugged; updatePackChargingPower accepts
+        //     0.1..500, so every parked car would read as charging at ~359 kW. getChargingRestTime reads
+        //     [255,255] at rest, and extractRestTime passes that straight through.
+        //
+        // Before taking this handle on DiLink-5: keep chargingListener unevaluated on that platform in
+        // stop() and recoverEventDelivery, and calibrate getChargingPower against a real charge so the
+        // pack-power path can reject its at-rest value.
         tryDevice("Charging") {
-            // Assign the handle BEFORE registering the listener, and never inside the same
-            // expression — see [registerTypedListener] for why binding the two together cost
-            // DiLink-5 every charging getter it has.
-            chargingDevice = BYDAutoChargingDevice.getInstance(ctx)
-            chargingDevice?.also {
-                // DiLink-5 binds and polls only. chargingListener is one of this file's own
-                // AbsBYDAuto* subclasses and cannot link against the injected OEM classes there, so the
-                // registration can only fail — and Dilink5Client already registers a charging listener
-                // that does link. Attempting it anyway would add a new OEM listener registration to the
-                // startup path of the one platform that can boot-loop the head unit, which
-                // MD/DI5_PR_REVIEW_CHECKLIST.md §1 forbids without evidence it cannot throw on a BYD
-                // thread — in exchange for nothing. The call order is unchanged from before this gate,
-                // so DiLink-3 behaves exactly as it did.
-                val ownListeners = !DiLink5Platform.isDiLink5
-                if (ownListeners) {
-                    registerTypedListener("Charging listener") { it.registerListener(chargingListener) }
-                }
-                Log.i(TAG, "✅ ChargingDevice bound (ownListeners=$ownListeners)")
+            chargingDevice = BYDAutoChargingDevice.getInstance(ctx)?.also {
+                it.registerListener(chargingListener)
+                Log.i(TAG, "✅ ChargingDevice registered")
                 logChargingSnapshot(it)
-                if (ownListeners) registerEventMirrorListener(it, "Charging")
+                registerEventMirrorListener(it, "Charging")
                 anySuccess = true
             }
         }
@@ -1492,15 +1499,13 @@ class BydVehicleDataSource(context: Context) {
         }
 
         ensureDilink5SdkInjected("pre-Tyre")
-        // NOTE — this handle is assigned THROUGH the listener registration, and on DiLink-5 that
-        // registration always throws (see [registerTypedListener]), so `tyreDevice` is left null there
-        // and every registration below the failing line has never once run on that platform. Charging
-        // above had the identical defect and is fixed; this one deliberately is NOT, because here the
-        // null is load-bearing: `tyreDevice == null` is what switches on the InstrumentDevice TPMS
-        // fallback further down this file, so "fixing" it would silently turn off whatever tyre-pressure
-        // source DiLink-5 is using today and hand the job to getters nobody has confirmed answer on that
-        // firmware. Pending a getter sweep of BYDAutoTyreDevice on a DiLink-5 car; the right guard is
-        // then "no pressure has arrived from the tyre device", not "no handle".
+        // NOTE — the same lost handle as Charging above, left alone for the same two reasons (stop() has
+        // the identical Exception-only catch around tyreListener), plus one of its own: here the null is
+        // load-bearing. `tyreDevice == null` switches on the InstrumentDevice TPMS fallback further down
+        // this file, which DiLink-5 is relying on today, so taking the handle would silently turn that
+        // source off and hand the job to getters nobody has confirmed answer on that firmware. Pending a
+        // getter sweep of BYDAutoTyreDevice on a DiLink-5 car; the fallback's guard should then become
+        // "no pressure has arrived from the tyre device", not "no handle".
         tryDevice("Tyre") {
             tyreDevice = BYDAutoTyreDevice.getInstance(ctx)?.also {
                 it.registerListener(tyreListener)
@@ -2245,45 +2250,6 @@ class BydVehicleDataSource(context: Context) {
     private fun logTryDeviceError(name: String, message: String) {
         if (lastLoggedTryDeviceError.put(name, message) != message) {
             DiagLog.event(appContext, TAG, message)
-        }
-    }
-
-    /**
-     * Register a typed OEM listener without letting a failure cost us the device handle.
-     *
-     * A device handle and its listener are independently useful: the getters work over IPC whether
-     * or not a callback is ever delivered. But both Charging and Tyre used to register their listener
-     * *inside* the `also` block that assigned the handle, so when `registerListener` threw, the block
-     * aborted before the assignment completed and the field stayed null. The periodic getter polls
-     * are guarded on exactly those fields ("Charging refresh" / "Tyre refresh"), so one undeliverable
-     * listener silently cost us the entire device.
-     *
-     * That is not hypothetical: on DiLink-5 this file's own `AbsBYDAuto*Listener` subclasses
-     * deterministically fail to link against the injected OEM classes (see
-     * [handleDilink5TyrePressureByType] for what has been ruled out), so every DiLink-5 launch lost
-     * both devices — and in Tyre's case every further registration below the failing line too — while
-     * an outside harness confirmed the same getters answer fine on a bound device.
-     *
-     * Only the Charging site uses this so far. Tyre has the same defect and is knowingly left alone,
-     * because there the lost handle has become load-bearing; the note above `tryDevice("Tyre")` says
-     * what has to be measured before it can be changed.
-     *
-     * Throwable, not Exception: a linkage failure is an Error. Deduped through [logTryDeviceError] so
-     * a permanently unavailable listener reports once instead of on every event-recovery pass.
-     */
-    private fun registerTypedListener(label: String, register: () -> Unit) {
-        try {
-            register()
-        } catch (t: Throwable) {
-            var cause: Throwable? = t
-            val chain = StringBuilder("⚠️ $label not registered: ${t.javaClass.simpleName}: ${t.message}")
-            while (cause?.cause != null && cause.cause !== cause) {
-                cause = cause.cause
-                chain.append(" | caused by ${cause!!.javaClass.simpleName}: ${cause.message}")
-            }
-            chain.append(" — device handle kept, getters still polled")
-            Log.w(TAG, chain.toString())
-            logTryDeviceError(label, chain.toString())
         }
     }
 
