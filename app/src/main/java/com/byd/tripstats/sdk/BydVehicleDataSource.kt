@@ -1453,11 +1453,26 @@ class BydVehicleDataSource(context: Context) {
 
         ensureDilink5SdkInjected("pre-Charging")
         tryDevice("Charging") {
-            chargingDevice = BYDAutoChargingDevice.getInstance(ctx)?.also {
-                it.registerListener(chargingListener)
-                Log.i(TAG, "✅ ChargingDevice registered")
+            // Assign the handle BEFORE registering the listener, and never inside the same
+            // expression — see [registerTypedListener] for why binding the two together cost
+            // DiLink-5 every charging getter it has.
+            chargingDevice = BYDAutoChargingDevice.getInstance(ctx)
+            chargingDevice?.also {
+                // DiLink-5 binds and polls only. chargingListener is one of this file's own
+                // AbsBYDAuto* subclasses and cannot link against the injected OEM classes there, so the
+                // registration can only fail — and Dilink5Client already registers a charging listener
+                // that does link. Attempting it anyway would add a new OEM listener registration to the
+                // startup path of the one platform that can boot-loop the head unit, which
+                // MD/DI5_PR_REVIEW_CHECKLIST.md §1 forbids without evidence it cannot throw on a BYD
+                // thread — in exchange for nothing. The call order is unchanged from before this gate,
+                // so DiLink-3 behaves exactly as it did.
+                val ownListeners = !DiLink5Platform.isDiLink5
+                if (ownListeners) {
+                    registerTypedListener("Charging listener") { it.registerListener(chargingListener) }
+                }
+                Log.i(TAG, "✅ ChargingDevice bound (ownListeners=$ownListeners)")
                 logChargingSnapshot(it)
-                registerEventMirrorListener(it, "Charging")
+                if (ownListeners) registerEventMirrorListener(it, "Charging")
                 anySuccess = true
             }
         }
@@ -1477,6 +1492,15 @@ class BydVehicleDataSource(context: Context) {
         }
 
         ensureDilink5SdkInjected("pre-Tyre")
+        // NOTE — this handle is assigned THROUGH the listener registration, and on DiLink-5 that
+        // registration always throws (see [registerTypedListener]), so `tyreDevice` is left null there
+        // and every registration below the failing line has never once run on that platform. Charging
+        // above had the identical defect and is fixed; this one deliberately is NOT, because here the
+        // null is load-bearing: `tyreDevice == null` is what switches on the InstrumentDevice TPMS
+        // fallback further down this file, so "fixing" it would silently turn off whatever tyre-pressure
+        // source DiLink-5 is using today and hand the job to getters nobody has confirmed answer on that
+        // firmware. Pending a getter sweep of BYDAutoTyreDevice on a DiLink-5 car; the right guard is
+        // then "no pressure has arrived from the tyre device", not "no handle".
         tryDevice("Tyre") {
             tyreDevice = BYDAutoTyreDevice.getInstance(ctx)?.also {
                 it.registerListener(tyreListener)
@@ -2221,6 +2245,45 @@ class BydVehicleDataSource(context: Context) {
     private fun logTryDeviceError(name: String, message: String) {
         if (lastLoggedTryDeviceError.put(name, message) != message) {
             DiagLog.event(appContext, TAG, message)
+        }
+    }
+
+    /**
+     * Register a typed OEM listener without letting a failure cost us the device handle.
+     *
+     * A device handle and its listener are independently useful: the getters work over IPC whether
+     * or not a callback is ever delivered. But both Charging and Tyre used to register their listener
+     * *inside* the `also` block that assigned the handle, so when `registerListener` threw, the block
+     * aborted before the assignment completed and the field stayed null. The periodic getter polls
+     * are guarded on exactly those fields ("Charging refresh" / "Tyre refresh"), so one undeliverable
+     * listener silently cost us the entire device.
+     *
+     * That is not hypothetical: on DiLink-5 this file's own `AbsBYDAuto*Listener` subclasses
+     * deterministically fail to link against the injected OEM classes (see
+     * [handleDilink5TyrePressureByType] for what has been ruled out), so every DiLink-5 launch lost
+     * both devices — and in Tyre's case every further registration below the failing line too — while
+     * an outside harness confirmed the same getters answer fine on a bound device.
+     *
+     * Only the Charging site uses this so far. Tyre has the same defect and is knowingly left alone,
+     * because there the lost handle has become load-bearing; the note above `tryDevice("Tyre")` says
+     * what has to be measured before it can be changed.
+     *
+     * Throwable, not Exception: a linkage failure is an Error. Deduped through [logTryDeviceError] so
+     * a permanently unavailable listener reports once instead of on every event-recovery pass.
+     */
+    private fun registerTypedListener(label: String, register: () -> Unit) {
+        try {
+            register()
+        } catch (t: Throwable) {
+            var cause: Throwable? = t
+            val chain = StringBuilder("⚠️ $label not registered: ${t.javaClass.simpleName}: ${t.message}")
+            while (cause?.cause != null && cause.cause !== cause) {
+                cause = cause.cause
+                chain.append(" | caused by ${cause!!.javaClass.simpleName}: ${cause.message}")
+            }
+            chain.append(" — device handle kept, getters still polled")
+            Log.w(TAG, chain.toString())
+            logTryDeviceError(label, chain.toString())
         }
     }
 
@@ -3925,13 +3988,25 @@ class BydVehicleDataSource(context: Context) {
                     (s.engineSpeedFront ?: 0) > 0 || (s.engineSpeedRear ?: 0) > 0 ||
                     (s.enginePower?.let { kotlin.math.abs(it) >= 2 } == true)
                 if (s.directSpeedKmh < 0.1 && looksMoving) {
-                    val evAgoMs = android.os.SystemClock.elapsedRealtime() - lastSpeedEventElapsedMs
+                    // lastSpeedEventElapsedMs is written ONLY inside the speed-event handler, so a 0
+                    // here means the callback has never arrived in this process — not that it arrived
+                    // at boot. Reporting an age measured from boot made those two indistinguishable,
+                    // and telling them apart on a DiLink-5 unit (where the event has never fired at
+                    // all) took a count across 14,406 log lines to notice that spEventAgoMs was simply
+                    // tracking uptime. So say which it is outright. Likewise "scale=none": without the
+                    // event the scale can never be learned, and printing the same token for "not yet"
+                    // and "never" is what made a dead channel read as a calibration in progress.
+                    val eventState = if (lastSpeedEventElapsedMs == 0L) {
+                        "spEvent=never-arrived scale=n/a"
+                    } else {
+                        "spEventAgoMs=${android.os.SystemClock.elapsedRealtime() - lastSpeedEventElapsedMs} " +
+                            "spEventRaw=${lastSpeedEventRaw ?: "none"} scale=${speedEventScale ?: "learning"}"
+                    }
                     val msg = "🐌 speed=0 while moving: rawGetter=${speed ?: "null"} " +
                         "gear=${s.gear} rpmF=${s.engineSpeedFront} rpmR=${s.engineSpeedRear} " +
                         "power=${s.enginePower} gps=${s.locationGpsSpeed ?: "n/a"} " +
                         "chargeKw=${_chargingPowerKw.value} gun=${_chargingGunState.value} work=${_chargerWorkState.value} " +
-                        "m25=${runtimeMethodNames("m25").getOrNull(0) ?: "none"} " +
-                        "spEventAgoMs=$evAgoMs spEventRaw=${lastSpeedEventRaw ?: "none"} scale=${speedEventScale ?: "none"}"
+                        "m25=${runtimeMethodNames("m25").getOrNull(0) ?: "none"} " + eventState
                     logInfoIfChanged("speedStall", msg)
                     // Persist to the in-app diagnostic log (viewable / shareable after
                     // parking — no logcat needed). Throttled so it can't flood the file.
