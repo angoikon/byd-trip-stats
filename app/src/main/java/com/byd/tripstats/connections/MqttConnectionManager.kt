@@ -356,6 +356,10 @@ class MqttConnectionManager(context: Context) {
                 .topicFilter(HA_STATUS_TOPIC)
                 .qos(MqttQos.AT_LEAST_ONCE)
                 .callback { message ->
+                    // A retained copy is the broker replaying an old birth on our own subscribe,
+                    // not Home Assistant restarting — acting on it would re-send the whole set on
+                    // every connect. A real restart reaches a live subscription with retain unset.
+                    if (message.isRetain) return@callback
                     val payload = String(message.payloadAsBytes, Charsets.UTF_8).trim()
                     if (payload.equals("online", ignoreCase = true)) {
                         // Raise the flag rather than publish from the broker's callback thread; the

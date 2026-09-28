@@ -1,4 +1,4 @@
-## [2.17.0] - Unreleased
+## [2.17.0] - 2026-Sep-28
 
 > **What's new in a nutshell**
 >
@@ -102,6 +102,8 @@
   Smaller things along the way: on **Vehicle Compatibility** and **App Diagnostics**, the three ways to send a report — **Telegram**, **Save** and **Email via QR code** — now sit side by side on one row, and the probe's **delete** button sits beside the switch that records the data rather than among the ways of sending it. The text under the diagnostics buttons now says what each of the three does — it used to say the log went only to Telegram and was never saved locally, beside a Save button. And **Disconnect** on the Telegram and Tailscale pages is a proper button rather than a text link.
 
   **Opening Settings no longer restarts the web companion.** Its settings used to sit on the tab Settings opens on, and showing them stopped and restarted the companion's server every time — so a page loading in a browser at that moment failed. That now happens only when you open the Web Companion page itself.
+
+- **Home Assistant: the sensor setup is sent only when something has changed** — Home Assistant builds the car's entities from 49 discovery messages the app leaves on your MQTT broker, and the app sent the whole set again every time it started. On **DiLink-5**, where the car closes the app at every switch-off, that meant several times a day: one Sealion 7 sent it 8 times in two days, about 20 KB each time, describing sensors that hadn't changed since the app was installed. The app now remembers what it last sent, and to which broker, and sends it again only when it changes — an update that adds or corrects a sensor, a new friendly name, or a different broker. A broker that loses what it was holding (Mosquitto without persistence, a recreated container) is something the car cannot see, so two safety nets cover it: the set is sent again **once a day** regardless, and whenever **Home Assistant announces a restart** on `homeassistant/status`. Two older faults went with it. **Switching to a different broker** could leave it with the readings but not the setup — saving the new address with **Save** rather than **Test & Save** was enough — so Home Assistant showed no entities until the app next restarted; the new broker now gets the setup straight away. And **Test & Save** now always sends the setup again, as the Home Assistant guide says it does, where before only the first press after opening the page did — it is the remedy for a broker that has lost it. Found with a logging broker on a Sealion 7 and contributed by **[@luads](https://github.com/luads)** ([#25](https://github.com/angoikon/byd-trip-stats/pull/25)).
 
 ### Fixed
 
