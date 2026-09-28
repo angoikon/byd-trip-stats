@@ -27,9 +27,17 @@ internal object RtDispatch {
      * and watchdog callers have no such budget.
      *
      * @return true when the supervisor is up afterwards — either it already was, or we re-dispatched
-     *         it successfully. Lets the caller's retry ladder stop instead of re-probing for nothing.
+     *         it and a follow-up probe agreed. Lets the caller's retry ladder stop instead of
+     *         re-probing for nothing. A dispatch that exits 0 while the supervisor stays down
+     *         returns false, so the ladder gets another go — see [probeAfterDispatch] for why the
+     *         exit code alone was not enough. [verifyDispatch] turns that follow-up probe off for a
+     *         caller that cannot afford the extra round-trip.
      */
-    suspend fun launch(context: Context, snapshotSupervisor: Boolean = true): Boolean {
+    suspend fun launch(
+        context: Context,
+        snapshotSupervisor: Boolean = true,
+        verifyDispatch: Boolean = true,
+    ): Boolean {
         if (!AdbPermissionManager.isSetupComplete(context)) {
             // Means the background restarter is never dispatched at all — the permission grants are
             // gone. Silent in release before this line existed, because Log.* is stripped.
@@ -84,13 +92,57 @@ internal object RtDispatch {
         }
         val r = results.first()
         Log.i(TAG, "dispatched exit=${r.exitCode} :: ${r.output.take(120)}")
+        val after = when {
+            r.exitCode != 0 -> "(not attempted)"
+            !verifyDispatch -> "(not checked — caller on a budget)"
+            else -> probeAfterDispatch(context, probe)
+        }
         logState(
             context, "redispatch",
             "supd=DOWN ${bootAge()} ${channelDiag(context)} — re-dispatched exit=${r.exitCode} " +
-                "out='${r.output.replace('\n', ' ').take(40)}' probe='$verdict'",
+                "out='${r.output.replace('\n', ' ').take(40)}' probe='$verdict' after='$after'",
         )
-        return r.exitCode == 0
+        // Only a probe that positively says "not alive" is treated as failure. A silent channel is
+        // left as a success so the caller's ladder doesn't re-dispatch on no evidence — every
+        // dispatch truncates the supervisor log, which is the one post-hoc record worth keeping.
+        return r.exitCode == 0 && after != DEAD_AFTER_DISPATCH
     }
+
+    /** Marker for a post-dispatch probe that came back with the supervisor still not running. */
+    private const val DEAD_AFTER_DISPATCH = "still-down"
+
+    /**
+     * Re-probes after a dispatch, because the dispatch script's exit code only says the script ran
+     * — not that the supervisor came up behind it.
+     *
+     * A DiLink-5 log caught the difference plainly: two dispatches a second apart, both
+     * `exit=0 out='OK'`, and the probe between them reading `DEAD sup=4234 n=0 d=0 f=1`. Reporting
+     * the exit code as success told the caller's retry ladder to stop, so nothing tried again — and
+     * with no supervisor, the next car-off had nothing to revive the app, which silently costs a
+     * live trip close (and with it the trip-finished notification).
+     *
+     * The result is also written to the log line above, so the record finally states whether the
+     * dispatch took, instead of only showing it in the *next* run's probe — by which time the
+     * window that mattered has passed.
+     */
+    private suspend fun probeAfterDispatch(context: Context, probe: String): String {
+        kotlinx.coroutines.delay(DISPATCH_SETTLE_MS)
+        val res = AdbPermissionManager.runShellBatch(
+            context,
+            listOf(probe),
+            perCommandTimeoutMs = 2_500L,
+        )
+        val out = res.firstOrNull()?.output?.trim().orEmpty()
+        return when {
+            out == "ALIVE" -> "ALIVE"
+            out.isBlank() -> "(silent)"
+            else -> DEAD_AFTER_DISPATCH
+        }
+    }
+
+    /** Long enough for a dispatched supervisor to be visible to the probe, short enough for the
+     *  BootReceiver caller's 8 s budget to survive a probe + dispatch + this. */
+    private const val DISPATCH_SETTLE_MS = 700L
 
     // ── Boot-window watcher ──────────────────────────────────────────────────────────────────
 

@@ -106,10 +106,15 @@ class BootReceiver : BroadcastReceiver() {
                         withTimeout(8_000L) {
                             RtInProcessPatches.apply(appContext)
                             RtShellPatches.apply(appContext)
-                            // No supervisor-log snapshot on this path — the 8 s budget above has to
-                            // cover the probe and the re-dispatch, and starving the re-dispatch to
-                            // copy a log would be the wrong trade. Application.onCreate takes it.
-                            RtDispatch.launch(appContext, snapshotSupervisor = false)
+                            // No supervisor-log snapshot and no post-dispatch verify on this path —
+                            // the 8 s budget above has to cover the probe and the re-dispatch, and
+                            // starving the re-dispatch to copy a log or re-probe would be the wrong
+                            // trade. Application.onCreate and the watchdog do both, moments later.
+                            RtDispatch.launch(
+                                appContext,
+                                snapshotSupervisor = false,
+                                verifyDispatch = false,
+                            )
                         }
                     } catch (e: Exception) {
                         Log.w(TAG, "Whitelist injection failed/timed out on $action: ${e.message}")
