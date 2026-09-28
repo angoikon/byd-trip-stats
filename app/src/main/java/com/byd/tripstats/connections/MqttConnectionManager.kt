@@ -17,6 +17,7 @@ import com.byd.tripstats.ui.components.energyModeLabel
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.security.MessageDigest
 import java.time.Instant
 import kotlin.math.abs
 
@@ -28,7 +29,11 @@ class MqttConnectionManager(context: Context) {
     @Volatile private var connected = false
     @Volatile private var lastEndpoint: String = ""
     @Volatile private var currentDeviceId: String = ""
-    @Volatile private var discoveryPublishedForId: String = ""
+    // Which broker + device id we have already reconciled discovery against, so the common
+    // case costs a string compare rather than rebuilding all 49 payloads on every publish tick.
+    @Volatile private var discoveryCheckedFor: String = ""
+    @Volatile private var forceDiscoveryRepublish: Boolean = false
+    @Volatile private var lastDiscoveryReconcileMs: Long = 0L
     @Volatile private var lastOnlineAssertMs: Long = 0L
     @Volatile private var lastKnownLat: Double = 0.0
     @Volatile private var lastKnownLon: Double = 0.0
@@ -100,6 +105,15 @@ class MqttConnectionManager(context: Context) {
         return ok to status
     }
 
+    /**
+     * Forces the next connection check to send the discovery set again, whether or not the broker
+     * is believed to have it. This is the remedy for a broker that lost its retained store, which
+     * nothing observable from the car can detect.
+     */
+    fun requestDiscoveryRepublish() {
+        forceDiscoveryRepublish = true
+    }
+
     fun shutdown() {
         synchronized(lock) {
             runCatching { client?.disconnect() }
@@ -112,13 +126,23 @@ class MqttConnectionManager(context: Context) {
     private fun ensureConnected(config: MqttConnectionConfig): Boolean {
         val resolvedId = resolveDeviceId(config)
         val endpoint = "${config.brokerUrl.trim()}:${config.brokerPort}"
+        val avTopic = "byd-trip-stats/$resolvedId/availability"
+        val stTopic = "byd-trip-stats/$resolvedId/state"
         synchronized(lock) {
-            if (connected && client != null && endpoint == lastEndpoint && resolvedId == currentDeviceId) return true
+            if (connected && client != null && endpoint == lastEndpoint && resolvedId == currentDeviceId) {
+                // Test & Save asks for a republish over a connection that is already up, so this
+                // path has to be able to send discovery as well — it is not only a connect-time job.
+                // Unlike the connect path below this sits outside publish()'s try, and the service
+                // scope has no handler, so anything thrown here would take the service down with it
+                // — on DiLink-5 that is a relaunch loop. Nothing in there should throw; this is a
+                // net, not a plan.
+                runCatching { ensureDiscoveryPublished(config, resolvedId, avTopic, stTopic, endpoint) }
+                    .onFailure { Log.w(TAG, "Discovery check failed on the live connection", it) }
+                return true
+            }
             shutdown()
             lastEndpoint = endpoint
             currentDeviceId = resolvedId
-            val avTopic = "byd-trip-stats/$resolvedId/availability"
-            val stTopic = "byd-trip-stats/$resolvedId/state"
 
             // Do NOT use automaticReconnect — it reconnects internally and bypasses
             // ensureConnected(), so the availability "online" publish never fires
@@ -193,13 +217,11 @@ class MqttConnectionManager(context: Context) {
             if (ok) {
                 try {
                     // Discovery first (retained) so HA knows entities before seeing them go online
-                    if (discoveryPublishedForId != resolvedId) {
-                        publishAllDiscovery(config, resolvedId, avTopic, stTopic)
-                        discoveryPublishedForId = resolvedId
-                    }
+                    ensureDiscoveryPublished(config, resolvedId, avTopic, stTopic, endpoint)
                     // Then mark available — state arrives right after from publish()
                     publishRetained(avTopic, "online")
                     lastOnlineAssertMs = System.currentTimeMillis()
+                    subscribeToHomeAssistantStatus()
                 } catch (e: Throwable) {
                     Log.w(TAG, "Failed to publish discovery/availability", e)
                 }
@@ -249,10 +271,11 @@ class MqttConnectionManager(context: Context) {
         }
     }
 
-    private fun publishRetained(topic: String, payload: String) {
-        val activeClient = client ?: return
-        try {
+    private fun publishRetained(topic: String, payload: String): Boolean {
+        val activeClient = client ?: return false
+        return try {
             val latch = CountDownLatch(1)
+            var ok = false
             activeClient.publishWith()
                 .topic(topic)
                 .payload(payload.toByteArray(Charsets.UTF_8))
@@ -260,21 +283,101 @@ class MqttConnectionManager(context: Context) {
                 .retain(true)
                 .send()
                 .whenComplete { _, throwable ->
+                    ok = throwable == null
                     if (throwable != null) Log.e(TAG, "publishRetained failed", throwable)
                     latch.countDown()
                 }
             latch.await(5, TimeUnit.SECONDS)
+            ok
         } catch (t: Throwable) {
             Log.w(TAG, "publishRetained error", t)
+            false
         }
     }
 
-    private fun publishAllDiscovery(
+    /**
+     * Sends the discovery set only when the broker does not already have this exact one.
+     *
+     * Home Assistant reads the retained configs on its own subscribe, so restating all 49 after a
+     * dropped connection costs ~19.6 KB and tells nobody anything new. The fingerprint is persisted
+     * rather than held in a field because on DiLink-5 the app process is killed and restarted
+     * several times a day: a gate that lives only in memory is discarded with the process that
+     * owns it, and every restart pays for the whole set again.
+     */
+    private fun ensureDiscoveryPublished(
+        config: MqttConnectionConfig,
+        resolvedId: String,
+        avTopic: String,
+        stTopic: String,
+        endpoint: String
+    ) {
+        // The broker belongs in the key as much as the device id does: pointing the app at a new
+        // broker leaves the old one's retained set behind and the new one with nothing.
+        val scope = "$endpoint|$resolvedId"
+        val now = System.currentTimeMillis()
+        if (scope == discoveryCheckedFor &&
+            !forceDiscoveryRepublish &&
+            now - lastDiscoveryReconcileMs < DISCOVERY_REFRESH_INTERVAL_MS
+        ) {
+            return
+        }
+
+        val messages = buildDiscoveryMessages(config, resolvedId, avTopic, stTopic)
+        val fingerprint = fingerprintOf(scope, messages)
+        val publishedAt = MqttConnectionStore.loadDiscoveryPublishedAt(appContext)
+        val stale = discoveryIsStale(now, publishedAt)
+        if (forceDiscoveryRepublish || stale || MqttConnectionStore.loadDiscoveryFingerprint(appContext) != fingerprint) {
+            for ((topic, payload) in messages) {
+                // A burst cut off halfway by a dropped connection must be sent again in full, so
+                // stop at the first failure and leave the stored fingerprint alone — otherwise the
+                // topics after the break stay missing until something else happens to change.
+                if (!publishRetained(topic, payload)) return
+            }
+            MqttConnectionStore.saveDiscovery(appContext, fingerprint, now)
+            lastDiscoveryReconcileMs = now
+        } else {
+            // Keep the in-memory clock on the set's own age, or a long-lived process would restart
+            // the countdown on every check and never reach the refresh at all.
+            lastDiscoveryReconcileMs = publishedAt
+        }
+        discoveryCheckedFor = scope
+        forceDiscoveryRepublish = false
+    }
+
+    /**
+     * Home Assistant publishes "online" to [HA_STATUS_TOPIC] when it starts, and a broker that was
+     * recreated underneath it has lost every retained config. Re-sending on that birth message is
+     * what puts the entities back before anyone notices they went.
+     */
+    private fun subscribeToHomeAssistantStatus() {
+        val activeClient = client ?: return
+        runCatching {
+            activeClient.subscribeWith()
+                .topicFilter(HA_STATUS_TOPIC)
+                .qos(MqttQos.AT_LEAST_ONCE)
+                .callback { message ->
+                    val payload = String(message.payloadAsBytes, Charsets.UTF_8).trim()
+                    if (payload.equals("online", ignoreCase = true)) {
+                        // Raise the flag rather than publish from the broker's callback thread; the
+                        // next telemetry tick sends the set through the path everything else uses.
+                        forceDiscoveryRepublish = true
+                    }
+                }
+                .send()
+        }.onFailure { Log.w(TAG, "Could not subscribe to $HA_STATUS_TOPIC", it) }
+    }
+
+    /**
+     * The discovery set, built but not sent, so it can be fingerprinted before we decide whether
+     * the broker already holds it.
+     */
+    private fun buildDiscoveryMessages(
         config: MqttConnectionConfig,
         resolvedId: String,
         avTopic: String,
         stTopic: String
-    ) {
+    ): List<Pair<String, String>> {
+        val messages = mutableListOf<Pair<String, String>>()
         val displayName = config.friendlyName.trim().ifBlank { "BYD Trip Stats" }
         val device = JSONObject()
             .put("identifiers", org.json.JSONArray().put("byd-trip-stats_$resolvedId"))
@@ -353,7 +456,7 @@ class MqttConnectionManager(context: Context) {
             if (stateClass != null) discovery.put("state_class", stateClass)
 
             val topic = "homeassistant/sensor/$resolvedId/$id/config"
-            publishRetained(topic, discovery.toString().replace("\\/", "/"))
+            messages += topic to discovery.toString().replace("\\/", "/")
         }
 
         data class BinarySensorDef(val id: String, val name: String, val deviceClass: String?, val valueTemplate: String? = null)
@@ -379,8 +482,9 @@ class MqttConnectionManager(context: Context) {
             if (deviceClass != null) discovery.put("device_class", deviceClass)
 
             val topic = "homeassistant/binary_sensor/$resolvedId/$id/config"
-            publishRetained(topic, discovery.toString().replace("\\/", "/"))
+            messages += topic to discovery.toString().replace("\\/", "/")
         }
+        return messages
     }
 
     private fun resolveDeviceId(config: MqttConnectionConfig): String {
@@ -468,5 +572,38 @@ class MqttConnectionManager(context: Context) {
     companion object {
         private const val TAG = "MqttConnectionMgr"
         private const val ONLINE_REASSERT_INTERVAL_MS = 30_000L
+        private const val DISCOVERY_REFRESH_INTERVAL_MS = 24L * 60 * 60 * 1000
+        private const val HA_STATUS_TOPIC = "homeassistant/status"
+
+        /**
+         * Whether the stored set is old enough to be worth restating.
+         *
+         * A broker that lost its retained messages — Mosquitto without persistence, a container
+         * recreated — leaves Home Assistant with no entities and nothing to say so. Restating once
+         * a day repairs that on its own; it is one burst a day against the eight a day this gate
+         * was written to stop. A timestamp from the future means the head unit's clock moved, and
+         * a set that can never expire is worse than one sent again.
+         */
+        fun discoveryIsStale(nowMs: Long, publishedAtMs: Long): Boolean =
+            publishedAtMs <= 0L || nowMs < publishedAtMs || nowMs - publishedAtMs >= DISCOVERY_REFRESH_INTERVAL_MS
+
+        /**
+         * Digest of a discovery set, scoped to the broker and device id it was published under.
+         *
+         * Fields are separated by a NUL, which neither a topic nor a JSON payload can contain, so
+         * moving text across the boundary between them cannot go unnoticed.
+         */
+        fun fingerprintOf(scope: String, messages: List<Pair<String, String>>): String {
+            val digest = MessageDigest.getInstance("SHA-256")
+            digest.update(scope.toByteArray(Charsets.UTF_8))
+            digest.update(0)
+            for ((topic, payload) in messages) {
+                digest.update(topic.toByteArray(Charsets.UTF_8))
+                digest.update(0)
+                digest.update(payload.toByteArray(Charsets.UTF_8))
+                digest.update(0)
+            }
+            return digest.digest().joinToString("") { "%02x".format(it) }
+        }
     }
 }

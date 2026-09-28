@@ -31,6 +31,8 @@ object MqttConnectionStore {
     private const val KEY_WEBSOCKET_PATH = "websocket_path"
     private const val KEY_LAST_STATUS = "last_status"
     private const val KEY_LAST_PUBLISH_AT_MS = "last_publish_at_ms"
+    private const val KEY_DISCOVERY_FINGERPRINT = "discovery_fingerprint"
+    private const val KEY_DISCOVERY_PUBLISHED_AT = "discovery_published_at_ms"
 
     private const val DEFAULT_INTERVAL_SECONDS = 1
 
@@ -81,6 +83,29 @@ object MqttConnectionStore {
                 lastPublishAtMs = publishedAtMs.takeIf { it > 0L } ?: current.lastPublishAtMs
             )
         )
+    }
+
+    /**
+     * The discovery set the broker is believed to already hold, as a digest.
+     *
+     * Deliberately not part of [MqttConnectionConfig]: it is not a user setting, and the settings
+     * screen saves the whole config back, which would wipe it on every unrelated edit.
+     */
+    fun loadDiscoveryFingerprint(context: Context): String =
+        context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getString(KEY_DISCOVERY_FINGERPRINT, "") ?: ""
+
+    /** When that set was last actually sent, so it can be restated periodically. */
+    fun loadDiscoveryPublishedAt(context: Context): Long =
+        context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getLong(KEY_DISCOVERY_PUBLISHED_AT, 0L)
+
+    fun saveDiscovery(context: Context, fingerprint: String, publishedAtMs: Long) {
+        context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putString(KEY_DISCOVERY_FINGERPRINT, fingerprint)
+            .putLong(KEY_DISCOVERY_PUBLISHED_AT, publishedAtMs)
+            .apply()
     }
 
     fun mask(value: String): String = when {
