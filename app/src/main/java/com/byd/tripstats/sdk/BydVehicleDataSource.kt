@@ -126,6 +126,51 @@ internal fun carOnFromBodyworkPowerLevel(level: Int?): Int? = when (level) {
     else -> null
 }
 
+// A GPS speed describes the moment of its fix, not now. The system location fallback re-applies the
+// newest known fix on every poll, and underground no new fix ever arrives — so without an age limit the
+// speed from the last fix before losing signal stood in for the car's speed indefinitely. On a DiLink-5
+// Sealion 7 parked in an underground garage that was 6.3 km/h all night: telemetry speed fell back to it,
+// it held isCarOn true so the car-off auto-stop never ran, and every wake from suspend closed the trip as
+// long-gap-while-on and immediately opened another from the same frozen reading — three ghost trips in
+// one night. Updates are requested every second while a fix exists, so a fix this old means there is no
+// current one.
+internal const val GPS_SPEED_MAX_FIX_AGE_MS = 10_000L
+
+// Tolerated only on the wall-clock fallback, where a fix can be stamped slightly ahead of a system clock
+// that has not synced yet. Anything further ahead is not a fix whose age can be known.
+private const val GPS_WALL_CLOCK_SKEW_TOLERANCE_MS = 2_000L
+
+/**
+ * Age of a location fix in ms, or null when it cannot be known.
+ *
+ * Prefers the monotonic clock. A negative monotonic age means the fix was stamped on a previous boot's
+ * clock — getLastKnownLocation hands those back after the nightly reboot — so it is reported as unknown
+ * rather than clamped to zero, which would pass the stalest fix of all off as brand new.
+ */
+internal fun locationFixAgeMs(
+    fixElapsedNanos: Long,
+    nowElapsedNanos: Long,
+    fixWallMs: Long,
+    nowWallMs: Long,
+): Long? {
+    if (fixElapsedNanos > 0L) {
+        val age = (nowElapsedNanos - fixElapsedNanos) / 1_000_000L
+        return age.takeIf { it >= 0L }
+    }
+    val age = nowWallMs - fixWallMs
+    return when {
+        age >= 0L -> age
+        age >= -GPS_WALL_CLOCK_SKEW_TOLERANCE_MS -> 0L
+        else -> null
+    }
+}
+
+/** The fix's speed in km/h if it is recent enough to describe the car now, otherwise null. */
+internal fun gpsSpeedKmhIfFresh(speedMps: Float, hasSpeed: Boolean, fixAgeMs: Long?): Double? {
+    if (!hasSpeed || fixAgeMs == null || fixAgeMs > GPS_SPEED_MAX_FIX_AGE_MS) return null
+    return speedMps.toDouble().takeIf { it.isFinite() && it >= 0.0 }?.times(3.6)
+}
+
 private enum class InstrumentTyrePressureEncoding {
     CENTI_BAR,
     DECI_PSI,
@@ -2914,6 +2959,10 @@ class BydVehicleDataSource(context: Context) {
             val nextLatitude = latitude ?: snap.locationLatitude
             val nextLongitude = longitude ?: snap.locationLongitude
             val nextAltitude = altitude ?: snap.locationAltitude
+            // Same keep-last shape as the system fallback had before GPS_SPEED_MAX_FIX_AGE_MS, left as it
+            // is on purpose: this is the BYD location device, which is what DiLink-3 uses, and no stale
+            // reading has been seen through it. If one is, it needs its own freshness signal (fixPosition /
+            // satellites) — a null here is one missed poll, not proof of a lost fix.
             val nextGpsSpeed = gpsSpeed ?: snap.locationGpsSpeed
             val nextVisibleSatellites = visibleSatellites ?: snap.locationVisibleSatelliteNumber
             val nextFixPosition = fixPosition ?: snap.locationFixPosition
@@ -3085,16 +3134,39 @@ class BydVehicleDataSource(context: Context) {
         val altitude = location.altitude.takeIf {
             it.isFinite() && (location.hasAltitude() || kotlin.math.abs(it) > 0.1)
         }
-        val speedKmh = location.speed.toDouble()
-            .takeIf { location.hasSpeed() && it.isFinite() && it >= 0.0 }
-            ?.times(3.6)
+        // Speed only from a fix recent enough to describe the car now — see GPS_SPEED_MAX_FIX_AGE_MS.
+        // Position is kept regardless: where the car last was is still true, how fast it was going isn't.
+        val fixAgeMs = locationFixAgeMs(
+            fixElapsedNanos = location.elapsedRealtimeNanos,
+            nowElapsedNanos = SystemClock.elapsedRealtimeNanos(),
+            fixWallMs = location.time,
+            nowWallMs = System.currentTimeMillis(),
+        )
+        val speedKmh = gpsSpeedKmhIfFresh(location.speed, location.hasSpeed(), fixAgeMs)
         val heading = location.bearing.toDouble()
             .takeIf { location.hasBearing() && it.isFinite() }
         val accuracy = location.accuracy.toDouble()
             .takeIf { it.isFinite() && it >= 0.0 }
-        val ageMs = (System.currentTimeMillis() - location.time).coerceAtLeast(0L)
 
         val snap = _vehicleSnapshot.value
+        // One line per loss of signal, not per poll: logged on the transition to no speed, re-armed by
+        // the next fresh one. It is the line that confirms a parked car has stopped "moving". The 60 s
+        // floor only matters on a weak signal whose fixes straddle the age limit, where the transition
+        // could otherwise repeat every few polls.
+        if (speedKmh == null && snap.locationGpsSpeed != null && location.hasSpeed()) {
+            if (!gpsSpeedExpiryLogged) {
+                gpsSpeedExpiryLogged = true
+                val nowMs = SystemClock.elapsedRealtime()
+                if (lastGpsSpeedExpiryLogMs == 0L || nowMs - lastGpsSpeedExpiryLogMs > 60_000L) {
+                    lastGpsSpeedExpiryLogMs = nowMs
+                    DiagLog.event(appContext, TAG,
+                        "🛰️ GPS speed dropped: last fix ${fixAgeMs?.let { "${it / 1000}s old" } ?: "from before this boot"} " +
+                            "(was ${"%.1f".format(snap.locationGpsSpeed)} km/h)")
+                }
+            }
+        } else if (speedKmh != null) {
+            gpsSpeedExpiryLogged = false
+        }
         if (
             latitude != snap.locationLatitude ||
             longitude != snap.locationLongitude ||
@@ -3117,9 +3189,11 @@ class BydVehicleDataSource(context: Context) {
         ) {
             "🔬 system location fallback[$source]: provider=${location.provider} " +
                 "lat=$latitude lon=$longitude alt=$altitude speedKmh=$speedKmh " +
-                "heading=$heading accuracy=$accuracy ageMs=$ageMs"
+                "heading=$heading accuracy=$accuracy ageMs=$fixAgeMs"
         }
     }
+    @Volatile private var gpsSpeedExpiryLogged = false
+    private var lastGpsSpeedExpiryLogMs = 0L
 
     /** Polls BMS fields that the car only pushes on change. */
     private fun pollAndUpdateCellFeatures(device: Any) {
