@@ -521,6 +521,13 @@
     <string name="delete_settings_title">Ayar dosyası silinsin mi?</string>
     <string name="restore_with_settings_label">Bu yedekle kaydedilen ayarları da geri yükle</string>
     <string name="restore_no_settings_note">Bu yedekle birlikte hiçbir ayar dosyası kaydedilmedi — yalnızca yolculuk verileri geri yüklenecek.</string>
+    <string name="restore_contents_backup">Bu yedek — yolculuklar: %1$d (%2$s) · şarjlar: %3$d</string>
+    <string name="restore_contents_current">Şu an araçta — yolculuklar: %1$d (%2$s) · şarjlar: %3$d</string>
+    <string name="restore_loses_data_warning">Bu yedek, araçta şu an olandan daha az veya daha eski yolculuk içeriyor.</string>
+    <string name="restore_safety_copy_note">Mevcut verileriniz önce Download/BydTripStats klasörüne kaydedilir, böylece geri yükleme geri alınabilir.</string>
+    <string name="db_damage_title">Yolculuk veritabanınızda hasar bulundu</string>
+    <string name="db_damage_text">Uygulama şimdilik çalışıyor, ancak hasarlı kısma bir sonraki dokunuşunda boş bir veritabanıyla yeniden başlamak zorunda kalacak. Şimdi yakın tarihli bir yedeği geri yükleyin — hasarlı bir yedek reddedilir, bu yüzden yedekleri sırayla deneyebilirsiniz.</string>
+    <string name="db_damage_copy_saved">Kurtarma için veritabanının bir kopyası Download/BydTripStats/%1$s olarak kaydedildi.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram Yedekleme</string>

@@ -534,6 +534,13 @@
     <string name="delete_settings_title">Delete settings file?</string>
     <string name="restore_with_settings_label">Also restore the settings saved with this backup</string>
     <string name="restore_no_settings_note">No settings file was saved with this backup — only trip data will be restored.</string>
+    <string name="restore_contents_backup">This backup — trips: %1$d (%2$s) · charging sessions: %3$d</string>
+    <string name="restore_contents_current">On the car now — trips: %1$d (%2$s) · charging sessions: %3$d</string>
+    <string name="restore_loses_data_warning">This backup holds fewer or older trips than the car has now.</string>
+    <string name="restore_safety_copy_note">Your current data is saved to Download/BydTripStats first, so the restore can be undone.</string>
+    <string name="db_damage_title">Damage found in your trip database</string>
+    <string name="db_damage_text">The app keeps working for now, but the next time it touches the damaged part it has to start again with an empty database. Restore a recent backup now — a damaged backup is refused, so you can try them in turn.</string>
+    <string name="db_damage_copy_saved">A copy of the database was saved as Download/BydTripStats/%1$s for recovery.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram Backup</string>

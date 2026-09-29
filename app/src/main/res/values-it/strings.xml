@@ -521,6 +521,13 @@
     <string name="delete_settings_title">Eliminare il file delle impostazioni?</string>
     <string name="restore_with_settings_label">Ripristina anche le impostazioni salvate con questo backup</string>
     <string name="restore_no_settings_note">Nessun file delle impostazioni è stato salvato con questo backup — verranno ripristinati solo i dati dei viaggi.</string>
+    <string name="restore_contents_backup">Questo backup — viaggi: %1$d (%2$s) · ricariche: %3$d</string>
+    <string name="restore_contents_current">Ora nell\'auto — viaggi: %1$d (%2$s) · ricariche: %3$d</string>
+    <string name="restore_loses_data_warning">Questo backup contiene meno viaggi, o viaggi più vecchi, di quelli presenti ora nell\'auto.</string>
+    <string name="restore_safety_copy_note">I dati attuali vengono prima salvati in Download/BydTripStats, quindi il ripristino si può annullare.</string>
+    <string name="db_damage_title">Trovato un danno nel database dei viaggi</string>
+    <string name="db_damage_text">L\'app per ora funziona, ma la prossima volta che toccherà la parte danneggiata dovrà ripartire con un database vuoto. Ripristina ora un backup recente: un backup danneggiato viene rifiutato, quindi puoi provarli uno alla volta.</string>
+    <string name="db_damage_copy_saved">Una copia del database è stata salvata come Download/BydTripStats/%1$s per il recupero.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Backup Telegram</string>

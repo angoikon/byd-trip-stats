@@ -518,6 +518,13 @@
     <string name="delete_settings_title">Usunąć plik ustawień?</string>
     <string name="restore_with_settings_label">Przywróć także ustawienia zapisane z tą kopią</string>
     <string name="restore_no_settings_note">Z tą kopią nie zapisano pliku ustawień — przywrócone zostaną tylko dane tras.</string>
+    <string name="restore_contents_backup">Ta kopia — przejazdy: %1$d (%2$s) · ładowania: %3$d</string>
+    <string name="restore_contents_current">Teraz w samochodzie — przejazdy: %1$d (%2$s) · ładowania: %3$d</string>
+    <string name="restore_loses_data_warning">Ta kopia zawiera mniej lub starsze przejazdy niż samochód ma teraz.</string>
+    <string name="restore_safety_copy_note">Obecne dane są najpierw zapisywane w Download/BydTripStats, więc przywracanie można cofnąć.</string>
+    <string name="db_damage_title">Wykryto uszkodzenie bazy danych przejazdów</string>
+    <string name="db_damage_text">Aplikacja na razie działa, ale gdy następnym razem dotknie uszkodzonej części, będzie musiała zacząć od nowa z pustą bazą danych. Przywróć teraz niedawną kopię zapasową — uszkodzona kopia zostanie odrzucona, więc możesz próbować po kolei.</string>
+    <string name="db_damage_copy_saved">Kopia bazy danych została zapisana jako Download/BydTripStats/%1$s do odzyskania.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Kopia zapasowa Telegram</string>

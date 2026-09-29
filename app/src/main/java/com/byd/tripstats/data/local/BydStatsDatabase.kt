@@ -23,10 +23,10 @@ import com.byd.tripstats.data.local.entity.ChargingDataPointEntity
 import com.byd.tripstats.data.local.entity.TagEntity
 import com.byd.tripstats.data.local.entity.TripTagCrossRef
 import com.byd.tripstats.data.backup.BackupCodec
+import com.byd.tripstats.data.backup.DbSnapshot
 import com.byd.tripstats.util.BackupNaming
 import android.os.Environment
 import java.io.File
-import java.io.IOException
 
 @Database(
     entities = [
@@ -61,8 +61,15 @@ abstract class BydStatsDatabase : RoomDatabase() {
         private var INSTANCE: BydStatsDatabase? = null
         // }
 
+        /** Set by [closeForReplacement]; the process restarts before anything may open again. */
+        @Volatile
+        private var replacing = false
+
         fun getDatabase(context: Context): BydStatsDatabase {
             return INSTANCE ?: synchronized(this) {
+                // A reopen in the middle of a restore would create a WAL for the old file that
+                // then sits next to the new one — and SQLite would replay it into the new file.
+                check(!replacing) { "The database is being replaced by a restore; the app restarts next." }
                 val appCtx = context.applicationContext
                 // Safety guard: if running under the test package, refuse to open
                 // the real on-disk database. Tests must inject an in-memory DB via
@@ -80,6 +87,8 @@ abstract class BydStatsDatabase : RoomDatabase() {
                 )
                     // .fallbackToDestructiveMigration()
                     // .fallbackToDestructiveMigrationOnDowngrade()
+                    // A file SQLite reports as corrupt is moved aside, never deleted.
+                    .openHelperFactory(QuarantineOpenHelperFactory(appCtx))
                     .addMigrations(
                         MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
                         MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
@@ -383,34 +392,29 @@ abstract class BydStatsDatabase : RoomDatabase() {
         /**
          * The safety-net copy taken before an in-app update installs. Gzip-compressed like
          * every other backup — nothing prunes this folder, so a raw copy per update adds up.
+         *
+         * Taken from a frozen snapshot ([DbSnapshot]) with Room left open: this used to close
+         * the instance, which the telemetry service's repositories keep using, so their next
+         * write crashed the app on a closed connection pool.
          */
-        fun backupDatabase(context: Context): File? {
-            // Close the instance so WAL is fully flushed before we copy the file.
-            INSTANCE?.close()
-            INSTANCE = null
-
+        suspend fun backupDatabase(context: Context): File? {
+            val dbFile = context.getDatabasePath(DB_NAME)
+            if (!dbFile.exists()) {
+                Log.w(TAG, "No database file to back up")
+                return null
+            }
+            // Save to Download/BydTripStats — survives uninstalls
+            val backupFile = File(
+                getBackupDir().also { it.mkdirs() },
+                BackupNaming.fileName(prefix = "${DB_NAME}_backup", extension = BackupCodec.COMPRESSED_EXTENSION)
+            )
             return try {
-                val dbFile = context.getDatabasePath(DB_NAME)
-                if (!dbFile.exists()) {
-                    Log.w(TAG, "No database file to back up")
-                    return null
-                }
-                // Save to Download/BydTripStats — survives uninstalls
-                val backupDir = getBackupDir().also { it.mkdirs() }
-                val backupFile = File(
-                    backupDir,
-                    BackupNaming.fileName(prefix = "${DB_NAME}_backup", extension = BackupCodec.COMPRESSED_EXTENSION)
-                )
-                try {
-                    BackupCodec.compress(dbFile, backupFile)
-                } catch (e: IOException) {
-                    // A partial archive would sit in the restore list looking like a backup.
-                    backupFile.delete()
-                    throw e
-                }
+                DbSnapshot.withFrozenFile(context) { BackupCodec.compress(it, backupFile) }
                 Log.i(TAG, "Backed up to: ${backupFile.absolutePath}")
                 backupFile
-            } catch (e: IOException) {
+            } catch (e: Exception) {
+                // A partial archive would sit in the restore list looking like a backup.
+                backupFile.delete()
                 Log.e(TAG, "Backup failed", e)
                 null
             }
@@ -434,6 +438,19 @@ abstract class BydStatsDatabase : RoomDatabase() {
             INSTANCE?.close()
             INSTANCE = null
             Log.i(TAG, "Database connection closed")
+        }
+
+        /**
+         * Closes Room for good in this process: a restore is about to swap the file, and the
+         * app restarts right after. Until then [getDatabase] refuses to reopen anything.
+         */
+        fun closeForReplacement() {
+            synchronized(this) {
+                replacing = true
+                INSTANCE?.close()
+                INSTANCE = null
+            }
+            Log.i(TAG, "Database closed for replacement")
         }
 
         fun resetDatabase(context: Context) {

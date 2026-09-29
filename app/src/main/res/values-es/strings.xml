@@ -521,6 +521,13 @@
     <string name="delete_settings_title">¿Eliminar archivo de ajustes?</string>
     <string name="restore_with_settings_label">Restaurar también los ajustes guardados con esta copia</string>
     <string name="restore_no_settings_note">No se guardó ningún archivo de ajustes con esta copia — solo se restaurarán los datos de viajes.</string>
+    <string name="restore_contents_backup">Esta copia — viajes: %1$d (%2$s) · cargas: %3$d</string>
+    <string name="restore_contents_current">En el coche ahora — viajes: %1$d (%2$s) · cargas: %3$d</string>
+    <string name="restore_loses_data_warning">Esta copia contiene menos viajes, o más antiguos, de los que tiene el coche ahora.</string>
+    <string name="restore_safety_copy_note">Tus datos actuales se guardan primero en Download/BydTripStats, así que la restauración se puede deshacer.</string>
+    <string name="db_damage_title">Se ha encontrado un daño en tu base de datos de viajes</string>
+    <string name="db_damage_text">La app sigue funcionando por ahora, pero la próxima vez que toque la parte dañada tendrá que empezar de nuevo con una base de datos vacía. Restaura ahora una copia reciente: una copia dañada se rechaza, así que puedes probarlas una por una.</string>
+    <string name="db_damage_copy_saved">Se ha guardado una copia de la base de datos como Download/BydTripStats/%1$s para su recuperación.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Copia de seguridad en Telegram</string>

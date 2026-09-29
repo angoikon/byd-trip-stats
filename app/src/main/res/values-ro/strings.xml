@@ -518,6 +518,13 @@
     <string name="delete_settings_title">Ștergi fișierul de setări?</string>
     <string name="restore_with_settings_label">Restaurează și setările salvate cu acest backup</string>
     <string name="restore_no_settings_note">Nu a fost salvat niciun fișier de setări cu acest backup — vor fi restaurate doar datele curselor.</string>
+    <string name="restore_contents_backup">Această copie — călătorii: %1$d (%2$s) · încărcări: %3$d</string>
+    <string name="restore_contents_current">Acum în mașină — călătorii: %1$d (%2$s) · încărcări: %3$d</string>
+    <string name="restore_loses_data_warning">Această copie conține mai puține călătorii sau călătorii mai vechi decât are mașina acum.</string>
+    <string name="restore_safety_copy_note">Datele actuale sunt salvate mai întâi în Download/BydTripStats, astfel încât restaurarea poate fi anulată.</string>
+    <string name="db_damage_title">S-a găsit o deteriorare în baza de date a călătoriilor</string>
+    <string name="db_damage_text">Aplicația funcționează deocamdată, dar data viitoare când atinge partea deteriorată va trebui să o ia de la capăt cu o bază de date goală. Restaurați acum o copie de rezervă recentă — o copie deteriorată este refuzată, așa că le puteți încerca pe rând.</string>
+    <string name="db_damage_copy_saved">O copie a bazei de date a fost salvată ca Download/BydTripStats/%1$s pentru recuperare.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Backup Telegram</string>

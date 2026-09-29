@@ -42,9 +42,6 @@ class TelegramBackupWorker(
 
             val timestamp = BackupNaming.timestamp()
 
-            // Flush WAL for a consistent snapshot
-            flushWal(dbFile)
-
             // Compress locally first — it's the archive that has to fit Telegram's cap.
             val fileName = BackupNaming.fileName(
                 prefix = "byd_stats_weekly",
@@ -53,7 +50,9 @@ class TelegramBackupWorker(
             )
             val tempFile = File(context.cacheDir, fileName)
             try {
-                BackupCodec.compress(dbFile, tempFile)
+                // From a frozen snapshot: this runs whenever WorkManager likes, often mid-drive
+                // or mid-charge, when the file is being written every few seconds.
+                DbSnapshot.withFrozenFile(context) { BackupCodec.compress(it, tempFile) }
 
                 // Pre-check against Telegram's 50 MB cap. Without this, every periodic run
                 // would stream the whole file to api.telegram.org before the server replies
@@ -94,19 +93,6 @@ class TelegramBackupWorker(
             Log.e(TAG, "Weekly Telegram backup failed", e)
             // Retry up to WorkManager's default limit (3 times with backoff)
             Result.retry()
-        }
-    }
-
-    private fun flushWal(dbFile: File) {
-        try {
-            val db = android.database.sqlite.SQLiteDatabase.openDatabase(
-                dbFile.path, null,
-                android.database.sqlite.SQLiteDatabase.OPEN_READWRITE
-            )
-            db.rawQuery("PRAGMA wal_checkpoint(TRUNCATE)", null).use { it.moveToFirst() }
-            db.close()
-        } catch (e: Exception) {
-            Log.w(TAG, "WAL flush warning (non-fatal): ${e.message}")
         }
     }
 }

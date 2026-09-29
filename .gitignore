@@ -8,6 +8,7 @@ release
 *.jks
 *.keystore
 *.db
+*.db.gz
 .env
 byd-trip-stats-private/
 private-telemetry/

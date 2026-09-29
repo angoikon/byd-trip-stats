@@ -521,6 +521,13 @@
     <string name="delete_settings_title">Eliminar ficheiro de definições?</string>
     <string name="restore_with_settings_label">Restaurar também as definições guardadas com esta cópia</string>
     <string name="restore_no_settings_note">Não foi guardado nenhum ficheiro de definições com esta cópia — apenas os dados das viagens serão restaurados.</string>
+    <string name="restore_contents_backup">Esta cópia — viagens: %1$d (%2$s) · carregamentos: %3$d</string>
+    <string name="restore_contents_current">No carro agora — viagens: %1$d (%2$s) · carregamentos: %3$d</string>
+    <string name="restore_loses_data_warning">Esta cópia contém menos viagens, ou viagens mais antigas, do que o carro tem agora.</string>
+    <string name="restore_safety_copy_note">Os seus dados atuais são primeiro guardados em Download/BydTripStats, pelo que o restauro pode ser anulado.</string>
+    <string name="db_damage_title">Foi detetado um dano na base de dados de viagens</string>
+    <string name="db_damage_text">A aplicação continua a funcionar por agora, mas da próxima vez que tocar na parte danificada terá de recomeçar com uma base de dados vazia. Restaure agora uma cópia de segurança recente — uma cópia danificada é recusada, por isso pode experimentá-las uma a uma.</string>
+    <string name="db_damage_copy_saved">Uma cópia da base de dados foi guardada como Download/BydTripStats/%1$s para recuperação.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Cópia de segurança via Telegram</string>

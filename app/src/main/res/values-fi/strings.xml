@@ -521,6 +521,13 @@
     <string name="delete_settings_title">Poistetaanko asetustiedosto?</string>
     <string name="restore_with_settings_label">Palauta myös tämän varmuuskopion mukana tallennetut asetukset</string>
     <string name="restore_no_settings_note">Tämän varmuuskopion mukana ei tallennettu asetustiedostoa — vain matkatiedot palautetaan.</string>
+    <string name="restore_contents_backup">Tämä varmuuskopio — matkat: %1$d (%2$s) · lataukset: %3$d</string>
+    <string name="restore_contents_current">Autossa nyt — matkat: %1$d (%2$s) · lataukset: %3$d</string>
+    <string name="restore_loses_data_warning">Tässä varmuuskopiossa on vähemmän tai vanhempia matkoja kuin autossa nyt.</string>
+    <string name="restore_safety_copy_note">Nykyiset tietosi tallennetaan ensin kansioon Download/BydTripStats, joten palautuksen voi perua.</string>
+    <string name="db_damage_title">Matkatietokannasta löytyi vaurio</string>
+    <string name="db_damage_text">Sovellus toimii toistaiseksi, mutta kun se seuraavan kerran koskee vaurioituneeseen osaan, sen on aloitettava alusta tyhjällä tietokannalla. Palauta nyt tuore varmuuskopio — vaurioitunut varmuuskopio hylätään, joten voit kokeilla niitä vuorotellen.</string>
+    <string name="db_damage_copy_saved">Tietokannasta tallennettiin kopio palautusta varten nimellä Download/BydTripStats/%1$s.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram-varmuuskopio</string>

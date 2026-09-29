@@ -476,6 +476,13 @@
     <string name="delete_settings_title">Διαγραφή αρχείου ρυθμίσεων;</string>
     <string name="restore_with_settings_label">Επαναφορά και των ρυθμίσεων που αποθηκεύτηκαν με αυτό το αντίγραφο</string>
     <string name="restore_no_settings_note">Δεν αποθηκεύτηκε αρχείο ρυθμίσεων με αυτό το αντίγραφο — θα επαναφερθούν μόνο τα δεδομένα διαδρομών.</string>
+    <string name="restore_contents_backup">Αυτό το αντίγραφο — διαδρομές: %1$d (%2$s) · φορτίσεις: %3$d</string>
+    <string name="restore_contents_current">Στο αυτοκίνητο τώρα — διαδρομές: %1$d (%2$s) · φορτίσεις: %3$d</string>
+    <string name="restore_loses_data_warning">Αυτό το αντίγραφο περιέχει λιγότερες ή παλαιότερες διαδρομές από όσες έχει τώρα το αυτοκίνητο.</string>
+    <string name="restore_safety_copy_note">Τα τρέχοντα δεδομένα σας αποθηκεύονται πρώτα στο Download/BydTripStats, οπότε η επαναφορά μπορεί να αναιρεθεί.</string>
+    <string name="db_damage_title">Βρέθηκε βλάβη στη βάση δεδομένων διαδρομών</string>
+    <string name="db_damage_text">Η εφαρμογή λειτουργεί προς το παρόν, αλλά την επόμενη φορά που θα αγγίξει το κατεστραμμένο τμήμα θα πρέπει να ξεκινήσει ξανά με κενή βάση δεδομένων. Επαναφέρετε τώρα ένα πρόσφατο αντίγραφο ασφαλείας — ένα κατεστραμμένο αντίγραφο απορρίπτεται, οπότε μπορείτε να τα δοκιμάσετε με τη σειρά.</string>
+    <string name="db_damage_copy_saved">Ένα αντίγραφο της βάσης δεδομένων αποθηκεύτηκε ως Download/BydTripStats/%1$s για ανάκτηση.</string>
     <string name="telegram_backup_label">Αντίγραφο Telegram</string>
     <string name="send_backup_now_action">Αποστολή αντιγράφου τώρα</string>
     <string name="disconnect_bot_action">Αποσύνδεση bot</string>

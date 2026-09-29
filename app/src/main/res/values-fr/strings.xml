@@ -476,6 +476,13 @@
     <string name="delete_settings_title">Supprimer le fichier de paramètres ?</string>
     <string name="restore_with_settings_label">Restaurer aussi les paramètres enregistrés avec cette sauvegarde</string>
     <string name="restore_no_settings_note">Aucun fichier de paramètres n\'a été enregistré avec cette sauvegarde — seules les données de trajet seront restaurées.</string>
+    <string name="restore_contents_backup">Cette sauvegarde — trajets : %1$d (%2$s) · recharges : %3$d</string>
+    <string name="restore_contents_current">Dans la voiture actuellement — trajets : %1$d (%2$s) · recharges : %3$d</string>
+    <string name="restore_loses_data_warning">Cette sauvegarde contient moins de trajets, ou des trajets plus anciens, que la voiture actuellement.</string>
+    <string name="restore_safety_copy_note">Vos données actuelles sont d\'abord enregistrées dans Download/BydTripStats : la restauration peut donc être annulée.</string>
+    <string name="db_damage_title">Des dommages ont été détectés dans votre base de données de trajets</string>
+    <string name="db_damage_text">L\'application fonctionne pour l\'instant, mais la prochaine fois qu\'elle touchera la partie endommagée, elle devra repartir d\'une base de données vide. Restaurez maintenant une sauvegarde récente — une sauvegarde endommagée est refusée, vous pouvez donc les essayer l\'une après l\'autre.</string>
+    <string name="db_damage_copy_saved">Une copie de la base de données a été enregistrée sous Download/BydTripStats/%1$s pour la récupération.</string>
     <string name="telegram_backup_label">Sauvegarde Telegram</string>
     <string name="send_backup_now_action">Envoyer la sauvegarde maintenant</string>
     <string name="disconnect_bot_action">Déconnecter le bot</string>

@@ -476,6 +476,13 @@
     <string name="delete_settings_title">Einstellungsdatei löschen?</string>
     <string name="restore_with_settings_label">Auch die mit dieser Sicherung gespeicherten Einstellungen wiederherstellen</string>
     <string name="restore_no_settings_note">Mit dieser Sicherung wurde keine Einstellungsdatei gespeichert — es werden nur die Fahrtdaten wiederhergestellt.</string>
+    <string name="restore_contents_backup">Diese Sicherung — Fahrten: %1$d (%2$s) · Ladevorgänge: %3$d</string>
+    <string name="restore_contents_current">Jetzt im Auto — Fahrten: %1$d (%2$s) · Ladevorgänge: %3$d</string>
+    <string name="restore_loses_data_warning">Diese Sicherung enthält weniger oder ältere Fahrten als das Auto jetzt.</string>
+    <string name="restore_safety_copy_note">Ihre aktuellen Daten werden zuerst in Download/BydTripStats gesichert, die Wiederherstellung lässt sich also rückgängig machen.</string>
+    <string name="db_damage_title">Schaden in Ihrer Fahrtdatenbank gefunden</string>
+    <string name="db_damage_text">Die App funktioniert vorerst weiter, muss aber beim nächsten Zugriff auf den beschädigten Teil mit einer leeren Datenbank neu beginnen. Stellen Sie jetzt eine aktuelle Sicherung wieder her — eine beschädigte Sicherung wird abgelehnt, Sie können sie also der Reihe nach ausprobieren.</string>
+    <string name="db_damage_copy_saved">Eine Kopie der Datenbank wurde zur Wiederherstellung als Download/BydTripStats/%1$s gespeichert.</string>
     <string name="telegram_backup_label">Telegram-Backup</string>
     <string name="send_backup_now_action">Backup jetzt senden</string>
     <string name="disconnect_bot_action">Bot trennen</string>

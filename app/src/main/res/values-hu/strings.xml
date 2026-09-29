@@ -518,6 +518,13 @@
     <string name="delete_settings_title">Törli a beállításfájlt?</string>
     <string name="restore_with_settings_label">Állítsa vissza az ezzel a mentéssel elmentett beállításokat is</string>
     <string name="restore_no_settings_note">Ehhez a mentéshez nem lett beállításfájl mentve — csak az útadatok lesznek visszaállítva.</string>
+    <string name="restore_contents_backup">Ez a mentés — utak: %1$d (%2$s) · töltések: %3$d</string>
+    <string name="restore_contents_current">Most az autóban — utak: %1$d (%2$s) · töltések: %3$d</string>
+    <string name="restore_loses_data_warning">Ez a mentés kevesebb vagy régebbi utat tartalmaz, mint ami most az autóban van.</string>
+    <string name="restore_safety_copy_note">A jelenlegi adatai előbb a Download/BydTripStats mappába mentődnek, így a visszaállítás visszavonható.</string>
+    <string name="db_damage_title">Sérülést találtunk az útadatbázisban</string>
+    <string name="db_damage_text">Az alkalmazás egyelőre működik, de amikor legközelebb a sérült részhez ér, üres adatbázissal kell újrakezdenie. Állítson vissza most egy friss mentést — a sérült mentést az alkalmazás elutasítja, így sorban kipróbálhatja őket.</string>
+    <string name="db_damage_copy_saved">Az adatbázis egy példányát a helyreállításhoz Download/BydTripStats/%1$s néven mentettük.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram-mentés</string>

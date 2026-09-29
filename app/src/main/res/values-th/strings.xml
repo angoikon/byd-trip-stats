@@ -476,6 +476,13 @@
     <string name="delete_settings_title">ลบไฟล์การตั้งค่าหรือไม่?</string>
     <string name="restore_with_settings_label">กู้คืนการตั้งค่าที่บันทึกไว้พร้อมกับข้อมูลสำรองนี้ด้วย</string>
     <string name="restore_no_settings_note">ไม่มีการบันทึกไฟล์การตั้งค่าพร้อมกับข้อมูลสำรองนี้ — จะกู้คืนเฉพาะข้อมูลทริปเท่านั้น</string>
+    <string name="restore_contents_backup">ข้อมูลสำรองนี้ — ทริป: %1$d (%2$s) · การชาร์จ: %3$d</string>
+    <string name="restore_contents_current">ในรถตอนนี้ — ทริป: %1$d (%2$s) · การชาร์จ: %3$d</string>
+    <string name="restore_loses_data_warning">ข้อมูลสำรองนี้มีทริปน้อยกว่าหรือเก่ากว่าที่มีอยู่ในรถตอนนี้</string>
+    <string name="restore_safety_copy_note">ข้อมูลปัจจุบันจะถูกบันทึกไว้ที่ Download/BydTripStats ก่อน จึงสามารถย้อนการกู้คืนได้</string>
+    <string name="db_damage_title">พบความเสียหายในฐานข้อมูลทริปของคุณ</string>
+    <string name="db_damage_text">แอปยังทำงานได้ในตอนนี้ แต่ครั้งต่อไปที่แตะส่วนที่เสียหาย แอปจะต้องเริ่มใหม่ด้วยฐานข้อมูลว่างเปล่า กู้คืนข้อมูลสำรองล่าสุดตอนนี้ — ข้อมูลสำรองที่เสียหายจะถูกปฏิเสธ คุณจึงลองทีละไฟล์ได้</string>
+    <string name="db_damage_copy_saved">บันทึกสำเนาฐานข้อมูลไว้เป็น Download/BydTripStats/%1$s เพื่อการกู้คืนแล้ว</string>
     <string name="telegram_backup_label">สำรองด้วย Telegram</string>
     <string name="send_backup_now_action">ส่งการสำรองทันที</string>
     <string name="disconnect_bot_action">ยกเลิกการเชื่อมต่อบอท</string>

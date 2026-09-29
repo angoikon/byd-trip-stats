@@ -3,6 +3,7 @@ package com.byd.tripstats.worker
 import android.content.Context
 import android.util.Log
 import androidx.work.*
+import com.byd.tripstats.data.backup.DbSnapshot
 import com.byd.tripstats.data.local.BydStatsDatabase
 import java.util.concurrent.TimeUnit
 
@@ -34,23 +35,27 @@ class DatabaseMaintenanceWorker(
     override suspend fun doWork(): Result {
         Log.i(TAG, "Starting weekly database maintenance")
         return try {
-            val db = BydStatsDatabase.getDatabase(applicationContext)
+            // Never alongside a backup: both steps rewrite the main file, which would tear a
+            // copy that is being read from it.
+            DbSnapshot.exclusive {
+                val db = BydStatsDatabase.getDatabase(applicationContext)
 
-            // ── Step 1: WAL checkpoint ────────────────────────────────────────
-            // Forces all WAL frames into the main database file so the subsequent
-            // VACUUM operates on a fully consolidated file. Also ensures any backup
-            // taken after maintenance is self-contained without the -wal sidecar.
-            // TRUNCATE resets the WAL file to zero bytes after checkpointing,
-            // reclaiming the disk space the WAL occupies between vacuums.
-            db.openHelper.writableDatabase.execSQL("PRAGMA wal_checkpoint(TRUNCATE)")
-            Log.i(TAG, "WAL checkpoint complete")
+                // ── Step 1: WAL checkpoint ────────────────────────────────────
+                // Forces all WAL frames into the main database file so the subsequent
+                // VACUUM operates on a fully consolidated file. Also ensures any backup
+                // taken after maintenance is self-contained without the -wal sidecar.
+                // TRUNCATE resets the WAL file to zero bytes after checkpointing,
+                // reclaiming the disk space the WAL occupies between vacuums.
+                db.openHelper.writableDatabase.execSQL("PRAGMA wal_checkpoint(TRUNCATE)")
+                Log.i(TAG, "WAL checkpoint complete")
 
-            // ── Step 2: VACUUM ────────────────────────────────────────────────
-            // SQLite does not reclaim freed pages automatically. After users delete
-            // trips (or run a manual Trim), the file stays the same size until VACUUM
-            // compacts it. On a 1-year database this can recover 20-40 MB.
-            db.openHelper.writableDatabase.execSQL("VACUUM")
-            Log.i(TAG, "VACUUM complete")
+                // ── Step 2: VACUUM ────────────────────────────────────────────
+                // SQLite does not reclaim freed pages automatically. After users delete
+                // trips (or run a manual Trim), the file stays the same size until VACUUM
+                // compacts it. On a 1-year database this can recover 20-40 MB.
+                db.openHelper.writableDatabase.execSQL("VACUUM")
+                Log.i(TAG, "VACUUM complete")
+            }
 
             // NOTE: automatic data-point thinning was intentionally removed. Thinning
             // is irreversible and is now exclusively user-initiated via the manual

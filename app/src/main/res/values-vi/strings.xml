@@ -518,6 +518,13 @@
     <string name="delete_settings_title">Xóa tệp cài đặt?</string>
     <string name="restore_with_settings_label">Đồng thời khôi phục cài đặt đã lưu cùng bản sao lưu này</string>
     <string name="restore_no_settings_note">Không có tệp cài đặt nào được lưu cùng bản sao lưu này — chỉ dữ liệu chuyến đi sẽ được khôi phục.</string>
+    <string name="restore_contents_backup">Bản sao lưu này — chuyến đi: %1$d (%2$s) · lần sạc: %3$d</string>
+    <string name="restore_contents_current">Trên xe hiện tại — chuyến đi: %1$d (%2$s) · lần sạc: %3$d</string>
+    <string name="restore_loses_data_warning">Bản sao lưu này có ít chuyến đi hơn, hoặc cũ hơn, so với trên xe hiện tại.</string>
+    <string name="restore_safety_copy_note">Dữ liệu hiện tại được lưu vào Download/BydTripStats trước, nên có thể hoàn tác việc khôi phục.</string>
+    <string name="db_damage_title">Phát hiện hư hỏng trong cơ sở dữ liệu chuyến đi</string>
+    <string name="db_damage_text">Ứng dụng vẫn hoạt động lúc này, nhưng lần tới khi chạm vào phần bị hỏng, nó sẽ phải bắt đầu lại với cơ sở dữ liệu trống. Hãy khôi phục một bản sao lưu gần đây ngay — bản sao lưu bị hỏng sẽ bị từ chối, nên bạn có thể thử lần lượt.</string>
+    <string name="db_damage_copy_saved">Một bản sao của cơ sở dữ liệu đã được lưu thành Download/BydTripStats/%1$s để khôi phục.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Sao lưu Telegram</string>

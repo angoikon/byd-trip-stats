@@ -521,6 +521,13 @@
     <string name="delete_settings_title">Slet indstillingsfil?</string>
     <string name="restore_with_settings_label">Gendan også de indstillinger, der blev gemt med denne sikkerhedskopi</string>
     <string name="restore_no_settings_note">Der blev ikke gemt nogen indstillingsfil med denne sikkerhedskopi — kun turdata gendannes.</string>
+    <string name="restore_contents_backup">Denne sikkerhedskopi — ture: %1$d (%2$s) · opladninger: %3$d</string>
+    <string name="restore_contents_current">I bilen nu — ture: %1$d (%2$s) · opladninger: %3$d</string>
+    <string name="restore_loses_data_warning">Denne sikkerhedskopi indeholder færre eller ældre ture, end bilen har nu.</string>
+    <string name="restore_safety_copy_note">Dine nuværende data gemmes først i Download/BydTripStats, så gendannelsen kan fortrydes.</string>
+    <string name="db_damage_title">Der er fundet skade i din turdatabase</string>
+    <string name="db_damage_text">Appen virker indtil videre, men næste gang den rører den beskadigede del, må den starte forfra med en tom database. Gendan en nylig sikkerhedskopi nu — en beskadiget kopi afvises, så du kan prøve dem én ad gangen.</string>
+    <string name="db_damage_copy_saved">En kopi af databasen er gemt som Download/BydTripStats/%1$s til gendannelse.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram-sikkerhedskopi</string>

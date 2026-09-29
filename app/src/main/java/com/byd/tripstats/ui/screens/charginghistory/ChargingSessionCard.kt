@@ -28,6 +28,7 @@ import com.byd.tripstats.data.preferences.SocSource
 import com.byd.tripstats.data.preferences.UnitSystem
 import com.byd.tripstats.data.preferences.convertDistance
 import com.byd.tripstats.data.preferences.distanceUnit
+import com.byd.tripstats.ui.components.RecordIdLabel
 import com.byd.tripstats.ui.theme.AccelerationOrange
 import com.byd.tripstats.ui.theme.BatteryBlue
 import com.byd.tripstats.ui.theme.ChargingYellow
@@ -103,7 +104,7 @@ internal fun ChargingSessionCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 
-            // Header row: checkbox + date + active badge + delete icon
+            // Header row: checkbox + id + date + active badge + delete icon
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -120,6 +121,7 @@ internal fun ChargingSessionCard(
                         )
                     }
                 }
+                RecordIdLabel(id = session.id)
 
                 Row(
                     modifier = Modifier.weight(1f),

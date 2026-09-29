@@ -518,6 +518,13 @@
     <string name="delete_settings_title">Hapus berkas pengaturan?</string>
     <string name="restore_with_settings_label">Pulihkan juga pengaturan yang disimpan dengan cadangan ini</string>
     <string name="restore_no_settings_note">Tidak ada berkas pengaturan yang disimpan dengan cadangan ini — hanya data perjalanan yang akan dipulihkan.</string>
+    <string name="restore_contents_backup">Cadangan ini — perjalanan: %1$d (%2$s) · pengisian daya: %3$d</string>
+    <string name="restore_contents_current">Di mobil sekarang — perjalanan: %1$d (%2$s) · pengisian daya: %3$d</string>
+    <string name="restore_loses_data_warning">Cadangan ini berisi perjalanan yang lebih sedikit atau lebih lama daripada yang ada di mobil sekarang.</string>
+    <string name="restore_safety_copy_note">Data Anda saat ini disimpan dulu ke Download/BydTripStats, jadi pemulihan dapat dibatalkan.</string>
+    <string name="db_damage_title">Kerusakan ditemukan di database perjalanan Anda</string>
+    <string name="db_damage_text">Aplikasi masih berfungsi untuk saat ini, tetapi saat berikutnya menyentuh bagian yang rusak, aplikasi harus mulai lagi dengan database kosong. Pulihkan cadangan terbaru sekarang — cadangan yang rusak akan ditolak, jadi Anda bisa mencobanya satu per satu.</string>
+    <string name="db_damage_copy_saved">Salinan database disimpan sebagai Download/BydTripStats/%1$s untuk pemulihan.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Cadangan Telegram</string>

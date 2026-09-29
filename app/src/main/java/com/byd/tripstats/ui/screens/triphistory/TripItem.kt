@@ -23,6 +23,7 @@ import com.byd.tripstats.data.preferences.convertDistance
 import com.byd.tripstats.data.preferences.convertEfficiency
 import com.byd.tripstats.data.preferences.distanceUnit
 import com.byd.tripstats.data.preferences.speedUnit
+import com.byd.tripstats.ui.components.RecordIdLabel
 import com.byd.tripstats.ui.components.TagChip
 import androidx.compose.ui.res.stringResource
 import com.byd.tripstats.R
@@ -78,7 +79,7 @@ fun TripItem(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Header row: checkbox (left) + date + "In Progress" badge + delete (right)
+            // Header row: checkbox + id (left) + date + "In Progress" badge + delete (right)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -94,6 +95,7 @@ fun TripItem(
                         )
                     }
                 }
+                RecordIdLabel(id = trip.id)
                 Row(
                     modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically,

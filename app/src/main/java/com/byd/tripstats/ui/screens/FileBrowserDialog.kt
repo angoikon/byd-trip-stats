@@ -31,7 +31,8 @@ import java.io.File
  * forces reliance on a third-party file explorer. Reads the filesystem directly via [File.listFiles]
  * — works here because the app runs with requestLegacyExternalStorage + READ_EXTERNAL_STORAGE (the
  * same access the automatic backup scan already uses). Selecting a file hands back a plain [File];
- * the caller restores it via `restoreFromUri(Uri.fromFile(file))`, which already handles file:// URIs.
+ * the caller hands it to `prepareRestore(Uri.fromFile(file), …)`, which already handles file:// URIs
+ * and puts it through the same check and confirmation as every other restore.
  */
 @Composable
 fun FileBrowserDialog(

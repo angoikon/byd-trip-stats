@@ -518,6 +518,13 @@
     <string name="delete_settings_title">Odstranit soubor nastavení?</string>
     <string name="restore_with_settings_label">Obnovit také nastavení uložená s touto zálohou</string>
     <string name="restore_no_settings_note">S touto zálohou nebyl uložen žádný soubor nastavení — obnoví se pouze data jízd.</string>
+    <string name="restore_contents_backup">Tato záloha — jízdy: %1$d (%2$s) · nabíjení: %3$d</string>
+    <string name="restore_contents_current">Nyní v autě — jízdy: %1$d (%2$s) · nabíjení: %3$d</string>
+    <string name="restore_loses_data_warning">Tato záloha obsahuje méně nebo starší jízdy, než má auto nyní.</string>
+    <string name="restore_safety_copy_note">Aktuální data se nejprve uloží do Download/BydTripStats, takže obnovení lze vrátit zpět.</string>
+    <string name="db_damage_title">V databázi jízd bylo nalezeno poškození</string>
+    <string name="db_damage_text">Aplikace zatím funguje, ale až příště narazí na poškozenou část, bude muset začít znovu s prázdnou databází. Obnovte nyní nedávnou zálohu — poškozená záloha se odmítne, takže je můžete zkoušet postupně.</string>
+    <string name="db_damage_copy_saved">Kopie databáze byla pro obnovu uložena jako Download/BydTripStats/%1$s.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Záloha na Telegram</string>

@@ -518,6 +518,13 @@
     <string name="delete_settings_title">למחוק את קובץ ההגדרות?</string>
     <string name="restore_with_settings_label">שחזר גם את ההגדרות שנשמרו עם גיבוי זה</string>
     <string name="restore_no_settings_note">לא נשמר קובץ הגדרות עם גיבוי זה — רק נתוני הנסיעות ישוחזרו.</string>
+    <string name="restore_contents_backup">גיבוי זה — נסיעות: %1$d (%2$s) · טעינות: %3$d</string>
+    <string name="restore_contents_current">ברכב כעת — נסיעות: %1$d (%2$s) · טעינות: %3$d</string>
+    <string name="restore_loses_data_warning">גיבוי זה מכיל פחות נסיעות, או נסיעות ישנות יותר, ממה שיש ברכב כעת.</string>
+    <string name="restore_safety_copy_note">הנתונים הנוכחיים שלך נשמרים תחילה ב-Download/BydTripStats, כך שניתן לבטל את השחזור.</string>
+    <string name="db_damage_title">נמצא נזק במסד נתוני הנסיעות</string>
+    <string name="db_damage_text">האפליקציה ממשיכה לעבוד בינתיים, אך בפעם הבאה שתיגע בחלק הפגום היא תצטרך להתחיל מחדש עם מסד נתונים ריק. שחזרו עכשיו גיבוי עדכני — גיבוי פגום נדחה, כך שאפשר לנסות אותם אחד אחרי השני.</string>
+    <string name="db_damage_copy_saved">עותק של מסד הנתונים נשמר בשם Download/BydTripStats/%1$s לצורך שחזור.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">גיבוי Telegram</string>

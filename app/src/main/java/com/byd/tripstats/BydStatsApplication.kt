@@ -4,6 +4,7 @@ import android.app.Application
 import android.os.SystemClock
 import android.util.Log
 import androidx.work.Configuration
+import com.byd.tripstats.data.backup.LocalBackupManager
 import com.byd.tripstats.data.entitlement.EntitlementManager
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.receiver.ServiceRestartReceiver
@@ -62,6 +63,19 @@ class BydStatsApplication : Application(), Configuration.Provider {
         // initialised here (before any Activity/Service touches it) so the
         // synchronous isProNow() check is ready for the telemetry loop.
         EntitlementManager.init(this)
+        // A database the corruption handler moved aside last run (QuarantineOpenHelperFactory)
+        // goes to Download/BydTripStats, the only place it can be fetched from on a release
+        // build. Then, once after the update that ships it, a full check of the live database
+        // (DbHealthCheck). Both are no-ops on a normal start; delayed so they never compete
+        // with start-up.
+        CoroutineScope(Dispatchers.IO).launch {
+            kotlinx.coroutines.delay(60_000L)
+            runCatching { LocalBackupManager.getInstance(applicationContext).exportDamagedDatabases() }
+                .onFailure { Log.w(TAG, "Damaged-database export failed: ${it.message}") }
+            kotlinx.coroutines.delay(60_000L)
+            runCatching { com.byd.tripstats.data.backup.DbHealthCheck.runOnceAfterUpdate(applicationContext) }
+                .onFailure { Log.w(TAG, "Database check failed: ${it.message}") }
+        }
         // Restore the web companion server if the user had it enabled.
         // Runs unconditionally — the server only needs the DB, not the telemetry service.
         // It doesn't run in deep sleep mode.

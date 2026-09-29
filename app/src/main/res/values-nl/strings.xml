@@ -521,6 +521,13 @@
     <string name="delete_settings_title">Instellingenbestand verwijderen?</string>
     <string name="restore_with_settings_label">Herstel ook de instellingen die met deze back-up zijn opgeslagen</string>
     <string name="restore_no_settings_note">Er is geen instellingenbestand opgeslagen bij deze back-up — alleen ritgegevens worden hersteld.</string>
+    <string name="restore_contents_backup">Deze back-up — ritten: %1$d (%2$s) · laadsessies: %3$d</string>
+    <string name="restore_contents_current">Nu in de auto — ritten: %1$d (%2$s) · laadsessies: %3$d</string>
+    <string name="restore_loses_data_warning">Deze back-up bevat minder of oudere ritten dan de auto nu heeft.</string>
+    <string name="restore_safety_copy_note">Je huidige gegevens worden eerst opgeslagen in Download/BydTripStats, dus het herstel kan ongedaan worden gemaakt.</string>
+    <string name="db_damage_title">Schade gevonden in je rittendatabase</string>
+    <string name="db_damage_text">De app werkt voorlopig nog, maar de volgende keer dat hij het beschadigde deel aanraakt, moet hij opnieuw beginnen met een lege database. Zet nu een recente back-up terug — een beschadigde back-up wordt geweigerd, dus je kunt ze een voor een proberen.</string>
+    <string name="db_damage_copy_saved">Een kopie van de database is opgeslagen als Download/BydTripStats/%1$s voor herstel.</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram-back-up</string>

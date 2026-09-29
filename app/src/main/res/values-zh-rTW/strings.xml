@@ -521,6 +521,13 @@
     <string name="delete_settings_title">刪除設定檔？</string>
     <string name="restore_with_settings_label">同時還原隨此備份保存的設定</string>
     <string name="restore_no_settings_note">此備份未保存設定檔——將僅還原行程資料。</string>
+    <string name="restore_contents_backup">此備份 — 行程：%1$d（%2$s）· 充電：%3$d</string>
+    <string name="restore_contents_current">車上目前 — 行程：%1$d（%2$s）· 充電：%3$d</string>
+    <string name="restore_loses_data_warning">此備份的行程比車上目前的更少或更舊。</string>
+    <string name="restore_safety_copy_note">目前資料會先儲存到 Download/BydTripStats，因此可以撤銷這次還原。</string>
+    <string name="db_damage_title">行程資料庫中發現損壞</string>
+    <string name="db_damage_text">應用程式目前仍可使用，但下次存取損壞部分時，將不得不以空資料庫重新開始。請立即還原一個最近的備份——損壞的備份會被拒絕，因此可以逐一嘗試。</string>
+    <string name="db_damage_copy_saved">已將資料庫副本儲存為 Download/BydTripStats/%1$s，以便復原。</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegram 備份</string>

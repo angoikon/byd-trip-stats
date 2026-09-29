@@ -521,6 +521,13 @@
     <string name="delete_settings_title">設定ファイルを削除しますか？</string>
     <string name="restore_with_settings_label">このバックアップと共に保存された設定も復元する</string>
     <string name="restore_no_settings_note">このバックアップには設定ファイルが保存されていません — トリップデータのみが復元されます。</string>
+    <string name="restore_contents_backup">このバックアップ — トリップ: %1$d (%2$s) · 充電: %3$d</string>
+    <string name="restore_contents_current">現在の車内データ — トリップ: %1$d (%2$s) · 充電: %3$d</string>
+    <string name="restore_loses_data_warning">このバックアップのトリップは、現在の車内データより少ないか古いものです。</string>
+    <string name="restore_safety_copy_note">現在のデータは先に Download/BydTripStats に保存されるため、復元は元に戻せます。</string>
+    <string name="db_damage_title">走行データベースに破損が見つかりました</string>
+    <string name="db_damage_text">アプリは今のところ動作しますが、次に破損した部分に触れた時点で空のデータベースからやり直すことになります。今すぐ最近のバックアップを復元してください。破損したバックアップは拒否されるので、順番に試せます。</string>
+    <string name="db_damage_copy_saved">復旧用にデータベースのコピーを Download/BydTripStats/%1$s として保存しました。</string>
 
     <!-- Telegram backup -->
     <string name="telegram_backup_label">Telegramバックアップ</string>

@@ -3,6 +3,7 @@ package com.byd.tripstats.worker
 import android.content.Context
 import android.util.Log
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.byd.tripstats.data.backup.DbSnapshot
 import com.byd.tripstats.data.local.BydStatsDatabase
 import com.byd.tripstats.sdk.DiLink5Platform
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -96,6 +97,11 @@ object DatabaseTrimmer {
         _state.value = State.InProgress("Preparing…")
         Log.i(TAG, "=== DB trim starting ===")
 
+        // Never alongside a backup: the rewrites and the VACUUM change the main file under a copy.
+        DbSnapshot.exclusive { trimLocked(context) }
+    }
+
+    private suspend fun trimLocked(context: Context) {
         try {
             val db = BydStatsDatabase.getDatabase(context)
             val sqLiteDb = db.openHelper.writableDatabase

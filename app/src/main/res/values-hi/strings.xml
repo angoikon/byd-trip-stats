@@ -476,6 +476,13 @@
     <string name="delete_settings_title">सेटिंग्स फ़ाइल हटाएं?</string>
     <string name="restore_with_settings_label">इस बैकअप के साथ सहेजी गई सेटिंग्स को भी पुनर्स्थापित करें</string>
     <string name="restore_no_settings_note">इस बैकअप के साथ कोई सेटिंग्स फ़ाइल नहीं सहेजी गई थी — केवल यात्रा डेटा पुनर्स्थापित किया जाएगा।</string>
+    <string name="restore_contents_backup">यह बैकअप — यात्राएँ: %1$d (%2$s) · चार्जिंग सत्र: %3$d</string>
+    <string name="restore_contents_current">अभी कार में — यात्राएँ: %1$d (%2$s) · चार्जिंग सत्र: %3$d</string>
+    <string name="restore_loses_data_warning">इस बैकअप में कार में अभी मौजूद यात्राओं से कम या पुरानी यात्राएँ हैं।</string>
+    <string name="restore_safety_copy_note">आपका मौजूदा डेटा पहले Download/BydTripStats में सहेजा जाता है, इसलिए रिस्टोर को पूर्ववत किया जा सकता है।</string>
+    <string name="db_damage_title">आपके यात्रा डेटाबेस में क्षति मिली</string>
+    <string name="db_damage_text">ऐप अभी काम कर रहा है, लेकिन अगली बार जब वह क्षतिग्रस्त हिस्से को छुएगा तो उसे खाली डेटाबेस के साथ फिर से शुरू करना होगा। अभी हाल का कोई बैकअप रिस्टोर करें — क्षतिग्रस्त बैकअप अस्वीकार कर दिया जाता है, इसलिए आप उन्हें एक-एक करके आज़मा सकते हैं।</string>
+    <string name="db_damage_copy_saved">रिकवरी के लिए डेटाबेस की एक कॉपी Download/BydTripStats/%1$s के रूप में सहेजी गई।</string>
     <string name="telegram_backup_label">Telegram बैकअप</string>
     <string name="send_backup_now_action">अभी बैकअप भेजें</string>
     <string name="disconnect_bot_action">बॉट डिस्कनेक्ट करें</string>

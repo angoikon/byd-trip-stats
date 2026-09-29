@@ -15,7 +15,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
@@ -65,7 +67,6 @@ fun LocalBackupScreen(
 
     val backupState by manager.state.collectAsState()
     val localBackups by manager.localBackups.collectAsState()
-    val settingsFiles by manager.settingsFiles.collectAsState()
 
     val telegramManager = remember { TelegramManager.getInstance(context) }
     val telegramState by telegramManager.state.collectAsState()
@@ -80,11 +81,12 @@ fun LocalBackupScreen(
     val telegramBusy = telegramState is TelegramManager.TelegramState.InProgress
     val isPro by EntitlementManager.isPro.collectAsState()  // SD card backup is Pro-gated
 
-    var restoreTarget by remember { mutableStateOf<LocalBackupManager.BackupFile?>(null) }
+    // A backup that has been checked and is waiting for the user to confirm it — see
+    // LocalBackupManager.prepareRestore. Every restore path ends up here.
+    val pendingRestore by manager.pendingRestore.collectAsState()
     var deleteTarget  by remember { mutableStateOf<LocalBackupManager.BackupFile?>(null) }
     var pendingDeleteAfterPermission by remember { mutableStateOf<LocalBackupManager.BackupFile?>(null) }
     var pendingSdBackupAfterPermission by remember { mutableStateOf(false) }
-    var telegramRestoreTarget by remember { mutableStateOf<TelegramManager.TelegramBackupFile?>(null) }
     var telegramDeleteTarget  by remember { mutableStateOf<TelegramManager.TelegramBackupFile?>(null) }
 
     // WRITE_EXTERNAL_STORAGE is needed for direct-file writes to shared storage: deleting a
@@ -130,10 +132,13 @@ fun LocalBackupScreen(
         }
     }
 
-    // ── Auto-restart after successful restore ─────────────────────────────────
+    // ── Auto-restart after a restore ──────────────────────────────────────────
+    // Also after one that failed mid-swap: Room is closed for good by then.
     LaunchedEffect(backupState) {
         val s = backupState
-        if (s is LocalBackupManager.BackupState.Success && s.restartRequired) {
+        val restart = (s is LocalBackupManager.BackupState.Success && s.restartRequired) ||
+            (s is LocalBackupManager.BackupState.Error && s.restartRequired)
+        if (restart) {
             delay(2000)
             AppRestart.restart(
                 context     = context,
@@ -386,7 +391,12 @@ fun LocalBackupScreen(
                             BackupListItem(
                                 backup    = backup,
                                 enabled   = !isBusy,
-                                onRestore = { restoreTarget = backup },
+                                onRestore = {
+                                    manager.resetState()
+                                    scope.launch {
+                                        manager.prepareRestore(backup.uri, backup.name, manager.settingsFileFor(backup.name))
+                                    }
+                                },
                                 onDelete  = { deleteTarget  = backup },
                             )
                         }
@@ -410,7 +420,8 @@ fun LocalBackupScreen(
                             onDismiss = { showFileBrowser = false },
                             onFileSelected = { file ->
                                 showFileBrowser = false
-                                scope.launch { manager.restoreFromUri(Uri.fromFile(file)) }
+                                manager.resetState()
+                                scope.launch { manager.prepareRestore(Uri.fromFile(file), file.name) }
                             }
                         )
                     }
@@ -702,7 +713,11 @@ fun LocalBackupScreen(
                                 TelegramBackupListItem(
                                     backup    = backup,
                                     enabled   = !isBusy && !telegramBusy,
-                                    onRestore = { telegramRestoreTarget = backup },
+                                    onRestore = {
+                                        manager.resetState()
+                                        telegramManager.resetState()
+                                        scope.launch { manager.prepareTelegramRestore(backup) }
+                                    },
                                     onDelete  = { telegramDeleteTarget  = backup }
                                 )
                             }
@@ -794,21 +809,13 @@ fun LocalBackupScreen(
     }
 
 
-    // ── Telegram restore confirm dialog ───────────────────────────────────────
-    telegramRestoreTarget?.let { backup ->
+    // ── Restore confirm dialog ────────────────────────────────────────────────
+    // Shown once the backup has been decoded and checked, whichever list it came from.
+    pendingRestore?.let { pending ->
         RestoreConfirmDialog(
-            description = backup.fileName,
-            // Telegram restores fetch the .db only; settings are restored from the
-            // local file list, where the pairing is known.
-            settingsFileName = null,
-            onConfirm = {
-                val b = backup
-                telegramRestoreTarget = null
-                manager.resetState()
-                telegramManager.resetState()
-                scope.launch { manager.restoreFromTelegram(b) }
-            },
-            onDismiss = { telegramRestoreTarget = null }
+            pending   = pending,
+            onConfirm = { alsoSettings -> scope.launch { manager.commitRestore(alsoSettings) } },
+            onDismiss = { manager.cancelRestore() }
         )
     }
 
@@ -830,24 +837,6 @@ fun LocalBackupScreen(
             dismissButton = {
                 TextButton(onClick = { telegramDeleteTarget = null }) { Text(stringResource(R.string.cancel)) }
             }
-        )
-    }
-
-    // ── Restore confirm dialog ────────────────────────────────────────────────
-    restoreTarget?.let { backup ->
-        // The settings file written in the same run as this backup, if it's still there.
-        val pairedSettings = remember(backup.name, settingsFiles) { manager.settingsFileFor(backup.name) }
-        RestoreConfirmDialog(
-            description      = backup.name,
-            settingsFileName = pairedSettings?.name,
-            onConfirm = { alsoSettings ->
-                val b = backup
-                val s = pairedSettings.takeIf { alsoSettings }
-                restoreTarget = null
-                manager.resetState()
-                scope.launch { manager.restoreFromBackupFile(b, s) }
-            },
-            onDismiss = { restoreTarget = null }
         )
     }
 
@@ -1087,19 +1076,25 @@ private fun TelegramBackupListItem(
 }
 
 /**
- * [settingsFileName] is the settings file saved alongside this backup, or null when there
- * isn't one (a backup from before settings were included, or one whose file was deleted).
- * When present the user chooses whether to restore it too — restoring an old database onto
- * a working install shouldn't silently replace the current broker password or tariff.
+ * Confirms a restore that has already been checked, showing what the backup holds next to
+ * what it replaces — the numbers that would have caught a wrong pick before it cost anything.
+ *
+ * The settings file saved alongside the backup ([LocalBackupManager.PendingRestore.settings])
+ * is null when there isn't one (a backup from before settings were included, one whose file
+ * was deleted, a Telegram or browsed file). When present the user chooses whether to restore
+ * it too — restoring an old database onto a working install shouldn't silently replace the
+ * current broker password or tariff.
  */
 @Composable
 private fun RestoreConfirmDialog(
-    description: String,
-    settingsFileName: String?,
+    pending: LocalBackupManager.PendingRestore,
     onConfirm: (restoreSettings: Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val settingsFileName = pending.settings?.name
     var restoreSettings by remember(settingsFileName) { mutableStateOf(settingsFileName != null) }
+    val current = pending.current
+    val replacesData = current != null && (current.trips > 0 || current.chargingSessions > 0)
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -1111,8 +1106,37 @@ private fun RestoreConfirmDialog(
         },
         title = { Text(stringResource(R.string.restore_database_title)) },
         text  = {
-            Column {
-                Text(stringResource(R.string.restore_database_msg, description))
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                Text(stringResource(R.string.restore_database_msg, pending.label))
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    summaryLine(R.string.restore_contents_backup, pending.backup),
+                    style      = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                if (current != null) {
+                    Text(
+                        summaryLine(R.string.restore_contents_current, current),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                if (pending.losesData) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        stringResource(R.string.restore_loses_data_warning),
+                        style      = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color      = MaterialTheme.colorScheme.error
+                    )
+                }
+                if (replacesData) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        stringResource(R.string.restore_safety_copy_note),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 Spacer(Modifier.height(12.dp))
                 if (settingsFileName == null) {
                     Text(
@@ -1157,6 +1181,15 @@ private fun RestoreConfirmDialog(
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         }
     )
+}
+
+/** "trips: N (first – last) · charging sessions: M" for one side of the restore dialog. */
+@Composable
+private fun summaryLine(@androidx.annotation.StringRes res: Int, s: LocalBackupManager.DbSummary): String {
+    val fmt = remember { java.text.DateFormat.getDateInstance(java.text.DateFormat.MEDIUM) }
+    val range = if (s.firstTrip == null || s.lastTrip == null) "—"
+        else "${fmt.format(java.util.Date(s.firstTrip))} – ${fmt.format(java.util.Date(s.lastTrip))}"
+    return stringResource(res, s.trips, range, s.chargingSessions)
 }
 
 /**

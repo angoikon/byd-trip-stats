@@ -59,8 +59,8 @@ Everything below then happens in **Settings → App → Backup & Restore**.
 1. Open the app → **Settings** → **Backup & Restore** → *Restore from Telegram*
 2. Tap the **refresh icon** to load the list of available backups
 3. Tap **Restore** next to the backup you want
-4. Confirm the warning dialog
-5. The app downloads the file, validates it, restores the database, and restarts automatically
+4. The app downloads and checks the file, then shows what it holds next to what's on the car — tap **Restore** to confirm
+5. The app saves a copy of your current data, restores the database, and restarts automatically
 
 > **20 MB download limit.** Telegram lets a bot *send* files up to 50 MB but *download* only up to 20 MB, so the in-app restore works for backups of 20 MB or less (the size shown in the list). Compression keeps that true until the raw database reaches roughly 300 MB. For a bigger backup, save it from the chat on your phone, upload it to *Backups (Download)* in the web companion's **Files** tab, and restore it from the backup list.
 
@@ -165,7 +165,17 @@ The Pro unlock code is safe to carry either way: it is checked against the vehic
 
 ## Restore Methods
 
-> ⚠️ Restoring **permanently replaces all current trip data**. The app closes after a successful restore so the database reopens cleanly, and comes back on its own where the head unit allows it (DiLink-3). On newer head units it does not relaunch itself — an app-initiated restart there can wedge the unit — so it leaves a **Tap to reopen BYD Trip Stats** notification instead; tapping it, or the app icon, brings it back.
+> ⚠️ Restoring **replaces all current trip data**. The app closes after a successful restore so the database reopens cleanly, and comes back on its own where the head unit allows it (DiLink-3). On newer head units it does not relaunch itself — an app-initiated restart there can wedge the unit — so it leaves a **Tap to reopen BYD Trip Stats** notification instead; tapping it, or the app icon, brings it back.
+
+**Before anything is replaced** — whichever way you restore:
+
+1. **The backup is checked end to end.** A file that is damaged inside — not just one that isn't a database at all — is refused with a message, and your current data is left alone. The only other refusal is a backup whose database *format* is newer than the installed app knows (made by a later release that changed the format — update the app first). Backups from older versions restore as always, and are upgraded on the next start; one with fewer trips than you have now is never refused, only flagged in the confirmation.
+2. **You see what you're about to get.** The confirmation shows the backup's trips (count and date range) and charging sessions next to what is on the car now, with a warning in red when the backup has fewer or older trips than you have.
+3. **Your current data is saved first**, to `Download/BydTripStats/byd_stats_before_restore_….db.gz`. If you picked the wrong backup, restore that file to get back to where you were. (Skipped when there is nothing to keep, e.g. restoring onto a fresh install.)
+
+Once after updating to 2.17, the app also checks its own database in the background (about two minutes after it starts, a minute or so of reading). A backup restored with an earlier version could have left damage there that only shows when the app next writes to it; if the check finds any, it saves a copy as `byd_stats_damaged_….sqlite.gz` and shows a notification — restore a recent backup then (a damaged one is refused, so you can try them in turn).
+
+If the app ever finds its own database damaged, it no longer deletes it: it starts over with an empty one and saves the damaged file to `Download/BydTripStats/byd_stats_damaged_….sqlite.gz`. That file is not offered in the restore list — its data can usually still be recovered on a computer (`gunzip`, then `sqlite3 file.sqlite ".recover" | sqlite3 recovered.db`), and the recovered database restored as usual.
 
 ---
 
@@ -177,8 +187,8 @@ The app scans all known backup locations (Download folder and private ADB direct
 1. Open the app → **Settings** → **Backup & Restore**
 2. Scroll to the *Restore* section — available backups are listed directly below the warning
 3. Tap **Restore** next to the backup you want
-4. Confirm the warning dialog
-5. The app restores the database and restarts automatically
+4. The app checks the backup, then shows what it holds next to what's on the car — tap **Restore** to confirm
+5. The app saves a copy of your current data, restores the database and restarts automatically
 
 Each entry shows the filename, date, size, and source location (*Download* or *Internal (ADB)*). Tap the refresh icon to re-scan if you have just created a new backup or pushed a file via ADB.
 
@@ -195,8 +205,8 @@ Restore a backup directly from your Telegram chat without needing a PC or ADB.
 2. Scroll to *Restore from Telegram* (requires a connected bot — see [Telegram backup](#2-telegram))
 3. Tap the **refresh icon** to load available backups
 4. Tap **Restore** next to the backup you want
-5. Confirm the warning dialog
-6. The app downloads the file, validates it, restores the database, and restarts automatically
+5. The app downloads and checks the file, then shows what it holds next to what's on the car — tap **Restore** to confirm
+6. The app saves a copy of your current data, restores the database, and restarts automatically
 
 > Backups over 20 MB can't be downloaded by the bot — see the [20 MB download limit](#2-telegram) for the way around it.
 
