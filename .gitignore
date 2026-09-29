@@ -16,6 +16,11 @@ private-telemetry-*.aar
 MD
 # Auto-generated from root CHANGELOG.md by the syncChangelog Gradle task
 app/src/main/assets/changelog.md
+# Auto-generated from docs/ at every build by the syncPwa and syncTripViewer Gradle tasks, same as
+# changelog.md above. Tracking them left sw.js "modified" after every build, since syncPwa stamps
+# the version into it — edit the sources under docs/ instead.
+app/src/main/assets/pwa/
+app/src/main/assets/trip-viewer.html
 # Compile-time bydauto stubs — built from source by the :app bydautoStubsJar task.
 app/libs/bydauto-stubs.jar
 # Private-telemetry binary handed to trusted contributors (telemetry hooks only, no Pro secret).

@@ -12,6 +12,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.core.content.ContextCompat
 import androidx.compose.foundation.border
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -196,40 +201,32 @@ fun LocalBackupScreen(
             )
         }
     ) { paddingValues ->
+      Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+        // ── Backup state banner ───────────────────────────────────────────────
+        // Pinned above the list instead of scrolling with it: the backup and restore buttons
+        // sit well down the screen, so a banner at the top of the list reported their progress
+        // and errors off-screen. Here it shows wherever the list is scrolled to, and the list
+        // keeps its place.
+        // The last message is kept so the banner still has it while it slides away.
+        val lastBanner = remember { arrayOfNulls<LocalBackupManager.BackupState>(1) }
+        if (backupState !is LocalBackupManager.BackupState.Idle) lastBanner[0] = backupState
+        AnimatedVisibility(
+            visible = backupState !is LocalBackupManager.BackupState.Idle,
+            enter   = expandVertically() + fadeIn(),
+            exit    = shrinkVertically() + fadeOut()
+        ) {
+            Box(modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp)) {
+                lastBanner[0]?.let { BackupStateBanner(it, onDismiss = { manager.resetState() }) }
+            }
+        }
+
         LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+                .weight(1f)
+                .fillMaxWidth()
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-
-            // ── Backup state banner ───────────────────────────────────────────
-            item {
-                when (val s = backupState) {
-                    is LocalBackupManager.BackupState.InProgress -> StatusBanner(
-                        text    = s.message,
-                        color   = MaterialTheme.colorScheme.primaryContainer,
-                        icon    = Icons.Filled.HourglassTop,
-                        loading = true
-                    )
-                    is LocalBackupManager.BackupState.Success -> StatusBanner(
-                        text      = s.message,
-                        color     = RegenGreen.copy(alpha = 0.15f),
-                        icon      = Icons.Filled.CheckCircle,
-                        iconTint  = RegenGreen,
-                        onDismiss = { manager.resetState() }
-                    )
-                    is LocalBackupManager.BackupState.Error -> StatusBanner(
-                        text      = s.message,
-                        color     = MaterialTheme.colorScheme.errorContainer,
-                        icon      = Icons.Filled.Error,
-                        iconTint  = MaterialTheme.colorScheme.error,
-                        onDismiss = { manager.resetState() }
-                    )
-                    else -> {}
-                }
-            }
 
             // ── SETTINGS group ────────────────────────────────────────────────
             // First on the screen deliberately: it used to sit under the restore list,
@@ -807,6 +804,7 @@ fun LocalBackupScreen(
                 }
             }
     }
+      }
 
 
     // ── Restore confirm dialog ────────────────────────────────────────────────
@@ -943,6 +941,34 @@ private fun SectionCard(
             Spacer(Modifier.height(4.dp))
             content()
         }
+    }
+}
+
+/** The backup / restore progress, result or error — pinned above the screen's list. */
+@Composable
+private fun BackupStateBanner(state: LocalBackupManager.BackupState, onDismiss: () -> Unit) {
+    when (state) {
+        is LocalBackupManager.BackupState.InProgress -> StatusBanner(
+            text    = state.message,
+            color   = MaterialTheme.colorScheme.primaryContainer,
+            icon    = Icons.Filled.HourglassTop,
+            loading = true
+        )
+        is LocalBackupManager.BackupState.Success -> StatusBanner(
+            text      = state.message,
+            color     = RegenGreen.copy(alpha = 0.15f),
+            icon      = Icons.Filled.CheckCircle,
+            iconTint  = RegenGreen,
+            onDismiss = onDismiss
+        )
+        is LocalBackupManager.BackupState.Error -> StatusBanner(
+            text      = state.message,
+            color     = MaterialTheme.colorScheme.errorContainer,
+            icon      = Icons.Filled.Error,
+            iconTint  = MaterialTheme.colorScheme.error,
+            onDismiss = onDismiss
+        )
+        LocalBackupManager.BackupState.Idle -> {}
     }
 }
 

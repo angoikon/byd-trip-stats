@@ -39,7 +39,7 @@ android {
     val versionMajor    = 2
     val versionMinor    = 17
     val versionPatch    = 0
-    val versionPre      = 99 // 99 = stable; 1–98 = beta (e.g. 1 → "beta01")
+    val versionPre      = 52 // 99 = stable; 1–98 = beta (e.g. 1 → "beta01")
     // Hotfix revision for the SAME versionName. Bumps versionCode ONLY — the in-app
     // updater compares the GitHub tag against versionName (UpdateRepository.isNewerVersion),
     // NOT versionCode, so this does NOT auto-trigger an update, yet it lets us rebuild the
@@ -228,6 +228,11 @@ tasks.register<Copy>("syncPwa") {
     // worker when its bytes change, so without this a released cache would live for ever — which
     // is exactly how a cache-first app shell could pin an installed PWA to an old index.html.
     val pwaVersion = android.defaultConfig.versionName ?: "dev"
+    // Declared as an input because the filter below can't be: Gradle has no way to see a value
+    // captured in a lambda, so a version bump alone left this task UP-TO-DATE and the old stamp in
+    // place (2.17.0-beta50 shipped a service worker stamped beta49). With it, a new version always
+    // re-runs the copy.
+    inputs.property("pwaVersion", pwaVersion)
     filesMatching("sw.js") {
         filter { line -> line.replace("const VERSION = 'dev';", "const VERSION = '$pwaVersion';") }
     }
