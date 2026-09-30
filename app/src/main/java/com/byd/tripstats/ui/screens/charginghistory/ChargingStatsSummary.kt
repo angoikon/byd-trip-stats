@@ -22,14 +22,16 @@ internal fun ChargingStatsSummary(
 ) {
     val totalKwh      = sessions.sumOf { it.kwhAdded ?: 0.0 }
     val totalSessions = sessions.size
-    val avgSocDelta = if (socSource == SocSource.PANEL) {
+    val panelAvg = if (socSource == SocSource.PANEL) {
         sessions.mapNotNull { it.socPanelDelta.takeIf { d -> d != null && it.socStartPanel > 0.0 } }
             .takeIf { it.isNotEmpty() }?.average()
-            ?: sessions.mapNotNull { it.socDelta }.takeIf { it.isNotEmpty() }?.average()
-            ?: 0.0
-    } else {
-        sessions.mapNotNull { it.socDelta }.takeIf { it.isNotEmpty() }?.average() ?: 0.0
-    }
+    } else null
+    val avgSocDelta = panelAvg
+        ?: sessions.mapNotNull { it.socDelta }.takeIf { it.isNotEmpty() }?.average()
+        ?: 0.0
+    // Panel in whole percent, BMS with its decimal — by the reading the average came from, since
+    // Panel falls back to BMS when no session recorded a panel figure.
+    val avgSocFmt = if (panelAvg != null) "%.0f" else "%.1f"
 
     Card(
         modifier =
@@ -50,7 +52,7 @@ internal fun ChargingStatsSummary(
         ) {
             SummaryMetric(label = stringResource(R.string.charging_sessions_label), value = totalSessions.toString(), unit = "")
             SummaryMetric(label = stringResource(R.string.total_added_label), value = "%.1f".format(totalKwh), unit = "kWh")
-            SummaryMetric(label = stringResource(R.string.avg_soc_gain_label), value = "%.0f".format(avgSocDelta), unit = "%")
+            SummaryMetric(label = stringResource(R.string.avg_soc_gain_label), value = avgSocFmt.format(avgSocDelta), unit = "%")
         }
     }
 }

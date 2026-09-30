@@ -71,11 +71,14 @@ internal fun ChargingSessionCard(
     val usePanelSoc = socSource == SocSource.PANEL && session.socStartPanel > 0.0
     val displaySocStart = if (usePanelSoc) session.socStartPanel else session.socStart
     val displaySocEnd   = if (usePanelSoc) session.socEndPanel else session.socEnd
+    // Panel in whole percent, BMS with its decimal, as the trip screens show them — decided by the
+    // reading actually displayed, so a session with no panel figure (shown as BMS) keeps its decimal.
+    val socFmt = if (usePanelSoc) "%.0f%%" else "%.1f%%"
     val socText =
         when {
             displaySocEnd != null ->
-                "%.1f%%  →  %.1f%%".format(displaySocStart, displaySocEnd)
-            else -> "%.1f%%  →  …".format(displaySocStart)
+                "$socFmt  →  $socFmt".format(displaySocStart, displaySocEnd)
+            else -> "$socFmt  →  …".format(displaySocStart)
         }
 
     val kwhText = session.kwhAdded?.let { "%.2f kWh".format(it) } ?: "—"

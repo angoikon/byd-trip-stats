@@ -271,13 +271,15 @@ fun TripItem(
                 TripMetricChip(
                     icon = Icons.Filled.Battery4Bar,
                     label = if (socSource == SocSource.PANEL) stringResource(R.string.stat_soc_panel) else stringResource(R.string.stat_soc_bms),
+                    // As on the trip's own screen: the panel reading in whole percent, the BMS reading
+                    // with its decimal. Rounding BMS as well made the two sources read identically here.
                     value = if (socSource == SocSource.PANEL) {
                         if (trip.endSocPanel != null)
                             "${trip.startSocPanel.toInt()}% → ${trip.endSocPanel.toInt()}%"
                         else "—"
                     } else {
                         if (trip.endSoc != null)
-                            "${trip.startSoc.toInt()}% → ${trip.endSoc.toInt()}%"
+                            "${String.format("%.1f", trip.startSoc)}% → ${String.format("%.1f", trip.endSoc)}%"
                         else "—"
                     },
                     modifier = Modifier.weight(1f)

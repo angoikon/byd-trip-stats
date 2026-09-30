@@ -113,10 +113,12 @@ internal fun ChargingOverviewTab(
                 val usePanelSoc = socSource == SocSource.PANEL && session.socStartPanel > 0.0
                 val displaySocStart = if (usePanelSoc) session.socStartPanel else session.socStart
                 val displaySocEnd   = if (usePanelSoc) session.socEndPanel else session.socEnd
-                OverviewRow(stringResource(R.string.soc_start_label), "%.1f%%".format(displaySocStart))
+                // Panel in whole percent, BMS with its decimal — same rule as the session card.
+                val socFmt = if (usePanelSoc) "%.0f%%" else "%.1f%%"
+                OverviewRow(stringResource(R.string.soc_start_label), socFmt.format(displaySocStart))
                 displaySocEnd?.let {
-                    OverviewRow(stringResource(R.string.soc_end_label),  "%.1f%%".format(it))
-                    OverviewRow(stringResource(R.string.soc_added_label),"%.1f%%".format(it - displaySocStart))
+                    OverviewRow(stringResource(R.string.soc_end_label),  socFmt.format(it))
+                    OverviewRow(stringResource(R.string.soc_added_label), socFmt.format(it - displaySocStart))
                 }
                 session.kwhAdded?.let {
                     OverviewRow(stringResource(R.string.kwh_added_label), "%.2f kWh".format(it), valueColor = RegenGreen)

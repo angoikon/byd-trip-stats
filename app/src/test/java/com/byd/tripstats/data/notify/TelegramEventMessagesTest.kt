@@ -103,7 +103,7 @@ class TelegramEventMessagesTest {
     @Test
     fun `an unfinished or dataless trip still produces a valid card`() {
         val text = tripSummary(durationMs = null, energyKwh = null, efficiencyKwh100km = null, endSoc = null)
-        assertTrue(text, text.startsWith("<b>🚗 Trip finished</b>"))
+        assertTrue(text, text.startsWith("<b>🚗 Trip #1 finished</b>"))
         assertTrue(text, text.contains("20.0 km"))
         assertFalse(text, text.contains("SoC"))
     }
@@ -159,7 +159,7 @@ class TelegramEventMessagesTest {
     @Test
     fun `a charge that ended short says where it stopped`() {
         val text = charging(socEnd = 43.0)
-        assertTrue(text, text.contains("Charging stopped at 43%"))
+        assertTrue(text, text.contains("Charging #7 stopped at 43%"))
         assertTrue(text, text.contains("Added 9.80 kWh in 1 h 12 min"))
         assertTrue(text, text.contains("SoC 31% → 43%"))
         assertTrue(text, text.contains("avg 8.2 kW · peak 11.0 kW"))
@@ -168,9 +168,21 @@ class TelegramEventMessagesTest {
     /** The BMS settles the last fraction late, so a full charge routinely records as 99.x. */
     @Test
     fun `a full charge reads as complete, not as stopped`() {
-        assertTrue(charging(socEnd = 100.0).contains("Charging complete"))
-        assertTrue(charging(socEnd = 99.2).contains("Charging complete"))
-        assertTrue(charging(socEnd = 98.0).contains("Charging stopped at 98%"))
+        assertTrue(charging(socEnd = 100.0).contains("Charging #7 complete"))
+        assertTrue(charging(socEnd = 99.2).contains("Charging #7 complete"))
+        assertTrue(charging(socEnd = 98.0).contains("Charging #7 stopped at 98%"))
+    }
+
+    /** The number in the title is the row's id — the one its History card shows — in both channels. */
+    @Test
+    fun `trip and charging titles carry the History number`() {
+        val trip = TelegramEventMessages.tripSummary(
+            756L, 20.0, null, null, null, null, 80.0, null, null, null, null, "€", false)
+        assertEquals("🚗 Trip #756 finished", trip.title)
+        assertTrue(trip.telegramHtml, trip.telegramHtml.startsWith("<b>🚗 Trip #756 finished</b>"))
+        val charge = TelegramEventMessages.chargingFinished(
+            12L, 43.0, 31.0, 9.8, null, 0.0, 0.0, null, "€")
+        assertEquals("🔌 Charging #12 stopped at 43%", charge.title)
     }
 
     /** A session reconstructed from the SoC delta has no power readings to report. */

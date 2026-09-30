@@ -37,7 +37,7 @@ object TelegramEventMessages {
     private const val FULL_SOC_PCT = 99.0
 
     /**
-     * "🚗 Trip finished" card — distance, duration, energy, consumption against the lifetime
+     * "🚗 Trip #756 finished" card — distance, duration, energy, consumption against the lifetime
      * average, SoC used, trip score and (when the app can price the energy) cost.
      *
      * Every input is a value the app already stored or derived for this trip; nothing is
@@ -117,14 +117,16 @@ object TelegramEventMessages {
 
         return VehicleEvent(
             type = VehicleEvent.Type.TRIP,
-            title = "🚗 Trip finished",
+            // The number is the one Trip History prints on the trip's card (#756), so a message can
+            // be matched to its row — and quoted in a bug report — without comparing times.
+            title = "🚗 Trip #$tripId finished",
             lines = lines,
             key = "trip-$tripId",
         )
     }
 
     /**
-     * "🔌 Charging complete" / "🔌 Charging stopped at 43%" card, sent when a session closes.
+     * "🔌 Charging #12 complete" / "🔌 Charging #12 stopped at 43%" card, sent when a session closes.
      *
      * The title states which of the two happened rather than asking the user to configure a
      * target: a session that ended at [FULL_SOC_PCT] or above finished, anything below it
@@ -180,8 +182,9 @@ object TelegramEventMessages {
 
         return VehicleEvent(
             type = VehicleEvent.Type.CHARGING,
-            title = if (complete) "🔌 Charging complete"
-                    else "🔌 Charging stopped at ${fmt(socEnd, 0)}%",
+            // Numbered as Charging History numbers the session's card, for the same reason.
+            title = if (complete) "🔌 Charging #$sessionId complete"
+                    else "🔌 Charging #$sessionId stopped at ${fmt(socEnd, 0)}%",
             lines = lines,
             key = "charge-$sessionId",
         )
