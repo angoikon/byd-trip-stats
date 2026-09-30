@@ -203,6 +203,12 @@ internal object RtDispatch {
         if (!sockOpen()) {
             DiagLog.event(context, TAG, "adb assert: ${AdbPermissionManager.ensureAdbEnabled(context)} ${bootAge()}")
         }
+        // Not port-gated, unlike the assert above: this keeps Android 11+ from revoking our adb
+        // authorisation after a week unused, which a healthy channel needs as much as a shut one. It
+        // returns null when there's nothing to do, so the line appears only when it changes something.
+        AdbPermissionManager.ensureAdbKeyNeverExpires(context)?.let {
+            DiagLog.event(context, TAG, "adb key expiry: $it")
+        }
         if (launch(context)) return true
         // No point burning a 20-minute watch on a device that has no grants to use anyway —
         // launch() has already logged why.

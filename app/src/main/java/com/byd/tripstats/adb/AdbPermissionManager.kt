@@ -2,6 +2,7 @@ package com.byd.tripstats.adb
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Build
 import android.provider.Settings
 import android.util.Log
 import androidx.annotation.StringRes
@@ -18,6 +19,13 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
 import java.net.Socket
+
+/**
+ * Whether adb key expiry needs switching off: only where it exists (Android 11, API 30, and later)
+ * and only when it isn't off already, so a unit that has it at 0 is never written to again.
+ */
+internal fun shouldDisableAdbKeyExpiry(sdkInt: Int, currentMs: Long): Boolean =
+    sdkInt >= 30 && currentMs != 0L
 
 /**
  * Optional local permission helper for DiLink builds that expose a user-approved
@@ -50,6 +58,7 @@ object AdbPermissionManager {
     // had set it, and loopback needs no pairing.)
     private const val ADB_WIFI_ENABLED = "adb_wifi_enabled"
     private const val ADB_ENABLED = "adb_enabled"
+    private const val ADB_ALLOWED_CONNECTION_TIME = "adb_allowed_connection_time"
 
     // Permissions that require elevated user-approved grant flow.
     private val REQUIRED_PERMISSIONS = listOf(
@@ -208,6 +217,34 @@ object AdbPermissionManager {
         val adbAfter = Settings.Global.getInt(resolver, ADB_ENABLED, -1)
         val verdict = if (wifiAfter == 1 && adbAfter == 1) "ok" else "FAILED"
         "$verdict wifi=$wifiBefore→$wifiAfter adb=$adbBefore→$adbAfter"
+    }.getOrElse { "denied(${it.javaClass.simpleName})" }
+
+    /**
+     * Stop Android from revoking our adb authorisation after a week unused.
+     *
+     * From Android 11 an adb key that hasn't connected for `adb_allowed_connection_time` — seven
+     * days by default — is silently revoked. The app reconnects on every start, so this only bites
+     * a car left parked for longer than that: it would come back with a channel that refuses us,
+     * and the one-time adb setup would have to be redone at the car. `0` turns expiry off; it is the
+     * same switch as the developer option "Disable adb authorization timeout". Overdrive (MIT) sets
+     * the same value alongside its own adb restore.
+     *
+     * Not gated on the port being shut, unlike [ensureAdbEnabled]: this protects the authorisation,
+     * not the listener, so a healthy channel needs it just as much. Android 11+ only, so DiLink 3
+     * (Android 10, which has no key expiry) is never written to.
+     *
+     * @return null when there was nothing to do — already 0, older Android, or no grant — so the
+     *         caller logs only an actual change; otherwise `off (was N)`, `FAILED …` or `denied(…)`.
+     *         Never throws.
+     */
+    fun ensureAdbKeyNeverExpires(context: Context): String? = runCatching {
+        if (!isSetupComplete(context)) return@runCatching null
+        val resolver = context.contentResolver
+        val before = Settings.Global.getLong(resolver, ADB_ALLOWED_CONNECTION_TIME, -1L)
+        if (!shouldDisableAdbKeyExpiry(Build.VERSION.SDK_INT, before)) return@runCatching null
+        Settings.Global.putLong(resolver, ADB_ALLOWED_CONNECTION_TIME, 0L)
+        val after = Settings.Global.getLong(resolver, ADB_ALLOWED_CONNECTION_TIME, -1L)
+        if (after == 0L) "off (was $before)" else "FAILED (was $before, now $after)"
     }.getOrElse { "denied(${it.javaClass.simpleName})" }
 
     /** True if all required permissions are already granted — skip setup entirely. */
