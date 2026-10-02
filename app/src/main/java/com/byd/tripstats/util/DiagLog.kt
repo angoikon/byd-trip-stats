@@ -33,13 +33,35 @@ object DiagLog {
     }
 
     /**
+     * Lines that arrived before the file could be written, kept in memory and written ahead of the
+     * next line that can be. Very early in a boot that started the app before user unlock, external
+     * storage isn't mounted yet, and those lines used to be dropped without a trace — which hid the
+     * very failure they were recording (2026-10-02: the boot-time adb assert left no line at all).
+     * Bounded, oldest dropped first, so a file that never becomes writable can't grow memory.
+     * Guarded by [lock].
+     */
+    private val pending = ArrayDeque<String>()
+    private const val MAX_PENDING = 200
+
+    private fun hold(line: String) = synchronized(lock) {
+        if (pending.size >= MAX_PENDING) pending.removeFirst()
+        pending.addLast(line)
+    }
+
+    /**
      * Append a line. Always also mirrors to logcat at INFO level so live debugging works.
      * Safe to call before/after service lifecycle; never throws.
      */
     fun event(context: Context, tag: String, message: String) {
         Log.i(tag, message)
+        // Stamped when it happened, not when it reaches the file — a held line keeps its own time.
+        val line = "${timestampFormat.get()!!.format(Date())} $tag: $message"
         try {
-            val dir = context.applicationContext.getExternalFilesDir(null) ?: return
+            val dir = context.applicationContext.getExternalFilesDir(null)
+            if (dir == null) {
+                hold(line)
+                return
+            }
             val file = File(dir, FILE_NAME)
             synchronized(lock) {
                 if (file.length() > MAX_BYTES) {
@@ -47,11 +69,16 @@ object DiagLog {
                     if (backup.exists()) backup.delete()
                     file.renameTo(backup)
                 }
+                // Opening the writer is what fails when storage isn't ready, before anything is
+                // written — so held lines are only cleared once they have actually gone out.
                 PrintWriter(FileWriter(file, true)).use { out ->
-                    out.println("${timestampFormat.get()!!.format(Date())} $tag: $message")
+                    for (held in pending) out.println(held)
+                    out.println(line)
                 }
+                pending.clear()
             }
         } catch (e: Exception) {
+            hold(line)
             Log.w(TAG, "Write failed: ${e.message}")
         }
     }

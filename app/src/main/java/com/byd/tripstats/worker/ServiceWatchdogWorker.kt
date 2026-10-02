@@ -37,6 +37,11 @@ class ServiceWatchdogWorker(
         // left the car with no background restarter for the rest of the day. The probe short-circuits
         // when the supervisor is healthy, and when the channel is down the port check fails
         // instantly, so a tick costs nothing in either steady state. Never fails the worker.
+        // Reopen the port first if it has been shut and cleared — the backstop for a boot-time watch
+        // that never got to do it. Without this, one failed boot left the car with no background
+        // restarter until the next reboot, and dispatch alone can't help: it needs the port it's
+        // waiting for (2026-10-02). Post-DiLink-3 only, and a no-op whenever the port is up.
+        runCatching { RtDispatch.reassertAndAwaitPort(applicationContext, "watchdog adb assert") }
         runCatching { RtDispatch.launch(applicationContext) }
             .onFailure { Log.w(TAG, "runtime dispatch retry threw: ${it.message}") }
         return try {

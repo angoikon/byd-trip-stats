@@ -3,6 +3,7 @@ package com.byd.tripstats.adb
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
+import android.os.UserManager
 import android.provider.Settings
 import android.util.Log
 import androidx.annotation.StringRes
@@ -247,13 +248,41 @@ object AdbPermissionManager {
         if (after == 0L) "off (was $before)" else "FAILED (was $before, now $after)"
     }.getOrElse { "denied(${it.javaClass.simpleName})" }
 
-    /** True if all required permissions are already granted — skip setup entirely. */
+    /**
+     * True if all required permissions are already granted — skip setup entirely.
+     *
+     * Must not throw before the user is unlocked. Some DiLink-5 boots start the app via
+     * LOCKED_BOOT_COMPLETED, while credential-encrypted storage — where ordinary SharedPreferences
+     * live — is still shut, and reading the flag then throws `IllegalStateException`. That throw used
+     * to abort the whole boot-time channel watch silently, so adb was never re-asserted and no
+     * background restarter existed for the rest of the day (2026-10-02). The granted permissions are
+     * the real answer anyway, and PackageManager can be asked in that state, so fall through to it.
+     */
     fun isSetupComplete(context: Context): Boolean {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        if (prefs.getBoolean(PREF_PERMISSIONS_GRANTED, false)) return true
+        val flagged = runCatching {
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .getBoolean(PREF_PERMISSIONS_GRANTED, false)
+        }.getOrDefault(false)
+        if (flagged) return true
         // Double-check at runtime in case permissions were revoked
         return checkPermissionsGranted(context)
     }
+
+    /**
+     * False only in the seconds after a cold boot that started the app via LOCKED_BOOT_COMPLETED,
+     * before credential-encrypted storage opens. The adb key lives there, so nothing that needs the
+     * channel can run until this is true. The adb *settings* are device-protected and can be written
+     * before it — which is what lets the port be reopened early.
+     */
+    fun isUserUnlocked(context: Context): Boolean =
+        runCatching { context.getSystemService(UserManager::class.java)?.isUserUnlocked }.getOrNull() ?: true
+
+    /** True when BYD (or anyone) has switched either adb setting off — see [ensureAdbEnabled]. */
+    fun adbSettingsCleared(context: Context): Boolean = runCatching {
+        val resolver = context.contentResolver
+        Settings.Global.getInt(resolver, ADB_WIFI_ENABLED, -1) != 1 ||
+            Settings.Global.getInt(resolver, ADB_ENABLED, -1) != 1
+    }.getOrDefault(false)
 
     /** Check via dumpsys whether our permissions are actually granted. */
     fun checkPermissionsGranted(context: Context): Boolean {
@@ -366,6 +395,8 @@ object AdbPermissionManager {
     ): List<ShellResult> = withContext(Dispatchers.IO) {
         if (commands.isEmpty()) return@withContext emptyList()
         if (!isPortOpen()) return@withContext emptyList()
+        // Same "channel not usable yet" outcome as a shut port: the key can't be read before unlock.
+        if (!isUserUnlocked(context)) return@withContext emptyList()
 
         val keyPair = getOrCreateKeyPair(context)
         val dadb = tryConnect(keyPair, timeoutMs = 2_000) ?: return@withContext emptyList()
@@ -579,6 +610,11 @@ object AdbPermissionManager {
     } catch (_: Exception) { false }
 
     private fun getOrCreateKeyPair(context: Context): AdbKeyPair {
+        // Before unlock the key files can't be seen, so `exists()` reads false and the code below
+        // would try to generate a replacement — refused today only because locked storage can't be
+        // written. A replaced key would revoke the car's adb authorisation outright, so refuse here,
+        // explicitly, before either file is touched.
+        check(isUserUnlocked(context)) { "user locked — adb key not readable yet" }
         val privateKey = File(context.filesDir, KEY_FILE)
         val publicKey  = File(context.filesDir, KEY_PUB_FILE)
         if (privateKey.exists() && publicKey.exists()) {

@@ -6,7 +6,16 @@ import android.net.NetworkCapabilities
 import android.util.Log
 import com.byd.tripstats.adb.AdbPermissionManager
 import com.byd.tripstats.runtimebridge.RuntimeExtensionBridge
+import com.byd.tripstats.sdk.DiLink5Platform
 import java.io.File
+
+/**
+ * Whether adb should be switched back on now: only on head units newer than DiLink 3 (which keep
+ * their channel open and are never written to), only while the port is shut, and only when a
+ * setting has actually been cleared — so a port that is merely slow to open isn't written again.
+ */
+internal fun adbNeedsReassert(postDiLink3: Boolean, portOpen: Boolean, settingsCleared: Boolean): Boolean =
+    postDiLink3 && !portOpen && settingsCleared
 
 internal object RtDispatch {
     private const val TAG = "RtDispatch"
@@ -42,6 +51,13 @@ internal object RtDispatch {
             // Means the background restarter is never dispatched at all — the permission grants are
             // gone. Silent in release before this line existed, because Log.* is stripped.
             logState(context, "setup", "skipped — adb setup incomplete ${bootAge()} ${channelDiag(context)}")
+            return false
+        }
+        // A boot that started the app before the user was unlocked: the adb key isn't readable yet,
+        // so there is nothing to dispatch with. Not a failure — the boot-time watch keeps polling and
+        // dispatches once the key is readable and the port is up.
+        if (!AdbPermissionManager.isUserUnlocked(context)) {
+            logState(context, "locked", "waiting for user unlock ${bootAge()} ${channelDiag(context)}")
             return false
         }
         val apk = context.applicationInfo.sourceDir
@@ -209,7 +225,10 @@ internal object RtDispatch {
         AdbPermissionManager.ensureAdbKeyNeverExpires(context)?.let {
             DiagLog.event(context, TAG, "adb key expiry: $it")
         }
-        if (launch(context)) return true
+        // A throw must not end the watch. Before this was wrapped, one exception — a read of
+        // credential-encrypted storage before user unlock — killed it silently, and the car had no
+        // background restarter for the rest of the day (2026-10-02).
+        if (runCatching { launch(context) }.getOrDefault(false)) return true
         // No point burning a 20-minute watch on a device that has no grants to use anyway —
         // launch() has already logged why.
         if (!AdbPermissionManager.isSetupComplete(context)) return false
@@ -220,7 +239,12 @@ internal object RtDispatch {
                 if (android.os.SystemClock.elapsedRealtime() < EARLY_PHASE_MS) EARLY_POLL_MS
                 else LATE_POLL_MS,
             )
-            if (!sockOpen()) continue
+            if (!sockOpen()) {
+                // Re-checked on every poll, not just once: BYD can switch adb off again after our
+                // first assert — at the user unlock, on a boot that started the app early.
+                reassertIfCleared(context, "adb re-assert")
+                continue
+            }
             // Edge, not level: log the moment the port appears, because the gap between it and
             // boot is the number that decides whether this whole approach can work.
             if (!sawPort) {
@@ -230,6 +254,37 @@ internal object RtDispatch {
             if (runCatching { launch(context) }.getOrDefault(false)) return true
         }
         return false
+    }
+
+    /**
+     * Switch adb back on when it has been cleared while the port is shut; logs only when it acts.
+     *
+     * One assert at start-up isn't enough. BYD clears the settings at shutdown, and on a boot that
+     * started the app before the user was unlocked it clears them **again at the unlock** — 09-27:
+     * our assert at 11 s, `adbEnabled=0` again at 23 s, and the dispatch had won only by 5 s. So the
+     * boot-time watch calls this on every poll that finds the port shut, and the watchdog calls it
+     * for the rest of the day, which also covers a boot-time watch that never ran at all.
+     * Post-DiLink-3 only: DiLink 3 keeps its channel open and is never written to.
+     */
+    internal fun reassertIfCleared(context: Context, label: String): Boolean {
+        val postDiLink3 = DiLink5Platform.isDiLink5 || DiLink5Platform.isPostDiLink3
+        if (!adbNeedsReassert(postDiLink3, sockOpen(), AdbPermissionManager.adbSettingsCleared(context))) return false
+        DiagLog.event(context, TAG, "$label: ${AdbPermissionManager.ensureAdbEnabled(context)} ${bootAge()}")
+        return true
+    }
+
+    /**
+     * [reassertIfCleared], then — only if it acted — wait up to [waitMs] for adbd to start listening,
+     * so a dispatch made straight afterwards finds the port it needs instead of slipping to the
+     * caller's next attempt (15 minutes away, for the watchdog). Polls a refused loopback connect,
+     * which costs microseconds; no wait at all when there was nothing to re-assert.
+     */
+    internal suspend fun reassertAndAwaitPort(context: Context, label: String, waitMs: Long = 15_000L) {
+        if (!reassertIfCleared(context, label)) return
+        val deadline = android.os.SystemClock.elapsedRealtime() + waitMs
+        while (!sockOpen() && android.os.SystemClock.elapsedRealtime() < deadline) {
+            kotlinx.coroutines.delay(1_000L)
+        }
     }
 
     // ── Channel diagnosis without the channel ────────────────────────────────────────────────
