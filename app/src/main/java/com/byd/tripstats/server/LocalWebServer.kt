@@ -22,9 +22,24 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
-import java.util.Collections
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+
+/**
+ * The address a request came from, for counting wrong PINs per device.
+ *
+ * Over HTTPS the companion sits behind `tailscale serve`, so every request arrives from the local
+ * proxy at 127.0.0.1 — and five wrong PINs from any one device locked out every device, its owner
+ * included. The proxy names the real client in `X-Forwarded-For` (it sets the header rather than
+ * appending to it, so a client can't supply its own), and only a loopback peer is believed: a
+ * header sent straight from the LAN is ignored.
+ */
+internal fun webClientAddress(remoteAddr: String?, forwardedFor: String?): String {
+    val remote = remoteAddr?.takeIf { it.isNotBlank() } ?: return "unknown"
+    val loopback = remote.startsWith("127.") || remote == "::1" || remote == "0:0:0:0:0:0:0:1"
+    if (!loopback) return remote
+    return forwardedFor?.split(',')?.firstOrNull()?.trim()?.takeIf { it.isNotEmpty() } ?: remote
+}
 
 class LocalWebServer(
     private val context: Context,
@@ -43,9 +58,10 @@ class LocalWebServer(
         private const val MAX_ATTEMPTS = 5
     }
 
-    // In-memory set of valid session tokens; cleared when the server restarts (pin/port change)
-    private val sessions: MutableSet<String> =
-        Collections.newSetFromMap(ConcurrentHashMap())
+    // Valid logins, kept across app restarts and dropped when the PIN changes (see WebSessionStore).
+    private val sessions = WebSessionStore(
+        WebSessionStore.prefsStorage(context), pin, SESSION_MAX_AGE * 1000L,
+    )
 
     // Failed PIN attempts per remote IP — value is the attempt count
     private val failedAttempts = ConcurrentHashMap<String, Int>()
@@ -59,7 +75,7 @@ class LocalWebServer(
     }
 
     private fun clientIp(session: IHTTPSession): String =
-        session.headers["remote-addr"] ?: "unknown"
+        webClientAddress(session.headers["remote-addr"], session.headers["x-forwarded-for"])
 
     private fun isLockedOut(ip: String) =
         (failedAttempts[ip] ?: 0) >= MAX_ATTEMPTS

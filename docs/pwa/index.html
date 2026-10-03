@@ -266,6 +266,9 @@ main { padding: 24px 20px; max-width: 1200px; margin: 0 auto; }
 .drop-hint { font-size: 13px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
 .drop-hint.small { font-size: 12px; margin-top: 12px; }
 .inline-link { color: var(--accent); cursor: pointer; text-decoration: underline; }
+/* The same panel when the page comes from the car: connecting, or the car didn't answer. */
+.reach .load-btn { margin-top: 18px; font-size: 14px; padding: 9px 18px; }
+.reach .load-btn:disabled { opacity: 0.6; cursor: default; }
 
 /* ── List views ──────────────────────────────────────────────────────────── */
 /* Title above, totals on one line of their own beneath it. Sharing a row meant the totals were
@@ -530,6 +533,21 @@ span.star { cursor: default; }
         Settings → App → Backup &amp; Restore → Backup Now
       </p>
     </div>
+    <!-- Shown instead of the drop zone when this page was served by the car (see probeCar). -->
+    <div class="dropzone reach" id="reach" style="display:none">
+      <div class="drop-icon">📡</div>
+      <strong id="reach-title">Connecting to the car…</strong>
+      <div id="reach-detail" style="display:none">
+        <p class="drop-hint">The car didn't answer just now.</p>
+        <p class="drop-hint small">
+          Check that this device is online. Over Tailscale, check that Tailscale is connected here
+          and that no DNS app or profile (NextDNS, an ad blocker) is overriding it. A car that has
+          been parked for a while may also have switched its Wi-Fi off.
+        </p>
+        <button class="load-btn" id="reach-retry" onclick="probeCar()">Try again</button>
+        <p class="drop-hint small">or <label for="file-input" class="inline-link">open a backup file</label> instead</p>
+      </div>
+    </div>
   </section>
 
   <!-- ── Trip list ─────────────────────────────────────────────── -->
@@ -747,26 +765,94 @@ async function ensureSql() {
 }
 
 // ── Live-mode detection ────────────────────────────────────────────────────────
-// On page load, silently probe /api/status with a 1.5 s timeout.
-// If it responds the page is being served by the car's embedded HTTP server
-// and we switch to API mode (no sql.js required).
-(async () => {
+// The page is either served by the car (live: every screen reads the car's API) or opened as a
+// file / from a static copy, where a backup is loaded by hand. Asking the car tells them apart:
+//   200 → the car, logged in: live mode.
+//   401 → the car, but not logged in here — or logged out since — so its PIN screen.
+//   any other answer (a static host's 404) → no car behind this page: the drop zone.
+//   no answer → a car that didn't reply: say so and offer a retry. That is what a page the
+//   service worker served from its cache sees when the car is out of reach.
+// The probe used to treat everything but 200 as "no car" and never asked again, so a phone that
+// couldn't reach the car (a DNS profile overriding Tailscale's, 2026-10-03) or had been logged out
+// sat on the drop zone with no PIN prompt and nothing to say why.
+const PROBE_TIMEOUT_MS = 5000;
+const servedByCar = location.protocol !== 'file:' && !location.hostname.endsWith('.github.io');
+let reachState = 'drop';   // 'drop' | 'connecting' | 'unreachable'
+let probing = false;
+
+function setReachState(state) {
+  reachState = state;
+  document.getElementById('dropzone').style.display = state === 'drop' ? '' : 'none';
+  document.getElementById('reach').style.display    = state === 'drop' ? 'none' : '';
+  document.getElementById('reach-title').textContent =
+    state === 'unreachable' ? "Can't reach the car" : 'Connecting to the car…';
+  document.getElementById('reach-detail').style.display = state === 'unreachable' ? '' : 'none';
+  const retry = document.getElementById('reach-retry');
+  retry.disabled = false;
+  retry.textContent = 'Try again';
+}
+
+function goToLogin() {
+  location.replace('/login');
+}
+
+function enterLiveMode() {
+  liveMode = true;
+  setReachState('drop');
+  document.getElementById('nav').style.display = 'flex';
+  document.getElementById('nav-files').style.display = '';
+  document.getElementById('battery-btn').style.display = '';
+  document.getElementById('bell-wrap').style.display = 'block';
+  startNotifications();
+  showView('trips');
+}
+
+async function probeCar() {
+  if (liveMode || db || probing || location.protocol === 'file:') return;
+  probing = true;
+  if (reachState === 'unreachable') {
+    const retry = document.getElementById('reach-retry');
+    retry.disabled = true;
+    retry.textContent = 'Connecting…';
+  } else if (servedByCar) {
+    setReachState('connecting');
+  }
   try {
     const ctrl = new AbortController();
-    const tid  = setTimeout(() => ctrl.abort(), 1500);
-    const r    = await fetch('/api/status', { signal: ctrl.signal });
+    const tid  = setTimeout(() => ctrl.abort(), PROBE_TIMEOUT_MS);
+    const r    = await fetch('/api/status', { signal: ctrl.signal, cache: 'no-store' });
     clearTimeout(tid);
-    if (r.ok) {
-      liveMode = true;
-      document.getElementById('nav').style.display = 'flex';
-      document.getElementById('nav-files').style.display = '';
-      document.getElementById('battery-btn').style.display = '';
-      document.getElementById('bell-wrap').style.display = 'block';
-      startNotifications();
-      showView('trips');
-    }
-  } catch (_) { /* file-upload mode — drop zone stays visible */ }
-})();
+    if (r.ok) enterLiveMode();
+    else if (r.status === 401) goToLogin();
+    else setReachState('drop');
+  } catch (_) {
+    if (!db) setReachState(servedByCar ? 'unreachable' : 'drop');
+  } finally {
+    probing = false;
+  }
+}
+
+// iOS resumes a home-screen app where it left it rather than reloading it, so the answer above
+// would otherwise stand until the app is swiped away. Coming back to the page asks again: a car
+// that was out of reach gets another try, and a live page whose login the car no longer knows
+// (logged out elsewhere, PIN changed) goes to the PIN screen instead of failing call by call.
+async function onResume() {
+  if (db) return;   // a backup loaded by hand — nothing to do with the car
+  if (!liveMode) {
+    if (reachState === 'unreachable') probeCar();
+    return;
+  }
+  try {
+    const r = await fetch('/api/status', { cache: 'no-store' });
+    if (r.status === 401) goToLogin();
+  } catch (_) { /* out of reach for a moment — the next call says so */ }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') onResume();
+});
+window.addEventListener('pageshow', e => { if (e.persisted) onResume(); });
+
+probeCar();
 
 // ── Notifications ──────────────────────────────────────────────────────────────
 // The car records what it does — a trip finished, a charge finished, a battery alert —
@@ -1209,6 +1295,10 @@ function esc(s) {
 
 async function fetchJson(url) {
   const r = await fetch(url);
+  if (r.status === 401 && liveMode) {
+    goToLogin();
+    throw new Error('Logged out — opening the PIN screen');
+  }
   if (!r.ok) throw new Error(`Server returned ${r.status} for ${url}`);
   return r.json();
 }
