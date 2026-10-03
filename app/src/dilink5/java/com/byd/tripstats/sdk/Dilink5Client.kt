@@ -261,10 +261,14 @@ class Dilink5Client {
         if (spd != null) {
             ds.applyDaemonTelemetry(speedKmh = spd, gear = null, powerKw = null, rearRpm = null)
         }
-        // getChargingPower is now just a backstop — the charging listener (registerChargingListener)
-        // is the primary, instant source.
-        reflGetDouble(chargingDev, "getChargingPower")?.takeIf { it in 0.0..250.0 }
-            ?.let { ds.applyDilink5Telemetry(chargingPowerKw = it) }
+        // Charge power with the gun state that decides whether it counts: on this platform power
+        // alone can't tell a charge (it reads 359.4 with no gun in) — see di5ChargingPowerKw. The
+        // charging listener pushes power too and is judged against the gun state read here.
+        val gun = reflGetInt(chargingDev, "getChargingGunState")
+        val chargeKw = reflGetDouble(chargingDev, "getChargingPower")
+        if (gun != null || chargeKw != null) {
+            ds.applyDilink5Telemetry(chargingPowerKw = chargeKw, chargingGunState = gun)
+        }
         // FAST: PHEV energy mode (1=EV/2=ForceEV/3=HEV/4=Fuel/5=Keep). Read every driving tick because
         // it gates each ~100 m projection sample as EV vs ICE distance (see the ICE-aware projection).
         // Returns 0/absent on BEVs → filtered out in applyDilink5Phev, so this is a no-op there.

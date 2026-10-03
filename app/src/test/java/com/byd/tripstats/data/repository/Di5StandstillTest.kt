@@ -16,8 +16,9 @@ class Di5StandstillTest {
         isDiLink5: Boolean = true,
         moved: Boolean = true,
         windowOpen: Boolean = false,
-        standstillMs: Long = 60_000L
-    ) = di5StandstillCountsAsCarOn(isDiLink5, moved, windowOpen, standstillMs, cap)
+        standstillMs: Long = 60_000L,
+        charging: Boolean = false
+    ) = di5StandstillCountsAsCarOn(isDiLink5, moved, windowOpen, standstillMs, cap, charging)
 
     @Test
     fun `never applies on DiLink-3`() {
@@ -46,5 +47,12 @@ class Di5StandstillTest {
     fun `the cap hands a very long standstill back to the car-off timeout`() {
         assertTrue(holds(standstillMs = cap - 1))
         assertFalse(holds(standstillMs = cap))
+    }
+
+    @Test
+    fun `a car on a charger is parked, not queueing`() {
+        // 2026-10-03: a 35-min DC charge was held as car-on until the cap, keeping the trip open.
+        assertFalse(holds(standstillMs = 2 * 60_000L, charging = true))
+        assertTrue(holds(standstillMs = 2 * 60_000L, charging = false))
     }
 }

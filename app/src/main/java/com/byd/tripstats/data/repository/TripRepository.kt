@@ -127,14 +127,18 @@ internal fun decideCarOffStop(
  * or a queue, and it counts as it would on DiLink-3. A car-off window that is already open — the
  * one a revived process inherits from recoverActiveTrip, i.e. a real switch-off — runs its normal
  * course, and [capMs] bounds the rule should a firmware ever stop force-stopping.
+ *
+ * A car that is [charging] is parked, not queueing — holding it kept a trip open through a 35-min
+ * DC charge (2026-10-03), so a charge hands the stop to the car-off timeout like any other.
  */
 internal fun di5StandstillCountsAsCarOn(
     isDiLink5: Boolean,
     movedInThisProcess: Boolean,
     carOffWindowOpen: Boolean,
     standstillMs: Long,
-    capMs: Long
-): Boolean = isDiLink5 && movedInThisProcess && !carOffWindowOpen && standstillMs < capMs
+    capMs: Long,
+    charging: Boolean = false
+): Boolean = isDiLink5 && movedInThisProcess && !carOffWindowOpen && !charging && standstillMs < capMs
 
 // ── Trip merge ──────────────────────────────────────────────────────────────
 
@@ -1237,14 +1241,16 @@ class TripRepository private constructor(context: Context) {
             movedInThisProcess = di5MovedInThisProcess,
             carOffWindowOpen   = carOffSinceMs > 0L,
             standstillMs       = now - di5StandstillSinceMs,
-            capMs              = MAX_KEPT_OFF_MS
+            capMs              = MAX_KEPT_OFF_MS,
+            charging           = t.isCharging
         )
         if (!held && _di5StandstillHeld.value) {
-            // Only the cap ends a hold while standing — hand it to the normal car-off timeout.
+            // Only the cap or a charge ends a hold while standing — hand it to the normal car-off timeout.
+            val why = if (t.isCharging) "ended by a charge"
+                      else "reached ${MAX_KEPT_OFF_MS / 60_000} min with the app running"
             DiagLog.event(
                 appContext, TAG,
-                "standstill during trip id=${_currentTripId.value} reached " +
-                    "${MAX_KEPT_OFF_MS / 60_000} min with the app running — handing it to the car-off timeout"
+                "standstill during trip id=${_currentTripId.value} $why — handing it to the car-off timeout"
             )
         }
         _di5StandstillHeld.value = held

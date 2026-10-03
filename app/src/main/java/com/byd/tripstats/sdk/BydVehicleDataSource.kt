@@ -62,6 +62,10 @@ private const val KEY_CHARGER_SIGNALS_UNRELIABLE = "charger_signals_unreliable"
 //     0x44700010=low, 0x44700020=high, 0x44700038=avg.
 private const val STAT_CACHE_VERSION = 8
 private const val DIRECT_CHARGING_POWER_TIMEOUT_MS = 4_000L
+// DiLink-5 polls charge power (Dilink5Client.pollIntervalMs, 5 s on AC) where DiLink-3 has it
+// pushed, so its window spans a missed poll: one stray reading mid-charge would otherwise close the
+// charging session and open a new one on the next.
+private const val DI5_CHARGING_POWER_TIMEOUT_MS = 12_000L
 // DC-charge inference fallback: minimum |pack power| (kW flowing into the battery, read from the
 // synchronous enginePower getter) for treating a parked, car-on charge as active when the BMS
 // charging listener is silent (its pushed callbacks can wedge; a DC charge started while the head
@@ -169,6 +173,31 @@ internal fun locationFixAgeMs(
 internal fun gpsSpeedKmhIfFresh(speedMps: Float, hasSpeed: Boolean, fixAgeMs: Long?): Double? {
     if (!hasSpeed || fixAgeMs == null || fixAgeMs > GPS_SPEED_MAX_FIX_AGE_MS) return null
     return speedMps.toDouble().takeIf { it.isFinite() && it >= 0.0 }?.times(3.6)
+}
+
+/**
+ * What DiLink-5's `getChargingPower` reads whenever no gun is in: a fixed value, not a measurement
+ * (Sealion 7, unmoved across every non-charging session, @luads 2026-09-30 and 10-03).
+ */
+internal const val DI5_CHARGING_POWER_AT_REST_KW = 359.4
+
+/** Highest charge power counted on DiLink-5 — headroom over today's cars for faster ones. */
+internal const val DI5_CHARGING_POWER_MAX_KW = 400.0
+
+/**
+ * The charge power to count as a charge on DiLink-5, or null when this reading isn't one.
+ *
+ * Power alone can't decide it: the at-rest reading is positive and inside the accepted range. So a
+ * reading counts only with a charging gun in — AC (1), DC (2) or both (3); 0 is none, and the
+ * discharge (V2L) gun is never a charge — and never at the at-rest value itself. A car plugged in
+ * but not yet charging reads 0 and isn't counted either. Measured on a Sealion 7 DC charge (@luads,
+ * 2026-10-03): gun 0 with 359.4 unplugged, gun 2 with 0 before the ramp, gun 2 with 5.6 → 107 kW.
+ */
+internal fun di5ChargingPowerKw(powerKw: Double?, gunState: Int?): Double? {
+    if (powerKw == null || !powerKw.isFinite()) return null
+    if (gunState == null || gunState !in 1..3) return null
+    if (kotlin.math.abs(powerKw - DI5_CHARGING_POWER_AT_REST_KW) < 0.05) return null
+    return powerKw.takeIf { it > 0.1 && it <= DI5_CHARGING_POWER_MAX_KW }
 }
 
 private enum class InstrumentTyrePressureEncoding {
@@ -5441,6 +5470,7 @@ class BydVehicleDataSource(context: Context) {
         usableKwh: Double? = null,
         sohPct: Double? = null,
         chargingPowerKw: Double? = null,
+        chargingGunState: Int? = null,
     ) {
         var changed = false
         var snap = _vehicleSnapshot.value
@@ -5463,10 +5493,48 @@ class BydVehicleDataSource(context: Context) {
         }
         if (changed) _vehicleSnapshot.value = snap
         if (sohPct != null && sohPct in 50.0..110.0) { _statisticBatterySoh.value = sohPct; changed = true }
-        if (chargingPowerKw != null && chargingPowerKw in 0.0..250.0) {
-            _chargingPowerKw.value = chargingPowerKw; _chargingPowerRaw.value = chargingPowerKw; changed = true
-        }
+        if (chargingGunState != null) noteDi5GunState(chargingGunState)
+        if (chargingPowerKw != null && applyDi5ChargingPower(chargingPowerKw)) changed = true
         if (changed) publishSnapshot()
+    }
+
+    /** Last gun state the DiLink-5 client read; the charging listener's power pushes are judged against it. */
+    @Volatile private var di5GunState: Int? = null
+    @Volatile private var di5ChargingLogged = false
+
+    private fun noteDi5GunState(gun: Int) {
+        val previous = di5GunState
+        di5GunState = gun
+        // Plug-in and unplug only — a DC plug passes through AC (1) on its way to 2.
+        if (((previous ?: 0) == 0) != (gun == 0)) {
+            DiagLog.event(appContext, TAG, "🔌 DiLink-5 charging gun ${previous ?: "-"}→$gun")
+        }
+    }
+
+    /**
+     * Feeds one DiLink-5 charge-power reading into the same freshness-stamped path DiLink-3's pushed
+     * power uses, so [computeChargingActive] and the published charging power see it. Until 2.17.0
+     * the value was stored without the stamp, so a DiLink-5 charge was never detected (a 35-min DC
+     * charge on 2026-10-03 opened no session and held a trip open). A reading that doesn't count
+     * (see [di5ChargingPowerKw]) is not a stop by itself: the charge ends when nothing has counted
+     * for [DI5_CHARGING_POWER_TIMEOUT_MS]. Returns true when the snapshot needs publishing.
+     */
+    private fun applyDi5ChargingPower(rawKw: Double): Boolean {
+        val countedKw = di5ChargingPowerKw(rawKw, di5GunState)
+        if (countedKw != null) updateDirectChargingPower(countedKw)
+        val charging = hasFreshDirectChargingPower()
+        if (!charging) _chargingPowerKw.value = 0.0
+        val flipped = charging != di5ChargingLogged
+        if (flipped) {
+            di5ChargingLogged = charging
+            DiagLog.event(
+                appContext, TAG,
+                if (charging) "🔌 DiLink-5 charge detected: gun=$di5GunState power=$rawKw kW"
+                else "🔌 DiLink-5 charge ended: gun=${di5GunState ?: "-"} power=$rawKw " +
+                    "(nothing counted for ${DI5_CHARGING_POWER_TIMEOUT_MS / 1000}s)"
+            )
+        }
+        return countedKw != null || flipped
     }
 
     /**
@@ -6853,8 +6921,10 @@ class BydVehicleDataSource(context: Context) {
     }
 
     private fun hasFreshDirectChargingPower(nowElapsedMs: Long = SystemClock.elapsedRealtime()): Boolean {
+        val timeoutMs = if (DiLink5Platform.isDiLink5) DI5_CHARGING_POWER_TIMEOUT_MS
+                        else DIRECT_CHARGING_POWER_TIMEOUT_MS
         return lastChargingPowerRawElapsedMs != 0L &&
-            nowElapsedMs - lastChargingPowerRawElapsedMs <= DIRECT_CHARGING_POWER_TIMEOUT_MS &&
+            nowElapsedMs - lastChargingPowerRawElapsedMs <= timeoutMs &&
             _chargingPowerRaw.value > 0.1
     }
 

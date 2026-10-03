@@ -1,9 +1,14 @@
 package com.byd.tripstats
 
 import android.app.Application
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.SystemClock
 import android.util.Log
 import androidx.work.Configuration
+import com.byd.tripstats.adb.AdbPermissionManager
 import com.byd.tripstats.data.backup.LocalBackupManager
 import com.byd.tripstats.data.entitlement.EntitlementManager
 import com.byd.tripstats.data.preferences.PreferencesManager
@@ -21,6 +26,7 @@ import com.byd.tripstats.util.DiagLog
 import com.byd.tripstats.util.ServiceIdleState
 import com.byd.tripstats.worker.DatabaseMaintenanceWorker
 import com.byd.tripstats.worker.ServiceWatchdogWorker
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,8 +52,53 @@ class BydStatsApplication : Application(), Configuration.Provider {
             .setMinimumLoggingLevel(Log.INFO)
             .build()
 
+    /** Set once [start] has run — it can be reached from onCreate, the unlock, and BootReceiver. */
+    private val started = AtomicBoolean(false)
+    private var unlockReceiver: BroadcastReceiver? = null
+
     override fun onCreate() {
         super.onCreate()
+        // A boot can start the app (LOCKED_BOOT_COMPLETED) before the car has unlocked its storage.
+        // Until then the app's preferences, database and adb key can't be read, and the first
+        // preference read below crashed the process (Sealion 7, 2026-10-03, boot+11 s — rescued only
+        // by the crash restart 5 s later). Nothing here works before the unlock, so the whole start
+        // waits for it; the unlock comes within seconds, and BOOT_COMPLETED after it.
+        if (!AdbPermissionManager.isUserUnlocked(this)) {
+            startAfterUnlock()
+            return
+        }
+        start()
+    }
+
+    /**
+     * Runs the start-up if the user is unlocked and it hasn't run yet. BootReceiver calls it as a
+     * backstop, in case BOOT_COMPLETED reaches it before USER_UNLOCKED reaches [startAfterUnlock].
+     */
+    fun startIfDeferred() {
+        if (!started.get() && AdbPermissionManager.isUserUnlocked(this)) start()
+    }
+
+    private fun startAfterUnlock() {
+        // Held in memory until storage is mounted, then written ahead of the start-up's own lines.
+        DiagLog.event(
+            this, TAG,
+            "Application.onCreate pid=${android.os.Process.myPid()} before user unlock — start-up " +
+                "waits for it sinceBoot=${SystemClock.elapsedRealtime() / 1000}s",
+        )
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) = start()
+        }
+        unlockReceiver = receiver
+        runCatching { registerReceiver(receiver, IntentFilter(Intent.ACTION_USER_UNLOCKED)) }
+        // The unlock may have landed between the check in onCreate and the registration, taking its
+        // broadcast with it.
+        startIfDeferred()
+    }
+
+    private fun start() {
+        if (!started.compareAndSet(false, true)) return
+        unlockReceiver?.let { runCatching { unregisterReceiver(it) } }
+        unlockReceiver = null
         // MUST be the first thing — runs before anything else can touch a vehicle device.
         val primed = RuntimeExtensionBridge.prime()
         val dc = RuntimeExtensionBridge.registerDataCache(this)

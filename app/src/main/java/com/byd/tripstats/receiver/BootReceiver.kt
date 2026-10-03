@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.SystemClock
 import android.util.Log
+import com.byd.tripstats.BydStatsApplication
+import com.byd.tripstats.adb.AdbPermissionManager
 import com.byd.tripstats.service.ServiceRestarterJobService
 import com.byd.tripstats.service.VehicleTelemetryService
 import com.byd.tripstats.util.DiagLog
@@ -87,6 +89,19 @@ class BootReceiver : BroadcastReceiver() {
             Log.d(TAG, "Ignoring action=$action")
             return
         }
+
+        // Before the user unlock nothing below can work — preferences, database and adb key are
+        // all locked — and the app's own start-up is waiting for the unlock (BydStatsApplication.
+        // onCreate). BOOT_COMPLETED follows it and does the real start.
+        if (!AdbPermissionManager.isUserUnlocked(context)) {
+            DiagLog.event(
+                context.applicationContext, TAG,
+                "onReceive action=$action before user unlock — left to BOOT_COMPLETED " +
+                    "sinceBoot=${SystemClock.elapsedRealtime() / 1000}s",
+            )
+            return
+        }
+        (context.applicationContext as? BydStatsApplication)?.startIfDeferred()
 
         // sinceBoot on this line too: it shows *where in the boot cycle* the wake arrived, which
         // separates "broadcast landed during early boot, platform not ready" from a normal late one.

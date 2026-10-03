@@ -558,10 +558,15 @@ class VehicleTelemetryService : Service() {
                         // mechanism other apps use is privileged , which we deliberately do
                         // not implement. Broadening this just wakes the MCU every 10 min for no
                         // connectivity gain (pure drain). See the parked-power-cut memory note.
+                        //
+                        // Not on DiLink-5: the keepalive wakes the MCU through the power device, which
+                        // has never been exercised there, and DiLink-5 always reads car-off — so the
+                        // charge detection added in 2.17.0 would otherwise fire it on every charge.
                         val snap = vehicleDataSource.vehicleSnapshot.value
                         val chargingGunPresent = snap.chargingGunState != 0
                         val chargerWorking = snap.chargerWorkState != 0
-                        if (!telemetry.isCarOn && (telemetry.isCharging || chargingGunPresent || chargerWorking)) {
+                        if (!DiLink5Platform.isDiLink5 && !telemetry.isCarOn &&
+                            (telemetry.isCharging || chargingGunPresent || chargerWorking)) {
                             val nowMs = SystemClock.elapsedRealtime()
                             if (nowMs - lastChargingKeepaliveMs >= 10 * 60 * 1000L) {
                                 lastChargingKeepaliveMs = nowMs
