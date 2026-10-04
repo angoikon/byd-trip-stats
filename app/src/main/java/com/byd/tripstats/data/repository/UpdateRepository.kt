@@ -61,6 +61,23 @@ class UpdateRepository private constructor(private val context: Context) {
     private val _downloadedApk = MutableStateFlow<File?>(null)
     val downloadedApk: StateFlow<File?> = _downloadedApk.asStateFlow()
 
+    /**
+     * True from the tap on Install until the install is known to have failed; a successful one
+     * replaces this process. One install at a time: a second tap while the first was still taking
+     * its backup ran a second install alongside it, and on DiLink-5 the two failed each other
+     * (2026-10-04). Lives here, not in the ViewModel, so the install-result receiver can release it.
+     */
+    private val _installInProgress = MutableStateFlow(false)
+    val installInProgress: StateFlow<Boolean> = _installInProgress.asStateFlow()
+
+    /** Claims the install; false when one is already running. */
+    fun beginInstall(): Boolean = _installInProgress.compareAndSet(false, true)
+
+    /** Releases it after an install that didn't happen, so Install can be tapped again. */
+    fun endInstall() {
+        _installInProgress.value = false
+    }
+
     private var activeDownloadId: Long? = null
 
     // ── GitHub API model ──────────────────────────────────────────────────────
@@ -269,11 +286,27 @@ class UpdateRepository private constructor(private val context: Context) {
      * session is ongoing — enforced by DashboardViewModel.canInstallNow.
      */
     suspend fun installUpdate(apkFile: File) = withContext(Dispatchers.IO) {
-        try {
+        val committed = try {
             installViaSilentSession(apkFile)
+            true
         } catch (e: Exception) {
             Log.w(TAG, "Silent install failed (${e.message}), falling back to system installer")
+            // The listeners may already have been released for the commit; the system installer
+            // is the user's to finish or cancel, and nothing reports back if they cancel.
+            runCatching { com.byd.tripstats.service.VehicleTelemetryService.resumeAfterFailedUpdate() }
+            endInstall()
             installViaSystemInstaller(apkFile)
+            false
+        }
+        // Committed: success replaces this process, failure reaches InstallStatusReceiver, which
+        // releases the install. This only covers a result that never arrives. Outside the try, so
+        // a cancelled wait just ends — it must never fall through to the system installer.
+        if (committed) {
+            kotlinx.coroutines.delay(INSTALL_RESULT_TIMEOUT_MS)
+            if (_installInProgress.value) {
+                runCatching { com.byd.tripstats.service.VehicleTelemetryService.resumeAfterFailedUpdate() }
+                endInstall()
+            }
         }
     }
 
@@ -296,6 +329,7 @@ class UpdateRepository private constructor(private val context: Context) {
             true
         } else {
             Log.w(TAG, "Shell install failed: ${result.output.take(200)}")
+            endInstall()
             false
         }
     }
@@ -391,6 +425,9 @@ class UpdateRepository private constructor(private val context: Context) {
 
     companion object {
         @Volatile private var INSTANCE: UpdateRepository? = null
+
+        /** How long a committed silent install may go without a result before Install is offered again. */
+        private const val INSTALL_RESULT_TIMEOUT_MS = 120_000L
 
         fun getInstance(context: Context): UpdateRepository =
             INSTANCE ?: synchronized(this) {

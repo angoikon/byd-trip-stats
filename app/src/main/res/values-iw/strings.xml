@@ -1154,6 +1154,7 @@
     <string name="about_download_progress">%1$s%% · %2$s</string>
     <string name="about_install_note">כפתור ההתקנה יהפוך זמין בחנייה ללא נסיעה או טעינה פעילה</string>
     <string name="about_install_now">התקן עכשיו</string>
+    <string name="about_installing">מגבה, ואז מתקין…</string>
     <string name="about_download_update">הורד עדכון</string>
     <string name="about_update_manual_di5_instructions">התקנה אוטומטית דורשת את חיבור העזר, שאינו זמין כרגע. במחשב או בטלפון, הורד את קובץ ה-APK של גרסה זו מדף הגרסאות, ולאחר מכן התקן אותו דרך ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>

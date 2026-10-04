@@ -1069,6 +1069,7 @@
     <string name="about_download_progress">%1$s%% · %2$s</string>
     <string name="about_install_note">ปุ่มติดตั้งจะพร้อมใช้งานเมื่อจอดรถโดยไม่มีการเดินทางหรือการชาร์จที่ใช้งานอยู่</string>
     <string name="about_install_now">ติดตั้งทันที</string>
+    <string name="about_installing">กำลังสำรองข้อมูล แล้วจึงติดตั้ง…</string>
     <string name="about_download_update">ดาวน์โหลดการอัปเดต</string>
     <string name="about_update_manual_di5_instructions">การติดตั้งอัตโนมัติต้องใช้การเชื่อมต่อตัวช่วย ซึ่งขณะนี้ไม่พร้อมใช้งาน บนพีซีหรือโทรศัพท์ ให้ดาวน์โหลด APK ของเวอร์ชันนี้จากหน้าเผยแพร่ แล้วติดตั้งผ่าน ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>

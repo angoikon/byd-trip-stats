@@ -1154,6 +1154,7 @@
     <string name="about_download_progress">%1$s%% · %2$s</string>
     <string name="about_install_note">Butonul de instalare va deveni disponibil parcat, fără călătorie sau încărcare activă</string>
     <string name="about_install_now">Instalează acum</string>
+    <string name="about_installing">Se face copia de siguranță, apoi instalarea…</string>
     <string name="about_download_update">Descarcă actualizarea</string>
     <string name="about_update_manual_di5_instructions">Instalarea automată necesită conexiunea de asistență, care nu este disponibilă momentan. Pe un PC sau telefon, descarcă APK-ul acestei versiuni de pe pagina de versiuni, apoi instalează-l prin ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>

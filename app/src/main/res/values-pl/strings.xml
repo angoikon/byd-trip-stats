@@ -1154,6 +1154,7 @@
     <string name="about_download_progress">%1$s%% · %2$s</string>
     <string name="about_install_note">Przycisk instalacji stanie się dostępny podczas postoju bez aktywnej podróży ani ładowania</string>
     <string name="about_install_now">Zainstaluj teraz</string>
+    <string name="about_installing">Tworzenie kopii zapasowej, potem instalacja…</string>
     <string name="about_download_update">Pobierz aktualizację</string>
     <string name="about_update_manual_di5_instructions">Automatyczna instalacja wymaga połączenia pomocniczego, które w tej chwili jest niedostępne. Na komputerze lub telefonie pobierz plik APK tej wersji ze strony wydań, a następnie zainstaluj go przez ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>

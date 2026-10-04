@@ -1154,6 +1154,7 @@
     <string name="about_download_progress">%1$s%% · %2$s</string>
     <string name="about_install_note">Tombol pasang akan tersedia saat parkir tanpa perjalanan atau pengisian aktif</string>
     <string name="about_install_now">Pasang sekarang</string>
+    <string name="about_installing">Mencadangkan, lalu memasang…</string>
     <string name="about_download_update">Unduh pembaruan</string>
     <string name="about_update_manual_di5_instructions">Instalasi otomatis memerlukan koneksi helper, yang saat ini tidak tersedia. Di PC atau ponsel, unduh APK versi ini dari halaman rilis, lalu instal melalui ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>

@@ -1158,6 +1158,7 @@
     <string name="about_download_progress">%1$s%% · %2$s</string>
     <string name="about_install_note">Installatieknop wordt beschikbaar wanneer geparkeerd zonder actieve rit of opladen</string>
     <string name="about_install_now">Nu installeren</string>
+    <string name="about_installing">Back-up maken, daarna installeren…</string>
     <string name="about_download_update">Update downloaden</string>
     <string name="about_update_manual_di5_instructions">Automatische installatie vereist de helper-verbinding, die op dit moment niet beschikbaar is. Download op een pc of telefoon de APK van deze versie van de releasespagina en installeer deze vervolgens via ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>

@@ -1069,6 +1069,7 @@
     <string name="about_download_progress">%1$s%% · %2$s</string>
     <string name="about_install_note">Schaltfläche Installieren wird verfügbar, wenn geparkt ohne aktive Fahrt oder Laden</string>
     <string name="about_install_now">Jetzt installieren</string>
+    <string name="about_installing">Sicherung läuft, danach Installation…</string>
     <string name="about_download_update">Update herunterladen</string>
     <string name="about_update_manual_di5_instructions">Die automatische Installation benötigt die Helfer-Verbindung, die gerade nicht verfügbar ist. Lade auf einem PC oder Telefon das APK dieser Version von der Releases-Seite herunter und installiere es dann über ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>

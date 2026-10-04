@@ -1069,6 +1069,7 @@
     <string name="about_download_progress">%1$s%% · %2$s</string>
     <string name="about_install_note">इंस्टॉल बटन तब उपलब्ध होगा जब पार्क किया हो और कोई सक्रिय यात्रा या चार्जिंग न हो।</string>
     <string name="about_install_now">अभी इंस्टॉल करें</string>
+    <string name="about_installing">बैकअप लिया जा रहा है, फिर इंस्टॉल होगा…</string>
     <string name="about_download_update">अपडेट डाउनलोड करें</string>
     <string name="about_update_manual_di5_instructions">स्वचालित इंस्टॉल के लिए हेल्पर कनेक्शन की आवश्यकता है, जो अभी उपलब्ध नहीं है। किसी PC या फ़ोन पर, रिलीज़ पेज से इस वर्शन की APK डाउनलोड करें, फिर उसे ADB के ज़रिए इंस्टॉल करें:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>

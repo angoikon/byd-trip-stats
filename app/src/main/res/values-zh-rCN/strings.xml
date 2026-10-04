@@ -1158,6 +1158,7 @@
     <string name="about_download_progress">%1$s%% · %2$s</string>
     <string name="about_install_note">停车且无活跃行程或充电时，安装按钮将变为可用</string>
     <string name="about_install_now">立即安装</string>
+    <string name="about_installing">正在备份，然后安装…</string>
     <string name="about_download_update">下载更新</string>
     <string name="about_update_manual_di5_instructions">自动安装需要辅助连接，但目前不可用。请在电脑或手机上从发布页面下载此版本的 APK，然后通过 ADB 安装:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>

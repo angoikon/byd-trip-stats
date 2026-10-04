@@ -47,6 +47,13 @@ class InstallStatusReceiver : BroadcastReceiver() {
             }
             else -> {
                 Log.e(TAG, "Silent install failed: status=$status message=$message session=$sessionId")
+                // Still running: put back the listeners released for the commit, let Install be
+                // tapped again, and say why in diag.log — release builds strip the line above.
+                runCatching { com.byd.tripstats.service.VehicleTelemetryService.resumeAfterFailedUpdate() }
+                com.byd.tripstats.data.repository.UpdateRepository.getInstance(context).endInstall()
+                com.byd.tripstats.util.DiagLog.event(
+                    context, TAG, "update install: FAILED status=$status :: ${message ?: "-"}",
+                )
             }
         }
     }

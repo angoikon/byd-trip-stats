@@ -1154,6 +1154,7 @@
     <string name="about_download_progress">%1$s%% · %2$s</string>
     <string name="about_install_note">Кнопка установки станет доступна на стоянке без активной поездки и зарядки</string>
     <string name="about_install_now">Установить сейчас</string>
+    <string name="about_installing">Резервное копирование, затем установка…</string>
     <string name="about_download_update">Скачать обновление</string>
     <string name="about_update_manual_di5_instructions">Для автоматической установки нужно вспомогательное подключение, которое сейчас недоступно. На компьютере или телефоне скачайте APK этой версии со страницы релизов, затем установите его через ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>

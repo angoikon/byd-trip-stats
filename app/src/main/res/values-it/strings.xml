@@ -1158,6 +1158,7 @@
     <string name="about_download_progress">%1$s%% · %2$s</string>
     <string name="about_install_note">Il pulsante di installazione sarà disponibile quando parcheggiato senza viaggio attivo o ricarica in corso</string>
     <string name="about_install_now">Installa ora</string>
+    <string name="about_installing">Backup in corso, poi installazione…</string>
     <string name="about_download_update">Scarica aggiornamento</string>
     <string name="about_update_manual_di5_instructions">L\'installazione automatica richiede la connessione helper, che al momento non è disponibile. Su un PC o telefono, scarica l\'APK di questa versione dalla pagina delle versioni, quindi installalo tramite ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>

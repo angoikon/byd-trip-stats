@@ -2165,8 +2165,23 @@ class BydVehicleDataSource(context: Context) {
                 }?.invoke(reg.device, reg.proxy)
             }
         }
-        mirrorRegs.clear()
+        // Kept, not cleared: if the install fails this process carries on, and
+        // resumeAfterFailedUpdate re-registers from this list.
+        // The DiLink-5 client holds its own registrations, which the kill would strand as well.
+        stopDilink5Client()
         runCatching { DiagLog.event(appContext, TAG, "🔄 update prep — unregistered all SDK listeners") }
+    }
+
+    /**
+     * Undoes [prepareForUpdate] when the install didn't happen and this process carries on. Until
+     * 2.17.1 a failed install left every listener released until the next app restart (2026-10-04,
+     * a DiLink-5 update that failed twice). Re-registering is the wedge-recovery pass, forced; on
+     * DiLink-5 the client is started again first, the same start it gets with the service.
+     */
+    fun resumeAfterFailedUpdate() {
+        if (DiLink5Platform.isDiLink5 && dilink5Client == null) startDilink5Client()
+        recoverEventDelivery(force = true)
+        runCatching { DiagLog.event(appContext, TAG, "🔄 update not installed — SDK listeners registered again") }
     }
 
     fun stop() {

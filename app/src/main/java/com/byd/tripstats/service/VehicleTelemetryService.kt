@@ -150,6 +150,11 @@ class VehicleTelemetryService : Service() {
         fun prepareForUpdate() {
             runCatching { activeDataSource?.prepareForUpdate() }
         }
+
+        /** Call when an install that [prepareForUpdate] was run for didn't happen — registers them again. */
+        fun resumeAfterFailedUpdate() {
+            runCatching { activeDataSource?.resumeAfterFailedUpdate() }
+        }
     }
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)

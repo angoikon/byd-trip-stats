@@ -1154,6 +1154,7 @@
     <string name="about_download_progress">%1$s%% · %2$s</string>
     <string name="about_install_note">Nút cài đặt sẽ khả dụng khi đỗ mà không có chuyến đi hoặc sạc đang hoạt động</string>
     <string name="about_install_now">Cài đặt ngay</string>
+    <string name="about_installing">Đang sao lưu, sau đó cài đặt…</string>
     <string name="about_download_update">Tải cập nhật</string>
     <string name="about_update_manual_di5_instructions">Cài đặt tự động cần kết nối trợ giúp, hiện không khả dụng. Trên PC hoặc điện thoại, hãy tải APK của phiên bản này từ trang phát hành, sau đó cài đặt qua ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>

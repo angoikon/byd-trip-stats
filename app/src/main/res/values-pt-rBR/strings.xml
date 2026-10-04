@@ -1158,6 +1158,7 @@
     <string name="about_download_progress">%1$s%% · %2$s</string>
     <string name="about_install_note">O botão de instalação ficará disponível quando estacionado sem viagem ativa nem carregamento</string>
     <string name="about_install_now">Instalar agora</string>
+    <string name="about_installing">Fazendo backup, depois instalando…</string>
     <string name="about_download_update">Baixar atualização</string>
     <string name="about_update_manual_di5_instructions">A instalação automática precisa da conexão auxiliar, que não está disponível no momento. Em um PC ou celular, baixe o APK desta versão na página de versões e instale-o via ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>

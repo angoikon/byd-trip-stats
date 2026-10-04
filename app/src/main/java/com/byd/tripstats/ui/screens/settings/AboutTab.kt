@@ -45,6 +45,7 @@ internal fun AboutTab(viewModel: DashboardViewModel) {
     val canInstallNow     by viewModel.canInstallNow.collectAsState()
     val isCheckingUpdate  by viewModel.isCheckingUpdate.collectAsState()
     val shellInstallFailed by viewModel.shellInstallFailed.collectAsState()
+    val installing by viewModel.installInProgress.collectAsState()
 
     var easterEggClicks by remember { mutableStateOf(0) }
     var licenseClicks by remember { mutableStateOf(0) }
@@ -180,6 +181,7 @@ internal fun AboutTab(viewModel: DashboardViewModel) {
             downloadProgress = downloadProgress,
             downloadedApk    = downloadedApk,
             canInstallNow    = canInstallNow,
+            installing       = installing,
             isChecking       = isCheckingUpdate,
             // Manual only when there is genuinely no way to install from in-app: a newer head unit
             // AND no adb channel to install over — or a shell install that already failed.
@@ -217,6 +219,8 @@ private fun UpdateCard(
     downloadProgress: Int?,
     downloadedApk   : java.io.File?,
     canInstallNow   : Boolean,
+    /** An install is running (backup first, then the install itself) — no second one may start. */
+    installing      : Boolean = false,
     isChecking      : Boolean = false,
     /** Head unit where the app must not install itself — see DiLink5Platform.selfRestartUnsafe. */
     manualInstallOnly: Boolean = false,
@@ -380,13 +384,23 @@ private fun UpdateCard(
                     isReady -> {
                         Button(
                             onClick  = onInstall,
-                            enabled  = canInstallNow,
+                            enabled  = canInstallNow && !installing,
                             colors   = ButtonDefaults.buttonColors(containerColor = RegenGreen),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Icon(Icons.Filled.InstallMobile, null, modifier = Modifier.size(16.dp))
-                            Spacer(Modifier.width(6.dp))
-                            Text(stringResource(R.string.about_install_now))
+                            if (installing) {
+                                CircularProgressIndicator(
+                                    modifier    = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp,
+                                    color       = LocalContentColor.current
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(stringResource(R.string.about_installing))
+                            } else {
+                                Icon(Icons.Filled.InstallMobile, null, modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(6.dp))
+                                Text(stringResource(R.string.about_install_now))
+                            }
                         }
                     }
                     isDownloading -> {

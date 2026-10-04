@@ -1991,24 +1991,44 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             Log.w(TAG, "installUpdate called but canInstallNow = false")
             return
         }
+        // One install at a time — see UpdateRepository.installInProgress. The backup below takes
+        // seconds with nothing else on screen, which is exactly when a second tap comes.
+        if (!updateRepository.beginInstall()) {
+            Log.i(TAG, "installUpdate ignored — an install is already running")
+            return
+        }
         viewModelScope.launch {
-            val backupFile = backupDatabase()
-            if (backupFile != null) {
-                Log.i(TAG, "Database backup created before update install: ${backupFile.absolutePath}")
-            } else {
-                Log.w(TAG, "Database backup failed before update install — continuing with install")
-            }
-            if (shellInstall) {
-                // Never falls through to the PackageInstaller paths — both are known to fail on
-                // these units, so a second attempt would only produce a more confusing error.
-                // A failure surfaces the manual `adb install -r` card instead.
-                val ok = updateRepository.installUpdateViaShell(apk)
-                if (!ok) _shellInstallFailed.value = true
-            } else {
-                updateRepository.installUpdate(apk)
+            // Set once the install itself has taken over; anything that ends this coroutine
+            // before then (an error, the screen closing mid-backup) must free the slot.
+            var handedOver = false
+            try {
+                val backupFile = backupDatabase()
+                if (backupFile != null) {
+                    Log.i(TAG, "Database backup created before update install: ${backupFile.absolutePath}")
+                } else {
+                    Log.w(TAG, "Database backup failed before update install — continuing with install")
+                }
+                if (shellInstall) {
+                    // Never falls through to the PackageInstaller paths — both are known to fail on
+                    // these units, so a second attempt would only produce a more confusing error.
+                    // A failure surfaces the manual `adb install -r` card instead.
+                    val ok = updateRepository.installUpdateViaShell(apk)
+                    handedOver = ok
+                    if (!ok) _shellInstallFailed.value = true
+                } else {
+                    // The result arrives through InstallStatusReceiver, which frees the slot on a
+                    // failure, or through the repository's own timeout.
+                    handedOver = true
+                    updateRepository.installUpdate(apk)
+                }
+            } finally {
+                if (!handedOver) updateRepository.endInstall()
             }
         }
     }
+
+    /** True while an install is running — the Install button waits for it. */
+    val installInProgress: StateFlow<Boolean> get() = updateRepository.installInProgress
 
     fun cancelDownload() = updateRepository.cancelDownload()
 

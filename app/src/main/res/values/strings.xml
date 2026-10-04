@@ -1180,6 +1180,7 @@
     <string name="about_download_progress">%1$s%% · %2$s</string>
     <string name="about_install_note">Install button will become available when parked with no active trip or charging</string>
     <string name="about_install_now">Install now</string>
+    <string name="about_installing">Backing up, then installing…</string>
     <string name="about_download_update">Download update</string>
     <string name="about_update_manual_di5_instructions">Automatic install needs the helper connection, which isn\'t available right now. On a PC or phone, download this version\'s APK from the releases page, then install it over ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>

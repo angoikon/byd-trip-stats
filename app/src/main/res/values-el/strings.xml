@@ -1069,6 +1069,7 @@
     <string name="about_download_progress">%1$s%% · %2$s</string>
     <string name="about_install_note">Το κουμπί Εγκατάσταση θα είναι διαθέσιμο κατά τη στάθμευση χωρίς ενεργή διαδρομή ή φόρτιση</string>
     <string name="about_install_now">Εγκατάσταση τώρα</string>
+    <string name="about_installing">Δημιουργία αντιγράφου ασφαλείας, μετά εγκατάσταση…</string>
     <string name="about_download_update">Λήψη ενημέρωσης</string>
     <string name="about_update_manual_di5_instructions">Η αυτόματη εγκατάσταση χρειάζεται τη σύνδεση βοηθού, η οποία δεν είναι διαθέσιμη αυτή τη στιγμή. Από υπολογιστή ή τηλέφωνο, κατεβάστε το APK αυτής της έκδοσης από τη σελίδα εκδόσεων και, στη συνέχεια, εγκαταστήστε το μέσω ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>

@@ -1154,6 +1154,7 @@
     <string name="about_download_progress">%1$s%% · %2$s</string>
     <string name="about_install_note">Tlačítko instalace bude dostupné při parkování bez aktivní jízdy nebo nabíjení</string>
     <string name="about_install_now">Nainstalovat nyní</string>
+    <string name="about_installing">Zálohování, poté instalace…</string>
     <string name="about_download_update">Stáhnout aktualizaci</string>
     <string name="about_update_manual_di5_instructions">Automatická instalace vyžaduje pomocné připojení, které právě není k dispozici. V počítači nebo telefonu si stáhněte APK této verze ze stránky vydání a poté ho nainstalujte přes ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>

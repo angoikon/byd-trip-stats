@@ -1069,6 +1069,7 @@
     <string name="about_download_progress">%1$s%% · %2$s</string>
     <string name="about_install_note">Le bouton Installer sera disponible quand stationné sans trajet ou charge active</string>
     <string name="about_install_now">Installer maintenant</string>
+    <string name="about_installing">Sauvegarde, puis installation…</string>
     <string name="about_download_update">Télécharger la mise à jour</string>
     <string name="about_update_manual_di5_instructions">L\'installation automatique nécessite la connexion d\'assistance, qui n\'est pas disponible pour le moment. Sur un PC ou un téléphone, téléchargez l\'APK de cette version depuis la page des versions, puis installez-le via ADB :</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>

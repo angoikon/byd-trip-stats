@@ -1158,6 +1158,7 @@
     <string name="about_download_progress">%1$s%% · %2$s</string>
     <string name="about_install_note">Installationsknappen blir tillgänglig när parkerad utan aktiv resa eller laddning</string>
     <string name="about_install_now">Installera nu</string>
+    <string name="about_installing">Säkerhetskopierar, installerar sedan…</string>
     <string name="about_download_update">Ladda ner uppdatering</string>
     <string name="about_update_manual_di5_instructions">Automatisk installation kräver hjälpanslutningen, som inte är tillgänglig just nu. Ladda ner den här versionens APK från utgåvesidan på en dator eller telefon och installera den sedan via ADB:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>

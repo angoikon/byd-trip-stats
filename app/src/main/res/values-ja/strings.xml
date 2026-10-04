@@ -1158,6 +1158,7 @@
     <string name="about_download_progress">%1$s%% · %2$s</string>
     <string name="about_install_note">インストールボタンは、アクティブな走行や充電がない駐車状態のときに利用可能になります</string>
     <string name="about_install_now">今すぐインストール</string>
+    <string name="about_installing">バックアップ中、その後インストール…</string>
     <string name="about_download_update">更新をダウンロード</string>
     <string name="about_update_manual_di5_instructions">自動インストールにはヘルパー接続が必要ですが、現在利用できません。PC またはスマートフォンで、リリースページからこのバージョンの APK をダウンロードし、ADB でインストールしてください:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>

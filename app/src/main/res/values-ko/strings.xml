@@ -1069,6 +1069,7 @@
     <string name="about_download_progress">%1$s%% · %2$s</string>
     <string name="about_install_note">활성 주행이나 충전 없이 주차 시 설치 버튼을 사용할 수 있습니다</string>
     <string name="about_install_now">지금 설치</string>
+    <string name="about_installing">백업 중, 이후 설치…</string>
     <string name="about_download_update">업데이트 다운로드</string>
     <string name="about_update_manual_di5_instructions">자동 설치에는 헬퍼 연결이 필요하지만 지금은 사용할 수 없습니다. PC나 휴대폰에서 릴리스 페이지에서 이 버전의 APK를 다운로드한 후 ADB로 설치하세요:</string>
     <string name="about_update_manual_di5_command">adb install -r %1$s</string>

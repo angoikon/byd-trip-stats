@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.annotation.StringRes
 import com.byd.tripstats.R
 import com.byd.tripstats.runtimebridge.RuntimeExtensionBridge
+import com.byd.tripstats.util.DiagLog
 import dadb.AdbKeyPair
 import dadb.Dadb
 import kotlinx.coroutines.Dispatchers
@@ -548,29 +549,52 @@ object AdbPermissionManager {
      * the telemetry service on its own. No boot loop — the OS performs the kill and the restart,
      * so this is not the self-kill+relaunch pattern that boot-loops DiLink-5.
      *
+     * Every outcome is written to `diag.log` (`update install: …`), including `pm`'s own words on a
+     * failure: release builds strip `Log`, and a failed DiLink-5 update (2026-10-04) left no reason.
+     *
      * @return a [ShellResult] whose exitCode is 0 only when `pm` actually reported Success.
      */
     suspend fun installApkViaShell(context: Context, apkFile: File): ShellResult =
         withContext(Dispatchers.IO) {
-            if (!apkFile.exists() || apkFile.length() == 0L) {
-                return@withContext ShellResult(-1, "APK missing or empty: ${apkFile.name}")
+            fun outcome(result: ShellResult): ShellResult {
+                DiagLog.event(
+                    context, TAG,
+                    "update install: ${if (result.exitCode == 0) "ok" else "FAILED"} " +
+                        "exit=${result.exitCode} :: ${result.output.replace('\n', ' ').take(200)}",
+                )
+                return result
             }
-            if (!isPortOpen()) return@withContext ShellResult(-1, "Local permission channel is not reachable")
+            if (!apkFile.exists() || apkFile.length() == 0L) {
+                return@withContext outcome(ShellResult(-1, "APK missing or empty: ${apkFile.name}"))
+            }
+            if (!isPortOpen()) return@withContext outcome(ShellResult(-1, "Local permission channel is not reachable"))
 
             val keyPair = getOrCreateKeyPair(context)
             val dadb = tryConnect(keyPair, timeoutMs = 4_000)
-                ?: return@withContext ShellResult(-1, "ADB is not authorized yet")
+                ?: return@withContext outcome(ShellResult(-1, "ADB is not authorized yet"))
 
-            // Distinctive name so a stale copy is always ours to clean up, never a user's file.
-            val remote = "/data/local/tmp/.bydts-update.apk"
+            // A name of its own per attempt, so no other attempt can delete or overwrite the file
+            // this one is installing from. Two at once (two taps on Install) used to share one name:
+            // each deleted the other's copy and both failed. Distinctive prefix, so anything matching
+            // it is always ours to clean up, never a user's file.
+            val remote = "/data/local/tmp/.bydts-update-${System.currentTimeMillis()}.apk"
+            var prepared = false
             try {
-                runCatching { dadb.shell("rm -f $remote") }
+                // Leftovers: a successful install kills this process before its own clean-up runs.
+                // Only copies older than 30 minutes, and the pre-2.17.1 fixed name.
+                runCatching {
+                    dadb.shell(
+                        "rm -f /data/local/tmp/.bydts-update.apk; " +
+                            "find /data/local/tmp -maxdepth 1 -name '.bydts-update-*.apk' -mmin +30 -delete",
+                    )
+                }
                 dadb.push(apkFile, remote)
 
                 // The install force-kills this process with no onDestroy, which would strand BYD SDK
                 // listener registrations and wedge the SDK for the freshly-installed app. Release
                 // them while still alive — same guard the PackageInstaller path uses.
                 runCatching { com.byd.tripstats.service.VehicleTelemetryService.prepareForUpdate() }
+                prepared = true
                 try { Thread.sleep(600) } catch (_: InterruptedException) {}
 
                 // -r replace in place, -g grant declared runtime permissions (matches `pm install -g`,
@@ -580,10 +604,13 @@ object AdbPermissionManager {
                 val ok = out.contains("Success", ignoreCase = true)
                 runCatching { dadb.shell("rm -f $remote") }
                 Log.i(TAG, "shell install: ok=$ok exit=${r.exitCode} :: ${out.take(160)}")
-                ShellResult(if (ok) 0 else (r.exitCode.takeIf { it != 0 } ?: -1), out)
+                // Still running after a failure: put back what prepareForUpdate released.
+                if (!ok) runCatching { com.byd.tripstats.service.VehicleTelemetryService.resumeAfterFailedUpdate() }
+                outcome(ShellResult(if (ok) 0 else (r.exitCode.takeIf { it != 0 } ?: -1), out))
             } catch (e: Exception) {
                 runCatching { dadb.shell("rm -f $remote") }
-                ShellResult(-1, "Install failed: ${e.message}")
+                if (prepared) runCatching { com.byd.tripstats.service.VehicleTelemetryService.resumeAfterFailedUpdate() }
+                outcome(ShellResult(-1, "Install failed: ${e.javaClass.simpleName}: ${e.message}"))
             } finally {
                 runCatching { dadb.close() }
             }
