@@ -26,6 +26,8 @@ class ServiceWatchdogWorker(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
+        // The headless-system-user copy on Android Automotive stays idle (AaosPlatform).
+        if (com.byd.tripstats.sdk.AaosPlatform.isHeadlessSystemUserInstance) return Result.success()
         if (ServiceIdleState.isStayingIdle(applicationContext)) {
             Log.i(TAG, "Watchdog skipped — service in off-state idle")
             return Result.success()

@@ -90,6 +90,10 @@ class BootReceiver : BroadcastReceiver() {
             return
         }
 
+        // Android Automotive (DiLink 100): the copy in the headless system user stays idle — no
+        // service, no supervisor dispatch, no keepalives. See AaosPlatform.isHeadlessSystemUserInstance.
+        if (com.byd.tripstats.sdk.AaosPlatform.isHeadlessSystemUserInstance) return
+
         // Before the user unlock nothing below can work — preferences, database and adb key are
         // all locked — and the app's own start-up is waiting for the unlock (BydStatsApplication.
         // onCreate). BOOT_COMPLETED follows it and does the real start.

@@ -1320,4 +1320,21 @@
     <string name="d5_consent_decline_body">E jogosultság nélkül az alkalmazás nem tud járműadatokat olvasni. Bármikor megadhatja a Beállítások oldalon.</string>
     <string name="d5_consent_decline_confirm">Igen, kihagyom</string>
     <string name="d5_consent_decline_back">Vissza</string>
+    <string name="driving_widget_consent_title">Megjelenik a vezetési widget?</string>
+    <string name="driving_widget_consent_body">Ennél az autónál az Android elrejti az alkalmazás képernyőjét, valahányszor az autó nem P-ben van. Az útrögzítés így is, úgy is folytatódik a háttérben.\n\nHelyette az alkalmazás vezetés közben egy kis widgetet jeleníthet meg más alkalmazások fölött a sebességeddel, teljesítményeddel, akkumulátoroddal és hatótávoddal — ugyanolyan widget, amilyet más autós alkalmazások használnak. Egy pillantásra szánták, mint a műszerfalat: tartsd a szemed az úton. P-ben eltűnik, ott visszatér a teljes irányítópult.\n\nKésőbb be- vagy kikapcsolhatod a Beállításokban.</string>
+    <string name="driving_widget_consent_allow">Widget megjelenítése</string>
+    <string name="driving_widget_consent_not_now">Most nem</string>
+    <string name="driving_widget_section">Vezetési widget</string>
+    <string name="driving_widget_title">Widget megjelenítése vezetés közben</string>
+    <string name="driving_widget_desc">Az Android elrejti az alkalmazás képernyőjét, valahányszor az autó nem P-ben van. Ehelyett ez az alább kiválasztott értékeket kis widgetekként jeleníti meg más alkalmazások fölött, amíg vissza nem térsz P-be. R-ben soha, hogy a tolatókamera tiszta maradjon. A \"display over other apps\" engedélyt használja, amelyet az egyszeri ADB-beállítás ad meg.</string>
+    <string name="driving_widget_tiles_label">Megjelenítendő widgetek</string>
+    <string name="driving_widget_tile_speed">Sebesség</string>
+    <string name="driving_widget_tile_power">Teljesítmény</string>
+    <string name="driving_widget_tile_battery">Akkumulátor</string>
+    <string name="driving_widget_tile_range">Hatótáv</string>
+    <string name="driving_widget_tile_outside_temp">Külső hőmérséklet</string>
+    <string name="driving_widget_arrange_hint">Minden widget oda húzható, ahová szeretnéd. Vezetés előtti elhelyezéshez koppints az Elrendezés a képernyőn gombra. Vezetés közben csak álló autónál mozgathatók; semmi sem koppintható rajtuk.</string>
+    <string name="driving_widget_arrange">Elrendezés a képernyőn</string>
+    <string name="driving_widget_arrange_done">Kész</string>
+    <string name="driving_widget_reset_positions">Pozíciók visszaállítása</string>
 </resources>

@@ -20,7 +20,10 @@ import com.byd.tripstats.data.preferences.OffStateMode
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.receiver.OffStateKeepaliveReceiver
 import com.byd.tripstats.sdk.DiLink5Platform
+import com.byd.tripstats.service.DrivingWidgetPrefs
+import com.byd.tripstats.service.DrivingWidgetTile
 import com.byd.tripstats.service.VehicleTelemetryService
+import com.byd.tripstats.util.DiagLog
 import com.byd.tripstats.util.WifiKeepalive
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -266,6 +269,119 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                     )
                 }
             }
+        }
+    }
+
+    // Android Automotive head units only (DiLink 100): the driving widget — a glanceable panel over
+    // other apps while Android covers this app's screen out of P. Lets a user who said "Not now" to
+    // the first-run offer turn it on later, or turn it back off. Takes effect within a second; the
+    // telemetry service reads the setting live.
+    if (DrivingWidgetPrefs.isAvailable(context)) {
+        var widgetOn by remember { mutableStateOf(DrivingWidgetPrefs.isEnabled(context)) }
+        SettingsGroupLabel(stringResource(R.string.driving_widget_section))
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            stringResource(R.string.driving_widget_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            stringResource(R.string.driving_widget_desc),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Switch(
+                        checked = widgetOn,
+                        onCheckedChange = { on ->
+                            widgetOn = on
+                            DrivingWidgetPrefs.setEnabled(context, on)
+                            if (!on) DrivingWidgetPrefs.stopArranging()
+                            if (on) scope.launch {
+                                val outcome = AdbPermissionManager.grantOverlayPermission(context)
+                                DiagLog.event(context, "DrivingWidget", "🪟 driving widget turned on in Settings — display-over-apps permission $outcome")
+                            }
+                        }
+                    )
+                }
+                if (widgetOn) DrivingWidgetOptions()
+            }
+        }
+    }
+}
+
+/**
+ * Which tiles the driving widget shows (each its own card, so the number of them too), and
+ * arranging them: the cards appear over this screen while parked and can be dragged into place.
+ * The telemetry service reads all of it live.
+ */
+@Composable
+private fun DrivingWidgetOptions() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var selected by remember { mutableStateOf(DrivingWidgetPrefs.selectedTiles(context).toSet()) }
+    var arranging by remember { mutableStateOf(DrivingWidgetPrefs.isArranging()) }
+    // Arranging ends with this screen, and on its own after a few minutes (DrivingWidgetPrefs).
+    DisposableEffect(Unit) { onDispose { DrivingWidgetPrefs.stopArranging() } }
+    LaunchedEffect(arranging) {
+        while (arranging) {
+            kotlinx.coroutines.delay(1_000L)
+            if (!DrivingWidgetPrefs.isArranging()) arranging = false
+        }
+    }
+
+    Text(
+        stringResource(R.string.driving_widget_tiles_label),
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.Bold
+    )
+    Column {
+        DrivingWidgetTile.entries.forEach { tile ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = tile in selected,
+                    onCheckedChange = { on ->
+                        DrivingWidgetPrefs.setTileSelected(context, tile, on)
+                        selected = DrivingWidgetPrefs.selectedTiles(context).toSet()
+                    }
+                )
+                Text(stringResource(tile.labelRes), style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+    Text(
+        stringResource(R.string.driving_widget_arrange_hint),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        OutlinedButton(onClick = {
+            if (arranging) DrivingWidgetPrefs.stopArranging() else DrivingWidgetPrefs.startArranging()
+            arranging = DrivingWidgetPrefs.isArranging()
+        }) {
+            Text(stringResource(if (arranging) R.string.driving_widget_arrange_done else R.string.driving_widget_arrange))
+        }
+        TextButton(onClick = { DrivingWidgetPrefs.resetPositions(context) }) {
+            Text(stringResource(R.string.driving_widget_reset_positions))
         }
     }
 }

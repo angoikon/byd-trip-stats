@@ -49,6 +49,18 @@ object RuntimeLauncher {
      */
     private var forceStopped = false
 
+    /**
+     * The Android user the driver is using, from `am get-current-user`; null until read (or if it
+     * can't be). 0 on DiLink 3 and 5. On an Android Automotive head unit (DiLink 100) it is 10, and
+     * user 0 is a headless system user the app is also installed for — so waking "as user 0" started
+     * a second, invisible copy, and `pidof` then counted that copy as the app being alive, so the
+     * driver's own copy was never revived (Atto 3 EVO, 2026-10-05: `u0_a157` and `u10_a157` side by
+     * side). Everything below is user-aware only when this is set and not 0; for user 0 every
+     * command is exactly what it always was.
+     */
+    private var currentUser: Int? = null
+    private var currentUserReadTick = -1
+
     private data class WakeStrategy(
         val label: String,
         val argv: Array<String>,
@@ -149,6 +161,9 @@ object RuntimeLauncher {
             99, 97, 116, 101, 103, 111, 114, 121, 46, 76, 65, 85, 78, 67, 72, 69, 82
         ) // "android.intent.category.LAUNCHER"
         val one = s(49) // "1"
+        refreshCurrentUser(tick)
+        // "0" unless the driver is another user (DiLink 100: 10) — see [currentUser].
+        val userArg = currentUser?.takeIf { it != 0 }?.toString() ?: zero
 
         if (isTargetAlive(pkg)) {
             if (!wasAlive) p("tick=$tick target back up")
@@ -184,9 +199,9 @@ object RuntimeLauncher {
         p("tick=$tick waking — target down ${(now - lastAliveMs) / 1000}s")
 
         val strategies = listOf(
-            WakeStrategy("start-fgs-user", arrayOf(am, startFgs, user, zero, n, svc)),
+            WakeStrategy("start-fgs-user", arrayOf(am, startFgs, user, userArg, n, svc)),
             WakeStrategy("start-fgs", arrayOf(am, startFgs, n, svc)),
-            WakeStrategy("start-svc-user", arrayOf(am, startSvc, user, zero, n, svc)),
+            WakeStrategy("start-svc-user", arrayOf(am, startSvc, user, userArg, n, svc)),
             WakeStrategy("start-svc", arrayOf(am, startSvc, n, svc)),
             // -f 32 = FLAG_INCLUDE_STOPPED_PACKAGES. Without it Android 11 drops this broadcast for a
             // FORCE-STOPPED package — which is exactly the DiLink-5 state after BYD's
@@ -195,11 +210,11 @@ object RuntimeLauncher {
             // below (or not at all). The flag lets ACC_ON reach the BootReceiver of a stopped app and
             // start the telemetry service in the background. Harmless on DiLink-3 (the app is never
             // force-stopped there): it's a superset that still delivers to the running app.
-            WakeStrategy("broadcast-acc-on", arrayOf(am, broadcast, user, zero, a, accOn, dashF, stoppedFlag, n, rcv)),
-            WakeStrategy("start-main", arrayOf(am, start, user, zero, n, act), postDelayMs = 1_500L),
+            WakeStrategy("broadcast-acc-on", arrayOf(am, broadcast, user, userArg, a, accOn, dashF, stoppedFlag, n, rcv)),
+            WakeStrategy("start-main", arrayOf(am, start, user, userArg, n, act), postDelayMs = 1_500L),
             WakeStrategy(
                 "cmd-start-main",
-                arrayOf(cmd, activity, startActivity, user, zero, w, n, act),
+                arrayOf(cmd, activity, startActivity, user, userArg, w, n, act),
                 postDelayMs = 1_500L,
             ),
             WakeStrategy(
@@ -262,13 +277,66 @@ object RuntimeLauncher {
         val dumpsys = s(100, 117, 109, 112, 115, 121, 115) // "dumpsys"
         val pkgArg = s(112, 97, 99, 107, 97, 103, 101) // "package"
         val stoppedTrue = s(115, 116, 111, 112, 112, 101, 100, 61, 116, 114, 117, 101) // "stopped=true"
+        val u = currentUser
+        if (u != null && u != 0) {
+            // Only the driver's user counts: the package's state line for it, e.g.
+            // "User 10: ceDataInode=… stopped=false …" (the colon keeps "User 1:" off "User 10:").
+            val userLine = s(85, 115, 101, 114, 32) + u + ":" // "User <u>:"
+            val (exit, out) = runCapture(
+                arrayOf(sh, dashC, "$dumpsys $pkgArg $pkg 2>/dev/null | grep -m1 -F '$userLine'"),
+            )
+            return exit == 0 && out.contains(stoppedTrue)
+        }
         val (exit, out) = runCapture(
             arrayOf(sh, dashC, "$dumpsys $pkgArg $pkg 2>/dev/null | grep -m1 -F $stoppedTrue"),
         )
         return exit == 0 && out.isNotBlank()
     }
 
+    /**
+     * Reads [currentUser] on the first tick, then every 30 ticks (every 10 while it can't be read).
+     * Android 12+ only: DiLink 3 (Android 10) and DiLink 5 (Android 11) have one user, and there
+     * the supervisor runs exactly as before — not even this one extra command.
+     */
+    private fun refreshCurrentUser(tick: Int) {
+        if (android.os.Build.VERSION.SDK_INT < 31) return
+        val every = if (currentUser == null) 10 else 30
+        if (currentUserReadTick >= 0 && tick - currentUserReadTick < every) return
+        currentUserReadTick = tick
+        val am = s(97, 109) // "am"
+        val getCurrentUser = s(103, 101, 116, 45, 99, 117, 114, 114, 101, 110, 116, 45, 117, 115, 101, 114) // "get-current-user"
+        val (exit, out) = runCapture(arrayOf(am, getCurrentUser))
+        val read = if (exit == 0) out.trim().toIntOrNull()?.takeIf { it >= 0 } else null
+        if (read != null && read != currentUser) p("tick=$tick current user=$read")
+        if (read != null) currentUser = read
+    }
+
+    /**
+     * Is the app running as user [u]? Reads `ps -A -o UID,NAME` and matches the process name and
+     * the uid's user (uid ÷ 100000). Null when the listing can't be read or parsed, so the caller
+     * falls back to the user-blind check rather than concluding "down" on no evidence.
+     */
+    private fun isTargetAliveForUser(pkg: String, u: Int): Boolean? {
+        val ps = s(112, 115) // "ps"
+        val dashA = s(45, 65) // "-A"
+        val dashO = s(45, 111) // "-o"
+        val cols = s(85, 73, 68, 44, 78, 65, 77, 69) // "UID,NAME"
+        val (exit, out) = runCapture(arrayOf(ps, dashA, dashO, cols))
+        if (exit != 0 || out.isBlank()) return null
+        var parsedAny = false
+        for (line in out.lineSequence()) {
+            val parts = line.trim().split(Regex("\\s+"))
+            if (parts.size < 2) continue
+            val uid = parts[0].toIntOrNull() ?: continue
+            parsedAny = true
+            if (parts[1] == pkg && uid / 100_000 == u) return true
+        }
+        return if (parsedAny) false else null
+    }
+
     private fun isTargetAlive(pkg: String): Boolean {
+        val u = currentUser
+        if (u != null && u != 0) isTargetAliveForUser(pkg, u)?.let { return it }
         // Fast path: pidof reads /proc/PID/cmdline directly
         val pidof = s(112, 105, 100, 111, 102) // "pidof"
         val (pidExit, pidOut) = runCapture(arrayOf(pidof, pkg))

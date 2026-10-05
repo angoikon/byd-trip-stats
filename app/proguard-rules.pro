@@ -106,6 +106,14 @@
 # (Rule is harmless for the dilink3 flavor, where the class simply doesn't exist.)
 -keep class com.byd.tripstats.sdk.Dilink5Client { *; }
 
+# Vehicle-property reader for Android Automotive head units (DiLink 100) — present ONLY in the
+# dilink3 flavor, loaded reflectively by exact FQN (BydVehicleDataSource.startAaosReader →
+# Class.forName + getMethod("start"/"stop")). Stripped, battery/range/ignition silently stay 0
+# there in release. Harmless for the dilink5 flavor, where the class doesn't exist.
+-keep class com.byd.tripstats.sdk.AaosCarPropertyReader { *; }
+# android.car is compile-only (useLibrary) and provided by the car's system at runtime.
+-dontwarn android.car.**
+
 # Same reasoning: loaded reflectively by exact FQN from BydVehicleDataSource.start()
 # (Class.forName + getMethod("ensure")), only in the dilink5 flavor.
 -keep class com.byd.tripstats.sdk.Dilink5SdkInjector { *; }

@@ -137,6 +137,8 @@ class VehicleTelemetryService : Service() {
         private var activeDataSource: com.byd.tripstats.sdk.BydVehicleDataSource? = null
 
         fun start(context: Context) {
+            // The headless-system-user copy on Android Automotive stays idle (AaosPlatform).
+            if (com.byd.tripstats.sdk.AaosPlatform.isHeadlessSystemUserInstance) return
             stopRequested = false
             context.startForegroundService(Intent(context, VehicleTelemetryService::class.java))
         }
@@ -182,6 +184,8 @@ class VehicleTelemetryService : Service() {
     private var abrpConnectionManager: AbrpConnectionManager? = null
     private var mqttConnectionManager: MqttConnectionManager? = null
     private var cellImbalanceMonitor: CellImbalanceMonitor? = null
+    // Android Automotive head units only (DrivingWidgetPrefs.isAvailable); null everywhere else.
+    private var drivingWidget: DrivingWidget? = null
     private var wakeLock: PowerManager.WakeLock? = null
     private var wifiLock: WifiManager.WifiLock? = null
     private var intentionalStop = false
@@ -231,8 +235,23 @@ class VehicleTelemetryService : Service() {
 
     // ── Lifecycle ──────────────────────────────────────────────────────────────
 
+    /**
+     * True in the copy running in the headless system user of an Android Automotive head unit
+     * (AaosPlatform.isHeadlessSystemUserInstance). Something outside the app can still start this
+     * service there — the background restarter of a build before 2.17.2 did, as user 0 — and a
+     * foreground start must be answered with startForeground or Android fails the app. So that
+     * copy shows the notification for an instant, stops, and touches nothing else.
+     */
+    private var headlessCopy = false
+
     override fun onCreate() {
         super.onCreate()
+        if (com.byd.tripstats.sdk.AaosPlatform.isHeadlessSystemUserInstance) {
+            headlessCopy = true
+            DiagLog.event(applicationContext, TAG, "onCreate — headless system user copy, stopping")
+            createNotificationChannel()
+            return
+        }
         DiagLog.event(applicationContext, TAG, "onCreate")
         notificationStartedAtWallClock = System.currentTimeMillis()
         createNotificationChannel()
@@ -244,6 +263,21 @@ class VehicleTelemetryService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (headlessCopy) {
+            runCatching {
+                ServiceCompat.startForeground(
+                    this,
+                    NOTIFICATION_ID,
+                    createNotification("Trip recording and data visualization"),
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+                    else
+                        0
+                )
+            }
+            stopSelf()
+            return START_NOT_STICKY
+        }
         if (telemetryLoopActive || telemetryLoopStarting) {
             Log.d(TAG, "onStartCommand — telemetry loop already active, ignoring duplicate start")
             return START_STICKY
@@ -307,6 +341,14 @@ class VehicleTelemetryService : Service() {
         pushCarConfigToProbe(carConfig)
         startTelemetryLoop()
 
+        // Android Automotive head units: the glanceable panel shown while Android covers the app's
+        // screen out of P. Does nothing until the user has turned it on.
+        if (drivingWidget == null && DrivingWidgetPrefs.isAvailable(applicationContext)) {
+            drivingWidget = DrivingWidget(
+                applicationContext, serviceScope, vehicleDataSource.vehicleSnapshot,
+            ) { carConfig }.also { it.start() }
+        }
+
         // Also watch DataStore for car selection changes (user switches car model).
         // When it emits a different value, restart the loop with updated config.
         serviceScope.launch {
@@ -345,6 +387,12 @@ class VehicleTelemetryService : Service() {
     }
 
     override fun onDestroy() {
+        if (headlessCopy) {
+            serviceScope.cancel()
+            refreshExecutor.shutdownNow()
+            super.onDestroy()
+            return
+        }
         DiagLog.event(
             applicationContext, TAG,
             "onDestroy stopRequested=$stopRequested intentionalStop=$intentionalStop",
@@ -352,6 +400,8 @@ class VehicleTelemetryService : Service() {
         telemetryLoopJob?.cancel()
         telemetryLoopActive = false
         telemetryLoopStarting = false
+        drivingWidget?.stop()
+        drivingWidget = null
         releaseLocationSubscription()
         wakeLock?.release()
         wifiLock?.release()

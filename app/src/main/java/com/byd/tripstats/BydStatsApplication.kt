@@ -14,6 +14,7 @@ import com.byd.tripstats.data.entitlement.EntitlementManager
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.receiver.ServiceRestartReceiver
 import com.byd.tripstats.runtimebridge.RuntimeExtensionBridge
+import com.byd.tripstats.sdk.AaosPlatform
 import com.byd.tripstats.sdk.VehicleCompatibilityProbe
 import com.byd.tripstats.server.WebServerManager
 import com.byd.tripstats.service.ServiceRestarterJobService
@@ -99,6 +100,13 @@ class BydStatsApplication : Application(), Configuration.Provider {
         if (!started.compareAndSet(false, true)) return
         unlockReceiver?.let { runCatching { unregisterReceiver(it) } }
         unlockReceiver = null
+        // Android Automotive (DiLink 100): the copy in the headless system user — no screen, its own
+        // empty database — stays idle. Nothing it recorded could be seen, and while it ran the
+        // background restarter mistook it for the driver's app. See AaosPlatform.
+        if (AaosPlatform.isHeadlessSystemUserInstance) {
+            DiagLog.event(this, TAG, "Application.onCreate pid=${android.os.Process.myPid()} — headless system user copy, staying idle")
+            return
+        }
         // MUST be the first thing — runs before anything else can touch a vehicle device.
         val primed = RuntimeExtensionBridge.prime()
         val dc = RuntimeExtensionBridge.registerDataCache(this)

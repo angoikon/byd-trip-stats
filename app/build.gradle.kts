@@ -9,6 +9,10 @@ plugins {
 android {
     namespace = "com.byd.tripstats"
     compileSdk = 34
+    // Compile-only: Android Automotive's vehicle-property API, for DiLink 100 (sdk/AaosCarPropertyReader,
+    // dilink3 flavor). Nothing is bundled — on the car the library comes from the system, declared
+    // optional in src/dilink3/AndroidManifest.xml.
+    useLibrary("android.car")
 
     // Read keystore details from local.properties (gitignored — never commit these)
     val localProps = Properties().also { props ->
@@ -38,8 +42,8 @@ android {
     // version, so beta testers automatically receive the stable upgrade via sideload.
     val versionMajor    = 2
     val versionMinor    = 17
-    val versionPatch    = 1
-    val versionPre      = 99 // 99 = stable; 1–98 = beta (e.g. 1 → "beta01")
+    val versionPatch    = 2
+    val versionPre      = 5 // 99 = stable; 1–98 = beta (e.g. 1 → "beta01")
     // Hotfix revision for the SAME versionName. Bumps versionCode ONLY — the in-app
     // updater compares the GitHub tag against versionName (UpdateRepository.isNewerVersion),
     // NOT versionCode, so this does NOT auto-trigger an update, yet it lets us rebuild the

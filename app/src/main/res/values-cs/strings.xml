@@ -1320,4 +1320,21 @@
     <string name="d5_consent_decline_body">Bez tohoto oprávnění aplikace nemůže číst žádná data vozidla. Můžete jej kdykoli udělit na stránce Nastavení.</string>
     <string name="d5_consent_decline_confirm">Ano, přeskočit</string>
     <string name="d5_consent_decline_back">Zpět</string>
+    <string name="driving_widget_consent_title">Zobrazit jízdní widget?</string>
+    <string name="driving_widget_consent_body">V tomto autě Android skryje obrazovku aplikace, kdykoli auto není v P. Záznam jízdy tak či tak pokračuje na pozadí.\n\nMísto toho může aplikace během jízdy zobrazovat malý widget přes ostatní aplikace s vaší rychlostí, výkonem, baterií a dojezdem — stejný druh widgetu, jaký používají jiné aplikace pro auta. Je určen pro letmý pohled, jako přístrojový štít: sledujte silnici. V P zmizí a vrátí se úplný panel.\n\nPozději jej můžete zapnout nebo vypnout v Nastavení.</string>
+    <string name="driving_widget_consent_allow">Zobrazit widget</string>
+    <string name="driving_widget_consent_not_now">Teď ne</string>
+    <string name="driving_widget_section">Jízdní widget</string>
+    <string name="driving_widget_title">Zobrazit widget během jízdy</string>
+    <string name="driving_widget_desc">Android skryje obrazovku aplikace, kdykoli auto není v P. Místo toho zobrazuje hodnoty, které zvolíte níže, jako malé widgety přes ostatní aplikace, dokud se nevrátíte do P. Nikdy v R, aby zůstala couvací kamera čistá. Používá oprávnění \"display over other apps\", udělené přes jednorázové nastavení ADB.</string>
+    <string name="driving_widget_tiles_label">Widgety k zobrazení</string>
+    <string name="driving_widget_tile_speed">Rychlost</string>
+    <string name="driving_widget_tile_power">Výkon</string>
+    <string name="driving_widget_tile_battery">Baterie</string>
+    <string name="driving_widget_tile_range">Dojezd</string>
+    <string name="driving_widget_tile_outside_temp">Venkovní teplota</string>
+    <string name="driving_widget_arrange_hint">Každý widget lze přetáhnout, kam chcete. Chcete-li je rozmístit před jízdou, klepněte na Rozmístit na obrazovce. Během jízdy je lze přesouvat jen, když auto stojí; nic na nich nelze klepnout.</string>
+    <string name="driving_widget_arrange">Rozmístit na obrazovce</string>
+    <string name="driving_widget_arrange_done">Hotovo</string>
+    <string name="driving_widget_reset_positions">Obnovit pozice</string>
 </resources>

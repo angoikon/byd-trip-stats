@@ -52,6 +52,7 @@ import com.byd.tripstats.util.LocaleHelper
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.data.preferences.ThemeMode
 import com.byd.tripstats.sdk.DiLink5Platform
+import com.byd.tripstats.service.DrivingWidgetPrefs
 import com.byd.tripstats.service.VehicleTelemetryService
 import com.byd.tripstats.ui.components.ScreenshotFlashOverlay
 import com.byd.tripstats.ui.navigation.AppNavigation
@@ -73,6 +74,7 @@ class MainActivity : ComponentActivity() {
     private val showSetupRequired   = mutableStateOf(false)
     private val showHiddenApiConsent = mutableStateOf(false)
     private val showHiddenApiDeclineConfirm = mutableStateOf(false)
+    private val showDrivingWidgetConsent = mutableStateOf(false)
 
     // ── Locale override ───────────────────────────────────────────────────────
 
@@ -257,6 +259,43 @@ class MainActivity : ComponentActivity() {
                                     showHiddenApiDeclineConfirm.value = false
                                     showHiddenApiConsent.value = true
                                 }) { Text(stringResource(R.string.d5_consent_decline_back)) }
+                            }
+                        )
+                    }
+                    // Android Automotive head units only: Android covers the app's screen out of P,
+                    // so offer the driving widget, once. Off unless the user agrees; reversible in
+                    // Settings. Recording is unaffected either way.
+                    if (showDrivingWidgetConsent.value) {
+                        AlertDialog(
+                            onDismissRequest = { },
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            title = { Text(stringResource(R.string.driving_widget_consent_title)) },
+                            text = {
+                                Column {
+                                    Text(stringResource(R.string.driving_widget_consent_body))
+                                    Spacer(Modifier.height(12.dp))
+                                    Text(
+                                        stringResource(R.string.consent_own_risk),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    DrivingWidgetPrefs.setEnabled(this@MainActivity, true)
+                                    showDrivingWidgetConsent.value = false
+                                    lifecycleScope.launch {
+                                        val outcome = AdbPermissionManager.grantOverlayPermission(this@MainActivity)
+                                        DiagLog.event(applicationContext, TAG, "🪟 driving widget turned on — display-over-apps permission $outcome")
+                                    }
+                                }) { Text(stringResource(R.string.driving_widget_consent_allow)) }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = {
+                                    DrivingWidgetPrefs.setEnabled(this@MainActivity, false)
+                                    showDrivingWidgetConsent.value = false
+                                }) { Text(stringResource(R.string.driving_widget_consent_not_now)) }
                             }
                         )
                     }
@@ -454,6 +493,14 @@ class MainActivity : ComponentActivity() {
         // dialog on top of it is the noise 53374ae removed. Nothing is lost — the supervisor would
         // have no telemetry to guard there anyway.
         if (DiLink5Platform.isBuildUnsupportedForHardware) return
+        // Android Automotive head units: the driving-widget offer, once, after the adb setup that its
+        // permission is granted through. A car still setting up gets it on a later launch.
+        if (AdbPermissionManager.isSetupComplete(this) &&
+            DrivingWidgetPrefs.isAvailable(this) &&
+            !DrivingWidgetPrefs.wasPrompted(this)
+        ) {
+            showDrivingWidgetConsent.value = true
+        }
         if (AdbPermissionManager.isSetupComplete(this)) return
         showSetupRequired.value = true
         lifecycleScope.launch {
@@ -481,6 +528,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onStop() {
         super.onStop()
+        // Before the unbind below: it needs the service's gear.
+        stepAsideIfCoveredForDriving()
         // App left the screen → no one can confirm, so a held auto-stop is finalised
         // and future car-off stops happen silently (legacy behaviour).
         viewModel.setUiVisible(false)
@@ -491,6 +540,27 @@ class MainActivity : ComponentActivity() {
             unbindService(connection)
             bound = false
             telemetryService = null
+        }
+    }
+
+    /**
+     * Android Automotive, driving widget on: when this screen stops because the car left P, Android
+     * has just covered it with "use this app only in P". Move the app's own task to the back, as the
+     * screen's "Exit app" button would, so the driver lands on the home screen or the previous app
+     * with the widget showing instead of a dead screen (asked for by the first Atto 3 EVO tester).
+     *
+     * Only the app's own task moves — whatever else is in front stays there, so a camera view that
+     * just opened is never pushed away — and never in R, where the reversing camera has the screen.
+     * In P nothing has covered the app (stopping there is an ordinary switch to another app), so
+     * nothing happens. Recording is unaffected: it runs in the service.
+     */
+    private fun stepAsideIfCoveredForDriving() {
+        if (isFinishing || isChangingConfigurations) return
+        if (!DrivingWidgetPrefs.isAvailable(this) || !DrivingWidgetPrefs.isEnabled(this)) return
+        val gear = telemetryService?.telemetrySnapshot?.value?.gear ?: return
+        if (gear != "D" && gear != "N") return
+        if (runCatching { moveTaskToBack(true) }.getOrDefault(false)) {
+            DiagLog.event(applicationContext, TAG, "🪟 screen covered in $gear — app moved to the background, widget stays")
         }
     }
 

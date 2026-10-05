@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.annotation.StringRes
 import com.byd.tripstats.R
 import com.byd.tripstats.runtimebridge.RuntimeExtensionBridge
+import com.byd.tripstats.sdk.AaosPlatform
 import com.byd.tripstats.util.DiagLog
 import dadb.AdbKeyPair
 import dadb.Dadb
@@ -481,6 +482,47 @@ object AdbPermissionManager {
         }
     }
 
+    /**
+     * Android Automotive head units (DiLink 100): grant the two `dangerous` vehicle-property
+     * permissions ([AaosPlatform.CAR_RUNTIME_PERMISSIONS] — battery, range, charging, speed).
+     * `--user` is explicit because there the app runs as user 10, and `pm grant` without it aims
+     * at user 0. Idempotent, silent without the adb channel, a no-op once granted — the reader calls
+     * it whenever a permission is missing, which covers cars set up before this existed.
+     * Returns a short outcome for diag.log.
+     */
+    suspend fun ensureCarPropertyPermissions(context: Context): String = withContext(Dispatchers.IO) {
+        val missing = AaosPlatform.missingCarRuntimePermissions(context)
+        if (missing.isEmpty()) return@withContext "granted"
+        if (!isSetupComplete(context)) return@withContext "no adb setup"
+        val pkg = context.packageName
+        val results = runShellBatch(
+            context,
+            missing.map { "pm grant --user ${AaosPlatform.myUserId} $pkg $it" },
+        )
+        if (results.isEmpty()) return@withContext "adb channel not available"
+        val stillMissing = AaosPlatform.missingCarRuntimePermissions(context)
+        if (stillMissing.isEmpty()) "granted ${missing.joinToString { it.substringAfterLast('.') }}"
+        else "still missing ${stillMissing.joinToString { it.substringAfterLast('.') }} :: " +
+            results.joinToString(" | ") { "${it.exitCode} ${it.output.take(80)}" }
+    }
+
+    /**
+     * The driving widget's "display over other apps" (Android Automotive only — see DrivingWidget):
+     * granted as an app op over the adb channel, to the user the app runs as. Only ever called after
+     * the user turned the widget on. Returns a short outcome for diag.log.
+     */
+    suspend fun grantOverlayPermission(context: Context): String = withContext(Dispatchers.IO) {
+        if (Settings.canDrawOverlays(context)) return@withContext "granted"
+        if (!isSetupComplete(context)) return@withContext "no adb setup"
+        val results = runShellBatch(
+            context,
+            listOf("appops set --user ${AaosPlatform.myUserId} ${context.packageName} SYSTEM_ALERT_WINDOW allow"),
+        )
+        if (results.isEmpty()) return@withContext "adb channel not available"
+        if (Settings.canDrawOverlays(context)) "granted now"
+        else "still missing :: " + results.joinToString(" | ") { "${it.exitCode} ${it.output.take(80)}" }
+    }
+
     private suspend fun grantPermissionsAndClose(dadb: Dadb, context: Context): Boolean {
         return try {
             _state.value = SetupState.Granting
@@ -511,6 +553,17 @@ object AdbPermissionManager {
             // DiLink-5: grant bydauto *_COMMON (always) + exempt hidden APIs (only if the user
             // consented) so telemetry binds. Consent is captured before setup runs (MainActivity).
             applyVehicleApiAccess(dadb, pkg, hasHiddenApiConsent(context))
+
+            // Android Automotive (DiLink 100): the vehicle-property permissions, to the driver's user.
+            // Best-effort, like the list above; see ensureCarPropertyPermissions.
+            if (AaosPlatform.isCarPropertyCapable(context)) {
+                AaosPlatform.CAR_RUNTIME_PERMISSIONS.forEach { perm ->
+                    runCatching {
+                        val r = dadb.shell("pm grant --user ${AaosPlatform.myUserId} $pkg $perm")
+                        Log.i(TAG, "grant (vehicle) $perm: exit ${r.exitCode} (${r.allOutput.trim()})")
+                    }
+                }
+            }
 
             dadb.close()
 

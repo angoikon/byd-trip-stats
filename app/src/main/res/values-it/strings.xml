@@ -1324,4 +1324,21 @@
     <string name="d5_consent_decline_body">Senza questa autorizzazione l\'app non può leggere alcun dato del veicolo. Puoi concederla in qualsiasi momento dalla pagina Impostazioni.</string>
     <string name="d5_consent_decline_confirm">Sì, salta</string>
     <string name="d5_consent_decline_back">Indietro</string>
+    <string name="driving_widget_consent_title">Mostrare un widget di guida?</string>
+    <string name="driving_widget_consent_body">Su quest\'auto, Android nasconde lo schermo dell\'app ogni volta che l\'auto non è in P. La registrazione del viaggio continua comunque in background.\n\nIn alternativa, l\'app può mostrare un piccolo widget sopra le altre app mentre guidi, con velocità, potenza, batteria e autonomia — lo stesso tipo di widget usato da altre app per auto. È pensato per un\'occhiata, come il quadro strumenti: tieni gli occhi sulla strada. Scompare in P, dove torna la dashboard completa.\n\nPuoi attivarlo o disattivarlo in seguito nelle Impostazioni.</string>
+    <string name="driving_widget_consent_allow">Mostra widget</string>
+    <string name="driving_widget_consent_not_now">Non ora</string>
+    <string name="driving_widget_section">Widget di guida</string>
+    <string name="driving_widget_title">Mostra un widget durante la guida</string>
+    <string name="driving_widget_desc">Android nasconde lo schermo dell\'app ogni volta che l\'auto non è in P. Al suo posto, questo mostra i valori che scegli qui sotto come piccoli widget sopra le altre app, finché non torni in P. Mai in R, così la telecamera di retromarcia resta libera. Usa l\'autorizzazione \"display over other apps\", concessa tramite la configurazione ADB una tantum.</string>
+    <string name="driving_widget_tiles_label">Widget da mostrare</string>
+    <string name="driving_widget_tile_speed">Velocità</string>
+    <string name="driving_widget_tile_power">Potenza</string>
+    <string name="driving_widget_tile_battery">Batteria</string>
+    <string name="driving_widget_tile_range">Autonomia</string>
+    <string name="driving_widget_tile_outside_temp">Temperatura esterna</string>
+    <string name="driving_widget_arrange_hint">Ogni widget può essere trascinato dove vuoi. Per posizionarli prima di guidare, tocca Disponi sullo schermo. Durante la guida possono essere spostati solo quando l\'auto è ferma; nulla su di essi è toccabile.</string>
+    <string name="driving_widget_arrange">Disponi sullo schermo</string>
+    <string name="driving_widget_arrange_done">Fatto</string>
+    <string name="driving_widget_reset_positions">Reimposta posizioni</string>
 </resources>

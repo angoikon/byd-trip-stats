@@ -66,6 +66,9 @@ private const val DIRECT_CHARGING_POWER_TIMEOUT_MS = 4_000L
 // pushed, so its window spans a missed poll: one stray reading mid-charge would otherwise close the
 // charging session and open a new one on the next.
 private const val DI5_CHARGING_POWER_TIMEOUT_MS = 12_000L
+// DiLink 100: how long one "charging" read of the car's EV_CHARGE_STATE keeps the session open. The
+// reader polls every second, so this spans a few missed reads without letting a stale one linger.
+private const val AAOS_CHARGING_FRESH_MS = 6_000L
 // DC-charge inference fallback: minimum |pack power| (kW flowing into the battery, read from the
 // synchronous enginePower getter) for treating a parked, car-on charge as active when the BMS
 // charging listener is silent (its pushed callbacks can wedge; a DC charge started while the head
@@ -290,6 +293,8 @@ data class VehicleTelemetrySnapshot(
     val sensorTemperatureValue: Double? = null,
     val cabinTemperature: Double? = null,
     val powerStateRaw: Int? = null,
+    /** Android Automotive IGNITION_STATE (DiLink 100), raw VehicleIgnitionState; null elsewhere. */
+    val aaosIgnitionState: Int? = null,
     val instrumentLast50KmPowerConsume: Double? = null,
     val instrumentOutCarTemperature: Int? = null,
     val pm25InCar: Int? = null,
@@ -409,9 +414,12 @@ data class VehicleTelemetrySnapshot(
      * that last one, sitting in P with the power on read as switched off there and the trip
      * auto-stopped after the timeout. Not DiLink-5: bodywork is virtualized there, and its trips go
      * by process continuity instead (TripRepository.di5StandstillCountsAsCarOn).
+     * On DiLink 100 (Android Automotive) none of the BYD sources answer, and the ignition state the
+     * car publishes as a vehicle property stands in — see [AaosPlatform.carOnFromIgnitionState].
      */
     fun effectiveCarOn(): Int? = powerStateRaw?.coerceIn(0, 2)
         ?: powerMcuStatus?.coerceIn(0, 2)
+        ?: AaosPlatform.carOnFromIgnitionState(aaosIgnitionState)
         ?: carOnFromBodyworkPowerLevel(bodyworkPowerLevel)?.takeIf { !DiLink5Platform.isDiLink5 }
 
     fun toTelemetry(carConfig: CarConfig? = null): VehicleTelemetry {
@@ -1208,6 +1216,12 @@ class BydVehicleDataSource(context: Context) {
     // True once the privileged telemetry daemon has supplied a real gear — makes the daemon gear
     // authoritative over the in-process speed-inference fallback (see toTelemetry gear resolution).
     @Volatile private var daemonGearKnown: Boolean = false
+    // Same, for the GEAR_SELECTION vehicle property on Android Automotive head units (DiLink 100).
+    @Volatile private var aaosGearKnown: Boolean = false
+    // Last time EV_CHARGE_STATE read CHARGING (DiLink 100); 0 = never. See computeChargingActive.
+    @Volatile private var lastAaosChargingElapsedMs: Long = 0L
+    // Last speed the daemon itself pushed — the vehicle-property speed only stands in when it is stale.
+    @Volatile private var lastDaemonSpeedPushElapsedMs: Long = 0L
     // Client for the privileged telemetry daemon (instant speed/gear the app process can't get itself).
     private val daemonClient = com.byd.tripstats.util.TelemetryDaemonClient { speedKmh, gear, powerKw, frontRpm, rearRpm ->
         applyDaemonTelemetry(speedKmh, gear, powerKw, frontRpm, rearRpm)
@@ -1520,6 +1534,9 @@ class BydVehicleDataSource(context: Context) {
         // DiLink-5: start the typed-listener client (present only in the dilink5 flavor; reflective
         // so the dilink3 build, which lacks the class, simply no-ops). It pushes via applyDilink5Telemetry.
         if (DiLink5Platform.isDiLink5) startDilink5Client()
+        // Android Automotive head units (DiLink 100): the car's own vehicle properties. Never on
+        // DiLink 3 or 5 (Android 12+ only, and not DiLink 5); reflective like the DiLink-5 client.
+        if (AaosPlatform.isCarPropertyCapable(appContext)) startAaosReader()
         publishSnapshot()
         if (RuntimeExtensionBridge.isAvailable) {
             startReadLogsMonitor()
@@ -2188,6 +2205,7 @@ class BydVehicleDataSource(context: Context) {
         RuntimeExtensionBridge.onDataSourceStopped()
         daemonClient.stop()
         stopDilink5Client()
+        stopAaosReader()
         pollingJob?.cancel()
         pollingJob = null
         readLogsMonitorJob?.cancel()
@@ -5434,6 +5452,7 @@ class BydVehicleDataSource(context: Context) {
         var changed = false
         if (speedKmh != null && speedKmh in 0.0..MAX_PLAUSIBLE_SPEED_KMH) {
             lastSpeedPushElapsedMs = now
+            lastDaemonSpeedPushElapsedMs = now
             if (speedKmh > 0.1) lastPositiveSpeedElapsedMs = now
             _vehicleSnapshot.value = _vehicleSnapshot.value.copy(directSpeedKmh = speedKmh)
             changed = true
@@ -5469,6 +5488,92 @@ class BydVehicleDataSource(context: Context) {
         }
     }
     private var lastDaemonDiagMs = 0L
+
+    /**
+     * Apply the vehicle properties an Android Automotive head unit publishes (DiLink 100 / Atto 3
+     * EVO), read by AaosCarPropertyReader (dilink3 flavor). BYD's own service refuses its getters to
+     * us there, so these are the car's battery, range, temperature, ignition, gear and charging state.
+     * Mirrors [applyDilink5Telemetry]: writes the snapshot fields toTelemetry() already reads, then
+     * publishes once. Pure Kotlin types, every input nullable and range-guarded.
+     *
+     * [socPct] is EV_BATTERY_LEVEL ÷ the car's battery capacity: 36000 Wh read 48 % with the
+     * dashboard showing 48 % (2026-10-05). It goes in the dashboard bucket — the car reports whole
+     * percent (36000 = 48 × 750), so it is no BMS decimal. [speedKmh] only stands in while the
+     * telemetry daemon isn't delivering speed, so the two never take turns on the speedometer.
+     */
+    fun applyAaosTelemetry(
+        socPct: Double? = null,
+        rangeKm: Int? = null,
+        outsideTempC: Double? = null,
+        ignitionState: Int? = null,
+        gearSelection: Int? = null,
+        chargeState: Int? = null,
+        chargeRateMilliwatts: Double? = null,
+        speedKmh: Double? = null,
+    ) {
+        val now = SystemClock.elapsedRealtime()
+        var changed = false
+        var snap = _vehicleSnapshot.value
+        if (socPct != null && socPct > 0.0 && socPct <= 100.0 && socPct != snap.statisticElecPercentageValue) {
+            snap = snap.copy(statisticElecPercentageValue = socPct); changed = true
+        }
+        if (rangeKm != null && rangeKm in 0..2000 && rangeKm != snap.statisticElecDrivingRangeValue) {
+            snap = snap.copy(statisticElecDrivingRangeValue = rangeKm); changed = true
+        }
+        val outsideTemp = outsideTempC?.takeIf { it.isFinite() && it in -60.0..70.0 }?.let { Math.round(it).toInt() }
+        if (outsideTemp != null && outsideTemp != snap.instrumentOutCarTemperature) {
+            snap = snap.copy(instrumentOutCarTemperature = outsideTemp); changed = true
+        }
+        if (ignitionState != null && ignitionState != snap.aaosIgnitionState) {
+            DiagLog.event(
+                appContext, TAG,
+                "🔑 ignition ${snap.aaosIgnitionState ?: "-"}→$ignitionState " +
+                    "(carOn=${AaosPlatform.carOnFromIgnitionState(ignitionState) ?: "-"})",
+            )
+            snap = snap.copy(aaosIgnitionState = ignitionState); changed = true
+        }
+        if (changed) _vehicleSnapshot.value = snap
+
+        AaosPlatform.gearLetter(gearSelection)?.let { letter ->
+            aaosGearKnown = true
+            if (_gear.value != letter) { _gear.value = letter; changed = true }
+        }
+
+        if (chargeState != null) {
+            if (chargeState != lastAaosChargeState) {
+                DiagLog.event(
+                    appContext, TAG,
+                    "🔌 car charge state ${lastAaosChargeState ?: "-"}→$chargeState rate=${chargeRateMilliwatts ?: "-"}",
+                )
+                lastAaosChargeState = chargeState
+            }
+            if (chargeState == AaosPlatform.CHARGE_STATE_CHARGING) {
+                lastAaosChargingElapsedMs = now
+                // The standard unit is milliwatts. Anything that doesn't come out as a plausible
+                // charge in kW is left to the pack-power fallback rather than guessed at.
+                // TODO(dilink100): unit unconfirmed on the car — see MD/DILINK100_FOLLOWUPS.md.
+                val kw = chargeRateMilliwatts?.div(1_000_000.0)?.takeIf { it.isFinite() && it in 0.1..400.0 }
+                if (kw != null) updateDirectChargingPower(kw)
+                changed = true
+            } else if (lastAaosChargingElapsedMs != 0L) {
+                lastAaosChargingElapsedMs = 0L
+                changed = true
+            }
+        }
+
+        if (speedKmh != null && speedKmh in 0.0..MAX_PLAUSIBLE_SPEED_KMH &&
+            now - lastDaemonSpeedPushElapsedMs > SPEED_EVENT_FRESHNESS_MS
+        ) {
+            lastSpeedPushElapsedMs = now
+            if (speedKmh > 0.1) lastPositiveSpeedElapsedMs = now
+            if (_vehicleSnapshot.value.directSpeedKmh != speedKmh) {
+                _vehicleSnapshot.value = _vehicleSnapshot.value.copy(directSpeedKmh = speedKmh)
+                changed = true
+            }
+        }
+        if (changed) publishSnapshot()
+    }
+    @Volatile private var lastAaosChargeState: Int? = null
 
     /**
      * Apply DiLink-5 statistic/charging telemetry pushed by the DiLink-5 client (dilink5 flavor
@@ -5850,6 +5955,29 @@ class BydVehicleDataSource(context: Context) {
         dilink5Client = null
     }
 
+    // Vehicle-property reader for Android Automotive head units (dilink3 flavor only) — reflective
+    // for the same reason as the DiLink-5 client: the dilink5 build doesn't contain the class.
+    // Given the plain app context: [ctx] fakes permission checks, and the reader's must be real.
+    private var aaosReader: Any? = null
+    private fun startAaosReader() {
+        if (aaosReader != null) return
+        try {
+            val cls = Class.forName("com.byd.tripstats.sdk.AaosCarPropertyReader")
+            val reader = cls.getDeclaredConstructor().newInstance()
+            cls.getMethod("start", Context::class.java, BydVehicleDataSource::class.java)
+                .invoke(reader, appContext, this)
+            aaosReader = reader
+        } catch (e: ClassNotFoundException) {
+            Log.w(TAG, "vehicle-property reader not present in this build")
+        } catch (t: Throwable) {
+            DiagLog.event(appContext, TAG, "🚘 vehicle properties: reader start failed: ${t.javaClass.simpleName}: ${t.message}")
+        }
+    }
+    private fun stopAaosReader() {
+        aaosReader?.let { r -> try { r.javaClass.getMethod("stop").invoke(r) } catch (_: Throwable) {} }
+        aaosReader = null
+    }
+
     /**
      * Recover a wedged SDK event-callback channel. On this firmware the BYD SDK occasionally stops
      * delivering pushed callbacks (speed/gear/etc.) while synchronous getters keep working — events
@@ -5950,8 +6078,8 @@ class BydVehicleDataSource(context: Context) {
                 val resolved = when {
                     // Privileged telemetry daemon supplied a real gear (P/R/N/D) — authoritative.
                     // Correctly handles R while reversing, where the speed-inference fallback below
-                    // would otherwise show "D".
-                    daemonGearKnown -> _gear.value
+                    // would otherwise show "D". Same for the vehicle property on DiLink 100.
+                    daemonGearKnown || aaosGearKnown -> _gear.value
                     gearboxDevice != null -> _gear.value
                     // InstrumentDevice successfully read a gear value — use it directly.
                     // This correctly handles R, N, P as well as D and avoids the speed
@@ -6022,6 +6150,7 @@ class BydVehicleDataSource(context: Context) {
             bodyworkBatteryPowerValue = _vehicleSnapshot.value.bodyworkBatteryPowerValue,
             bodyworkBatteryVoltageLevel = _vehicleSnapshot.value.bodyworkBatteryVoltageLevel,
             bodyworkPowerLevel = _vehicleSnapshot.value.bodyworkPowerLevel,
+            aaosIgnitionState = _vehicleSnapshot.value.aaosIgnitionState,
             bodyworkAutoVin = _vehicleSnapshot.value.bodyworkAutoVin,
             tboxSerialNumber = _vehicleSnapshot.value.tboxSerialNumber,
             powerBatteryRemainPowerEV = _vehicleSnapshot.value.powerBatteryRemainPowerEV,
@@ -6932,7 +7061,10 @@ class BydVehicleDataSource(context: Context) {
         // evidence keeps work trustworthy through a genuine charge); a phantom stuck work=1 after a
         // drive has neither, so it no longer shows a charging animation while parked.
         val workTrustworthy = !chargerSignalsUnreliable || hasCapacityEvidence
-        return powerActive || recentCapacityActivity || (chargerWorking && workTrustworthy)
+        // DiLink 100: the car's own EV_CHARGE_STATE said CHARGING on a recent read (0 elsewhere).
+        val aaosCharging = lastAaosChargingElapsedMs != 0L &&
+            nowElapsedMs - lastAaosChargingElapsedMs <= AAOS_CHARGING_FRESH_MS
+        return powerActive || recentCapacityActivity || (chargerWorking && workTrustworthy) || aaosCharging
     }
 
     private fun hasFreshDirectChargingPower(nowElapsedMs: Long = SystemClock.elapsedRealtime()): Boolean {

@@ -1223,4 +1223,21 @@
     <string name="d5_consent_decline_body">이 권한이 없으면 앱은 차량 데이터를 읽을 수 없습니다. 설정 페이지에서 언제든지 허용할 수 있습니다.</string>
     <string name="d5_consent_decline_confirm">예, 건너뛰기</string>
     <string name="d5_consent_decline_back">뒤로</string>
+    <string name="driving_widget_consent_title">주행 위젯을 표시할까요?</string>
+    <string name="driving_widget_consent_body">이 차량에서는 차량이 P가 아닐 때마다 Android가 앱 화면을 숨깁니다. 주행 기록은 어느 쪽이든 백그라운드에서 계속됩니다.\n\n대신 주행 중에는 앱이 다른 앱 위에 작은 위젯을 표시할 수 있습니다. 속도, 출력, 배터리, 주행 가능 거리를 — 다른 차량 앱이 사용하는 것과 같은 종류의 위젯입니다. 계기판처럼 한눈에 보기 위한 것입니다. 도로에서 눈을 떼지 마세요. P에서는 사라지고 전체 대시보드가 돌아옵니다.\n\n나중에 설정에서 켜거나 끌 수 있습니다.</string>
+    <string name="driving_widget_consent_allow">위젯 표시</string>
+    <string name="driving_widget_consent_not_now">나중에</string>
+    <string name="driving_widget_section">주행 위젯</string>
+    <string name="driving_widget_title">주행 중 위젯 표시</string>
+    <string name="driving_widget_desc">차량이 P가 아닐 때마다 Android가 앱 화면을 숨깁니다. 대신 이 기능은 다시 P로 돌아올 때까지 아래에서 선택한 값을 다른 앱 위에 작은 위젯으로 표시합니다. R에서는 절대 표시하지 않아 후방 카메라가 가려지지 않습니다. \"display over other apps\" 권한을 사용하며, 일회성 ADB 설정으로 부여됩니다.</string>
+    <string name="driving_widget_tiles_label">표시할 위젯</string>
+    <string name="driving_widget_tile_speed">속도</string>
+    <string name="driving_widget_tile_power">출력</string>
+    <string name="driving_widget_tile_battery">배터리</string>
+    <string name="driving_widget_tile_range">주행 가능 거리</string>
+    <string name="driving_widget_tile_outside_temp">외부 온도</string>
+    <string name="driving_widget_arrange_hint">각 위젯은 원하는 위치로 끌어다 놓을 수 있습니다. 주행 전에 배치하려면 화면에 배치를 탭하세요. 주행 중에는 차량이 정지해 있을 때만 옮길 수 있으며, 위젯의 어떤 것도 탭할 수 없습니다.</string>
+    <string name="driving_widget_arrange">화면에 배치</string>
+    <string name="driving_widget_arrange_done">완료</string>
+    <string name="driving_widget_reset_positions">위치 초기화</string>
 </resources>

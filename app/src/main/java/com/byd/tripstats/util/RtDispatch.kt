@@ -47,6 +47,9 @@ internal object RtDispatch {
         snapshotSupervisor: Boolean = true,
         verifyDispatch: Boolean = true,
     ): Boolean {
+        // Backstop: the headless-system-user copy on Android Automotive never dispatches — the
+        // supervisor belongs to the driver's copy (AaosPlatform.isHeadlessSystemUserInstance).
+        if (com.byd.tripstats.sdk.AaosPlatform.isHeadlessSystemUserInstance) return false
         if (!AdbPermissionManager.isSetupComplete(context)) {
             // Means the background restarter is never dispatched at all — the permission grants are
             // gone. Silent in release before this line existed, because Log.* is stripped.
@@ -207,6 +210,8 @@ internal object RtDispatch {
      * attempt succeeds and this returns before the loop runs once.
      */
     suspend fun launchWatchingForChannel(context: Context): Boolean {
+        // The headless-system-user copy on Android Automotive never touches the channel (AaosPlatform).
+        if (com.byd.tripstats.sdk.AaosPlatform.isHeadlessSystemUserInstance) return false
         // FIRST, before anything tries to use the channel: BYD clears Android's adb-debugging
         // settings at shutdown on DiLink 5, which is why the port is dead at every cold boot. We
         // hold WRITE_SECURE_SETTINGS from the adb setup, so we can switch them back on in-process —

@@ -1320,4 +1320,21 @@
     <string name="d5_consent_decline_body">Không có quyền này, ứng dụng không thể đọc bất kỳ dữ liệu xe nào. Bạn có thể cấp quyền bất cứ lúc nào từ trang Cài đặt.</string>
     <string name="d5_consent_decline_confirm">Có, bỏ qua</string>
     <string name="d5_consent_decline_back">Quay lại</string>
+    <string name="driving_widget_consent_title">Hiển thị widget lái xe?</string>
+    <string name="driving_widget_consent_body">Trên xe này, Android ẩn màn hình của ứng dụng bất cứ khi nào xe không ở P. Việc ghi chuyến đi vẫn tiếp tục ở chế độ nền.\n\nThay vào đó, ứng dụng có thể hiển thị một widget nhỏ phía trên các ứng dụng khác khi bạn lái, với tốc độ, công suất, pin và tầm hoạt động của bạn — cùng loại widget mà các ứng dụng xe khác dùng. Nó dành cho việc liếc nhanh, như cụm đồng hồ: hãy nhìn đường. Nó biến mất khi ở P, nơi bảng điều khiển đầy đủ trở lại.\n\nBạn có thể bật hoặc tắt sau trong Cài đặt.</string>
+    <string name="driving_widget_consent_allow">Hiển thị widget</string>
+    <string name="driving_widget_consent_not_now">Để sau</string>
+    <string name="driving_widget_section">Widget lái xe</string>
+    <string name="driving_widget_title">Hiển thị widget khi lái xe</string>
+    <string name="driving_widget_desc">Android ẩn màn hình của ứng dụng bất cứ khi nào xe không ở P. Thay vào đó, mục này hiển thị các giá trị bạn chọn bên dưới dưới dạng widget nhỏ phía trên các ứng dụng khác, cho đến khi bạn về lại P. Không bao giờ ở R, để camera lùi luôn rõ. Dùng quyền \"display over other apps\", được cấp qua thiết lập ADB một lần.</string>
+    <string name="driving_widget_tiles_label">Widget cần hiển thị</string>
+    <string name="driving_widget_tile_speed">Tốc độ</string>
+    <string name="driving_widget_tile_power">Công suất</string>
+    <string name="driving_widget_tile_battery">Pin</string>
+    <string name="driving_widget_tile_range">Tầm hoạt động</string>
+    <string name="driving_widget_tile_outside_temp">Nhiệt độ bên ngoài</string>
+    <string name="driving_widget_arrange_hint">Mỗi widget có thể được kéo đến vị trí bạn muốn. Để đặt chúng trước khi lái, hãy chạm Sắp xếp trên màn hình. Khi đang lái, chỉ có thể di chuyển chúng khi xe đứng yên; không thể chạm vào bất cứ thứ gì trên chúng.</string>
+    <string name="driving_widget_arrange">Sắp xếp trên màn hình</string>
+    <string name="driving_widget_arrange_done">Xong</string>
+    <string name="driving_widget_reset_positions">Đặt lại vị trí</string>
 </resources>

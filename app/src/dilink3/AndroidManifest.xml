@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    dilink3 flavor only — merged into the main manifest. The dilink5 build stays exactly as it was.
+
+    Android Automotive head units (DiLink 100 / Atto 3 EVO, Android 14) run this build. BYD's own
+    service refuses the bydauto getters to a third-party app there, so the car's readings come from
+    the standard vehicle properties instead (sdk/AaosCarPropertyReader). On DiLink 3, which is not
+    Android Automotive, none of these permissions exist and the optional library is absent; both are
+    ignored there, and the reader is never started (AaosPlatform.isCarPropertyCapable).
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Dangerous on DiLink 100: granted over the adb channel, to the driver's user. -->
+    <uses-permission android:name="android.car.permission.CAR_ENERGY" />
+    <uses-permission android:name="android.car.permission.CAR_SPEED" />
+    <!-- Normal: granted at install. -->
+    <uses-permission android:name="android.car.permission.CAR_POWERTRAIN" />
+    <uses-permission android:name="android.car.permission.CAR_INFO" />
+    <uses-permission android:name="android.car.permission.CAR_EXTERIOR_ENVIRONMENT" />
+    <uses-permission android:name="android.car.permission.CAR_ENERGY_PORTS" />
+    <!-- Driving widget (service/DrivingWidget): Android covers the app's screen out of P there, but
+         not an overlay. Granted over the adb channel only after the user turns the widget on. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <application>
+        <uses-library android:name="android.car" android:required="false" />
+    </application>
+</manifest>

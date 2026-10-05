@@ -44,6 +44,8 @@ import kotlinx.coroutines.withTimeout
 class OffStateKeepaliveReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
+        // The headless-system-user copy on Android Automotive stays idle (AaosPlatform).
+        if (com.byd.tripstats.sdk.AaosPlatform.isHeadlessSystemUserInstance) return
         val iteration = intent.getIntExtra(EXTRA_ITERATION, 0)
         val appContext = context.applicationContext
         DiagLog.event(appContext, TAG, "fired iteration=$iteration data=${intent.data}")
