@@ -51,6 +51,14 @@ internal fun TailscaleSection(context: Context, scope: CoroutineScope) {
     var busy by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
     var showAlternatives by remember { mutableStateOf(false) }
+    // Which sign-in button the current error belongs to, so it is shown right under that button —
+    // where the user is looking — rather than only at the top of the card, which read as "nothing
+    // happened" after the QR sign-in failed (2026-10-05).
+    var errorUnder by remember { mutableStateOf<SignInAction?>(null) }
+    val inlineError = status.detail?.takeIf { status.state == TailscaleManager.State.ERROR && errorUnder != null }
+    // The auth-key button sits in the collapsible "Other ways" section; with that closed, the error
+    // has to stay at the top or it would be shown nowhere.
+    val inlineShown = inlineError != null && (errorUnder == SignInAction.QR || showAlternatives)
 
     // Ask the daemon what it thinks on first composition — it outlives our process, so the app can
     // come back to a car that is already on the tailnet.
@@ -77,258 +85,277 @@ internal fun TailscaleSection(context: Context, scope: CoroutineScope) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
+            // if/else, not an early `return@Column` — see the Telegram page's beta32 crash.
             if (!supported) {
                 StatusLine(Icons.Filled.Info, stringResource(R.string.tailscale_unavailable))
-                return@Column
-            }
-
-            when (status.state) {
-                TailscaleManager.State.RUNNING -> {
-                    StatusLine(
-                        Icons.Filled.CheckCircle,
-                        stringResource(R.string.tailscale_connected, status.hostname ?: "—"),
-                        RegenGreen,
-                    )
-                    status.ip?.let { ip ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 2.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        ) {
-                            Text(
-                                ip,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontFamily = FontFamily.Monospace,
-                                modifier = Modifier.weight(1f),
-                            )
-                            IconButton(onClick = { clip.setText(AnnotatedString(ip)) }, modifier = Modifier.size(32.dp)) {
-                                Icon(
-                                    Icons.Filled.ContentCopy,
-                                    contentDescription = stringResource(R.string.web_copy_url_cd),
-                                    modifier = Modifier.size(18.dp),
-                                    tint = MaterialTheme.colorScheme.primary,
+            } else {
+                when (status.state) {
+                    TailscaleManager.State.RUNNING -> {
+                        StatusLine(
+                            Icons.Filled.CheckCircle,
+                            stringResource(R.string.tailscale_connected, status.hostname ?: "—"),
+                            RegenGreen,
+                        )
+                        status.ip?.let { ip ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(
+                                    ip,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontFamily = FontFamily.Monospace,
+                                    modifier = Modifier.weight(1f),
                                 )
-                            }
-                        }
-                        Text(
-                            stringResource(R.string.tailscale_reachable_hint, ip),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-                TailscaleManager.State.NEEDS_ADB ->
-                    StatusLine(Icons.Filled.Warning, stringResource(R.string.tailscale_needs_adb), MaterialTheme.colorScheme.error)
-                TailscaleManager.State.STARTING ->
-                    StatusLine(Icons.Filled.HourglassTop, stringResource(R.string.tailscale_starting))
-                TailscaleManager.State.ERROR ->
-                    StatusLine(
-                        Icons.Filled.Error,
-                        status.detail ?: stringResource(R.string.tailscale_error),
-                        MaterialTheme.colorScheme.error,
-                    )
-                else ->
-                    StatusLine(Icons.Filled.Info, stringResource(R.string.tailscale_not_connected))
-            }
-
-            // ── Setup, in the order the user has to do it ──────────────────────
-            TextButton(onClick = { expanded = !expanded }, contentPadding = PaddingValues(0.dp)) {
-                Icon(
-                    if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                    null,
-                    modifier = Modifier.size(18.dp),
-                )
-                Spacer(Modifier.width(6.dp))
-                Text(stringResource(R.string.tailscale_how_to))
-            }
-            if (expanded) {
-                listOf(
-                    R.string.tailscale_step_1,
-                    R.string.tailscale_step_2,
-                    R.string.tailscale_step_3,
-                    R.string.tailscale_step_4,
-                ).forEach { step ->
-                    Text(
-                        stringResource(step),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    stringResource(R.string.tailscale_console_warnings),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                if (DiLink5Platform.isDiLink5) {
-                    Text(
-                        stringResource(R.string.tailscale_di5_note),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-            }
-
-            if (status.state == TailscaleManager.State.RUNNING) {
-                HttpsRow(context = context, scope = scope, status = status)
-            }
-
-            // ── Signing in ────────────────────────────────────────────────────
-            // Three ways in, easiest first. The QR is the default because a head unit has no
-            // keyboard worth the name and an auth key is 60+ characters: scanning it means the
-            // user never types, and nothing long-lived exists to leak.
-            if (status.state == TailscaleManager.State.AWAITING_LOGIN && status.authUrl != null) {
-                SignInQr(url = status.authUrl!!)
-                TextButton(
-                    onClick = {
-                        scope.launch {
-                            try { TailscaleManager.cancelBrowserLogin(context) } finally { busy = false }
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                ) { Text(stringResource(R.string.tailscale_cancel_signin)) }
-            }
-
-            if (status.state == TailscaleManager.State.RUNNING) {
-                DisconnectButton(
-                    text = stringResource(R.string.tailscale_disconnect),
-                    enabled = !busy,
-                    onClick = {
-                        busy = true
-                        scope.launch {
-                            try { TailscaleManager.disconnect(context) } finally { busy = false }
-                        }
-                    },
-                )
-            } else if (status.state != TailscaleManager.State.NEEDS_ADB &&
-                status.state != TailscaleManager.State.AWAITING_LOGIN
-            ) {
-                Button(
-                    onClick = {
-                        busy = true
-                        scope.launch {
-                            try {
-                                val s = TailscaleManager.beginBrowserLogin(context)
-                                if (s.state == TailscaleManager.State.AWAITING_LOGIN) {
-                                    // Keep watching while the user is on their phone; the daemon
-                                    // waits regardless, so this only drives the on-screen state.
-                                    TailscaleManager.awaitBrowserLogin(context)
+                                IconButton(onClick = { clip.setText(AnnotatedString(ip)) }, modifier = Modifier.size(32.dp)) {
+                                    Icon(
+                                        Icons.Filled.ContentCopy,
+                                        contentDescription = stringResource(R.string.web_copy_url_cd),
+                                        modifier = Modifier.size(18.dp),
+                                        tint = MaterialTheme.colorScheme.primary,
+                                    )
                                 }
-                            } finally {
-                                busy = false
                             }
+                            Text(
+                                stringResource(R.string.tailscale_reachable_hint, ip),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
-                    },
-                    enabled = !busy,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    if (busy) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                        )
-                    } else {
-                        Icon(Icons.Filled.QrCode2, null, modifier = Modifier.size(18.dp))
                     }
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.tailscale_signin_phone))
+                    TailscaleManager.State.NEEDS_ADB ->
+                        StatusLine(Icons.Filled.Warning, stringResource(R.string.tailscale_needs_adb), MaterialTheme.colorScheme.error)
+                    TailscaleManager.State.STARTING ->
+                        StatusLine(Icons.Filled.HourglassTop, stringResource(R.string.tailscale_starting))
+                    TailscaleManager.State.ERROR ->
+                        // Shown under the button instead when a sign-in just failed; once is enough.
+                        if (inlineShown) {
+                            StatusLine(Icons.Filled.Info, stringResource(R.string.tailscale_not_connected))
+                        } else {
+                            StatusLine(
+                                Icons.Filled.Error,
+                                status.detail ?: stringResource(R.string.tailscale_error),
+                                MaterialTheme.colorScheme.error,
+                            )
+                        }
+                    else ->
+                        StatusLine(Icons.Filled.Info, stringResource(R.string.tailscale_not_connected))
                 }
 
-                TextButton(
-                    onClick = { showAlternatives = !showAlternatives },
-                    contentPadding = PaddingValues(0.dp),
-                ) {
+                // ── Setup, in the order the user has to do it ──────────────────────
+                TextButton(onClick = { expanded = !expanded }, contentPadding = PaddingValues(0.dp)) {
                     Icon(
-                        if (showAlternatives) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                        if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
                         null,
                         modifier = Modifier.size(18.dp),
                     )
                     Spacer(Modifier.width(6.dp))
-                    Text(stringResource(R.string.tailscale_other_ways))
+                    Text(stringResource(R.string.tailscale_how_to))
+                }
+                if (expanded) {
+                    listOf(
+                        R.string.tailscale_step_1,
+                        R.string.tailscale_step_2,
+                        R.string.tailscale_step_3,
+                        R.string.tailscale_step_4,
+                    ).forEach { step ->
+                        Text(
+                            stringResource(step),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        stringResource(R.string.tailscale_console_warnings),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    if (DiLink5Platform.isDiLink5) {
+                        Text(
+                            stringResource(R.string.tailscale_di5_note),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
                 }
 
-                if (!showAlternatives) return@Column
+                if (status.state == TailscaleManager.State.RUNNING) {
+                    HttpsRow(context = context, scope = scope, status = status)
+                }
 
-                Text(
-                    stringResource(R.string.tailscale_alt_adb_title),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Text(
-                    stringResource(R.string.tailscale_alt_adb_body),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    "adb shell input text \"tskey-auth-…\"",
-                    style = MaterialTheme.typography.bodySmall,
-                    fontFamily = FontFamily.Monospace,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                            RoundedCornerShape(8.dp),
-                        )
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                )
-
-                Text(
-                    stringResource(R.string.tailscale_alt_key_title),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Text(
-                    stringResource(R.string.tailscale_alt_key_body),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                OutlinedTextField(
-                    value = authKeyInput,
-                    onValueChange = { authKeyInput = it },
-                    label = { Text(stringResource(R.string.tailscale_authkey_label)) },
-                    placeholder = { Text("tskey-auth-…") },
-                    singleLine = true,
-                    enabled = !busy,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Button(
-                    onClick = {
-                        busy = true
-                        scope.launch {
-                            // try/finally, not a bare sequence: anything thrown inside connect()
-                            // used to skip `busy = false` and leave the button spinning forever,
-                            // with no way back except leaving the screen. The spinner must always
-                            // stop, whatever happened.
-                            try {
-                                TailscaleManager.connect(context, authKeyInput)
-                                authKeyInput = ""
-                            } finally {
-                                busy = false
+                // ── Signing in ────────────────────────────────────────────────────
+                // Three ways in, easiest first. The QR is the default because a head unit has no
+                // keyboard worth the name and an auth key is 60+ characters: scanning it means the
+                // user never types, and nothing long-lived exists to leak.
+                if (status.state == TailscaleManager.State.AWAITING_LOGIN && status.authUrl != null) {
+                    SignInQr(url = status.authUrl!!)
+                    TextButton(
+                        onClick = {
+                            scope.launch {
+                                try { TailscaleManager.cancelBrowserLogin(context) } finally { busy = false }
                             }
-                        }
-                    },
-                    enabled = authKeyInput.isNotBlank() && !busy,
-                    modifier = Modifier.fillMaxWidth(),
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { Text(stringResource(R.string.tailscale_cancel_signin)) }
+                }
+
+                if (status.state == TailscaleManager.State.RUNNING) {
+                    DisconnectButton(
+                        text = stringResource(R.string.tailscale_disconnect),
+                        enabled = !busy,
+                        onClick = {
+                            busy = true
+                            scope.launch {
+                                try { TailscaleManager.disconnect(context) } finally { busy = false }
+                            }
+                        },
+                    )
+                } else if (status.state != TailscaleManager.State.NEEDS_ADB &&
+                    status.state != TailscaleManager.State.AWAITING_LOGIN
                 ) {
-                    if (busy) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                        )
-                    } else {
-                        Icon(Icons.Filled.Link, null, modifier = Modifier.size(18.dp))
+                    Button(
+                        onClick = {
+                            busy = true
+                            errorUnder = null
+                            scope.launch {
+                                try {
+                                    val s = TailscaleManager.beginBrowserLogin(context)
+                                    if (s.state == TailscaleManager.State.AWAITING_LOGIN) {
+                                        // Keep watching while the user is on their phone; the daemon
+                                        // waits regardless, so this only drives the on-screen state.
+                                        TailscaleManager.awaitBrowserLogin(context)
+                                    }
+                                } finally {
+                                    busy = false
+                                    errorUnder = SignInAction.QR
+                                }
+                            }
+                        },
+                        enabled = !busy,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        if (busy) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                            )
+                        } else {
+                            Icon(Icons.Filled.QrCode2, null, modifier = Modifier.size(18.dp))
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.tailscale_signin_phone))
                     }
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.tailscale_connect))
+                    if (errorUnder == SignInAction.QR && inlineError != null) {
+                        StatusLine(Icons.Filled.Error, inlineError, MaterialTheme.colorScheme.error)
+                    }
+
+                    TextButton(
+                        onClick = { showAlternatives = !showAlternatives },
+                        contentPadding = PaddingValues(0.dp),
+                    ) {
+                        Icon(
+                            if (showAlternatives) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                            null,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text(stringResource(R.string.tailscale_other_ways))
+                    }
+
+                    // if, not an early `return@Column` — see the Telegram page's beta32 crash.
+                    if (showAlternatives) {
+                        Text(
+                            stringResource(R.string.tailscale_alt_adb_title),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Text(
+                            stringResource(R.string.tailscale_alt_adb_body),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            "adb shell input text \"tskey-auth-…\"",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontFamily = FontFamily.Monospace,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                                    RoundedCornerShape(8.dp),
+                                )
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                        )
+
+                        Text(
+                            stringResource(R.string.tailscale_alt_key_title),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Text(
+                            stringResource(R.string.tailscale_alt_key_body),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        OutlinedTextField(
+                            value = authKeyInput,
+                            onValueChange = { authKeyInput = it },
+                            label = { Text(stringResource(R.string.tailscale_authkey_label)) },
+                            placeholder = { Text("tskey-auth-…") },
+                            singleLine = true,
+                            enabled = !busy,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        Button(
+                            onClick = {
+                                busy = true
+                                errorUnder = null
+                                scope.launch {
+                                    // try/finally, not a bare sequence: anything thrown inside connect()
+                                    // used to skip `busy = false` and leave the button spinning forever,
+                                    // with no way back except leaving the screen. The spinner must always
+                                    // stop, whatever happened.
+                                    try {
+                                        TailscaleManager.connect(context, authKeyInput)
+                                        authKeyInput = ""
+                                    } finally {
+                                        busy = false
+                                        errorUnder = SignInAction.KEY
+                                    }
+                                }
+                            },
+                            enabled = authKeyInput.isNotBlank() && !busy,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            if (busy) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                )
+                            } else {
+                                Icon(Icons.Filled.Link, null, modifier = Modifier.size(18.dp))
+                            }
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.tailscale_connect))
+                        }
+                        if (errorUnder == SignInAction.KEY && inlineError != null) {
+                            StatusLine(Icons.Filled.Error, inlineError, MaterialTheme.colorScheme.error)
+                        }
+                    }
                 }
             }
         }
     }
 }
+
+/** The two sign-in buttons a failure can be shown under. */
+private enum class SignInAction { QR, KEY }
 
 @Composable
 private fun StatusLine(

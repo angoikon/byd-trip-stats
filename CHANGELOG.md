@@ -1,3 +1,13 @@
+## [Unreleased]
+
+### Fixed
+
+- **Atto 3 EVO owners were told to install the wrong build** — the 2.15.1 notes said the Atto 3 EVO *"ships with DiLink 5, so it needs the dilink5 build"*, and that the app would warn if the wrong one was installed. Neither was true. Its head unit is **DiLink 100**, a newer platform on Android 14 — the *DiLink 5.0 UI* shown on its screen is the interface version, not the head unit — and nothing in the `dilink5` build applies to it: every part of that build specific to DiLink 5 switches on only on a DiLink-5 head unit, so on an Atto 3 EVO it has been running exactly as the `dilink3` build would. The wrong-build warning couldn't fire there either, because it only looks for DiLink 5. **The right build for the Atto 3 EVO is `dilink3`**, and the app's own updater already picks it there, so the next in-app update moves a `dilink5` installation across by itself. To switch sooner, install the `dilink3` APK over the existing app with `adb install -r` — same app, same signature, so every trip, setting and authorisation is kept. The README, the how-to guide and the DiLink 5 guide now say so. None of this changes what the app can read on DiLink 100 today — speed, gear, power and trip distance, but not yet battery, range or odometer; that work is in progress.
+
+- **Tailscale: "Sign in with your phone" never showed a QR code** — the button spun for about twenty seconds and went back to how it started, on every car. The sign-in starts Tailscale's `up` command, and the app ships Tailscale as a single program that acts as the background service unless told to behave as the command-line tool. Every other Tailscale command the app runs says so; that one didn't, so the program ran as the service, which refuses `up`, and stopped at once, and no sign-in link — the thing the QR code shows — was ever created. The QR sign-in now works as described in 2.17.0. Signing in with an auth key was never affected, and a car already connected stays connected. And when a sign-in does fail, the reason now appears **right under the button you tapped** — before, it was shown only at the top of the Tailscale card, so a failed sign-in looked like nothing had happened. Reported on an Atto 3.
+
+- **Tailscale's own log grew without limit** — the background Tailscale service writes a log on the car, a few MB a day, and it was only emptied when that service restarted, which on a car that stays switched on can be weeks apart: one car had reached 35 MB. Above 4 MB the app now keeps the last 1 MB as `log.prev` and empties the log, checked each time it starts Tailscale. The service carries on writing without a restart, so the connection is never interrupted.
+
 ## [2.17.1] - 2026-Oct-04
 
 > **What's new in a nutshell**

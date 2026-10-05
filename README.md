@@ -33,8 +33,12 @@
 
 - A BYD vehicle with **DiLink 3.0** (BEV as well as PHEV are supported)
 - Android **10 or higher** on the DiLink head unit
-- **DiLink 5.0** (Sealion 7 and other newer BYDs, Android 11+) is supported via a separate build —
+- **DiLink 5.0** (e.g. Sealion 7, Android 11) is supported via a separate build —
   see [**Running on DiLink 5.0**](docs/DILINK5.md).
+- **DiLink 100** (Atto 3 EVO, Android 14) uses the regular **DiLink 3** build, not `dilink5` — its
+  screen says *DiLink 5.0 UI*, but that is the interface version; the head unit underneath is a
+  different platform. Speed, gear, power and trip distance work there; battery, range and odometer
+  can't be read yet.
 
 ### Installation
 
@@ -46,9 +50,10 @@
 
 No Electro setup, MQTT broker, or topic configuration is required for normal operation.
 
-> **On a DiLink 5.0 car?** Grab the `dilink5` APK from the same
+> **On a DiLink 5.0 car (e.g. Sealion 7)?** Grab the `dilink5` APK from the same
 > [**Releases**](https://github.com/angoikon/byd-trip-stats/releases) page — see
-> [**docs/DILINK5.md**](docs/DILINK5.md).
+> [**docs/DILINK5.md**](docs/DILINK5.md). **Atto 3 EVO owners:** use the `dilink3` APK instead,
+> even though your screen says *DiLink 5.0 UI* — your head unit is DiLink 100.
 
 ### Known Limitations
 

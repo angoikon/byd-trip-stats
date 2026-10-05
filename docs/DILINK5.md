@@ -1,6 +1,10 @@
 # Running BYD Trip Stats on DiLink 5.0 (e.g. Sealion 7)
 
-DiLink-5 head units (Sealion 7 and other newer BYDs, Android 11+) are supported by a separate
+> **Atto 3 EVO?** This guide isn't for you. Your screen says *DiLink 5.0 UI*, but that is the
+> interface version — the head unit is **DiLink 100**, a different platform, and it uses the regular
+> `dilink3` APK. Nothing in the `dilink5` build activates on it.
+
+DiLink-5 head units (e.g. Sealion 7, Android 11) are supported by a separate
 `dilink5` build flavor. The OEM `bydauto` SDK is BYD's proprietary binary, so it is **never
 committed, bundled, or extracted to disk by this app**: the repo ships only hand-written,
 signature-only stubs (for compilation), and at runtime the app resolves the real classes by

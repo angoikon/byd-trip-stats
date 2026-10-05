@@ -247,8 +247,10 @@ object CarCatalog {
 
     // BYD Atto 3 EVO — the 2026 model-year overhaul, and a different car under the skin from
     // the three FWD Atto 3 entries above: rear- or all-wheel drive, a 74.8 kWh pack (published
-    // usable; 76.0 kWh gross) and 220 kW DC charging. Ships with DiLink 100, so it needs the
-    // `dilink100` build. Two trims are offered — Design (RWD) and Excellence (AWD).
+    // usable; 76.0 kWh gross) and 220 kW DC charging. Ships with DiLink 100 (Android 14), which
+    // runs the `dilink3` build: its `ro.vehicle.type` is `DiLink100_5.0UI`, not `Di5*`, so none of
+    // the dilink5 code applies (there is no `dilink100` flavor). Two trims are offered — Design
+    // (RWD) and Excellence (AWD).
     //
     // Pack: the published 499.2 V nominal is exactly 156 × 3.2 V, and 156 × 0.48 kWh = 74.88 kWh,
     // so this is the same 156S blade pack as the Atto 3 Premium — the cell count is derived, not
@@ -923,8 +925,8 @@ object CarCatalog {
     /**
      * Cars grouped for display in selection screens.
      * Two top-level categories (BEV / PHEV), each with named model groups.
-     * Mostly DiLink 3 vehicles; the Sealion 7 (DiLink 5) and the Atto 3 EVO (DiLink 100) are supported by
-     * the `dilink5` flavor.
+     * Mostly DiLink 3 vehicles. The Sealion 7 (DiLink 5) needs the `dilink5` flavor; the Atto 3 EVO
+     * (DiLink 100) runs the `dilink3` one, since nothing in dilink5 activates off DiLink-5 hardware.
      */
     val groupedBev: LinkedHashMap<String, List<CarConfig>> = linkedMapOf(
         "BYD Seal" to listOf(BYD_SEAL_DYNAMIC_RWD, BYD_SEAL_PREMIUM_RWD, BYD_SEAL_EXCELLENCE),

@@ -8,7 +8,7 @@ A plain-language guide for using the app in its current **Phase 2** form, where 
 
 You need:
 
-1. **A BYD vehicle with DiLink 3.0** (tested on Seal; should work on Atto 3, Dolphin, Seal U), or **DiLink 5.0** (Sealion 7), which uses its own build
+1. **A BYD vehicle with DiLink 3.0** (tested on Seal; should work on Atto 3, Dolphin, Seal U), or **DiLink 5.0** (Sealion 7), which uses its own build. The **Atto 3 EVO** has a **DiLink 100** head unit — its screen says *DiLink 5.0 UI*, but that is the interface version — and it uses the regular DiLink 3 build; speed, gear, power and trip distance work there, battery, range and odometer not yet
 2. **BYD Trip Stats installed on the DiLink unit**
 
 You do **not** need Electro or an MQTT topic for normal operation.
@@ -17,7 +17,7 @@ You do **not** need Electro or an MQTT topic for normal operation.
 
 ## Installation
 
-1. Download the latest `.apk` from the [Releases page](https://github.com/angoikon/byd-trip-stats/releases) — on a DiLink 5 car, the `dilink5` one
+1. Download the latest `.apk` from the [Releases page](https://github.com/angoikon/byd-trip-stats/releases) — on a DiLink 5 car such as the Sealion 7, the `dilink5` one; on every other car, including the Atto 3 EVO, the `dilink3` one
 2. On the DiLink unit, enable installation from unknown sources when prompted
 3. Grant the requested permissions
 4. Open **BYD Trip Stats**

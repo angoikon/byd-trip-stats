@@ -63,6 +63,10 @@ object TailscaleManager {
     private const val SOCKET = "@tailscaled"
     private const val LOG = "$DIR/log"
 
+    /** Rotate the daemon's log above this much disk use, keeping its last [LOG_KEEP_KB] in `log.prev`. */
+    private const val LOG_MAX_KB = 4 * 1024
+    private const val LOG_KEEP_KB = 1024
+
     /** The vendored daemon, named as a library so Android extracts it executable. */
     private const val LIB_NAME = "libtailscale.so"
 
@@ -191,6 +195,7 @@ object TailscaleManager {
             return@withContext publish(Status(State.NEEDS_ADB))
         }
         diag(context, "start: binary=${source.absolutePath} (${source.length()} bytes)")
+        rotateLogIfLarge(context)
 
         val running = queryStatus(context)
         val replaced = installBinary(context, source)
@@ -212,10 +217,12 @@ object TailscaleManager {
 
         publish(Status(State.STARTING))
         // setsid so it outlives the shell that launched it — proven to survive the adb session.
+        // `>>`, appending: rotateLogIfLarge empties the log in place while the daemon runs, and an
+        // appending writer simply carries on at the new end.
         sh(
             context,
             "cd $DIR && HOME=$DIR SSL_CERT_DIR=$CA_CERT_DIRS setsid $BIN --tun=userspace-networking " +
-                "--statedir=$DIR --socket=$SOCKET > $LOG 2>&1 &",
+                "--statedir=$DIR --socket=$SOCKET >> $LOG 2>&1 &",
             timeoutMs = 10_000L,
         )
 
@@ -288,10 +295,15 @@ object TailscaleManager {
         if (started.state == State.RUNNING) return@withContext started
         if (started.authUrl != null) return@withContext publish(started)   // already pending
 
+        // TS_BE_CLI=1 like every other CLI call here: without it the combined binary starts as the
+        // daemon, rejects `up` as a non-flag argument and exits at once — so no sign-in URL was ever
+        // minted and the QR never appeared, on any car (2.17.0; reported on an Atto 3).
         sh(
             context,
-            "cd $DIR && HOME=$DIR setsid $BIN --socket=$SOCKET up " +
-                "--hostname=${hostname(context)} --accept-dns=false > $DIR/up.log 2>&1 &",
+            "cd $DIR && HOME=$DIR TS_BE_CLI=1 setsid $BIN --socket=$SOCKET up " +
+                // stdin from /dev/null too: `up` waits for the sign-in, and an inherited input is
+                // enough for a shell to wait on it instead of returning straight away.
+                "--hostname=${hostname(context)} --accept-dns=false > $DIR/up.log 2>&1 < /dev/null &",
             timeoutMs = 15_000L,
         )
 
@@ -551,6 +563,26 @@ object TailscaleManager {
             Log.w(TAG, "status parse failed: ${e.message}")
             null
         }
+    }
+
+    /**
+     * Keeps the daemon's own log from growing without end. It writes a few MB a day and used to be
+     * emptied only when the daemon restarted, which on a car that stays up can be weeks apart (35 MB
+     * on the dev car, 2026-10-05, in /data/local/tmp). Over [LOG_MAX_KB] the last [LOG_KEEP_KB] go to
+     * `log.prev` and the log is emptied in place, so the running daemon keeps writing to it.
+     *
+     * Measured by disk blocks (`du`), not length: a daemon started before this didn't open the log
+     * for appending, so after an in-place empty it writes on at its old offset — the file reads as
+     * long but holds only the new data, and a length check would rotate it again on every call.
+     */
+    private suspend fun rotateLogIfLarge(context: Context) {
+        sh(
+            context,
+            "f=$LOG; if [ -f \$f ] && [ \$(du -k \$f | cut -f1) -gt $LOG_MAX_KB ]; then " +
+                "tail -c ${LOG_KEEP_KB * 1024} \$f > \$f.prev && : > \$f && echo rotated; " +
+                "else echo kept; fi",
+            timeoutMs = 20_000L,
+        )
     }
 
     /**
