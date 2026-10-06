@@ -17,6 +17,7 @@ import com.byd.tripstats.data.local.entity.TAG_PALETTE_SIZE
 import com.byd.tripstats.data.model.VehicleTelemetry
 import com.byd.tripstats.data.notify.VehicleEvents
 import com.byd.tripstats.data.preferences.PreferencesManager
+import com.byd.tripstats.sdk.AaosPlatform
 import com.byd.tripstats.sdk.DiLink5Platform
 import com.byd.tripstats.sdk.isPlausibleTotalDischargeKwh
 import com.byd.tripstats.util.DiagLog
@@ -131,6 +132,23 @@ internal fun decideCarOffStop(
  * A car that is [charging] is parked, not queueing — holding it kept a trip open through a 35-min
  * DC charge (2026-10-03), so a charge hands the stop to the car-off timeout like any other.
  */
+/**
+ * Distance covered, from speed samples: (timestamp ms, speed km/h), in time order. The trapezoid
+ * between neighbouring samples, skipping any pair further apart than [maxGapMs] (the app wasn't
+ * recording) and any implausible speed. The stored-point counterpart of the speed integration the
+ * live path accumulates in TripRepository.tripBestDistanceKm.
+ */
+internal fun integrateSpeedKm(samples: List<Pair<Long, Double>>, maxGapMs: Long = 60_000L): Double {
+    var km = 0.0
+    samples.zipWithNext { (t0, v0), (t1, v1) ->
+        val dtMs = t1 - t0
+        if (dtMs <= 0L || dtMs > maxGapMs) return@zipWithNext
+        if (!v0.isFinite() || !v1.isFinite() || v0 !in 0.0..250.0 || v1 !in 0.0..250.0) return@zipWithNext
+        km += (v0 + v1) / 2.0 * dtMs / 3_600_000.0
+    }
+    return km
+}
+
 internal fun di5StandstillCountsAsCarOn(
     isDiLink5: Boolean,
     movedInThisProcess: Boolean,
@@ -1367,6 +1385,25 @@ class TripRepository private constructor(context: Context) {
         tripBestDistanceKm = validPoint?.odometer?.let {
             (it - activeTrip.startOdometer).coerceAtLeast(0.0)
         } ?: 0.0
+        // DiLink 100 (Android Automotive) gives the app no odometer at all, so the seed above finds
+        // nothing there, and a trip resumed after the switch-off kill started its distance again at
+        // 0 — a 71-minute drive was recorded as 0 km (Atto 3 EVO, 2026-10-06). Its distance is the
+        // speed integral the live path keeps only in memory, so rebuild that from the stored points.
+        // Only on Android Automotive head units, and only for a trip with no odometer reading
+        // anywhere: every DiLink-3/5 trip — and a DiLink 100 one once it has an odometer — keeps the
+        // seed above exactly as before.
+        if (AaosPlatform.isCarPropertyCapable(appContext) &&  // first: false at once on DiLink 3/5
+            validPoint == null &&
+            activeTrip.startOdometer <= 0.0 &&
+            dataPoints.none { it.odometer > 0.0 }
+        ) {
+            tripBestDistanceKm = integrateSpeedKm(dataPoints.map { it.timestamp to it.speed })
+            DiagLog.event(
+                appContext, TAG,
+                "trip recover id=${activeTrip.id} no odometer — distance rebuilt from speed: " +
+                    "${"%.1f".format(java.util.Locale.US, tripBestDistanceKm)} km",
+            )
+        }
         tripBestTotalDischarge = dataPoints
             .mapNotNull { it.totalDischarge.takeIf { v -> v > activeTrip.startTotalDischarge } }
             .maxOrNull()

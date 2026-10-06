@@ -5549,9 +5549,9 @@ class BydVehicleDataSource(context: Context) {
             }
             if (chargeState == AaosPlatform.CHARGE_STATE_CHARGING) {
                 lastAaosChargingElapsedMs = now
-                // The standard unit is milliwatts. Anything that doesn't come out as a plausible
-                // charge in kW is left to the pack-power fallback rather than guessed at.
-                // TODO(dilink100): unit unconfirmed on the car — see MD/DILINK100_FOLLOWUPS.md.
+                // Milliwatts, the standard unit — confirmed on the Atto 3 EVO: 5 700 001 during a
+                // 5.7 kW AC charge. Anything that doesn't come out as a plausible charge in kW is
+                // left to the pack-power fallback rather than guessed at.
                 val kw = chargeRateMilliwatts?.div(1_000_000.0)?.takeIf { it.isFinite() && it in 0.1..400.0 }
                 if (kw != null) updateDirectChargingPower(kw)
                 changed = true
