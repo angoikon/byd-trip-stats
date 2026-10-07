@@ -19,6 +19,7 @@ import com.byd.tripstats.data.local.entity.TripDataPointEntity
 import com.byd.tripstats.data.local.entity.TripEntity
 import com.byd.tripstats.data.local.entity.TripStatsEntity
 import com.byd.tripstats.data.local.entity.TripTagCrossRef
+import com.byd.tripstats.data.local.entity.combinedEfficiency
 import com.byd.tripstats.data.model.BatteryVoltageHistoryPoint
 import com.byd.tripstats.data.model.VehicleTelemetry
 import com.byd.tripstats.data.preferences.PreferencesManager
@@ -411,8 +412,11 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     // ── Efficiency charts ─────────────────────────────────────────────────────
 
-    /** One entry per time bucket that has at least one completed trip with ≥ 0.5 km. */
-    data class DailyEfficiency(val dateLabel: String, val avgKwhPer100km: Double)
+    /**
+     * One entry per time bucket that has at least one completed trip with ≥ 0.5 km.
+     * [avgKwhPer100km] is those trips' energy over their distance, [distanceKm] that distance.
+     */
+    data class DailyEfficiency(val dateLabel: String, val avgKwhPer100km: Double, val distanceKm: Double)
 
     /**
      * Builds a list of [DailyEfficiency] for [bucketCount] daily buckets ending today,
@@ -450,14 +454,16 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 bucketStart + 86_400_000L - 1L
             }
             val label = formatter.format(java.util.Date(bucketStart))
-            val efficiencies = filter {
+            val bucketTrips = filter {
                 it.startTime in bucketStart..bucketEnd &&
-                it.efficiency != null &&
-                (it.distance ?: 0.0) >= 0.5
-            }.mapNotNull { it.efficiency }
-                .filter { it in MIN_VALID_CONSUMPTION_KWH_PER_100KM..MAX_VALID_CONSUMPTION_KWH_PER_100KM }
-            if (efficiencies.isEmpty()) null
-            else DailyEfficiency(label, efficiencies.average())
+                (it.distance ?: 0.0) >= 0.5 &&
+                it.efficiency?.let { e ->
+                    e in MIN_VALID_CONSUMPTION_KWH_PER_100KM..MAX_VALID_CONSUMPTION_KWH_PER_100KM
+                } == true
+            }
+            bucketTrips.combinedEfficiency()?.let {
+                DailyEfficiency(label, it, bucketTrips.sumOf { t -> t.distance ?: 0.0 })
+            }
         }
     }
 
@@ -3060,10 +3066,10 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     val month = cal.get(Calendar.MONTH) + 1  // 1-based
                     seasonForMonth(month, hemisphere) == season
                 }
-                if (seasonTrips.isEmpty()) return@mapNotNull null
+                val avgConsumption = seasonTrips.combinedEfficiency() ?: return@mapNotNull null
                 SeasonStats(
                     season         = season,
-                    avgConsumption = seasonTrips.mapNotNull { it.efficiency }.average(),
+                    avgConsumption = avgConsumption,
                     avgTempC       = seasonTrips.map { it.avgBatteryTemp }.average(),
                     tripCount      = seasonTrips.size,
                     totalDistanceKm = seasonTrips.sumOf { it.distance ?: 0.0 },
@@ -3179,12 +3185,11 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             val tripsByTag = refs.groupBy { it.tagId }
             tags.map { tag ->
                 val tagTrips = tripsByTag[tag.id].orEmpty().mapNotNull { completedById[it.tripId] }
-                val effs = tagTrips.mapNotNull { it.efficiency }
                 TagStat(
                     tag             = tag,
                     tripCount       = tagTrips.size,
                     totalDistanceKm = tagTrips.sumOf { it.distance ?: 0.0 },
-                    avgConsumption  = if (effs.isNotEmpty()) effs.average() else 0.0,
+                    avgConsumption  = tagTrips.combinedEfficiency() ?: 0.0,
                     totalKwh        = tagTrips.sumOf { it.energyConsumed ?: 0.0 }
                 )
             }.sortedWith(compareByDescending<TagStat> { it.tripCount }.thenBy { it.tag.name.lowercase() })

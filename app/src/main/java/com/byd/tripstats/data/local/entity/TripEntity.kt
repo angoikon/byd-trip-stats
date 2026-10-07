@@ -87,6 +87,19 @@ data class TripEntity(
         }
 }
 
+/**
+ * Consumption across several trips in kWh/100 km: their total energy over their total distance,
+ * the way the car works out its own average. A plain mean of [TripEntity.efficiency] lets a 2 km
+ * hop with a cold cabin weigh as much as a 200 km drive. Counts the trips that have a figure; null
+ * when none does.
+ */
+fun List<TripEntity>.combinedEfficiency(): Double? {
+    val counted = filter { it.efficiency != null && (it.distance ?: 0.0) > 0.0 }
+    val distanceKm = counted.sumOf { it.distance ?: 0.0 }
+    if (distanceKm <= 0.0) return null
+    return counted.sumOf { it.energyConsumed ?: 0.0 } / distanceKm * 100.0
+}
+
 @Entity(tableName = "trip_data_points")
 data class TripDataPointEntity(
     @PrimaryKey(autoGenerate = true)

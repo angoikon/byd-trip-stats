@@ -26,6 +26,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.byd.tripstats.data.local.entity.combinedEfficiency
 import com.byd.tripstats.data.preferences.UnitSystem
 import com.byd.tripstats.data.preferences.consumptionUnit
 import com.byd.tripstats.data.preferences.convertDistance
@@ -50,13 +51,11 @@ fun TripGoalsScreen(
     val allTrips       by viewModel.allTrips.collectAsState()
     val unitSystem     by viewModel.unitSystem.collectAsState()
 
-    // Recent efficiency: average of last 5 completed trips with distance ≥ 1 km
+    // Recent efficiency: the last 5 completed trips with distance ≥ 1 km, energy over distance
     val recentAvgConsumption = remember(allTrips) {
         allTrips.filter { !it.isActive && (it.distance ?: 0.0) >= 1.0 && it.efficiency != null }
             .takeLast(5)
-            .mapNotNull { it.efficiency }
-            .takeIf { it.isNotEmpty() }
-            ?.average()
+            .combinedEfficiency()
     }
 
     var showGoalDialog by remember { mutableStateOf(false) }

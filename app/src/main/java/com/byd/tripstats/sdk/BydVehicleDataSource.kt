@@ -203,6 +203,47 @@ internal fun di5ChargingPowerKw(powerKw: Double?, gunState: Int?): Double? {
     return powerKw.takeIf { it > 0.1 && it <= DI5_CHARGING_POWER_MAX_KW }
 }
 
+/** How long a measured DiLink-5 power reading (HV volts × amps) keeps the power value its own. */
+internal const val DI5_MEASURED_POWER_FRESH_MS = 5_000L
+
+/** Below this speed the DiLink-5 car counts as stopped for [di5DerivedPowerKw] — the 2 km/h its client polls by. */
+internal const val DI5_DERIVED_POWER_MIN_SPEED_KMH = 2.0
+
+/**
+ * What the DiLink-5 power estimated from the battery's usable kWh may write to the power value, or
+ * null to leave the value alone.
+ *
+ * The estimate (−Δ usable kWh / Δt, smoothed) stands in for the measured volts × amps, and a poor
+ * one at a standstill: each usable-kWh step averages the power since the step before — the drive
+ * leading up to a red light — and each 30 s re-read with no step only takes 30 % off it. Together they
+ * held the power tile at 11–18 kW at traffic lights on a Sealion 7 (2026-10), and on a car whose kWh
+ * counter can't be read, trip energy is integrated from that held value. So: a measured reading in
+ * the last [DI5_MEASURED_POWER_FRESH_MS] owns the value; stopped, it is 0 — nothing is driving the
+ * wheels; moving, it is the estimate when that is positive.
+ */
+internal fun di5DerivedPowerKw(estimateKw: Double, speedKmh: Double, msSinceMeasuredPower: Long): Double? = when {
+    msSinceMeasuredPower < DI5_MEASURED_POWER_FRESH_MS -> null
+    speedKmh < DI5_DERIVED_POWER_MIN_SPEED_KMH -> 0.0
+    estimateKw.isFinite() && estimateKw > 0.0 -> estimateKw
+    else -> null
+}
+
+/** Motor rpm the speed-stall diagnostic takes for driving: about 5 km/h on a BYD single-speed drive (~80 rpm per km/h). */
+internal const val SPEED_STALL_MIN_MOTOR_RPM = 400
+
+/**
+ * Whether the drivetrain says the car is driving, for the "🐌 speed=0 while moving" diagnostic —
+ * which is there to catch a speed reading stuck at 0 mid-drive, not to report a stop.
+ *
+ * It used to take any motor rpm above 0, or D/R, for driving. A Sealion 7's rear motor reads 1 rpm
+ * at rest and a car waiting at a red light is in D, so the line was written every 30 s at every
+ * stop: 1,504 lines, 9 % of a ten-day DiLink-5 log (2026-10). A motor at [SPEED_STALL_MIN_MOTOR_RPM]
+ * or more, or 2 kW or more either way, is driving; below that, a 0 is a stop or a creep in a queue.
+ */
+internal fun speedStallLooksMoving(frontRpm: Int?, rearRpm: Int?, powerKw: Int?): Boolean =
+    maxOf(frontRpm ?: 0, rearRpm ?: 0) >= SPEED_STALL_MIN_MOTOR_RPM ||
+        (powerKw != null && kotlin.math.abs(powerKw) >= 2)
+
 private enum class InstrumentTyrePressureEncoding {
     CENTI_BAR,
     DECI_PSI,
@@ -4080,15 +4121,13 @@ class BydVehicleDataSource(context: Context) {
                 }
             }
             // ── Speed-stall diagnostics ──────────────────────────────────────────
-            // Fires when the committed speed is ~0 but other (listener-backed) signals
-            // say the car is moving — i.e. the "speed stuck at 0 after resume" bug.
+            // Fires when the committed speed is ~0 but the drivetrain says the car is driving
+            // (speedStallLooksMoving) — i.e. the "speed stuck at 0 after resume" bug.
             // Captures the RAW getter result so we can distinguish a stale-0 getter from
             // a null/failed getter, and whether GPS could have bridged it.
             run {
                 val s = _vehicleSnapshot.value
-                val looksMoving = s.gear in setOf("D", "R") ||
-                    (s.engineSpeedFront ?: 0) > 0 || (s.engineSpeedRear ?: 0) > 0 ||
-                    (s.enginePower?.let { kotlin.math.abs(it) >= 2 } == true)
+                val looksMoving = speedStallLooksMoving(s.engineSpeedFront, s.engineSpeedRear, s.enginePower)
                 if (s.directSpeedKmh < 0.1 && looksMoving) {
                     // lastSpeedEventElapsedMs is written ONLY inside the speed-event handler, so a 0
                     // here means the callback has never arrived in this process — not that it arrived

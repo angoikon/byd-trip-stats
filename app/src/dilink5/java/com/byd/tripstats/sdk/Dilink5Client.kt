@@ -95,6 +95,11 @@ class Dilink5Client {
     private var lastUsableKwh: Double = Double.NaN
     private var lastUsableAtMs: Long = 0L
     private var emaPowerKw: Double = Double.NaN
+    // The measured V·I power owns the power value while fresh; the usable-kWh estimate only stands
+    // in without it, and never at a standstill (di5DerivedPowerKw).
+    @Volatile private var lastMeasuredPowerMs = 0L
+    // True while the power value is the estimate, so a stop clears it on the next tick.
+    @Volatile private var derivedPowerShown = false
 
     fun start(ctx: Context, ds: BydVehicleDataSource) {
         if (running) return
@@ -261,6 +266,11 @@ class Dilink5Client {
         if (spd != null) {
             ds.applyDaemonTelemetry(speedKmh = spd, gear = null, powerKw = null, rearRpm = null)
         }
+        // A stop clears the usable-kWh estimate from the power value now, not at the next usable-kWh
+        // reading, which can be 30 s away.
+        if (derivedPowerShown && ds.vehicleSnapshot.value.directSpeedKmh < DI5_DERIVED_POWER_MIN_SPEED_KMH) {
+            pushDerivedPower(ds)
+        }
         // Charge power with the gun state that decides whether it counts: on this platform power
         // alone can't tell a charge (it reads 359.4 with no gun in) — see di5ChargingPowerKw. The
         // charging listener pushes power too and is judged against the gun state read here.
@@ -346,7 +356,8 @@ class Dilink5Client {
         reflGetString(otaDev, "getTBoxSerialNumber")?.let { ds.applyDilink5TboxSerial(it) }
     }
 
-    // Derived driving power: -Δ(usable kWh)/Δt, EMA-smoothed; pushed only while discharging.
+    // Derived driving power: -Δ(usable kWh)/Δt, EMA-smoothed; written only where di5DerivedPowerKw
+    // allows it (no fresh V·I reading, and moving).
     private fun onUsable(usableKwh: Double, ds: BydVehicleDataSource) {
         ds.applyDilink5Telemetry(usableKwh = usableKwh)
         val now = SystemClock.elapsedRealtime()
@@ -356,11 +367,21 @@ class Dilink5Client {
                 val inst = -(usableKwh - lastUsableKwh) / dtH   // discharge => positive
                 if (kotlin.math.abs(inst) <= 400.0) {
                     emaPowerKw = if (emaPowerKw.isNaN()) inst else 0.3 * inst + 0.7 * emaPowerKw
-                    if (emaPowerKw > 0.0) ds.applyDaemonTelemetry(speedKmh = null, gear = null, powerKw = emaPowerKw)
+                    pushDerivedPower(ds)
                 }
                 lastUsableKwh = usableKwh; lastUsableAtMs = now
             }
         } else { lastUsableKwh = usableKwh; lastUsableAtMs = now }
+    }
+
+    private fun pushDerivedPower(ds: BydVehicleDataSource) {
+        val kw = di5DerivedPowerKw(
+            estimateKw = emaPowerKw,
+            speedKmh = ds.vehicleSnapshot.value.directSpeedKmh,
+            msSinceMeasuredPower = SystemClock.elapsedRealtime() - lastMeasuredPowerMs,
+        ) ?: return
+        ds.applyDaemonTelemetry(speedKmh = null, gear = null, powerKw = kw)
+        derivedPowerShown = kw != 0.0
     }
 
     // Typed tyre listener for per-wheel temperature (event-only). Registered reflectively so the
@@ -686,7 +707,11 @@ class Dilink5Client {
         val v = lastHvVolt; val i = lastHvCurrent ?: return
         if (v <= 0) return
         val kw = v * i / 1000.0
-        if (kotlin.math.abs(kw) <= 500.0) ds.applyDaemonTelemetry(speedKmh = null, gear = null, powerKw = kw)
+        if (kotlin.math.abs(kw) <= 500.0) {
+            ds.applyDaemonTelemetry(speedKmh = null, gear = null, powerKw = kw)
+            lastMeasuredPowerMs = SystemClock.elapsedRealtime()
+            derivedPowerShown = false
+        }
     }
 
     private fun bind(ctx: Context, className: String): Any? = try {

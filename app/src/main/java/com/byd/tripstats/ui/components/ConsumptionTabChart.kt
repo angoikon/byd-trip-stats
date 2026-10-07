@@ -37,6 +37,13 @@ import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 
 private const val METRIC_TO_IMPERIAL_EFFICIENCY = 1.0 / 0.621371
 
+/** The period's consumption: each bucket weighted by its distance, i.e. total energy over total distance. */
+private fun List<DashboardViewModel.DailyEfficiency>.periodKwhPer100km(): Double? {
+    val distanceKm = sumOf { it.distanceKm }
+    if (distanceKm <= 0.0) return null
+    return sumOf { it.avgKwhPer100km * it.distanceKm } / distanceKm
+}
+
 // ── Thumbnail ─────────────────────────────────────────────────────────────────
 
 /**
@@ -127,9 +134,7 @@ fun ConsumptionChartExpanded(
         ConsumptionTab.MONTH -> monthlyData
         ConsumptionTab.YEAR  -> yearlyData
     }
-    val selectedDurationAverage = activeData.map { it.avgKwhPer100km * efficiencyFactor }
-        .takeIf { it.isNotEmpty() }
-        ?.average()
+    val selectedDurationAverage = activeData.periodKwhPer100km()?.times(efficiencyFactor)
     val labelEvery = when (selectedTab) {
         ConsumptionTab.WEEK  -> 1
         ConsumptionTab.MONTH -> 5
@@ -327,7 +332,8 @@ private fun ConsumptionCanvas(
 
         val factor = if (useImperial) METRIC_TO_IMPERIAL_EFFICIENCY else 1.0
         val values = data.map { it.avgKwhPer100km * factor }
-        val durationAverage = values.average()
+        // Same figure as the legend above the chart.
+        val durationAverage = data.periodKwhPer100km()?.times(factor) ?: values.average()
         val refConverted = referenceConsumptionKwhPer100km?.times(factor)
         val allVals = if (refConverted != null) {
             values + listOf(refConverted, durationAverage)
