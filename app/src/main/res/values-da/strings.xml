@@ -578,6 +578,8 @@
     <string name="tailscale_disconnect">Afbryd fra Tailscale</string>
     <string name="tailscale_disconnect_confirm_title">Afbryd forbindelsen til Tailscale?</string>
     <string name="tailscale_disconnect_confirm_body">Bilen logger ud af dit tailnet, og Tailscale stopper, så web companion og ADB ikke længere kan nås uden for dit Wi-Fi. For at oprette forbindelse igen skal du logge ind igen.</string>
+    <string name="tailscale_name_label">Navn på dit tailnet</string>
+    <string name="tailscale_name_hint">Det navn, bilen logger ind med. Et navn, du giver den i Tailscale-konsollen, har forrang.</string>
     <string name="tailscale_how_to">Sådan konfigurerer du det</string>
     <string name="tailscale_step_1">1. Opret en gratis konto på tailscale.com, hvis du ikke har en.</string>
     <string name="tailscale_step_2">2. I administrationskonsollen skal du åbne Settings → Keys og trykke på Generate auth key. Lad Ephemeral være SLÅET FRA — en flygtig nøgle får bilen til at forsvinde fra dit netværk, hver gang den går i dvale, og dens adresse ville ændre sig hver gang.</string>

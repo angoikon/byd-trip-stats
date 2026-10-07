@@ -146,6 +146,23 @@ object TailscaleManager {
     }
 
     /**
+     * Saves the name the car reports to Tailscale, and applies it straight away when connected
+     * (`tailscale set --hostname`). Tailscale names a machine after this when it signs in — an auth
+     * key's own name never names the machine, which is why a fresh sign-in kept appearing as the
+     * model's name (2026-10-07). Once a machine has been renamed in the admin console, Tailscale
+     * keeps that name and ignores this one; the app then shows the console's name.
+     */
+    suspend fun applyHostname(context: Context, name: String): Status = withContext(Dispatchers.IO) {
+        saveHostname(context, name)
+        val host = hostname(context)
+        diag(context, "hostname: '$host'")
+        if (_status.value.state == State.RUNNING) {
+            sh(context, "TS_BE_CLI=1 $BIN --socket=$SOCKET set --hostname=$host 2>&1", timeoutMs = 20_000L)
+        }
+        refresh(context)
+    }
+
+    /**
      * Tailscale hostnames become DNS labels, so anything but letters, digits and hyphens would be
      * rewritten by the control plane into something the user doesn't recognise.
      */

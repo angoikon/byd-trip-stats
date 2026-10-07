@@ -578,6 +578,8 @@
     <string name="tailscale_disconnect">Desconectar do Tailscale</string>
     <string name="tailscale_disconnect_confirm_title">Desconectar do Tailscale?</string>
     <string name="tailscale_disconnect_confirm_body">O carro sai da sua tailnet e o Tailscale para, então o web companion e o ADB não poderão mais ser acessados fora do seu Wi-Fi. Para conectar de novo, você precisará entrar novamente.</string>
+    <string name="tailscale_name_label">Nome na sua tailnet</string>
+    <string name="tailscale_name_hint">O nome com que o carro entra. Um nome que você der a ele no console do Tailscale tem prioridade.</string>
     <string name="tailscale_how_to">Como configurar isto</string>
     <string name="tailscale_step_1">1. Crie uma conta gratuita em tailscale.com, se você não tiver uma.</string>
     <string name="tailscale_step_2">2. No console de administração, abra Settings → Keys e toque em Generate auth key. Deixe Ephemeral DESATIVADO — uma chave efêmera faz o carro desaparecer da sua rede sempre que ele hiberna, e o endereço mudaria a cada vez.</string>

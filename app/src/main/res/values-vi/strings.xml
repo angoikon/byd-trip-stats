@@ -575,6 +575,8 @@
     <string name="tailscale_disconnect">Ngắt kết nối khỏi Tailscale</string>
     <string name="tailscale_disconnect_confirm_title">Ngắt kết nối khỏi Tailscale?</string>
     <string name="tailscale_disconnect_confirm_body">Xe sẽ đăng xuất khỏi tailnet của bạn và Tailscale dừng lại, nên không thể truy cập web companion và ADB từ bên ngoài Wi-Fi của bạn nữa. Để kết nối lại, bạn sẽ phải đăng nhập lại.</string>
+    <string name="tailscale_name_label">Tên trên tailnet của bạn</string>
+    <string name="tailscale_name_hint">Tên mà xe dùng khi đăng nhập. Tên bạn đặt trong bảng điều khiển Tailscale sẽ được ưu tiên.</string>
     <string name="tailscale_how_to">Cách thiết lập</string>
     <string name="tailscale_step_1">1. Tạo tài khoản miễn phí tại tailscale.com, nếu bạn chưa có.</string>
     <string name="tailscale_step_2">2. Trong bảng điều khiển quản trị, mở Settings → Keys và chạm Generate auth key. Để Ephemeral TẮT — khóa tạm thời khiến xe biến mất khỏi mạng mỗi khi ngủ, và địa chỉ của nó sẽ thay đổi mỗi lần.</string>

@@ -531,6 +531,8 @@
     <string name="tailscale_disconnect">Tailscale 연결 끊기</string>
     <string name="tailscale_disconnect_confirm_title">Tailscale 연결을 해제할까요?</string>
     <string name="tailscale_disconnect_confirm_body">차량이 tailnet에서 로그아웃되고 Tailscale이 중지되어, Wi-Fi 밖에서는 web companion과 ADB에 더 이상 접속할 수 없습니다. 다시 연결하려면 다시 로그인해야 합니다.</string>
+    <string name="tailscale_name_label">tailnet에서의 이름</string>
+    <string name="tailscale_name_hint">차량이 로그인할 때 사용하는 이름입니다. Tailscale 콘솔에서 지정한 이름이 우선합니다.</string>
     <string name="tailscale_how_to">설정 방법</string>
     <string name="tailscale_step_1">1. 계정이 없으면 tailscale.com에서 무료 계정을 만드세요.</string>
     <string name="tailscale_step_2">2. 관리 콘솔에서 Settings → Keys를 열고 Generate auth key를 탭하세요. Ephemeral은 꺼 두세요 — 임시 키는 차량이 잠들 때마다 네트워크에서 사라지게 하고, 주소도 매번 바뀝니다.</string>

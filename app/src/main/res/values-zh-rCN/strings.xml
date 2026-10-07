@@ -578,6 +578,8 @@
     <string name="tailscale_disconnect">从 Tailscale 断开</string>
     <string name="tailscale_disconnect_confirm_title">断开 Tailscale 连接？</string>
     <string name="tailscale_disconnect_confirm_body">车辆将退出你的 tailnet，Tailscale 也会停止，因此在你的 Wi-Fi 之外将无法再访问 web companion 和 ADB。要重新连接，需要再次登录。</string>
+    <string name="tailscale_name_label">在 tailnet 中的名称</string>
+    <string name="tailscale_name_hint">车辆登录时使用的名称。你在 Tailscale 控制台中设置的名称优先。</string>
     <string name="tailscale_how_to">如何设置</string>
     <string name="tailscale_step_1">1. 如果还没有账号，请在 tailscale.com 上创建一个免费账号。</string>
     <string name="tailscale_step_2">2. 在管理控制台中打开 Settings → Keys 并点按 Generate auth key。让 Ephemeral 保持关闭——临时密钥会让车辆每次休眠时从你的网络中消失，而且地址每次都会变。</string>

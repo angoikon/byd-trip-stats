@@ -575,6 +575,8 @@
     <string name="tailscale_disconnect">Отключить от Tailscale</string>
     <string name="tailscale_disconnect_confirm_title">Отключиться от Tailscale?</string>
     <string name="tailscale_disconnect_confirm_body">Автомобиль выйдет из вашей сети tailnet, а Tailscale остановится, поэтому web companion и ADB станут недоступны за пределами вашей сети Wi-Fi. Чтобы подключиться снова, нужно будет заново войти.</string>
+    <string name="tailscale_name_label">Имя в вашей сети tailnet</string>
+    <string name="tailscale_name_hint">Имя, под которым автомобиль входит в сеть. Имя, заданное в консоли Tailscale, имеет приоритет.</string>
     <string name="tailscale_how_to">Как это настроить</string>
     <string name="tailscale_step_1">1. Создайте бесплатный аккаунт на tailscale.com, если у вас его нет.</string>
     <string name="tailscale_step_2">2. В консоли администратора откройте Settings → Keys и нажмите Generate auth key. Оставьте Ephemeral ВЫКЛЮЧЕННЫМ — временный ключ заставляет автомобиль исчезать из сети всякий раз, когда он засыпает, и его адрес менялся бы каждый раз.</string>

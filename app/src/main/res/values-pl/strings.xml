@@ -575,6 +575,8 @@
     <string name="tailscale_disconnect">Rozłącz z Tailscale</string>
     <string name="tailscale_disconnect_confirm_title">Rozłączyć z Tailscale?</string>
     <string name="tailscale_disconnect_confirm_body">Samochód wyloguje się z twojego tailnetu, a Tailscale zostanie zatrzymany, więc web companion i ADB nie będą już dostępne spoza twojej sieci Wi-Fi. Aby połączyć się ponownie, trzeba będzie zalogować się od nowa.</string>
+    <string name="tailscale_name_label">Nazwa w twoim tailnecie</string>
+    <string name="tailscale_name_hint">Nazwa, pod którą samochód się loguje. Nazwa nadana w konsoli Tailscale ma pierwszeństwo.</string>
     <string name="tailscale_how_to">Jak to skonfigurować</string>
     <string name="tailscale_step_1">1. Załóż darmowe konto na tailscale.com, jeśli go nie masz.</string>
     <string name="tailscale_step_2">2. W konsoli administracyjnej otwórz Settings → Keys i dotknij Generate auth key. Pozostaw Ephemeral WYŁĄCZONE — klucz efemeryczny sprawia, że samochód znika z sieci za każdym razem, gdy zasypia, a jego adres zmieniałby się za każdym razem.</string>

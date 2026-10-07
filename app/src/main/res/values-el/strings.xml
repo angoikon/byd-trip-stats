@@ -531,6 +531,8 @@
     <string name="tailscale_disconnect">Αποσύνδεση από το Tailscale</string>
     <string name="tailscale_disconnect_confirm_title">Αποσύνδεση από το Tailscale;</string>
     <string name="tailscale_disconnect_confirm_body">Το αυτοκίνητο αποσυνδέεται από το tailnet σας και το Tailscale σταματά, οπότε ο web companion και το ADB δεν θα είναι πλέον προσβάσιμα εκτός του Wi-Fi σας. Για επανασύνδεση θα χρειαστεί να συνδεθείτε ξανά.</string>
+    <string name="tailscale_name_label">Όνομα στο tailnet σας</string>
+    <string name="tailscale_name_hint">Το όνομα με το οποίο συνδέεται το αυτοκίνητο. Ένα όνομα που του δίνετε στην κονσόλα του Tailscale έχει προτεραιότητα.</string>
     <string name="tailscale_how_to">Πώς να το ρυθμίσετε</string>
     <string name="tailscale_step_1">1. Δημιουργήστε δωρεάν λογαριασμό στο tailscale.com, αν δεν έχετε.</string>
     <string name="tailscale_step_2">2. Στην κονσόλα διαχείρισης, ανοίξτε Settings → Keys και πατήστε Generate auth key. Αφήστε το Ephemeral ΑΠΕΝΕΡΓΟΠΟΙΗΜΕΝΟ — ένα εφήμερο κλειδί κάνει το αυτοκίνητο να εξαφανίζεται από το δίκτυό σας κάθε φορά που κοιμάται, και η διεύθυνσή του θα άλλαζε κάθε φορά.</string>

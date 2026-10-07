@@ -578,6 +578,8 @@
     <string name="tailscale_disconnect">Katkaise Tailscale-yhteys</string>
     <string name="tailscale_disconnect_confirm_title">Katkaistaanko yhteys Tailscaleen?</string>
     <string name="tailscale_disconnect_confirm_body">Auto kirjautuu ulos tailnetistäsi ja Tailscale pysähtyy, joten web companion ja ADB eivät ole enää tavoitettavissa Wi-Fi-verkkosi ulkopuolelta. Yhdistääksesi uudelleen sinun on kirjauduttava sisään uudelleen.</string>
+    <string name="tailscale_name_label">Nimi tailnetissäsi</string>
+    <string name="tailscale_name_hint">Nimi, jolla auto kirjautuu. Tailscale-konsolissa antamasi nimi on etusijalla.</string>
     <string name="tailscale_how_to">Näin määrität tämän</string>
     <string name="tailscale_step_1">1. Luo ilmainen tili osoitteessa tailscale.com, jos sinulla ei ole sellaista.</string>
     <string name="tailscale_step_2">2. Avaa hallintakonsolissa Settings → Keys ja napauta Generate auth key. Jätä Ephemeral POIS PÄÄLTÄ — tilapäinen avain saa auton katoamaan verkostasi aina, kun se menee lepotilaan, ja sen osoite muuttuisi joka kerta.</string>

@@ -575,6 +575,8 @@
     <string name="tailscale_disconnect">Deconectează de la Tailscale</string>
     <string name="tailscale_disconnect_confirm_title">Te deconectezi de la Tailscale?</string>
     <string name="tailscale_disconnect_confirm_body">Mașina iese din tailnet-ul tău și Tailscale se oprește, așa că web companion și ADB nu vor mai fi accesibile din afara rețelei tale Wi-Fi. Ca să te reconectezi, va trebui să te autentifici din nou.</string>
+    <string name="tailscale_name_label">Nume în tailnet-ul tău</string>
+    <string name="tailscale_name_hint">Numele cu care se autentifică mașina. Un nume pe care i-l dai în consola Tailscale are prioritate.</string>
     <string name="tailscale_how_to">Cum să configurezi asta</string>
     <string name="tailscale_step_1">1. Creează un cont gratuit pe tailscale.com, dacă nu ai unul.</string>
     <string name="tailscale_step_2">2. În consola de administrare, deschide Settings → Keys și atinge Generate auth key. Lasă Ephemeral DEZACTIVAT — o cheie efemeră face ca mașina să dispară din rețea de fiecare dată când intră în repaus, iar adresa ei s-ar schimba de fiecare dată.</string>

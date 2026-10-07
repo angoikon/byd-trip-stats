@@ -531,6 +531,8 @@
     <string name="tailscale_disconnect">ตัดการเชื่อมต่อจาก Tailscale</string>
     <string name="tailscale_disconnect_confirm_title">ยกเลิกการเชื่อมต่อ Tailscale ไหม?</string>
     <string name="tailscale_disconnect_confirm_body">รถจะออกจากระบบ tailnet ของคุณและ Tailscale จะหยุดทำงาน จึงไม่สามารถเข้าถึง web companion และ ADB จากนอก Wi-Fi ของคุณได้อีก หากต้องการเชื่อมต่ออีกครั้ง คุณต้องลงชื่อเข้าใช้ใหม่</string>
+    <string name="tailscale_name_label">ชื่อใน tailnet ของคุณ</string>
+    <string name="tailscale_name_hint">ชื่อที่รถใช้ลงชื่อเข้าใช้ ชื่อที่คุณตั้งในคอนโซล Tailscale จะมีความสำคัญกว่า</string>
     <string name="tailscale_how_to">วิธีตั้งค่า</string>
     <string name="tailscale_step_1">1. สร้างบัญชีฟรีที่ tailscale.com หากยังไม่มี</string>
     <string name="tailscale_step_2">2. ในคอนโซลผู้ดูแล เปิด Settings → Keys แล้วแตะ Generate auth key ปล่อย Ephemeral ไว้เป็นปิด — คีย์ชั่วคราวจะทำให้รถหายไปจากเครือข่ายของคุณทุกครั้งที่เข้าสู่โหมดสลีป และที่อยู่จะเปลี่ยนทุกครั้ง</string>

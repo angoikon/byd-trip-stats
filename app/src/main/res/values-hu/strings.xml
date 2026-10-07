@@ -575,6 +575,8 @@
     <string name="tailscale_disconnect">Leválasztás a Tailscale-ről</string>
     <string name="tailscale_disconnect_confirm_title">Bontod a Tailscale-kapcsolatot?</string>
     <string name="tailscale_disconnect_confirm_body">Az autó kijelentkezik a tailnetedből és a Tailscale leáll, így a web companion és az ADB a Wi-Fi-den kívülről nem lesz elérhető. Az újracsatlakozáshoz újra be kell jelentkezned.</string>
+    <string name="tailscale_name_label">Név a tailneteden</string>
+    <string name="tailscale_name_hint">Az a név, amellyel az autó bejelentkezik. A Tailscale-konzolban adott név elsőbbséget élvez.</string>
     <string name="tailscale_how_to">Így állítsd be</string>
     <string name="tailscale_step_1">1. Hozz létre egy ingyenes fiókot a tailscale.com oldalon, ha még nincs.</string>
     <string name="tailscale_step_2">2. Az adminkonzolban nyisd meg a Settings → Keys menüt, és koppints a Generate auth key gombra. Az Ephemeral maradjon KIKAPCSOLVA — egy ideiglenes kulcs miatt az autó eltűnik a hálózatodból, valahányszor alvó állapotba kerül, és a címe minden alkalommal megváltozna.</string>

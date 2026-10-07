@@ -578,6 +578,8 @@
     <string name="tailscale_disconnect">Verbinding met Tailscale verbreken</string>
     <string name="tailscale_disconnect_confirm_title">Verbinding met Tailscale verbreken?</string>
     <string name="tailscale_disconnect_confirm_body">De auto meldt zich af bij je tailnet en Tailscale stopt, dus de webcompanion en ADB zijn buiten je wifi niet meer bereikbaar. Om opnieuw te verbinden moet je weer inloggen.</string>
+    <string name="tailscale_name_label">Naam op je tailnet</string>
+    <string name="tailscale_name_hint">De naam waarmee de auto inlogt. Een naam die je in de Tailscale-console geeft, gaat voor.</string>
     <string name="tailscale_how_to">Zo stel je dit in</string>
     <string name="tailscale_step_1">1. Maak een gratis account aan op tailscale.com als je er nog geen hebt.</string>
     <string name="tailscale_step_2">2. Open in de beheerconsole Settings → Keys en tik op Generate auth key. Laat Ephemeral UIT — een tijdelijke sleutel laat de auto uit je netwerk verdwijnen zodra hij slaapt, en zijn adres zou telkens veranderen.</string>

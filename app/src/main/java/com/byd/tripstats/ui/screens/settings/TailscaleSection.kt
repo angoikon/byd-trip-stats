@@ -5,6 +5,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -21,7 +23,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.byd.tripstats.R
 import com.byd.tripstats.ui.components.BrandSwitch
 import com.byd.tripstats.sdk.DiLink5Platform
@@ -30,6 +35,7 @@ import com.byd.tripstats.ui.theme.RegenGreen
 import com.byd.tripstats.util.QrCodeGenerator
 import com.byd.tripstats.util.TailscaleManager
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -64,6 +70,46 @@ internal fun TailscaleSection(context: Context, scope: CoroutineScope) {
     // come back to a car that is already on the tailnet.
     LaunchedEffect(Unit) {
         if (supported) runCatching { TailscaleManager.refresh(context) }
+    }
+
+    // Then every 30 s while this page is on screen, so a rename in the admin console or a dropped
+    // connection shows up without leaving the page — the status was only read on opening it. Keyed on
+    // RESUMED: it stops when the user moves to another page (this leaves composition) or to another
+    // app, so nothing is polled from the dashboard or the background. Skipped while a sign-in or
+    // disconnect is in progress, and while an error is shown under a button — a refresh would
+    // replace that error before it was read.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
+    val isResumed = lifecycleState.isAtLeast(Lifecycle.State.RESUMED)
+    val busyNow by rememberUpdatedState(busy)
+    val inlineErrorNow by rememberUpdatedState(inlineError)
+    LaunchedEffect(isResumed, supported) {
+        if (isResumed && supported) {
+            while (true) {
+                delay(STATUS_REFRESH_MS)
+                val state = TailscaleManager.status.value.state
+                val signingIn = state == TailscaleManager.State.AWAITING_LOGIN || state == TailscaleManager.State.STARTING
+                if (!busyNow && inlineErrorNow == null && !signingIn) {
+                    runCatching { TailscaleManager.refresh(context) }
+                }
+            }
+        }
+    }
+
+    // The name the car registers under — see TailscaleManager.applyHostname.
+    var savedName by remember { mutableStateOf(TailscaleManager.hostname(context)) }
+    var nameInput by remember { mutableStateOf(savedName) }
+    val saveName: () -> Unit = {
+        busy = true
+        scope.launch {
+            try {
+                TailscaleManager.applyHostname(context, nameInput)
+            } finally {
+                savedName = TailscaleManager.hostname(context)
+                nameInput = savedName
+                busy = false
+            }
+        }
     }
 
     Card(
@@ -181,6 +227,29 @@ internal fun TailscaleSection(context: Context, scope: CoroutineScope) {
                             color = MaterialTheme.colorScheme.error,
                         )
                     }
+                }
+
+                if (status.state != TailscaleManager.State.NEEDS_ADB) {
+                    OutlinedTextField(
+                        value = nameInput,
+                        onValueChange = { nameInput = it },
+                        label = { Text(stringResource(R.string.tailscale_name_label)) },
+                        supportingText = { Text(stringResource(R.string.tailscale_name_hint)) },
+                        singleLine = true,
+                        enabled = !busy,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(
+                            onDone = { if (nameInput.isNotBlank() && nameInput.trim() != savedName) saveName() },
+                        ),
+                        trailingIcon = {
+                            if (nameInput.isNotBlank() && nameInput.trim() != savedName) {
+                                IconButton(onClick = saveName, enabled = !busy) {
+                                    Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.save))
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
 
                 if (status.state == TailscaleManager.State.RUNNING) {
@@ -575,3 +644,6 @@ private fun HttpsRow(
         }
     }
 }
+
+/** How often the Tailscale page re-reads the daemon's status while it is on screen. */
+private const val STATUS_REFRESH_MS = 30_000L

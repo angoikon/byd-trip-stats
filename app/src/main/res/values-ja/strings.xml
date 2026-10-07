@@ -578,6 +578,8 @@
     <string name="tailscale_disconnect">Tailscale から切断</string>
     <string name="tailscale_disconnect_confirm_title">Tailscale から切断しますか？</string>
     <string name="tailscale_disconnect_confirm_body">車は tailnet からサインアウトし、Tailscale は停止します。そのため、Wi-Fi の外からは web companion と ADB にアクセスできなくなります。再接続するには、もう一度サインインする必要があります。</string>
+    <string name="tailscale_name_label">tailnet 上の名前</string>
+    <string name="tailscale_name_hint">車がサインインするときの名前です。Tailscale コンソールで付けた名前が優先されます。</string>
     <string name="tailscale_how_to">設定方法</string>
     <string name="tailscale_step_1">1. アカウントがなければ tailscale.com で無料アカウントを作成します。</string>
     <string name="tailscale_step_2">2. 管理コンソールで Settings → Keys を開き、Generate auth key をタップします。Ephemeral はオフのままにしてください — 一時キーだと車がスリープするたびにネットワークから消え、アドレスも毎回変わってしまいます。</string>

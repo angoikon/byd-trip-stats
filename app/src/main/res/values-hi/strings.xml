@@ -531,6 +531,8 @@
     <string name="tailscale_disconnect">Tailscale से डिस्कनेक्ट करें</string>
     <string name="tailscale_disconnect_confirm_title">Tailscale से डिस्कनेक्ट करें?</string>
     <string name="tailscale_disconnect_confirm_body">कार आपके tailnet से साइन आउट हो जाएगी और Tailscale बंद हो जाएगा, इसलिए web companion और ADB आपके Wi-Fi के बाहर से उपलब्ध नहीं रहेंगे। दोबारा कनेक्ट करने के लिए आपको फिर से साइन इन करना होगा।</string>
+    <string name="tailscale_name_label">आपके tailnet पर नाम</string>
+    <string name="tailscale_name_hint">वह नाम जिससे कार साइन इन करती है। Tailscale कंसोल में आप जो नाम देते हैं, वह प्राथमिकता लेता है।</string>
     <string name="tailscale_how_to">इसे कैसे सेट करें</string>
     <string name="tailscale_step_1">1. यदि आपके पास खाता नहीं है, तो tailscale.com पर एक निःशुल्क खाता बनाएं।</string>
     <string name="tailscale_step_2">2. एडमिन कंसोल में, Settings → Keys खोलें और Generate auth key पर टैप करें। Ephemeral को बंद रहने दें — एक अस्थायी कुंजी कार को हर बार स्लीप होने पर आपके नेटवर्क से गायब कर देती है, और उसका पता हर बार बदल जाता।</string>

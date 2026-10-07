@@ -578,6 +578,8 @@
     <string name="tailscale_disconnect">Tailscale bağlantısını kes</string>
     <string name="tailscale_disconnect_confirm_title">Tailscale bağlantısı kesilsin mi?</string>
     <string name="tailscale_disconnect_confirm_body">Araç tailnet\'inizden çıkış yapar ve Tailscale durur; bu nedenle web companion ve ADB\'ye Wi-Fi ağınızın dışından artık erişilemez. Yeniden bağlanmak için tekrar oturum açmanız gerekir.</string>
+    <string name="tailscale_name_label">Tailnet\'inizdeki ad</string>
+    <string name="tailscale_name_hint">Aracın oturum açarken kullandığı ad. Tailscale konsolunda verdiğiniz ad önceliklidir.</string>
     <string name="tailscale_how_to">Bunu nasıl kurarsınız</string>
     <string name="tailscale_step_1">1. Yoksa tailscale.com\'da ücretsiz bir hesap oluşturun.</string>
     <string name="tailscale_step_2">2. Yönetim konsolunda Settings → Keys bölümünü açın ve Generate auth key\'e dokunun. Ephemeral\'i KAPALI bırakın — geçici bir anahtar, araç her uykuya daldığında ağınızdan kaybolmasına neden olur ve adresi her seferinde değişir.</string>

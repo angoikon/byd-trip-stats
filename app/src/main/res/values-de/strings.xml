@@ -531,6 +531,8 @@
     <string name="tailscale_disconnect">Von Tailscale trennen</string>
     <string name="tailscale_disconnect_confirm_title">Verbindung zu Tailscale trennen?</string>
     <string name="tailscale_disconnect_confirm_body">Das Auto meldet sich von deinem Tailnet ab und Tailscale wird beendet, sodass der Web-Begleiter und ADB außerhalb deines WLANs nicht mehr erreichbar sind. Um dich wieder zu verbinden, musst du dich erneut anmelden.</string>
+    <string name="tailscale_name_label">Name in deinem Tailnet</string>
+    <string name="tailscale_name_hint">Der Name, mit dem sich das Auto anmeldet. Ein Name, den du ihm in der Tailscale-Konsole gibst, hat Vorrang.</string>
     <string name="tailscale_how_to">So richtest du das ein</string>
     <string name="tailscale_step_1">1. Erstelle ein kostenloses Konto auf tailscale.com, falls du noch keins hast.</string>
     <string name="tailscale_step_2">2. Öffne in der Admin-Konsole Settings → Keys und tippe auf Generate auth key. Lass Ephemeral AUS — ein ephemerer Schlüssel lässt das Auto aus deinem Netzwerk verschwinden, wann immer es schläft, und seine Adresse würde sich jedes Mal ändern.</string>
