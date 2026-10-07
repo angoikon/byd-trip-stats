@@ -533,6 +533,8 @@
     <string name="telegram_backup_label">Telegram-back-up</string>
     <string name="send_backup_now_action">Nu back-up sturen</string>
     <string name="disconnect_bot_action">Bot ontkoppelen</string>
+    <string name="telegram_disconnect_confirm_title">Telegram-bot ontkoppelen?</string>
+    <string name="telegram_disconnect_confirm_body">Back-ups naar Telegram, meldingen en het versturen van exports stoppen totdat je opnieuw een bot koppelt. Back-ups die al in de chat staan, blijven daar.</string>
     <string name="auto_backup_label">Automatische back-up</string>
     <string name="backup_interval_label">Back-upinterval</string>
     <string name="wifi_only_label">Alleen wifi</string>
@@ -574,6 +576,8 @@
     <string name="tailscale_authkey_label">Auth-sleutel</string>
     <string name="tailscale_connect">Verbinden</string>
     <string name="tailscale_disconnect">Verbinding met Tailscale verbreken</string>
+    <string name="tailscale_disconnect_confirm_title">Verbinding met Tailscale verbreken?</string>
+    <string name="tailscale_disconnect_confirm_body">De auto meldt zich af bij je tailnet en Tailscale stopt, dus de webcompanion en ADB zijn buiten je wifi niet meer bereikbaar. Om opnieuw te verbinden moet je weer inloggen.</string>
     <string name="tailscale_how_to">Zo stel je dit in</string>
     <string name="tailscale_step_1">1. Maak een gratis account aan op tailscale.com als je er nog geen hebt.</string>
     <string name="tailscale_step_2">2. Open in de beheerconsole Settings → Keys en tik op Generate auth key. Laat Ephemeral UIT — een tijdelijke sleutel laat de auto uit je netwerk verdwijnen zodra hij slaapt, en zijn adres zou telkens veranderen.</string>

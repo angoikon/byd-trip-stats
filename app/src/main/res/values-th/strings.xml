@@ -486,6 +486,8 @@
     <string name="telegram_backup_label">สำรองด้วย Telegram</string>
     <string name="send_backup_now_action">ส่งการสำรองทันที</string>
     <string name="disconnect_bot_action">ยกเลิกการเชื่อมต่อบอท</string>
+    <string name="telegram_disconnect_confirm_title">ยกเลิกการเชื่อมต่อบอท Telegram ไหม?</string>
+    <string name="telegram_disconnect_confirm_body">การสำรองข้อมูลไปยัง Telegram การแจ้งเตือน และการส่งไฟล์ส่งออกจะหยุดจนกว่าคุณจะเชื่อมโยงบอทอีกครั้ง ข้อมูลสำรองที่อยู่ในแชทแล้วจะยังคงอยู่</string>
     <string name="auto_backup_label">สำรองอัตโนมัติ</string>
     <string name="backup_interval_label">ช่วงเวลาการสำรอง</string>
     <string name="wifi_only_label">เฉพาะ Wi-Fi</string>
@@ -527,6 +529,8 @@
     <string name="tailscale_authkey_label">คีย์ auth</string>
     <string name="tailscale_connect">เชื่อมต่อ</string>
     <string name="tailscale_disconnect">ตัดการเชื่อมต่อจาก Tailscale</string>
+    <string name="tailscale_disconnect_confirm_title">ยกเลิกการเชื่อมต่อ Tailscale ไหม?</string>
+    <string name="tailscale_disconnect_confirm_body">รถจะออกจากระบบ tailnet ของคุณและ Tailscale จะหยุดทำงาน จึงไม่สามารถเข้าถึง web companion และ ADB จากนอก Wi-Fi ของคุณได้อีก หากต้องการเชื่อมต่ออีกครั้ง คุณต้องลงชื่อเข้าใช้ใหม่</string>
     <string name="tailscale_how_to">วิธีตั้งค่า</string>
     <string name="tailscale_step_1">1. สร้างบัญชีฟรีที่ tailscale.com หากยังไม่มี</string>
     <string name="tailscale_step_2">2. ในคอนโซลผู้ดูแล เปิด Settings → Keys แล้วแตะ Generate auth key ปล่อย Ephemeral ไว้เป็นปิด — คีย์ชั่วคราวจะทำให้รถหายไปจากเครือข่ายของคุณทุกครั้งที่เข้าสู่โหมดสลีป และที่อยู่จะเปลี่ยนทุกครั้ง</string>

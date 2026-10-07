@@ -486,6 +486,8 @@
     <string name="telegram_backup_label">Telegram बैकअप</string>
     <string name="send_backup_now_action">अभी बैकअप भेजें</string>
     <string name="disconnect_bot_action">बॉट डिस्कनेक्ट करें</string>
+    <string name="telegram_disconnect_confirm_title">Telegram बॉट डिस्कनेक्ट करें?</string>
+    <string name="telegram_disconnect_confirm_body">Telegram बैकअप, सूचनाएँ और एक्सपोर्ट भेजना तब तक बंद रहेंगे जब तक आप फिर से कोई बॉट नहीं जोड़ते। चैट में पहले से मौजूद बैकअप वहीं रहेंगे।</string>
     <string name="auto_backup_label">स्वचालित बैकअप</string>
     <string name="backup_interval_label">बैकअप अंतराल</string>
     <string name="wifi_only_label">केवल Wi-Fi</string>
@@ -527,6 +529,8 @@
     <string name="tailscale_authkey_label">Auth कुंजी</string>
     <string name="tailscale_connect">कनेक्ट करें</string>
     <string name="tailscale_disconnect">Tailscale से डिस्कनेक्ट करें</string>
+    <string name="tailscale_disconnect_confirm_title">Tailscale से डिस्कनेक्ट करें?</string>
+    <string name="tailscale_disconnect_confirm_body">कार आपके tailnet से साइन आउट हो जाएगी और Tailscale बंद हो जाएगा, इसलिए web companion और ADB आपके Wi-Fi के बाहर से उपलब्ध नहीं रहेंगे। दोबारा कनेक्ट करने के लिए आपको फिर से साइन इन करना होगा।</string>
     <string name="tailscale_how_to">इसे कैसे सेट करें</string>
     <string name="tailscale_step_1">1. यदि आपके पास खाता नहीं है, तो tailscale.com पर एक निःशुल्क खाता बनाएं।</string>
     <string name="tailscale_step_2">2. एडमिन कंसोल में, Settings → Keys खोलें और Generate auth key पर टैप करें। Ephemeral को बंद रहने दें — एक अस्थायी कुंजी कार को हर बार स्लीप होने पर आपके नेटवर्क से गायब कर देती है, और उसका पता हर बार बदल जाता।</string>

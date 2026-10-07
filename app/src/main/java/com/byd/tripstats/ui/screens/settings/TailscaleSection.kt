@@ -206,6 +206,8 @@ internal fun TailscaleSection(context: Context, scope: CoroutineScope) {
                 if (status.state == TailscaleManager.State.RUNNING) {
                     DisconnectButton(
                         text = stringResource(R.string.tailscale_disconnect),
+                        confirmTitle = stringResource(R.string.tailscale_disconnect_confirm_title),
+                        confirmText = stringResource(R.string.tailscale_disconnect_confirm_body),
                         enabled = !busy,
                         onClick = {
                             busy = true

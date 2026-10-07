@@ -486,6 +486,8 @@
     <string name="telegram_backup_label">Telegram 백업</string>
     <string name="send_backup_now_action">지금 백업 전송</string>
     <string name="disconnect_bot_action">봇 연결 해제</string>
+    <string name="telegram_disconnect_confirm_title">Telegram 봇 연결을 해제할까요?</string>
+    <string name="telegram_disconnect_confirm_body">봇을 다시 연결할 때까지 Telegram 백업, 알림, 내보내기 전송이 중지됩니다. 채팅에 이미 있는 백업은 그대로 남습니다.</string>
     <string name="auto_backup_label">자동 백업</string>
     <string name="backup_interval_label">백업 간격</string>
     <string name="wifi_only_label">Wi-Fi 전용</string>
@@ -527,6 +529,8 @@
     <string name="tailscale_authkey_label">auth 키</string>
     <string name="tailscale_connect">연결</string>
     <string name="tailscale_disconnect">Tailscale 연결 끊기</string>
+    <string name="tailscale_disconnect_confirm_title">Tailscale 연결을 해제할까요?</string>
+    <string name="tailscale_disconnect_confirm_body">차량이 tailnet에서 로그아웃되고 Tailscale이 중지되어, Wi-Fi 밖에서는 web companion과 ADB에 더 이상 접속할 수 없습니다. 다시 연결하려면 다시 로그인해야 합니다.</string>
     <string name="tailscale_how_to">설정 방법</string>
     <string name="tailscale_step_1">1. 계정이 없으면 tailscale.com에서 무료 계정을 만드세요.</string>
     <string name="tailscale_step_2">2. 관리 콘솔에서 Settings → Keys를 열고 Generate auth key를 탭하세요. Ephemeral은 꺼 두세요 — 임시 키는 차량이 잠들 때마다 네트워크에서 사라지게 하고, 주소도 매번 바뀝니다.</string>

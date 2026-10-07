@@ -530,6 +530,8 @@
     <string name="telegram_backup_label">Sao lưu Telegram</string>
     <string name="send_backup_now_action">Gửi Sao lưu Ngay</string>
     <string name="disconnect_bot_action">Ngắt bot</string>
+    <string name="telegram_disconnect_confirm_title">Ngắt kết nối bot Telegram?</string>
+    <string name="telegram_disconnect_confirm_body">Sao lưu lên Telegram, thông báo và gửi tệp xuất sẽ dừng cho đến khi bạn liên kết lại một bot. Các bản sao lưu đã có trong cuộc trò chuyện vẫn được giữ lại.</string>
     <string name="auto_backup_label">Sao lưu tự động</string>
     <string name="backup_interval_label">Khoảng thời gian sao lưu</string>
     <string name="wifi_only_label">Chỉ Wi-Fi</string>
@@ -571,6 +573,8 @@
     <string name="tailscale_authkey_label">Khóa auth</string>
     <string name="tailscale_connect">Kết nối</string>
     <string name="tailscale_disconnect">Ngắt kết nối khỏi Tailscale</string>
+    <string name="tailscale_disconnect_confirm_title">Ngắt kết nối khỏi Tailscale?</string>
+    <string name="tailscale_disconnect_confirm_body">Xe sẽ đăng xuất khỏi tailnet của bạn và Tailscale dừng lại, nên không thể truy cập web companion và ADB từ bên ngoài Wi-Fi của bạn nữa. Để kết nối lại, bạn sẽ phải đăng nhập lại.</string>
     <string name="tailscale_how_to">Cách thiết lập</string>
     <string name="tailscale_step_1">1. Tạo tài khoản miễn phí tại tailscale.com, nếu bạn chưa có.</string>
     <string name="tailscale_step_2">2. Trong bảng điều khiển quản trị, mở Settings → Keys và chạm Generate auth key. Để Ephemeral TẮT — khóa tạm thời khiến xe biến mất khỏi mạng mỗi khi ngủ, và địa chỉ của nó sẽ thay đổi mỗi lần.</string>

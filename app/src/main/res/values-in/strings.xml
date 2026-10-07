@@ -530,6 +530,8 @@
     <string name="telegram_backup_label">Cadangan Telegram</string>
     <string name="send_backup_now_action">Kirim Cadangan Sekarang</string>
     <string name="disconnect_bot_action">Putuskan bot</string>
+    <string name="telegram_disconnect_confirm_title">Putuskan bot Telegram?</string>
+    <string name="telegram_disconnect_confirm_body">Cadangan ke Telegram, notifikasi, dan pengiriman ekspor akan berhenti sampai Anda menautkan bot lagi. Cadangan yang sudah ada di obrolan tetap di sana.</string>
     <string name="auto_backup_label">Cadangan otomatis</string>
     <string name="backup_interval_label">Interval cadangan</string>
     <string name="wifi_only_label">Hanya Wi-Fi</string>
@@ -571,6 +573,8 @@
     <string name="tailscale_authkey_label">Kunci auth</string>
     <string name="tailscale_connect">Hubungkan</string>
     <string name="tailscale_disconnect">Putuskan dari Tailscale</string>
+    <string name="tailscale_disconnect_confirm_title">Putuskan sambungan dari Tailscale?</string>
+    <string name="tailscale_disconnect_confirm_body">Mobil akan keluar dari tailnet Anda dan Tailscale berhenti, sehingga web companion dan ADB tidak lagi dapat dijangkau dari luar Wi-Fi Anda. Untuk tersambung kembali, Anda harus masuk lagi.</string>
     <string name="tailscale_how_to">Cara menyiapkan ini</string>
     <string name="tailscale_step_1">1. Buat akun gratis di tailscale.com, jika belum punya.</string>
     <string name="tailscale_step_2">2. Di konsol admin, buka Settings → Keys dan ketuk Generate auth key. Biarkan Ephemeral NONAKTIF — kunci ephemeral membuat mobil hilang dari jaringan Anda setiap kali tidur, dan alamatnya akan berubah setiap kali.</string>

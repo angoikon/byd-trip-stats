@@ -530,6 +530,8 @@
     <string name="telegram_backup_label">Záloha na Telegram</string>
     <string name="send_backup_now_action">Odeslat zálohu nyní</string>
     <string name="disconnect_bot_action">Odpojit bota</string>
+    <string name="telegram_disconnect_confirm_title">Odpojit telegramového bota?</string>
+    <string name="telegram_disconnect_confirm_body">Zálohy do Telegramu, oznámení a odesílání exportů se zastaví, dokud znovu nepropojíte bota. Zálohy, které už v chatu jsou, tam zůstanou.</string>
     <string name="auto_backup_label">Automatická záloha</string>
     <string name="backup_interval_label">Interval zálohování</string>
     <string name="wifi_only_label">Pouze Wi-Fi</string>
@@ -571,6 +573,8 @@
     <string name="tailscale_authkey_label">Auth klíč</string>
     <string name="tailscale_connect">Připojit</string>
     <string name="tailscale_disconnect">Odpojit od Tailscale</string>
+    <string name="tailscale_disconnect_confirm_title">Odpojit od Tailscale?</string>
+    <string name="tailscale_disconnect_confirm_body">Auto se odhlásí z vašeho tailnetu a Tailscale se zastaví, takže web companion ani ADB nebudou mimo vaši Wi-Fi dostupné. Pro opětovné připojení se budete muset znovu přihlásit.</string>
     <string name="tailscale_how_to">Jak to nastavit</string>
     <string name="tailscale_step_1">1. Vytvořte si zdarma účet na tailscale.com, pokud ho nemáte.</string>
     <string name="tailscale_step_2">2. V administrátorské konzoli otevřete Settings → Keys a klepněte na Generate auth key. Ephemeral nechte VYPNUTÉ — dočasný klíč způsobí, že auto zmizí z vaší sítě pokaždé, když usne, a jeho adresa by se pokaždé změnila.</string>

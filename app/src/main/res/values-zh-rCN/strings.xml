@@ -533,6 +533,8 @@
     <string name="telegram_backup_label">Telegram 备份</string>
     <string name="send_backup_now_action">立即发送备份</string>
     <string name="disconnect_bot_action">断开机器人连接</string>
+    <string name="telegram_disconnect_confirm_title">断开 Telegram 机器人？</string>
+    <string name="telegram_disconnect_confirm_body">在你重新关联机器人之前，Telegram 备份、通知和导出发送都会停止。聊天中已有的备份会保留。</string>
     <string name="auto_backup_label">自动备份</string>
     <string name="backup_interval_label">备份间隔</string>
     <string name="wifi_only_label">仅 Wi-Fi</string>
@@ -574,6 +576,8 @@
     <string name="tailscale_authkey_label">auth 密钥</string>
     <string name="tailscale_connect">连接</string>
     <string name="tailscale_disconnect">从 Tailscale 断开</string>
+    <string name="tailscale_disconnect_confirm_title">断开 Tailscale 连接？</string>
+    <string name="tailscale_disconnect_confirm_body">车辆将退出你的 tailnet，Tailscale 也会停止，因此在你的 Wi-Fi 之外将无法再访问 web companion 和 ADB。要重新连接，需要再次登录。</string>
     <string name="tailscale_how_to">如何设置</string>
     <string name="tailscale_step_1">1. 如果还没有账号，请在 tailscale.com 上创建一个免费账号。</string>
     <string name="tailscale_step_2">2. 在管理控制台中打开 Settings → Keys 并点按 Generate auth key。让 Ephemeral 保持关闭——临时密钥会让车辆每次休眠时从你的网络中消失，而且地址每次都会变。</string>

@@ -533,6 +533,8 @@
     <string name="telegram_backup_label">Backup via Telegram</string>
     <string name="send_backup_now_action">Enviar backup agora</string>
     <string name="disconnect_bot_action">Desconectar bot</string>
+    <string name="telegram_disconnect_confirm_title">Desconectar o bot do Telegram?</string>
+    <string name="telegram_disconnect_confirm_body">Os backups no Telegram, as notificações e o envio de exportações param até você vincular um bot novamente. Os backups que já estão no chat continuam lá.</string>
     <string name="auto_backup_label">Backup automático</string>
     <string name="backup_interval_label">Intervalo de backup</string>
     <string name="wifi_only_label">Apenas Wi-Fi</string>
@@ -574,6 +576,8 @@
     <string name="tailscale_authkey_label">Chave auth</string>
     <string name="tailscale_connect">Conectar</string>
     <string name="tailscale_disconnect">Desconectar do Tailscale</string>
+    <string name="tailscale_disconnect_confirm_title">Desconectar do Tailscale?</string>
+    <string name="tailscale_disconnect_confirm_body">O carro sai da sua tailnet e o Tailscale para, então o web companion e o ADB não poderão mais ser acessados fora do seu Wi-Fi. Para conectar de novo, você precisará entrar novamente.</string>
     <string name="tailscale_how_to">Como configurar isto</string>
     <string name="tailscale_step_1">1. Crie uma conta gratuita em tailscale.com, se você não tiver uma.</string>
     <string name="tailscale_step_2">2. No console de administração, abra Settings → Keys e toque em Generate auth key. Deixe Ephemeral DESATIVADO — uma chave efêmera faz o carro desaparecer da sua rede sempre que ele hiberna, e o endereço mudaria a cada vez.</string>

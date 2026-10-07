@@ -533,6 +533,8 @@
     <string name="telegram_backup_label">Backup Telegram</string>
     <string name="send_backup_now_action">Invia backup ora</string>
     <string name="disconnect_bot_action">Disconnetti bot</string>
+    <string name="telegram_disconnect_confirm_title">Disconnettere il bot di Telegram?</string>
+    <string name="telegram_disconnect_confirm_body">I backup su Telegram, le notifiche e l\'invio delle esportazioni si interrompono finché non colleghi di nuovo un bot. I backup già presenti nella chat restano lì.</string>
     <string name="auto_backup_label">Backup automatico</string>
     <string name="backup_interval_label">Intervallo backup</string>
     <string name="wifi_only_label">Solo Wi-Fi</string>
@@ -574,6 +576,8 @@
     <string name="tailscale_authkey_label">Chiave auth</string>
     <string name="tailscale_connect">Connetti</string>
     <string name="tailscale_disconnect">Disconnetti da Tailscale</string>
+    <string name="tailscale_disconnect_confirm_title">Disconnettere da Tailscale?</string>
+    <string name="tailscale_disconnect_confirm_body">L\'auto esce dal tuo tailnet e Tailscale si ferma, quindi il web companion e l\'ADB non saranno più raggiungibili fuori dalla tua rete Wi-Fi. Per riconnetterti dovrai accedere di nuovo.</string>
     <string name="tailscale_how_to">Come configurarlo</string>
     <string name="tailscale_step_1">1. Crea un account gratuito su tailscale.com, se non ne hai uno.</string>
     <string name="tailscale_step_2">2. Nella console di amministrazione, apri Settings → Keys e tocca Generate auth key. Lascia Ephemeral DISATTIVATO — una chiave effimera fa sparire l\'auto dalla tua rete ogni volta che va in sospensione, e il suo indirizzo cambierebbe ogni volta.</string>

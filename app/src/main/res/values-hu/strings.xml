@@ -530,6 +530,8 @@
     <string name="telegram_backup_label">Telegram-mentés</string>
     <string name="send_backup_now_action">Mentés küldése most</string>
     <string name="disconnect_bot_action">Bot leválasztása</string>
+    <string name="telegram_disconnect_confirm_title">Leválasztod a Telegram-botot?</string>
+    <string name="telegram_disconnect_confirm_body">A Telegram-mentések, az értesítések és az exportok küldése leáll, amíg újra össze nem kapcsolsz egy botot. A csevegésben már meglévő mentések ott maradnak.</string>
     <string name="auto_backup_label">Automatikus mentés</string>
     <string name="backup_interval_label">Mentési gyakoriság</string>
     <string name="wifi_only_label">Csak Wi-Fi</string>
@@ -571,6 +573,8 @@
     <string name="tailscale_authkey_label">Auth-kulcs</string>
     <string name="tailscale_connect">Csatlakozás</string>
     <string name="tailscale_disconnect">Leválasztás a Tailscale-ről</string>
+    <string name="tailscale_disconnect_confirm_title">Bontod a Tailscale-kapcsolatot?</string>
+    <string name="tailscale_disconnect_confirm_body">Az autó kijelentkezik a tailnetedből és a Tailscale leáll, így a web companion és az ADB a Wi-Fi-den kívülről nem lesz elérhető. Az újracsatlakozáshoz újra be kell jelentkezned.</string>
     <string name="tailscale_how_to">Így állítsd be</string>
     <string name="tailscale_step_1">1. Hozz létre egy ingyenes fiókot a tailscale.com oldalon, ha még nincs.</string>
     <string name="tailscale_step_2">2. Az adminkonzolban nyisd meg a Settings → Keys menüt, és koppints a Generate auth key gombra. Az Ephemeral maradjon KIKAPCSOLVA — egy ideiglenes kulcs miatt az autó eltűnik a hálózatodból, valahányszor alvó állapotba kerül, és a címe minden alkalommal megváltozna.</string>

@@ -530,6 +530,8 @@
     <string name="telegram_backup_label">Резервная копия в Telegram</string>
     <string name="send_backup_now_action">Отправить копию сейчас</string>
     <string name="disconnect_bot_action">Отключить бота</string>
+    <string name="telegram_disconnect_confirm_title">Отключить бота Telegram?</string>
+    <string name="telegram_disconnect_confirm_body">Резервные копии в Telegram, уведомления и отправка экспортов прекратятся, пока вы снова не подключите бота. Копии, которые уже есть в чате, останутся там.</string>
     <string name="auto_backup_label">Автоматическая копия</string>
     <string name="backup_interval_label">Интервал копирования</string>
     <string name="wifi_only_label">Только Wi-Fi</string>
@@ -571,6 +573,8 @@
     <string name="tailscale_authkey_label">Ключ auth</string>
     <string name="tailscale_connect">Подключить</string>
     <string name="tailscale_disconnect">Отключить от Tailscale</string>
+    <string name="tailscale_disconnect_confirm_title">Отключиться от Tailscale?</string>
+    <string name="tailscale_disconnect_confirm_body">Автомобиль выйдет из вашей сети tailnet, а Tailscale остановится, поэтому web companion и ADB станут недоступны за пределами вашей сети Wi-Fi. Чтобы подключиться снова, нужно будет заново войти.</string>
     <string name="tailscale_how_to">Как это настроить</string>
     <string name="tailscale_step_1">1. Создайте бесплатный аккаунт на tailscale.com, если у вас его нет.</string>
     <string name="tailscale_step_2">2. В консоли администратора откройте Settings → Keys и нажмите Generate auth key. Оставьте Ephemeral ВЫКЛЮЧЕННЫМ — временный ключ заставляет автомобиль исчезать из сети всякий раз, когда он засыпает, и его адрес менялся бы каждый раз.</string>

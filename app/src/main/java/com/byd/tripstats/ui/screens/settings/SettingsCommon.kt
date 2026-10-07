@@ -355,10 +355,14 @@ private fun SettingsHubCardView(
 internal fun DisconnectButton(
     text: String,
     enabled: Boolean,
+    /** Asked before [onClick] runs: one stray tap on a head-unit screen undid a working setup. */
+    confirmTitle: String,
+    confirmText: String,
     onClick: () -> Unit
 ) {
+    var confirming by remember { mutableStateOf(false) }
     OutlinedButton(
-        onClick = onClick,
+        onClick = { confirming = true },
         enabled = enabled,
         modifier = Modifier.fillMaxWidth(),
         colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
@@ -367,6 +371,22 @@ internal fun DisconnectButton(
         Icon(Icons.Filled.LinkOff, null, modifier = Modifier.size(18.dp))
         Spacer(Modifier.width(8.dp))
         Text(text)
+    }
+    if (confirming) {
+        AlertDialog(
+            onDismissRequest = { confirming = false },
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            title = { Text(confirmTitle, fontWeight = FontWeight.Bold) },
+            text = { Text(confirmText, style = MaterialTheme.typography.bodyMedium) },
+            confirmButton = {
+                TextButton(onClick = { confirming = false; onClick() }) {
+                    Text(text, color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirming = false }) { Text(stringResource(R.string.cancel)) }
+            },
+        )
     }
 }
 

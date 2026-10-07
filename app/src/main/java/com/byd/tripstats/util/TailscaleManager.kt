@@ -293,6 +293,7 @@ object TailscaleManager {
      * the same pending URL.
      */
     suspend fun beginBrowserLogin(context: Context): Status = withContext(Dispatchers.IO) {
+        signInCancelled = false
         diag(context, "browser login: requested")
         val started = start(context)
         if (started.state == State.UNAVAILABLE || started.state == State.NEEDS_ADB) return@withContext started
@@ -337,7 +338,10 @@ object TailscaleManager {
             val deadline = System.currentTimeMillis() + timeoutMs
             while (System.currentTimeMillis() < deadline) {
                 kotlinx.coroutines.delay(3_000)
+                if (signInCancelled) return@withContext _status.value
                 val s = queryStatus(context) ?: continue
+                // A cancel can land while that query was in flight; its answer must not undo it.
+                if (signInCancelled) return@withContext _status.value
                 publish(s)
                 if (s.state == State.RUNNING) {
                     diag(context, "browser login: authorised, ip=${s.ip}")
@@ -349,10 +353,25 @@ object TailscaleManager {
             _status.value
         }
 
-    /** Abandons a pending browser sign-in. The daemon stays up, just logged out. */
+    /**
+     * Set by [cancelBrowserLogin] so [awaitBrowserLogin] stops polling — it republished "waiting for
+     * sign-in" every few seconds and put the QR code straight back. Cleared when a sign-in starts.
+     */
+    @Volatile private var signInCancelled = false
+
+    /**
+     * Abandons a pending browser sign-in. A `logout` alone did nothing visible (2026-10-07): the
+     * detached `up` kept waiting and the daemon kept its sign-in URL, so the QR code stayed. So this
+     * stops Tailscale the way [disconnect] does — `logout`, then the daemon and the waiting `up` —
+     * and stops restoring it at start, since there is no sign-in to restore. A saved auth key is kept.
+     */
     suspend fun cancelBrowserLogin(context: Context): Status = withContext(Dispatchers.IO) {
+        signInCancelled = true
+        diag(context, "browser login: cancelled")
+        prefs(context).edit().putBoolean(KEY_ENABLED, false).apply()
         sh(context, "TS_BE_CLI=1 $BIN --socket=$SOCKET logout 2>&1", timeoutMs = 20_000L)
-        publish(queryStatus(context) ?: Status(State.NEEDS_KEY))
+        sh(context, "pkill -f '$KILL_PATTERN'", timeoutMs = 10_000L)
+        publish(Status(State.STOPPED))
     }
 
     /** Stops the daemon and forgets the key. The node stays in the user's console until removed. */

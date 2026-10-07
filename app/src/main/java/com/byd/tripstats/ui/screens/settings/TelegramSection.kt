@@ -112,6 +112,8 @@ internal fun TelegramConnectionSection(context: Context, scope: CoroutineScope) 
                 )
                 DisconnectButton(
                     text = stringResource(R.string.disconnect_bot_action),
+                    confirmTitle = stringResource(R.string.telegram_disconnect_confirm_title),
+                    confirmText = stringResource(R.string.telegram_disconnect_confirm_body),
                     enabled = !busy,
                     onClick = { manager.clearConfig() },
                 )

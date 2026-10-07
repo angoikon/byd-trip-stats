@@ -533,6 +533,8 @@
     <string name="telegram_backup_label">Telegram Yedekleme</string>
     <string name="send_backup_now_action">Yedeği Şimdi Gönder</string>
     <string name="disconnect_bot_action">Botu bağlantısını kes</string>
+    <string name="telegram_disconnect_confirm_title">Telegram botunun bağlantısı kesilsin mi?</string>
+    <string name="telegram_disconnect_confirm_body">Telegram yedeklemeleri, bildirimler ve dışa aktarımların gönderilmesi, bir botu yeniden bağlayana kadar durur. Sohbette zaten bulunan yedekler orada kalır.</string>
     <string name="auto_backup_label">Otomatik yedekleme</string>
     <string name="backup_interval_label">Yedekleme aralığı</string>
     <string name="wifi_only_label">Yalnızca Wi-Fi</string>
@@ -574,6 +576,8 @@
     <string name="tailscale_authkey_label">Auth anahtarı</string>
     <string name="tailscale_connect">Bağlan</string>
     <string name="tailscale_disconnect">Tailscale bağlantısını kes</string>
+    <string name="tailscale_disconnect_confirm_title">Tailscale bağlantısı kesilsin mi?</string>
+    <string name="tailscale_disconnect_confirm_body">Araç tailnet\'inizden çıkış yapar ve Tailscale durur; bu nedenle web companion ve ADB\'ye Wi-Fi ağınızın dışından artık erişilemez. Yeniden bağlanmak için tekrar oturum açmanız gerekir.</string>
     <string name="tailscale_how_to">Bunu nasıl kurarsınız</string>
     <string name="tailscale_step_1">1. Yoksa tailscale.com\'da ücretsiz bir hesap oluşturun.</string>
     <string name="tailscale_step_2">2. Yönetim konsolunda Settings → Keys bölümünü açın ve Generate auth key\'e dokunun. Ephemeral\'i KAPALI bırakın — geçici bir anahtar, araç her uykuya daldığında ağınızdan kaybolmasına neden olur ve adresi her seferinde değişir.</string>

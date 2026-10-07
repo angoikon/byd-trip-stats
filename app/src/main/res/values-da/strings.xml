@@ -533,6 +533,8 @@
     <string name="telegram_backup_label">Telegram-sikkerhedskopi</string>
     <string name="send_backup_now_action">Send sikkerhedskopi nu</string>
     <string name="disconnect_bot_action">Afbryd bot</string>
+    <string name="telegram_disconnect_confirm_title">Afbryd Telegram-botten?</string>
+    <string name="telegram_disconnect_confirm_body">Sikkerhedskopier til Telegram, notifikationer og afsendelse af eksporter stopper, indtil du forbinder en bot igen. Sikkerhedskopier, der allerede er i chatten, bliver der.</string>
     <string name="auto_backup_label">Automatisk sikkerhedskopi</string>
     <string name="backup_interval_label">Sikkerhedskopi-interval</string>
     <string name="wifi_only_label">Kun Wi-Fi</string>
@@ -574,6 +576,8 @@
     <string name="tailscale_authkey_label">Auth-nøgle</string>
     <string name="tailscale_connect">Forbind</string>
     <string name="tailscale_disconnect">Afbryd fra Tailscale</string>
+    <string name="tailscale_disconnect_confirm_title">Afbryd forbindelsen til Tailscale?</string>
+    <string name="tailscale_disconnect_confirm_body">Bilen logger ud af dit tailnet, og Tailscale stopper, så web companion og ADB ikke længere kan nås uden for dit Wi-Fi. For at oprette forbindelse igen skal du logge ind igen.</string>
     <string name="tailscale_how_to">Sådan konfigurerer du det</string>
     <string name="tailscale_step_1">1. Opret en gratis konto på tailscale.com, hvis du ikke har en.</string>
     <string name="tailscale_step_2">2. I administrationskonsollen skal du åbne Settings → Keys og trykke på Generate auth key. Lad Ephemeral være SLÅET FRA — en flygtig nøgle får bilen til at forsvinde fra dit netværk, hver gang den går i dvale, og dens adresse ville ændre sig hver gang.</string>

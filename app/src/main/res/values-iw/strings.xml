@@ -530,6 +530,8 @@
     <string name="telegram_backup_label">גיבוי Telegram</string>
     <string name="send_backup_now_action">שלח גיבוי עכשיו</string>
     <string name="disconnect_bot_action">נתק בוט</string>
+    <string name="telegram_disconnect_confirm_title">לנתק את בוט ה-Telegram?</string>
+    <string name="telegram_disconnect_confirm_body">הגיבויים ל-Telegram, ההתראות ושליחת הייצואים ייפסקו עד שתקשר בוט מחדש. גיבויים שכבר נמצאים בצ\'אט יישארו שם.</string>
     <string name="auto_backup_label">גיבוי אוטומטי</string>
     <string name="backup_interval_label">תדירות גיבוי</string>
     <string name="wifi_only_label">Wi-Fi בלבד</string>
@@ -571,6 +573,8 @@
     <string name="tailscale_authkey_label">מפתח auth</string>
     <string name="tailscale_connect">התחבר</string>
     <string name="tailscale_disconnect">התנתק מ-Tailscale</string>
+    <string name="tailscale_disconnect_confirm_title">להתנתק מ-Tailscale?</string>
+    <string name="tailscale_disconnect_confirm_body">הרכב יתנתק מה-tailnet שלך ו-Tailscale ייעצר, כך שלא ניתן יהיה להגיע ל-web companion ול-ADB מחוץ ל-Wi-Fi שלך. כדי להתחבר שוב תצטרך להיכנס מחדש.</string>
     <string name="tailscale_how_to">איך להגדיר את זה</string>
     <string name="tailscale_step_1">1. צור חשבון חינמי ב-tailscale.com, אם אין לך.</string>
     <string name="tailscale_step_2">2. בקונסולת הניהול, פתח Settings → Keys והקש על Generate auth key. השאר את Ephemeral כבוי — מפתח ארעי גורם לרכב להיעלם מהרשת שלך בכל פעם שהוא נכנס לשינה, וכתובתו הייתה משתנה בכל פעם.</string>
