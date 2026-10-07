@@ -1159,11 +1159,22 @@ class LocalBackupManager private constructor(private val context: Context) {
     // ── Telegram backup ─────────────────────────────────────────────────
 
     /**
+     * True from the tap on Send backup now until that send has finished. TelegramManager's own
+     * state covers only the upload; the snapshot and compression before it — seconds to tens of
+     * seconds — set no state at all, so the button stayed enabled and looked as if the tap had done
+     * nothing, and a second tap sent a second backup (same failure as Install now, 2026-10-04).
+     */
+    private val _telegramPreparing = MutableStateFlow(false)
+    val telegramPreparing: StateFlow<Boolean> = _telegramPreparing.asStateFlow()
+
+    /**
      * Compresses a frozen snapshot of the database into cache, then delegates to
      * TelegramManager.sendFile(). Progress and result are exposed via TelegramManager.state,
      * not BackupState.
      */
     suspend fun backupToTelegram() = withContext(Dispatchers.IO) {
+        // One at a time: a tap while a send is still under way is ignored.
+        if (!_telegramPreparing.compareAndSet(false, true)) return@withContext
         val telegramManager = TelegramManager.getInstance(context)
         try {
             val dbFile = context.getDatabasePath(DATABASE_NAME)
@@ -1191,6 +1202,8 @@ class LocalBackupManager private constructor(private val context: Context) {
             }
         } catch (e: Exception) {
             Log.e(TAG, "Telegram backup prep failed", e)
+        } finally {
+            _telegramPreparing.value = false
         }
     }
 

@@ -15,6 +15,7 @@ import dadb.AdbKeyPair
 import dadb.Dadb
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -394,6 +395,15 @@ object AdbPermissionManager {
         context: Context,
         commands: List<String>,
         perCommandTimeoutMs: Long = 5_000L,
+        /**
+         * Enforce [perCommandTimeoutMs] for real. `dadb.shell` blocks in a socket read that a
+         * coroutine timeout cannot interrupt, so without this a command that keeps its session open
+         * hangs the caller for ever (Tailscale's Connect spinning, 2026-10-07). With it, the
+         * connection is closed when the time is up, which ends the read; later commands reconnect.
+         * Opt-in: closing the session can cut short a command still running, and the supervisor
+         * dispatch on the DiLink-5 boot path must not start behaving differently on a slow boot.
+         */
+        hardTimeout: Boolean = false,
     ): List<ShellResult> = withContext(Dispatchers.IO) {
         if (commands.isEmpty()) return@withContext emptyList()
         if (!isPortOpen()) return@withContext emptyList()
@@ -401,16 +411,26 @@ object AdbPermissionManager {
         if (!isUserUnlocked(context)) return@withContext emptyList()
 
         val keyPair = getOrCreateKeyPair(context)
-        val dadb = tryConnect(keyPair, timeoutMs = 2_000) ?: return@withContext emptyList()
+        var dadb: Dadb? = tryConnect(keyPair, timeoutMs = 2_000) ?: return@withContext emptyList()
 
         val out = ArrayList<ShellResult>(commands.size)
         try {
             for (cmd in commands) {
                 val trimmed = cmd.trim()
                 if (trimmed.isBlank()) { out += ShellResult(-1, ""); continue }
+                if (hardTimeout) {
+                    // A previous command's timeout closed the connection: open a fresh one.
+                    val session = dadb ?: tryConnect(keyPair, timeoutMs = 2_000).also { dadb = it }
+                    if (session == null) { out += ShellResult(-1, "Command failed: channel lost"); continue }
+                    val r = shellWithHardTimeout(session, trimmed, perCommandTimeoutMs)
+                    if (r.timedOut) dadb = null
+                    out += r.result
+                    continue
+                }
+                val session = dadb ?: break
                 val result = withTimeoutOrNull(perCommandTimeoutMs) {
                     try {
-                        val r = dadb.shell(trimmed)
+                        val r = session.shell(trimmed)
                         ShellResult(r.exitCode, r.allOutput.trim())
                     } catch (e: Exception) {
                         ShellResult(-1, "Command failed: ${e.message}")
@@ -419,10 +439,36 @@ object AdbPermissionManager {
                 out += result
             }
         } finally {
-            runCatching { dadb.close() }
+            runCatching { dadb?.close() }
         }
         out
     }
+
+    internal class HardTimeoutResult(val result: ShellResult, val timedOut: Boolean)
+
+    /** One command, ended by closing [dadb] if it outlasts [timeoutMs] — see runShellBatch's hardTimeout. */
+    internal suspend fun shellWithHardTimeout(dadb: Dadb, cmd: String, timeoutMs: Long): HardTimeoutResult =
+        kotlinx.coroutines.coroutineScope {
+            val timedOut = java.util.concurrent.atomic.AtomicBoolean(false)
+            // Its own IO thread, whatever the caller's dispatcher: this thread is about to block in
+            // the read, and a single-threaded caller would otherwise never let the watchdog run.
+            val watchdog = launch(Dispatchers.IO) {
+                kotlinx.coroutines.delay(timeoutMs)
+                timedOut.set(true)
+                runCatching { dadb.close() }
+            }
+            try {
+                val r = dadb.shell(cmd)
+                HardTimeoutResult(ShellResult(r.exitCode, r.allOutput.trim()), timedOut.get())
+            } catch (e: Exception) {
+                HardTimeoutResult(
+                    if (timedOut.get()) ShellResult(-1, "timeout") else ShellResult(-1, "Command failed: ${e.message}"),
+                    timedOut.get(),
+                )
+            } finally {
+                watchdog.cancel()
+            }
+        }
 
     /**
      * Apply the DiLink-5 vehicle-API access tweaks over an already-open dadb session:

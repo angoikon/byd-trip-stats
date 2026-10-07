@@ -84,6 +84,10 @@ fun LocalBackupScreen(
 
     val isBusy = backupState is LocalBackupManager.BackupState.InProgress
     val telegramBusy = telegramState is TelegramManager.TelegramState.InProgress
+    // The backup is snapshotted and compressed before TelegramManager's upload starts; this covers
+    // that stretch too, so Send backup now can't be tapped again while it looks idle.
+    val telegramPreparing by manager.telegramPreparing.collectAsState()
+    val telegramActive = telegramBusy || telegramPreparing
     val isPro by EntitlementManager.isPro.collectAsState()  // SD card backup is Pro-gated
 
     // A backup that has been checked and is waiting for the user to confirm it — see
@@ -605,10 +609,10 @@ fun LocalBackupScreen(
                             telegramManager.resetState()
                             scope.launch { manager.backupToTelegram() }
                         },
-                        enabled  = !isBusy && !telegramBusy,
+                        enabled  = !isBusy && !telegramActive,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        if (telegramBusy) {
+                        if (telegramActive) {
                             CircularProgressIndicator(
                                 modifier    = Modifier.size(18.dp),
                                 strokeWidth = 2.dp,
@@ -618,7 +622,13 @@ fun LocalBackupScreen(
                             Icon(Icons.AutoMirrored.Filled.Send, null, modifier = Modifier.size(20.dp))
                         }
                         Spacer(Modifier.width(8.dp))
-                        Text(if (telegramBusy) stringResource(R.string.sending) else stringResource(R.string.send_backup_now_action))
+                        Text(
+                            when {
+                                telegramBusy      -> stringResource(R.string.sending)
+                                telegramPreparing -> stringResource(R.string.running)
+                                else              -> stringResource(R.string.send_backup_now_action)
+                            }
+                        )
                     }
 
                 } else {
@@ -691,7 +701,7 @@ fun LocalBackupScreen(
                                     telegramManager.clearTelegramBackups()
                                     telegramManager.listTelegramBackups()
                                 },
-                                enabled = !telegramBusy && !isBusy
+                                enabled = !telegramActive && !isBusy
                             ) {
                                 Icon(Icons.Filled.Refresh, stringResource(R.string.refresh), modifier = Modifier.size(22.dp))
                             }
@@ -709,7 +719,7 @@ fun LocalBackupScreen(
                                 if (index > 0) HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                                 TelegramBackupListItem(
                                     backup    = backup,
-                                    enabled   = !isBusy && !telegramBusy,
+                                    enabled   = !isBusy && !telegramActive,
                                     onRestore = {
                                         manager.resetState()
                                         telegramManager.resetState()

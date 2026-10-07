@@ -219,10 +219,14 @@ object TailscaleManager {
         // setsid so it outlives the shell that launched it — proven to survive the adb session.
         // `>>`, appending: rotateLogIfLarge empties the log in place while the daemon runs, and an
         // appending writer simply carries on at the new end.
+        // `cd …;`, not `cd … &&`: with `&&` the trailing `&` backgrounds the whole list as a subshell
+        // that keeps the adb session's output open while it waits on the daemon, so the shell call
+        // never returned and Connect spun for ever (2026-10-07). Only the daemon itself is
+        // backgrounded now, with all three of its streams redirected.
         sh(
             context,
-            "cd $DIR && HOME=$DIR SSL_CERT_DIR=$CA_CERT_DIRS setsid $BIN --tun=userspace-networking " +
-                "--statedir=$DIR --socket=$SOCKET >> $LOG 2>&1 &",
+            "cd $DIR || exit 1; HOME=$DIR SSL_CERT_DIR=$CA_CERT_DIRS setsid $BIN --tun=userspace-networking " +
+                "--statedir=$DIR --socket=$SOCKET >> $LOG 2>&1 < /dev/null &",
             timeoutMs = 10_000L,
         )
 
@@ -300,7 +304,8 @@ object TailscaleManager {
         // minted and the QR never appeared, on any car (2.17.0; reported on an Atto 3).
         sh(
             context,
-            "cd $DIR && HOME=$DIR TS_BE_CLI=1 setsid $BIN --socket=$SOCKET up " +
+            // `cd …;` for the same reason as the daemon launch in start(): only `up` is backgrounded.
+            "cd $DIR || exit 1; HOME=$DIR TS_BE_CLI=1 setsid $BIN --socket=$SOCKET up " +
                 // stdin from /dev/null too: `up` waits for the sign-in, and an inherited input is
                 // enough for a shell to wait on it instead of returning straight away.
                 "--hostname=${hostname(context)} --accept-dns=false > $DIR/up.log 2>&1 < /dev/null &",
@@ -592,7 +597,8 @@ object TailscaleManager {
      */
     private suspend fun sh(context: Context, command: String, timeoutMs: Long): String? {
         val started = System.currentTimeMillis()
-        val res = AdbPermissionManager.runShellBatch(context, listOf(command), timeoutMs)
+        // hardTimeout: a Tailscale call that hangs must end in an error, never in a spinner.
+        val res = AdbPermissionManager.runShellBatch(context, listOf(command), timeoutMs, hardTimeout = true)
         val r = res.firstOrNull()
         val took = System.currentTimeMillis() - started
         if (r == null) {
