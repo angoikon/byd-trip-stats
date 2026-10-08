@@ -70,6 +70,8 @@
     <string name="cells_awaiting">Zellen: Warte auf Daten…</string>
     <string name="cells_range">Zellen: %1$s – %2$s V</string>
     <string name="cells_min_only">Zellen: %1$s V</string>
+    <string name="cells_unavailable_di5">Zellen: bei DiLink-5 nicht verfügbar</string>
+    <string name="cell_voltage_unavailable_di5">DiLink-5 gibt Zellspannungen nicht an Apps weiter, daher können sie bei diesem Auto vorerst weder angezeigt noch überwacht werden.</string>
     <string name="battery_temp_value">Temp: %1$s °C</string>
     <string name="soh_value">SoH: %1$s</string>
     <string name="hv_12v_pair">%1$s / %2$s</string>
@@ -1090,7 +1092,7 @@
     <string name="faq_q_offline_trip">Bedeutet kein Netzwerk, dass die Fahrt im Verlauf fehlt?</string>
     <string name="faq_a_offline_trip">Nein. Der Fahrtenverlauf wird lokal gespeichert und hängt nicht von Mobilfunk oder WLAN ab.\n\nEine Fahrt kann sich nur dann etwas später schließen, wenn die Live-Telemetrie selbst für eine Weile stoppt. In diesem Fall schließt der Watchdog die aktive Fahrt nach 3 Minuten Telemetriestille, verankert am letzten von der App empfangenen Paket.</string>
     <string name="faq_q_stops_restart">Die App hört nach einem Neustart des Autos auf zu funktionieren</string>
-    <string name="faq_a_stops_restart">Sie müssen BYD Trip Stats vom Autostart-Killer ausschließen:\n\n1. Disable Autostart-App öffnen\n2. BYD Trip Stats finden und deaktivieren\n3. App öffnen und Lautstärketaste ~10 Sekunden halten, um die Auto-UI neu zu starten</string>
+    <string name="faq_a_stops_restart">Vermutlich blockiert die Liste „Autostartverbot“ (Disable Autostart) des Autos die App. Solange BYD Trip Stats dort eingeschaltet ist, verhindert das Auto, dass die App von selbst startet, wenn sie nicht schon läuft.\n\n1. Öffnen Sie die App „Autostartverbot“ (eine BYD-App, meist in der Nähe des Dateimanagers)\n2. Suchen Sie BYD Trip Stats und schalten Sie den Schalter aus\n3. Öffnen Sie BYD Trip Stats einmal\n\nEin Neustart ist nicht nötig. Die Änderung wirkt sofort.\n\nWichtig: Prüfen Sie das nach jedem App-Update erneut, denn ein Update kann den Schalter wieder einschalten.</string>
     <string name="faq_q_backup">Wie sichere ich meine Fahrtdaten?</string>
     <string name="faq_a_backup">Lokal: Einstellungen → App → Backup &amp; Wiederherstellung → Jetzt sichern.\nSD-Karte (Pro): Backup &amp; Wiederherstellung → Auf SD-Karte sichern.\nTelegram: Bot unter Einstellungen → Verbindungen → Telegram verbinden und manuell oder nach Zeitplan senden.</string>
     <string name="faq_q_recover">Ich habe die App neu installiert — kann ich meine Backups wiederherstellen?</string>
@@ -1158,7 +1160,7 @@
     <string name="qr_failed_msg">QR-Code konnte nicht gerendert werden. \"Link kopieren\" verwenden und an %1$s mailen.</string>
     <string name="compat_telegram_action">Telegram</string>
     <string name="autostart_dialog_title">⚠️ Aktion erforderlich — Autostart</string>
-    <string name="autostart_dialog_msg">Eine neue Version wurde installiert. Du musst den Autostart für diese App deaktivieren — das ermöglicht die Ausführung von Vordergrund-/Hintergrunddiensten.\nEin einmaliger Neustart des Autos ist nötig, und zwar nur bei der ersten Installation der App und nachdem du den Autostart deaktiviert hast. Wenn du von einer älteren Version aktualisierst, musst du nicht neu starten</string>
+    <string name="autostart_dialog_msg">BYD Trip Stats wurde gerade installiert oder aktualisiert. Dadurch kann die App in der Liste „Autostartverbot“ (Disable Autostart) des Autos wieder eingeschaltet sein.\n\nSuche auf dem nächsten Bildschirm BYD Trip Stats und schalte den Schalter aus. Solange er an ist, verhindert das Auto, dass die App von selbst startet, wenn sie nicht schon läuft (zum Beispiel nach einem Neustart des Infotainmentsystems). Sie läuft dann erst, wenn du sie öffnest.\n\nEin Neustart ist nicht nötig. Die Änderung wirkt sofort.</string>
     <string name="autostart_got_it">Verstanden</string>
     <string name="autostart_open_failed">Der Autostart-Bildschirm konnte auf dieser Head-Unit nicht geöffnet werden. Öffne ihn über die Einstellungen des Autos → Apps → Autostart (oder Hintergrund-Apps) und stelle sicher, dass Trip Stats zugelassen ist.</string>
     <string name="flavor_mismatch_title">⚠️ Falscher Build für dieses Auto</string>

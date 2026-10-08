@@ -81,6 +81,8 @@
     <string name="cells_awaiting">Celler: väntar på data…</string>
     <string name="cells_range">Celler: %1$s – %2$s V</string>
     <string name="cells_min_only">Celler: %1$s V</string>
+    <string name="cells_unavailable_di5">Celler: inte tillgängligt på DiLink-5</string>
+    <string name="cell_voltage_unavailable_di5">DiLink-5 delar inte cellspänningar med appar, så de kan för närvarande inte visas eller övervakas på den här bilen.</string>
     <string name="battery_temp_value">Temp: %1$s °C</string>
     <string name="soh_value">SoH: %1$s</string>
     <string name="hv_12v_pair">%1$s / %2$s</string>
@@ -1181,7 +1183,7 @@
     <string name="faq_q_offline_trip">Ingen nätverksanslutning innebär att resan saknas från historiken?</string>
     <string name="faq_a_offline_trip">Nej. Resehistorik lagras lokalt och beror inte på mobilsignal eller WiFi.\n\nEn resa kan stängas lite senare bara om livetelemetri i sig stoppar ett tag. I så fall stänger övervakaren den aktiva resan efter 3 minuters telemetritystnad, förankrad till det sista paketet appen fick.</string>
     <string name="faq_q_stops_restart">Appen slutar fungera efter en omstart av bilen</string>
-    <string name="faq_a_stops_restart">Du behöver utesluta BYD Trip Stats från autostart-killern:\n\n1. Öppna appen Inaktivera Autostart (inbyggd BYD-app, vanligtvis nära filutforskaren)\n2. Hitta BYD Trip Stats och växla dess post AV\n3. Öppna appen och håll volymknappen nere i ca 10 sekunder för att starta om bil-UI:t\n4. Öppna appen igen\n\nViktigt: du måste upprepa det här steget efter varje appuppdatering, eftersom behörigheten återställs vid ominstallation.</string>
+    <string name="faq_a_stops_restart">Bilens lista ”Inaktivera autostart” (Disable Autostart) blockerar den troligen. Så länge BYD Trip Stats är påslagen där hindrar bilen appen från att starta av sig själv när den inte redan körs.\n\n1. Öppna appen Inaktivera autostart (en BYD-app, oftast nära filhanteraren)\n2. Leta upp BYD Trip Stats och slå av reglaget\n3. Öppna BYD Trip Stats en gång\n\nDu behöver inte starta om. Ändringen gäller direkt.\n\nViktigt: kontrollera det igen efter varje appuppdatering, eftersom en uppdatering kan slå på den igen.</string>
     <string name="faq_q_backup">Hur säkerhetskopierar jag min resedata?</string>
     <string name="faq_a_backup">Flera metoder är tillgängliga — alla producerar samma standard SQLite-fil:\n\nLokal (enklast): Inställningar → App → Säkerhetskopiering &amp; Återställning → Säkerhetskopiera nu.\n\nSD-kort (Pro): Säkerhetskopiering &amp; Återställning → Säkerhetskopiera till SD-kort. Överlever en avinstallation av appen.\n\nTelegram (rekommenderas): Anslut en bot under Inställningar → Anslutningar → Telegram, skicka sedan manuellt eller enligt ett schema.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
     <string name="faq_q_recover">Jag ominstallerade appen — kan jag återställa mina säkerhetskopior?</string>
@@ -1270,7 +1272,7 @@
 
     <!-- MainActivity dialogs -->
     <string name="autostart_dialog_title">⚠️ Åtgärd krävs — Autostart</string>
-    <string name="autostart_dialog_msg">En ny version har installerats. Du måste inaktivera autostart för den här appen, vilket gör att förgrunds-/bakgrundstjänster kan köras.\nEn engångsomstart av bilen behövs, och endast när du installerar appen första gången och efter att du inaktiverat autostart. Om du uppdaterar från en äldre version behöver du inte starta om</string>
+    <string name="autostart_dialog_msg">BYD Trip Stats har precis installerats eller uppdaterats, och det kan slå på appen igen i bilens lista ”Inaktivera autostart” (Disable Autostart).\n\nLeta upp BYD Trip Stats på nästa skärm och slå av reglaget. Så länge det är på hindrar bilen appen från att starta av sig själv när den inte redan körs (till exempel efter att infotainmentsystemet har startats om), så den körs först när du öppnar den.\n\nDu behöver inte starta om. Ändringen gäller direkt.</string>
     <string name="autostart_got_it">Förstått</string>
     <string name="autostart_open_failed">Det gick inte att öppna autostartskärmen på den här enheten. Öppna den via bilens egna Inställningar → Appar → Autostart (eller Bakgrundsappar) och se till att Trip Stats är tillåten.</string>
     <string name="flavor_mismatch_title">⚠️ Fel version för den här bilen</string>

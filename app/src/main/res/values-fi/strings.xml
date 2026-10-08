@@ -81,6 +81,8 @@
     <string name="cells_awaiting">Kennot: odotetaan tietoja…</string>
     <string name="cells_range">Kennot: %1$s – %2$s V</string>
     <string name="cells_min_only">Kennot: %1$s V</string>
+    <string name="cells_unavailable_di5">Kennot: ei saatavilla DiLink-5:ssä</string>
+    <string name="cell_voltage_unavailable_di5">DiLink-5 ei jaa kennojännitteitä sovelluksille, joten niitä ei toistaiseksi voi näyttää eikä valvoa tässä autossa.</string>
     <string name="battery_temp_value">Lämpö: %1$s °C</string>
     <string name="soh_value">SoH: %1$s</string>
     <string name="hv_12v_pair">%1$s / %2$s</string>
@@ -1181,7 +1183,7 @@
     <string name="faq_q_offline_trip">Tarkoittaako verkkoyhteyden puuttuminen että matka puuttuu historiasta?</string>
     <string name="faq_a_offline_trip">Ei. Matkahistoria tallennetaan paikallisesti eikä riipu mobiilisignaalista tai WiFistä.\n\nMatka voi sulkeutua hieman myöhemmin vain jos live-telemetria itsessään lakkaa hetkeksi. Siinä tapauksessa watchdog sulkee aktiivisen matkan 3 minuutin telemetriakatkon jälkeen, ankkuroituna viimeiseen sovelluksen vastaanottamaan pakettiin.</string>
     <string name="faq_q_stops_restart">Sovellus lakkaa toimimasta auton uudelleenkäynnistyksen jälkeen</string>
-    <string name="faq_a_stops_restart">Sinun täytyy sulkea BYD Trip Stats pois autostart-estäjästä:\n\n1. Avaa Poista autostart käytöstä -sovellus (natiivi BYD-sovellus, yleensä tiedostonhallitsijan lähellä)\n2. Etsi BYD Trip Stats ja kytke sen merkintä POIS\n3. Avaa sovellus ja pidä äänenvoimakkuuspainiketta painettuna ~10 sekuntia käynnistääksesi auton käyttöliittymän uudelleen\n4. Avaa sovellus uudelleen\n\nTärkeää: sinun täytyy toistaa tämä vaihe jokaisen sovelluspäivityksen jälkeen, koska lupa nollautuu uudelleenasennuksen yhteydessä.</string>
+    <string name="faq_a_stops_restart">Auton luettelo ”Poista itsekäynnistys käytöstä” (Disable Autostart) todennäköisesti estää sitä. Niin kauan kuin BYD Trip Stats on siellä päällä, auto estää sovellusta käynnistymästä itsestään, jos se ei ole jo käynnissä.\n\n1. Avaa Poista itsekäynnistys käytöstä -sovellus (BYD:n sovellus, yleensä tiedostonhallinnan lähellä)\n2. Etsi BYD Trip Stats ja kytke kytkin pois päältä\n3. Avaa BYD Trip Stats kerran\n\nUudelleenkäynnistystä ei tarvita. Muutos toimii heti.\n\nTärkeää: tarkista asetus uudelleen jokaisen sovelluspäivityksen jälkeen, koska päivityksen asentaminen voi kytkeä sen takaisin päälle.</string>
     <string name="faq_q_backup">Kuinka varmuuskopioin matkatietoni?</string>
     <string name="faq_a_backup">Useita menetelmiä on saatavilla — kaikki tuottavat saman vakio-SQLite-tiedoston:\n\nPaikallinen (yksinkertaisin): Asetukset → Sovellus → Varmuuskopio &amp; palautus → Tee varmuuskopio nyt.\n\nSD-kortti (Pro): Varmuuskopio &amp; palautus → Varmuuskopio SD-kortille. Selviää sovelluksen asennuksen poistamisesta.\n\nTelegram (suositeltu): Yhdistä botti kohdassa Asetukset → Yhteydet → Telegram, sitten lähetä manuaalisesti tai aikataulun mukaan.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
     <string name="faq_q_recover">Asensin sovelluksen uudelleen — voinko palauttaa varmuuskopioni?</string>
@@ -1270,7 +1272,7 @@
 
     <!-- MainActivity dialogs -->
     <string name="autostart_dialog_title">⚠️ Toiminto vaaditaan — Autostart</string>
-    <string name="autostart_dialog_msg">Uusi versio on asennettu. Sinun täytyy poistaa automaattinen käynnistys käytöstä tässä sovelluksessa, mikä mahdollistaa etualan / taustan palvelujen suorittamisen.\nAuton kertaluontoinen uudelleenkäynnistys tarvitaan vain, kun asennat sovelluksen ensimmäisen kerran ja kun olet poistanut automaattisen käynnistyksen käytöstä. Jos päivität vanhemmasta versiosta, uudelleenkäynnistystä ei tarvita</string>
+    <string name="autostart_dialog_msg">BYD Trip Stats asennettiin tai päivitettiin juuri, ja se voi kytkeä sovelluksen takaisin päälle auton luettelossa ”Poista itsekäynnistys käytöstä” (Disable Autostart).\n\nEtsi seuraavalla näytöllä BYD Trip Stats ja kytke kytkin pois päältä. Niin kauan kuin se on päällä, auto estää sovellusta käynnistymästä itsestään, jos se ei ole jo käynnissä (esimerkiksi viihdejärjestelmän uudelleenkäynnistyksen jälkeen), joten se toimii vasta kun avaat sen.\n\nUudelleenkäynnistystä ei tarvita. Muutos toimii heti.</string>
     <string name="autostart_got_it">Selvä</string>
     <string name="autostart_open_failed">Automaattikäynnistysnäyttöä ei voitu avata tässä yksikössä. Avaa se auton omista Asetuksista → Sovellukset → Automaattikäynnistys (tai Taustasovellukset) ja varmista, että Trip Stats on sallittu.</string>
     <string name="flavor_mismatch_title">⚠️ Väärä versio tälle autolle</string>

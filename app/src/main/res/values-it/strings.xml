@@ -81,6 +81,8 @@
     <string name="cells_awaiting">Celle: in attesa di dati…</string>
     <string name="cells_range">Celle: %1$s – %2$s V</string>
     <string name="cells_min_only">Celle: %1$s V</string>
+    <string name="cells_unavailable_di5">Celle: non disponibile su DiLink-5</string>
+    <string name="cell_voltage_unavailable_di5">DiLink-5 non condivide le tensioni delle celle con le app, quindi per ora non possono essere mostrate né monitorate su questa auto.</string>
     <string name="battery_temp_value">Temp: %1$s °C</string>
     <string name="soh_value">SoH: %1$s</string>
     <string name="hv_12v_pair">%1$s / %2$s</string>
@@ -1181,7 +1183,7 @@
     <string name="faq_q_offline_trip">La mancanza di connettività di rete significa che il viaggio mancherà dallo storico?</string>
     <string name="faq_a_offline_trip">No. Lo storico viaggi è archiviato localmente e non dipende dal segnale mobile o WiFi.\n\nUn viaggio potrebbe chiudersi un po\' più tardi solo se la telemetria live stessa si interrompe per un po\'. In quel caso il watchdog chiude il viaggio attivo dopo 3 minuti di silenzio telemetrico, ancorato all\'ultimo pacchetto ricevuto dall\'app.</string>
     <string name="faq_q_stops_restart">L\'app smette di funzionare dopo il riavvio dell\'auto</string>
-    <string name="faq_a_stops_restart">Devi escludere BYD Trip Stats dal blocker di avvio automatico:\n\n1. Apri l\'app Disabilita avvio automatico (app nativa BYD, di solito vicino all\'esplora file)\n2. Trova BYD Trip Stats e disattiva la sua voce\n3. Apri l\'app e tieni premuto il tasto volume per ~10 secondi per riavviare l\'interfaccia auto\n4. Riapri l\'app\n\nImportante: devi ripetere questo passaggio dopo ogni aggiornamento dell\'app, perché il permesso si azzera alla reinstallazione.</string>
+    <string name="faq_a_stops_restart">Probabilmente la blocca l\'elenco «Disattiva avvio automatico» (Disable Autostart) dell\'auto. Finché BYD Trip Stats è attiva lì, l\'auto impedisce all\'app di avviarsi da sola quando non è già in esecuzione.\n\n1. Apri l\'app Disattiva avvio automatico (un\'app BYD, di solito vicino al gestore file)\n2. Trova BYD Trip Stats e disattiva l\'interruttore\n3. Apri BYD Trip Stats una volta\n\nNon serve riavviare. La modifica ha effetto subito.\n\nImportante: ricontrolla dopo ogni aggiornamento dell\'app, perché l\'installazione di un aggiornamento può riattivarla.</string>
     <string name="faq_q_backup">Come faccio il backup dei dati di viaggio?</string>
     <string name="faq_a_backup">Sono disponibili diversi metodi — tutti producono lo stesso file SQLite standard:\n\nLocale (più semplice): Impostazioni → App → Backup &amp; Ripristino → Esegui backup ora.\n\nScheda SD (Pro): Backup &amp; Ripristino → Backup su scheda SD. Sopravvive a una disinstallazione dell\'app.\n\nTelegram (consigliato): Connetti un bot in Impostazioni → Connessioni → Telegram, poi invia manualmente o con una pianificazione.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
     <string name="faq_q_recover">Ho reinstallato l\'app — posso recuperare i backup?</string>
@@ -1270,7 +1272,7 @@
 
     <!-- MainActivity dialogs -->
     <string name="autostart_dialog_title">⚠️ Azione richiesta — Avvio automatico</string>
-    <string name="autostart_dialog_msg">È stata installata una nuova versione. Devi disabilitare l\'avvio automatico per questa app, il che consente l\'esecuzione dei servizi in primo piano / in background.\nÈ necessario un riavvio una tantum dell\'auto, e solo quando installi l\'app per la prima volta e dopo aver disabilitato l\'avvio automatico. Se stai aggiornando da una versione precedente, non devi riavviare</string>
+    <string name="autostart_dialog_msg">BYD Trip Stats è appena stata installata o aggiornata, e questo può riattivarla nell\'elenco «Disattiva avvio automatico» (Disable Autostart) dell\'auto.\n\nNella schermata successiva, trova BYD Trip Stats e disattiva l\'interruttore. Finché è attivo, l\'auto impedisce all\'app di avviarsi da sola quando non è già in esecuzione (ad esempio dopo il riavvio del sistema di infotainment), quindi funziona solo quando la apri.\n\nNon serve riavviare. La modifica ha effetto subito.</string>
     <string name="autostart_got_it">Capito</string>
     <string name="autostart_open_failed">Impossibile aprire la schermata di avvio automatico su questa unità. Aprila dalle Impostazioni dell\'auto → App → Avvio automatico (o App in background) e assicurati che Trip Stats sia consentito.</string>
     <string name="flavor_mismatch_title">⚠️ Build errata per questa auto</string>

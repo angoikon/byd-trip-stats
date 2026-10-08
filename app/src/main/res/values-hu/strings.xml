@@ -78,6 +78,8 @@
     <string name="cells_awaiting">Cellák: adatokra várva…</string>
     <string name="cells_range">Cellák: %1$s – %2$s V</string>
     <string name="cells_min_only">Cellák: %1$s V</string>
+    <string name="cells_unavailable_di5">Cellák: DiLink-5 esetén nem elérhető</string>
+    <string name="cell_voltage_unavailable_di5">A DiLink-5 nem adja át a cellafeszültségeket az alkalmazásoknak, ezért ezen az autón egyelőre nem jeleníthetők meg és nem figyelhetők.</string>
     <string name="battery_temp_value">Hőm.: %1$s °C</string>
     <string name="soh_value">SoH: %1$s</string>
     <string name="hv_12v_pair">%1$s / %2$s</string>
@@ -1177,7 +1179,7 @@
     <string name="faq_q_offline_trip">A hálózat hiánya azt jelenti, hogy az út hiányozni fog az előzményekből?</string>
     <string name="faq_a_offline_trip">Nem. Az úttörténet helyben tárolódik, és nem függ mobiljeltől vagy Wi-Fi-től.\n\nEgy út csak akkor záródhat kicsit később, ha maga az élő telemetria áll le egy időre. Ilyenkor a watchdog 3 perc telemetriacsend után zárja az aktív utat, az alkalmazás által utoljára kapott csomaghoz igazítva.</string>
     <string name="faq_q_stops_restart">Az alkalmazás az autó újraindítása után nem működik</string>
-    <string name="faq_a_stops_restart">Ki kell vennie a BYD Trip Stats-ot az autostart-gyilkosból:\n\n1. Nyissa meg a Disable Autostart alkalmazást (natív BYD app, általában a fájlkezelő közelében)\n2. Keresse meg a BYD Trip Stats-ot, és kapcsolja KI a bejegyzését — ahogy az Electrónál is tette\n3. Nyissa meg az alkalmazást, és tartsa nyomva a hangerőgombot ~10 másodpercig az autó UI újraindításához\n4. Nyissa meg újra az alkalmazást\n\nFontos: ezt a lépést minden alkalmazásfrissítés után meg kell ismételnie, mert az engedély újratelepítéskor visszaáll.</string>
+    <string name="faq_a_stops_restart">Valószínűleg az autó „Automatikus indítás letiltása” (Disable Autostart) listája blokkolja. Amíg a BYD Trip Stats ott be van kapcsolva, az autó nem engedi, hogy az alkalmazás magától elinduljon, ha éppen nem fut.\n\n1. Nyissa meg az Automatikus indítás letiltása alkalmazást (BYD-alkalmazás, általában a fájlkezelő közelében)\n2. Keresse meg a BYD Trip Stats-ot, és kapcsolja ki a kapcsolót\n3. Nyissa meg egyszer a BYD Trip Stats-ot\n\nÚjraindításra nincs szükség. A változás azonnal érvényes.\n\nFontos: minden alkalmazásfrissítés után ellenőrizze újra, mert egy frissítés telepítése újra bekapcsolhatja.</string>
     <string name="faq_q_backup">Hogyan mentsem az útadataimat?</string>
     <string name="faq_a_backup">Több módszer is elérhető — mind ugyanazt a szabványos SQLite fájlt hozza létre:\n\nHelyi (legegyszerűbb): Beállítások → Alkalmazás → Mentés és visszaállítás → Mentés most.\n\nSD-kártya (Pro): Mentés és visszaállítás → Mentés SD-kártyára. Túléli az alkalmazás eltávolítását.\n\nTelegram (ajánlott): Csatlakoztasson botot a Beállítások → Kapcsolatok → Telegram alatt, majd küldjön kézzel vagy ütemezve.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FÁJLNÉV.db &gt; local.db</string>
     <string name="faq_q_recover">Újratelepítettem az alkalmazást — visszakaphatom a mentéseimet?</string>
@@ -1266,7 +1268,7 @@
 
     <!-- MainActivity dialogs -->
     <string name="autostart_dialog_title">⚠️ Teendő — Autostart</string>
-    <string name="autostart_dialog_msg">Új verzió lett telepítve. Ki kell kapcsolnia a „disable autostart”-ot ennél az alkalmazásnál, ami lehetővé teszi az előtér-/háttérszolgáltatások futását.\nAz autó egyszeri újraindítása szükséges, de csak az alkalmazás első telepítésekor és a „disable autostart” kikapcsolása után. Ha egy régebbi verzióról frissít, nem kell újraindítania</string>
+    <string name="autostart_dialog_msg">A BYD Trip Stats most lett telepítve vagy frissítve, ami miatt újra bekapcsolódhat az autó „Automatikus indítás letiltása” (Disable Autostart) listájában.\n\nA következő képernyőn keresse meg a BYD Trip Stats-ot, és kapcsolja ki a kapcsolót. Amíg be van kapcsolva, az autó nem engedi, hogy az alkalmazás magától elinduljon, ha éppen nem fut (például az infotainment rendszer újraindulása után), így csak akkor fut, ha Ön megnyitja.\n\nÚjraindításra nincs szükség. A változás azonnal érvényes.</string>
     <string name="autostart_got_it">Értem</string>
     <string name="autostart_open_failed">Az automatikus indítás képernyője nem nyitható meg ezen a fejegységen. Nyisd meg az autó saját Beállítások → Alkalmazások → Automatikus indítás (vagy Háttéralkalmazások) menüjéből, és győződj meg róla, hogy a Trip Stats engedélyezve van.</string>
     <string name="flavor_mismatch_title">⚠️ Rossz build ehhez az autóhoz</string>

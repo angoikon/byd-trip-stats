@@ -78,6 +78,8 @@
     <string name="cells_awaiting">Články: čekání na data…</string>
     <string name="cells_range">Články: %1$s – %2$s V</string>
     <string name="cells_min_only">Články: %1$s V</string>
+    <string name="cells_unavailable_di5">Články: na DiLink-5 nedostupné</string>
+    <string name="cell_voltage_unavailable_di5">DiLink-5 nesdílí napětí článků s aplikacemi, takže je na tomto autě zatím nelze zobrazit ani sledovat.</string>
     <string name="battery_temp_value">Tepl.: %1$s °C</string>
     <string name="soh_value">SoH: %1$s</string>
     <string name="hv_12v_pair">%1$s / %2$s</string>
@@ -1177,7 +1179,7 @@
     <string name="faq_q_offline_trip">Znamená výpadek sítě, že jízda bude v historii chybět?</string>
     <string name="faq_a_offline_trip">Ne. Historie jízd se ukládá lokálně a nezávisí na mobilním signálu ani Wi-Fi.\n\nJízda se může uzavřít o něco později jen tehdy, když se na chvíli zastaví samotná živá telemetrie. V tom případě watchdog uzavře aktivní jízdu po 3 minutách ticha telemetrie, počítáno od posledního paketu, který aplikace přijala.</string>
     <string name="faq_q_stops_restart">Aplikace přestává fungovat po restartu vozu</string>
-    <string name="faq_a_stops_restart">Musíte vyjmout BYD Trip Stats z blokátoru autostartu:\n\n1. Otevřete aplikaci Disable Autostart (nativní aplikace BYD, obvykle poblíž průzkumníka souborů)\n2. Najděte BYD Trip Stats a přepněte její záznam na VYP\n3. Otevřete aplikaci a podržte tlačítko hlasitosti ~10 sekund pro restart UI vozu\n4. Znovu otevřete aplikaci\n\nDůležité: tento krok musíte opakovat po každé aktualizaci aplikace, protože oprávnění se při reinstalaci resetuje.</string>
+    <string name="faq_a_stops_restart">Pravděpodobně ji blokuje seznam „Zakázat automatické spouštění“ (Disable Autostart) v autě. Dokud je tam BYD Trip Stats zapnutá, auto nedovolí, aby se aplikace sama spustila, pokud už neběží.\n\n1. Otevřete aplikaci Zakázat automatické spouštění (aplikace BYD, obvykle u správce souborů)\n2. Najděte BYD Trip Stats a vypněte přepínač\n3. Jednou otevřete BYD Trip Stats\n\nRestart není potřeba. Změna platí okamžitě.\n\nDůležité: po každé aktualizaci aplikace to znovu zkontrolujte, protože instalace aktualizace ji může znovu zapnout.</string>
     <string name="faq_q_backup">Jak zálohuji data jízd?</string>
     <string name="faq_a_backup">K dispozici je několik metod — všechny vytvářejí stejný standardní soubor SQLite:\n\nLokálně (nejjednodušší): Nastavení → Aplikace → Záloha a obnovení → Zálohovat nyní.\n\nSD karta (Pro): Záloha a obnovení → Záloha na SD kartu. Přežije odinstalaci aplikace.\n\nTelegram (doporučeno): Připojte bota v Nastavení → Připojení → Telegram a pak odesílejte ručně nebo podle plánu.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/NAZEVSOUBORU.db &gt; local.db</string>
     <string name="faq_q_recover">Přeinstaloval jsem aplikaci — mohu obnovit zálohy?</string>
@@ -1266,7 +1268,7 @@
 
     <!-- MainActivity dialogs -->
     <string name="autostart_dialog_title">⚠️ Vyžadována akce — Autostart</string>
-    <string name="autostart_dialog_msg">Byla nainstalována nová verze. Musíte pro tuto aplikaci vypnout „disable autostart”, což umožní běh služeb na popředí / na pozadí.\nJednorázový restart vozu je potřeba pouze při první instalaci aplikace a po vypnutí „disable autostart”. Pokud aktualizujete ze starší verze, restart není nutný</string>
+    <string name="autostart_dialog_msg">Aplikace BYD Trip Stats byla právě nainstalována nebo aktualizována, což ji může v autě znovu zapnout v seznamu „Zakázat automatické spouštění“ (Disable Autostart).\n\nNa další obrazovce najděte BYD Trip Stats a vypněte přepínač. Dokud je zapnutý, auto nedovolí, aby se aplikace sama spustila, pokud už neběží (například po restartu informačního systému), takže poběží, až když ji otevřete.\n\nRestart není potřeba. Změna platí okamžitě.</string>
     <string name="autostart_got_it">Rozumím</string>
     <string name="autostart_open_failed">Obrazovku automatického spuštění se na této jednotce nepodařilo otevřít. Otevřete ji v Nastavení vozu → Aplikace → Automatické spuštění (nebo Aplikace na pozadí) a ujistěte se, že je Trip Stats povolen.</string>
     <string name="flavor_mismatch_title">⚠️ Nesprávná verze pro toto auto</string>

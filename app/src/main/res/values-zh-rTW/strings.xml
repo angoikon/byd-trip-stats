@@ -81,6 +81,8 @@
     <string name="cells_awaiting">電芯：等待資料…</string>
     <string name="cells_range">電芯：%1$s – %2$s V</string>
     <string name="cells_min_only">電芯：%1$s V</string>
+    <string name="cells_unavailable_di5">電芯：DiLink-5 不支援</string>
+    <string name="cell_voltage_unavailable_di5">DiLink-5 不向應用程式提供電芯電壓，因此目前無法在這輛車上顯示或監測。</string>
     <string name="battery_temp_value">溫度：%1$s °C</string>
     <string name="soh_value">SoH：%1$s</string>
     <string name="hv_12v_pair">%1$s / %2$s</string>
@@ -1181,7 +1183,7 @@
     <string name="faq_q_offline_trip">無網路連線意味著行程將在歷史記錄中缺失？</string>
     <string name="faq_a_offline_trip">不會。行程歷史記錄儲存在本機，不依賴行動訊號或 WiFi。\n\n只有在即時遙測本身中斷一段時間時，行程才可能稍晚關閉。在這種情況下，監視器將在遙測靜默 3 分鐘後關閉活躍行程，以應用程式收到的最後一個資料封包為基準。</string>
     <string name="faq_q_stops_restart">車輛重新啟動後應用程式停止運作</string>
-    <string name="faq_a_stops_restart">您需要將 BYD Trip Stats 排除在自動啟動終止器之外：\n\n1. 開啟「停用自動啟動」應用程式（比亞迪原生應用程式，通常在檔案總管附近）\n2. 找到 BYD Trip Stats 並將其切換為關閉\n3. 開啟應用程式並長按音量鍵約 10 秒以重新啟動車輛介面\n4. 重新開啟應用程式\n\n重要：每次應用程式更新後必須重複此步驟，因為重新安裝會重置權限。</string>
+    <string name="faq_a_stops_restart">很可能是車輛的「停用自啟動」(Disable Autostart) 清單阻擋了它。只要 BYD Trip Stats 在該清單中處於開啟狀態，應用程式未執行時車輛就會阻止它自行啟動。\n\n1. 開啟「停用自啟動」應用程式（比亞迪應用程式，通常在檔案總管附近）\n2. 找到 BYD Trip Stats 並關閉其開關\n3. 開啟一次 BYD Trip Stats\n\n不需要重新開機，變更會立即生效。\n\n重要：每次更新應用程式後請再次檢查，因為安裝更新可能會重新開啟該開關。</string>
     <string name="faq_q_backup">如何備份我的行程資料？</string>
     <string name="faq_a_backup">有多種方法可用 — 均產生相同的標準 SQLite 檔案：\n\n本機（最簡單）：設定 → 應用程式 → 備份 &amp; 還原 → 立即備份。\n\nSD 卡（Pro）：備份 &amp; 還原 → 備份至 SD 卡。解除安裝應用程式後仍保留。\n\nTelegram（建議）：在 設定 → 連線 → Telegram 中連線機器人，然後手動或依排程傳送。\n\nADB：adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
     <string name="faq_q_recover">我重新安裝了應用程式 — 能否還原我的備份？</string>
@@ -1270,7 +1272,7 @@
 
     <!-- MainActivity dialogs -->
     <string name="autostart_dialog_title">⚠️ 需要操作 — 自動啟動</string>
-    <string name="autostart_dialog_msg">已安裝新版本。您需要關閉此應用程式的自動啟動，這樣可以讓前景 / 背景服務執行。\n只需在首次安裝應用程式時以及關閉自動啟動後重新啟動一次車輛。如果您是從舊版本升級，則無需重新啟動</string>
+    <string name="autostart_dialog_msg">BYD Trip Stats 剛剛安裝或更新，這可能會讓它在車輛的「停用自啟動」(Disable Autostart) 清單中重新被開啟。\n\n請在下一個畫面找到 BYD Trip Stats 並關閉其開關。只要開關保持開啟，應用程式未執行時車輛就會阻止它自行啟動（例如資訊娛樂系統重新啟動後），因此只有在您開啟應用程式後它才會執行。\n\n不需要重新開機，變更會立即生效。</string>
     <string name="autostart_got_it">知道了</string>
     <string name="autostart_open_failed">無法在此車機上開啟自動啟動畫面。請從車輛內建的 設定 → 應用程式 → 自動啟動（或背景應用程式）中開啟，並確保已允許 Trip Stats。</string>
     <string name="flavor_mismatch_title">⚠️ 此車型的版本錯誤</string>

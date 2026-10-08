@@ -70,6 +70,8 @@
     <string name="cells_awaiting">सेल: प्रतीक्षा में…</string>
     <string name="cells_range">सेल: %1$s – %2$s V</string>
     <string name="cells_min_only">सेल: %1$s V</string>
+    <string name="cells_unavailable_di5">सेल: DiLink-5 पर उपलब्ध नहीं</string>
+    <string name="cell_voltage_unavailable_di5">DiLink-5 ऐप्स के साथ सेल वोल्टेज साझा नहीं करता, इसलिए फ़िलहाल इस कार पर उन्हें दिखाया या मॉनिटर नहीं किया जा सकता।</string>
     <string name="battery_temp_value">तापमान: %1$s °C</string>
     <string name="soh_value">SoH: %1$s</string>
     <string name="hv_12v_pair">%1$s / %2$s</string>
@@ -1090,7 +1092,7 @@
     <string name="faq_q_offline_trip">क्या कोई नेटवर्क नहीं होने का मतलब है कि यात्रा इतिहास में नहीं होगी?</string>
     <string name="faq_a_offline_trip">नहीं। यात्रा इतिहास स्थानीय रूप से संग्रहीत है और मोबाइल या WiFi सिग्नल पर निर्भर नहीं करता।</string>
     <string name="faq_q_stops_restart">कार पुनः चालू करने के बाद ऐप बंद हो जाता है</string>
-    <string name="faq_a_stops_restart">आपको BYD Trip Stats को ऑटोस्टार्ट प्रबंधक से बाहर करना होगा:\n\n1. Disable Autostart ऐप खोलें\n2. BYD Trip Stats खोजें और अक्षम करें\n3. ऐप खोलें और कार इंटरफेस रिस्टार्ट करने के लिए ~10 सेकंड के लिए वॉल्यूम बटन दबाए रखें</string>
+    <string name="faq_a_stops_restart">शायद कार की “ऑटोस्टार्ट अक्षम करें” (Disable Autostart) सूची इसे रोक रही है। जब तक BYD Trip Stats वहाँ चालू है, कार ऐप को अपने आप शुरू होने से रोकती है जब वह पहले से नहीं चल रहा हो।\n\n1. “ऑटोस्टार्ट अक्षम करें” ऐप खोलें (BYD का ऐप, आमतौर पर फ़ाइल मैनेजर के पास)\n2. BYD Trip Stats खोजें और उसका स्विच बंद करें\n3. BYD Trip Stats को एक बार खोलें\n\nरीबूट की ज़रूरत नहीं है। बदलाव तुरंत लागू होता है।\n\nज़रूरी: हर ऐप अपडेट के बाद इसे फिर से जाँचें, क्योंकि अपडेट इंस्टॉल करने से यह फिर से चालू हो सकता है।</string>
     <string name="faq_q_backup">मैं अपना यात्रा डेटा बैकअप कैसे करूं?</string>
     <string name="faq_a_backup">स्थानीय: सेटिंग → ऐप → बैकअप &amp; रिस्टोर → अभी बैकअप करें\nSD Card (Pro): बैकअप &amp; रिस्टोर → SD Card पर बैकअप करें\nTelegram: सेटिंग → कनेक्शन → Telegram में एक बॉट कनेक्ट करें और मैन्युअल या शेड्यूल के अनुसार भेजें</string>
     <string name="faq_q_recover">मैंने ऐप फिर से इंस्टॉल किया — क्या मैं बैकअप पुनः प्राप्त कर सकता हूं?</string>
@@ -1158,7 +1160,7 @@
     <string name="qr_failed_msg">QR Code जनरेट नहीं हो सका। \"लिंक कॉपी करें\" का उपयोग करें और %1$s को ईमेल करें।</string>
     <string name="compat_telegram_action">Telegram</string>
     <string name="autostart_dialog_title">⚠️ कार्रवाई आवश्यक — ऑटोस्टार्ट</string>
-    <string name="autostart_dialog_msg">एक नया संस्करण इंस्टॉल हुआ है। आपको इस ऐप के लिए ऑटोस्टार्ट बंद करना होगा, जो फोरग्राउंड / बैकग्राउंड सेवाओं को चलने देता है।\nकार का एक-बार रीबूट ज़रूरी है, और केवल तब जब आप पहली बार ऐप इंस्टॉल करते हैं और ऑटोस्टार्ट बंद करने के बाद। अगर आप किसी पुराने संस्करण से अपडेट कर रहे हैं, तो आपको रीबूट करने की ज़रूरत नहीं है</string>
+    <string name="autostart_dialog_msg">BYD Trip Stats अभी इंस्टॉल या अपडेट हुआ है, जिससे यह कार की “ऑटोस्टार्ट अक्षम करें” (Disable Autostart) सूची में फिर से चालू हो सकता है।\n\nअगली स्क्रीन पर BYD Trip Stats खोजें और उसका स्विच बंद करें। जब तक यह चालू रहता है, कार ऐप को अपने आप शुरू होने से रोकती है जब वह पहले से नहीं चल रहा हो (उदाहरण के लिए इंफ़ोटेनमेंट सिस्टम के रीस्टार्ट होने के बाद), इसलिए ऐप तभी चलेगा जब आप उसे खोलेंगे।\n\nरीबूट की ज़रूरत नहीं है। बदलाव तुरंत लागू होता है।</string>
     <string name="autostart_got_it">ठीक है</string>
     <string name="autostart_open_failed">इस हेड यूनिट पर ऑटोस्टार्ट स्क्रीन नहीं खोली जा सकी। इसे कार की अपनी सेटिंग्स → ऐप्स → ऑटोस्टार्ट (या बैकग्राउंड ऐप्स) से खोलें और सुनिश्चित करें कि Trip Stats को अनुमति है।</string>
     <string name="flavor_mismatch_title">⚠️ इस कार के लिए गलत बिल्ड</string>

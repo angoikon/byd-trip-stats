@@ -70,6 +70,8 @@
     <string name="cells_awaiting">Cellules: en attente de données…</string>
     <string name="cells_range">Cellules: %1$s – %2$s V</string>
     <string name="cells_min_only">Cellules: %1$s V</string>
+    <string name="cells_unavailable_di5">Cellules: non disponibles sur DiLink-5</string>
+    <string name="cell_voltage_unavailable_di5">DiLink-5 ne transmet pas les tensions de cellule aux applications : elles ne peuvent donc pas encore être affichées ni surveillées sur cette voiture.</string>
     <string name="battery_temp_value">Temp: %1$s °C</string>
     <string name="soh_value">SoH: %1$s</string>
     <string name="hv_12v_pair">%1$s / %2$s</string>
@@ -1090,7 +1092,7 @@
     <string name="faq_q_offline_trip">L\'absence de réseau signifie-t-elle que le trajet sera absent de l\'historique?</string>
     <string name="faq_a_offline_trip">Non. L\'historique des trajets est stocké localement et ne dépend pas du signal mobile ou WiFi.\n\nUn trajet peut se fermer un peu plus tard uniquement si la télémétrie en direct s\'arrête pendant un moment. Dans ce cas, le gardien ferme le trajet actif après 3 minutes de silence télémétrique, ancré au dernier paquet reçu par l\'application.</string>
     <string name="faq_q_stops_restart">L\'app cesse de fonctionner après un redémarrage de la voiture</string>
-    <string name="faq_a_stops_restart">Vous devez exclure BYD Trip Stats du gestionnaire de démarrage automatique:\n\n1. Ouvrir l\'app Disable Autostart\n2. Trouver BYD Trip Stats et désactiver\n3. Ouvrir l\'app et maintenir le bouton volume ~10 secondes pour redémarrer l\'interface de la voiture</string>
+    <string name="faq_a_stops_restart">La liste « Désactiver l\'autodémarrage » (Disable Autostart) de la voiture la bloque probablement. Tant que BYD Trip Stats y est activée, la voiture empêche l\'app de démarrer d\'elle-même lorsqu\'elle ne tourne pas déjà.\n\n1. Ouvrez l\'app Désactiver l\'autodémarrage (une app BYD, généralement près du gestionnaire de fichiers)\n2. Trouvez BYD Trip Stats et désactivez l\'interrupteur\n3. Ouvrez BYD Trip Stats une fois\n\nAucun redémarrage n\'est nécessaire. Le changement s\'applique immédiatement.\n\nImportant : vérifiez-le à nouveau après chaque mise à jour de l\'app, car l\'installation d\'une mise à jour peut la réactiver.</string>
     <string name="faq_q_backup">Comment sauvegarder mes données de trajets?</string>
     <string name="faq_a_backup">Local: Paramètres → App → Sauvegarde &amp; Restauration → Sauvegarder maintenant.\nCarte SD (Pro): Sauvegarde &amp; Restauration → Sauvegarder sur carte SD.\nTelegram: Connectez un bot sous Paramètres → Connexions → Telegram et envoyez manuellement ou selon un planning.</string>
     <string name="faq_q_recover">J\'ai réinstallé l\'app — puis-je récupérer mes sauvegardes?</string>
@@ -1158,7 +1160,7 @@
     <string name="qr_failed_msg">Impossible de rendre le code QR. Utiliser \"Copier le lien\" et envoyer par email à %1$s.</string>
     <string name="compat_telegram_action">Telegram</string>
     <string name="autostart_dialog_title">⚠️ Action requise — Démarrage automatique</string>
-    <string name="autostart_dialog_msg">Une nouvelle version a été installée. Vous devez désactiver le démarrage automatique pour cette app, ce qui permet l\'exécution des services de premier plan / d\'arrière-plan.\nUn redémarrage unique de la voiture est nécessaire, uniquement lors de la première installation de l\'app et après avoir désactivé le démarrage automatique. Si vous effectuez une mise à jour depuis une version antérieure, vous n\'avez pas besoin de redémarrer</string>
+    <string name="autostart_dialog_msg">BYD Trip Stats vient d\'être installée ou mise à jour, ce qui peut la réactiver dans la liste « Désactiver l\'autodémarrage » (Disable Autostart) de la voiture.\n\nSur l\'écran suivant, trouvez BYD Trip Stats et désactivez l\'interrupteur. Tant qu\'il est activé, la voiture empêche l\'app de démarrer d\'elle-même lorsqu\'elle ne tourne pas déjà (par exemple après un redémarrage du système multimédia) : elle ne fonctionne alors qu\'une fois que vous l\'ouvrez.\n\nAucun redémarrage n\'est nécessaire. Le changement s\'applique immédiatement.</string>
     <string name="autostart_got_it">Compris</string>
     <string name="autostart_open_failed">Impossible d\'ouvrir l\'écran de démarrage automatique sur cette unité. Ouvrez-le depuis les Paramètres de la voiture → Applications → Démarrage automatique (ou Applications en arrière-plan) et assurez-vous que Trip Stats est autorisé.</string>
     <string name="flavor_mismatch_title">⚠️ Mauvaise version pour cette voiture</string>

@@ -104,10 +104,12 @@ object RuntimeLauncher {
 
     /**
      * Escalating strategies in order. First one returning exit 0 wins.
-     * The direct start-foreground-service forms fail cross-UID on this
-     * ROM (service is exported=false), so the broadcast form does the
-     * real work — sends the boot receiver an ACC_ON which triggers the
-     * full service start path inside the app.
+     * On DiLink 3, while BYD's "Disable Autostart" switch is on for us and our
+     * process is dead, BYD's ActivityManager drops every service start and
+     * broadcast from another UID (`ssc_skip … ignored`, so `am` prints "Error:
+     * Not found; no service started"), and only the activity launches at the end
+     * get through. Every install turns that switch back on. That is why a wake
+     * after an update pops the UI.
      */
     private fun wake(tick: Int): Boolean {
         // "com.byd.tripstats"

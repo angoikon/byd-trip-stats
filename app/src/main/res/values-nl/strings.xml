@@ -81,6 +81,8 @@
     <string name="cells_awaiting">Cellen: wachten op gegevens…</string>
     <string name="cells_range">Cellen: %1$s – %2$s V</string>
     <string name="cells_min_only">Cellen: %1$s V</string>
+    <string name="cells_unavailable_di5">Cellen: niet beschikbaar op DiLink-5</string>
+    <string name="cell_voltage_unavailable_di5">DiLink-5 deelt celspanningen niet met apps, dus ze kunnen op deze auto voorlopig niet worden getoond of bewaakt.</string>
     <string name="battery_temp_value">Temp: %1$s °C</string>
     <string name="soh_value">SoH: %1$s</string>
     <string name="hv_12v_pair">%1$s / %2$s</string>
@@ -1181,7 +1183,7 @@
     <string name="faq_q_offline_trip">Geen netwerkverbinding betekent dat de rit ontbreekt in de geschiedenis?</string>
     <string name="faq_a_offline_trip">Nee. Ritgeschiedenis wordt lokaal opgeslagen en is niet afhankelijk van mobiel signaal of Wi-Fi.\n\nEen rit kan alleen iets later sluiten als live telemetrie zelf een tijdje stopt. In dat geval sluit de waakhond de actieve rit na 3 minuten telemetriestilte, verankerd aan het laatste pakket dat de app heeft ontvangen.</string>
     <string name="faq_q_stops_restart">De app stopt met werken na een herstart van de auto</string>
-    <string name="faq_a_stops_restart">Je moet BYD Trip Stats uitsluiten van de autostart-killer:\n\n1. Open de app Autostart uitschakelen (native BYD-app, gewoonlijk bij de bestandsverkenner)\n2. Zoek BYD Trip Stats en schakel de vermelding UIT\n3. Open de app en houd de volumeknop ~10 seconden ingedrukt om de auto-UI te herstarten\n4. Open de app opnieuw\n\nBelangrijk: je moet deze stap herhalen na elke app-update, omdat de machtiging bij herinstallatie wordt gereset.</string>
+    <string name="faq_a_stops_restart">Waarschijnlijk blokkeert de lijst ‘Zelfstarten uitzetten’ (Disable Autostart) van de auto de app. Zolang BYD Trip Stats daar aan staat, voorkomt de auto dat de app vanzelf start als hij nog niet draait.\n\n1. Open de app Zelfstarten uitzetten (een BYD-app, meestal bij de bestandsbeheerder)\n2. Zoek BYD Trip Stats en zet de schakelaar uit\n3. Open BYD Trip Stats één keer\n\nOpnieuw opstarten is niet nodig. De wijziging werkt meteen.\n\nBelangrijk: controleer het na elke app-update opnieuw, want een update kan de schakelaar weer aanzetten.</string>
     <string name="faq_q_backup">Hoe maak ik een back-up van mijn ritgegevens?</string>
     <string name="faq_a_backup">Er zijn verschillende methoden beschikbaar — alle produceren hetzelfde standaard SQLite-bestand:\n\nLokaal (eenvoudigst): Instellingen → App → Back-up &amp; herstellen → Nu back-up maken.\n\nSD-kaart (Pro): Back-up &amp; herstellen → Back-up naar SD-kaart. Overleeft een app-verwijdering.\n\nTelegram (aanbevolen): Verbind een bot onder Instellingen → Verbindingen → Telegram, stuur dan handmatig of op schema.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
     <string name="faq_q_recover">Ik heb de app opnieuw geïnstalleerd — kan ik mijn back-ups herstellen?</string>
@@ -1270,7 +1272,7 @@
 
     <!-- MainActivity dialogs -->
     <string name="autostart_dialog_title">⚠️ Actie vereist — Autostart</string>
-    <string name="autostart_dialog_msg">Er is een nieuwe versie geïnstalleerd. Je moet autostart uitschakelen voor deze app, wat voorgrond-/achtergronddiensten laat draaien.\nEen eenmalige herstart van de auto is nodig, en alleen wanneer je de app voor het eerst installeert en nadat je autostart hebt uitgeschakeld. Als je bijwerkt vanaf een oudere versie, hoef je niet te herstarten</string>
+    <string name="autostart_dialog_msg">BYD Trip Stats is net geïnstalleerd of bijgewerkt, waardoor de app weer aan kan staan in de lijst ‘Zelfstarten uitzetten’ (Disable Autostart) van de auto.\n\nZoek op het volgende scherm BYD Trip Stats en zet de schakelaar uit. Zolang hij aan staat, voorkomt de auto dat de app vanzelf start als hij nog niet draait (bijvoorbeeld nadat het infotainmentsysteem opnieuw is opgestart), zodat hij pas werkt als je hem opent.\n\nOpnieuw opstarten is niet nodig. De wijziging werkt meteen.</string>
     <string name="autostart_got_it">Begrepen</string>
     <string name="autostart_open_failed">Kan het autostart-scherm op deze unit niet openen. Open het via de Instellingen van de auto zelf → Apps → Autostart (of Achtergrond-apps) en zorg dat Trip Stats is toegestaan.</string>
     <string name="flavor_mismatch_title">⚠️ Verkeerde build voor deze auto</string>

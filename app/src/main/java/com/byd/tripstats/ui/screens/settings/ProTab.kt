@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.byd.tripstats.R
 import com.byd.tripstats.data.entitlement.EntitlementManager
 import com.byd.tripstats.data.entitlement.RedeemResult
+import com.byd.tripstats.sdk.DiLink5Platform
 import com.byd.tripstats.ui.theme.BydElectricAzure
 
 /**
@@ -146,6 +147,10 @@ internal fun ProTab() {
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                // Said before the unlock, not after: on DiLink-5 this Pro feature has nothing to watch.
+                if (DiLink5Platform.isDiLink5) {
+                    CellVoltageUnavailableNote()
+                }
             }
         }
     }

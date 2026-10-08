@@ -78,6 +78,8 @@
     <string name="cells_awaiting">Sel: menunggu data…</string>
     <string name="cells_range">Sel: %1$s – %2$s V</string>
     <string name="cells_min_only">Sel: %1$s V</string>
+    <string name="cells_unavailable_di5">Sel: tidak tersedia di DiLink-5</string>
+    <string name="cell_voltage_unavailable_di5">DiLink-5 tidak membagikan tegangan sel ke aplikasi, jadi untuk saat ini tegangan sel tidak dapat ditampilkan atau dipantau di mobil ini.</string>
     <string name="battery_temp_value">Suhu: %1$s °C</string>
     <string name="soh_value">SoH: %1$s</string>
     <string name="hv_12v_pair">%1$s / %2$s</string>
@@ -1177,7 +1179,7 @@
     <string name="faq_q_offline_trip">Tidak ada konektivitas jaringan berarti perjalanan akan hilang dari riwayat?</string>
     <string name="faq_a_offline_trip">Tidak. Riwayat perjalanan disimpan secara lokal dan tidak bergantung pada sinyal seluler atau Wi-Fi.\n\nPerjalanan mungkin ditutup sedikit lebih lambat hanya jika telemetri langsung itu sendiri berhenti sejenak. Dalam hal itu watchdog menutup perjalanan aktif setelah 3 menit keheningan telemetri, ditambatkan ke paket terakhir yang aplikasi terima.</string>
     <string name="faq_q_stops_restart">Aplikasi berhenti bekerja setelah mobil dinyalakan ulang</string>
-    <string name="faq_a_stops_restart">Anda perlu mengecualikan BYD Trip Stats dari penghenti mulai-otomatis:\n\n1. Buka aplikasi Disable Autostart (aplikasi BYD bawaan, biasanya dekat penjelajah file)\n2. Temukan BYD Trip Stats dan alihkan entrinya ke MATI\n3. Buka aplikasi dan tahan tombol volume ~10 detik untuk memulai ulang UI mobil\n4. Buka kembali aplikasi\n\nPenting: Anda harus mengulangi langkah ini setelah setiap pembaruan aplikasi, karena izin disetel ulang saat instal ulang.</string>
+    <string name="faq_a_stops_restart">Kemungkinan daftar “Nonaktifkan Mulai Otomatis” (Disable Autostart) pada mobil memblokirnya. Selama BYD Trip Stats aktif di sana, mobil mencegah aplikasi mulai sendiri saat belum berjalan.\n\n1. Buka aplikasi Nonaktifkan Mulai Otomatis (aplikasi BYD, biasanya di dekat pengelola file)\n2. Cari BYD Trip Stats dan matikan sakelarnya\n3. Buka BYD Trip Stats sekali\n\nTidak perlu memulai ulang. Perubahan langsung berlaku.\n\nPenting: periksa lagi setelah setiap pembaruan aplikasi, karena memasang pembaruan dapat mengaktifkannya kembali.</string>
     <string name="faq_q_backup">Bagaimana saya mencadangkan data perjalanan?</string>
     <string name="faq_a_backup">Beberapa metode tersedia — semua menghasilkan file SQLite standar yang sama:\n\nLokal (paling sederhana): Pengaturan → Aplikasi → Cadangkan &amp; Pulihkan → Cadangkan Sekarang.\n\nKartu SD (Pro): Cadangkan &amp; Pulihkan → Cadangkan ke kartu SD. Bertahan setelah aplikasi dihapus.\n\nTelegram (disarankan): Hubungkan bot di Pengaturan → Koneksi → Telegram, lalu kirim manual atau terjadwal.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/NAMAFILE.db &gt; local.db</string>
     <string name="faq_q_recover">Saya instal ulang aplikasi — bisakah saya memulihkan cadangan?</string>
@@ -1266,7 +1268,7 @@
 
     <!-- MainActivity dialogs -->
     <string name="autostart_dialog_title">⚠️ Tindakan Diperlukan — Mulai-otomatis</string>
-    <string name="autostart_dialog_msg">Versi baru telah dipasang. Anda perlu mematikan „disable autostart” untuk aplikasi ini, yang memungkinkan layanan latar depan / latar belakang berjalan.\nDiperlukan mulai ulang mobil satu kali, dan hanya saat Anda pertama kali memasang aplikasi dan setelah mematikan „disable autostart”. Jika Anda memperbarui dari versi lama, Anda tidak perlu mulai ulang</string>
+    <string name="autostart_dialog_msg">BYD Trip Stats baru saja dipasang atau diperbarui, dan hal itu dapat mengaktifkannya kembali di daftar “Nonaktifkan Mulai Otomatis” (Disable Autostart) pada mobil.\n\nDi layar berikutnya, cari BYD Trip Stats dan matikan sakelarnya. Selama sakelar itu aktif, mobil mencegah aplikasi mulai sendiri saat belum berjalan (misalnya setelah sistem infotainment dimulai ulang), sehingga aplikasi baru berjalan setelah Anda membukanya.\n\nTidak perlu memulai ulang. Perubahan langsung berlaku.</string>
     <string name="autostart_got_it">Mengerti</string>
     <string name="autostart_open_failed">Tidak dapat membuka layar autostart di unit ini. Buka dari Setelan mobil sendiri → Aplikasi → Autostart (atau Aplikasi latar belakang) dan pastikan Trip Stats diizinkan.</string>
     <string name="flavor_mismatch_title">⚠️ Build salah untuk mobil ini</string>

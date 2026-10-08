@@ -513,7 +513,7 @@ If you are running BYD Trip Stats on a **Dolphin, Atto3, or any other BYD model*
 
 - **Route not showing:** Check that GPS coordinates are non-zero and that DiLink location permissions/autostart are still enabled
 - **Trip not auto-starting:** Verify auto-detection is ON, gear is D/R
-- **Service not auto-starting:** Check Autostart permission (disable toggle at disable Autostart), reboot the UI and re-open the app
+- **Service not auto-starting:** In the car's Disable Autostart app, make sure BYD Trip Stats is switched OFF (installs and updates can switch it back on), then open the app once. No reboot is needed
 
 See [Issues](https://github.com/angoikon/byd-trip-stats/issues) for full list.
 
@@ -539,9 +539,8 @@ See [Issues](https://github.com/angoikon/byd-trip-stats/issues) for full list.
 ### Q: Why isn't the app receiving live data?
 **A:** Check:
 1. The app was started at least once after boot/update
-2. DiLink's "Disable Autostart" blocker is toggled off for BYD Trip Stats
-3. The car was rebooted after changing autostart behaviour
-4. Location/storage permissions are still granted
+2. DiLink's "Disable Autostart" blocker is switched off for BYD Trip Stats (no reboot needed afterwards)
+3. Location/storage permissions are still granted
 
 ---
 

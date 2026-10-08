@@ -81,6 +81,8 @@
     <string name="cells_awaiting">Cells: awaiting data…</string>
     <string name="cells_range">Cells: %1$s – %2$s V</string>
     <string name="cells_min_only">Cells: %1$s V</string>
+    <string name="cells_unavailable_di5">Cells: not available on DiLink-5</string>
+    <string name="cell_voltage_unavailable_di5">DiLink-5 doesn\'t share cell voltages with apps, so they can\'t be shown or monitored on this car for now.</string>
     <string name="battery_temp_value">Temp: %1$s °C</string>
     <string name="soh_value">SoH: %1$s</string>
     <string name="hv_12v_pair">%1$s / %2$s</string>
@@ -1203,7 +1205,7 @@
     <string name="faq_q_offline_trip">No network connectivity means trip will be missing from the history?</string>
     <string name="faq_a_offline_trip">No. Trip history is stored locally and does not depend on mobile signal or Wi-Fi.\n\nA trip may close a little later only if live telemetry itself stops for a while. In that case the watchdog closes the active trip after 3 minutes of telemetry silence, anchored to the last packet the app received.</string>
     <string name="faq_q_stops_restart">The app stops working after a car restart</string>
-    <string name="faq_a_stops_restart">You need to exclude BYD Trip Stats from the autostart-killer:\n\n1. Open the Disable Autostart app (native BYD app, usually near the file explorer)\n2. Find BYD Trip Stats and toggle its entry OFF\n3. Open the app and hold the volume button for ~10 seconds to restart the car UI\n4. Reopen the app\n\nImportant: you must repeat this step after every app update, because the permission resets on reinstall.</string>
+    <string name="faq_a_stops_restart">The car\'s Disable Autostart list is probably blocking it. While BYD Trip Stats is switched on there, the car stops the app from starting by itself whenever it isn\'t already running.\n\n1. Open the Disable Autostart app (a BYD app, usually near the file manager)\n2. Find BYD Trip Stats and switch it OFF\n3. Open BYD Trip Stats once\n\nNo reboot is needed. The change works straight away.\n\nImportant: check it again after every app update, because installing an update can switch it back on.</string>
     <string name="faq_q_backup">How do I back up my trip data?</string>
     <string name="faq_a_backup">Several methods are available — all produce the same standard SQLite file:\n\nLocal (simplest): Settings → App → Backup &amp; Restore → Backup Now.\n\nSD card (Pro): Backup &amp; Restore → Backup to SD card. Survives an app uninstall.\n\nTelegram (recommended): Connect a bot under Settings → Connections → Telegram, then send manually or on a schedule.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
     <string name="faq_q_recover">I reinstalled the app — can I recover my backups?</string>
@@ -1292,7 +1294,7 @@
 
     <!-- MainActivity dialogs -->
     <string name="autostart_dialog_title">⚠️ Action Required — Autostart</string>
-    <string name="autostart_dialog_msg">A new version was installed. You need to toggle-off disable autostart for this app, which enables foreground / background services to run.\nA one-time reboot of the car is needed and only when you first install the app and after you toggle-off disable autostart. If you are updating from an older version, you don\'t have to reboot</string>
+    <string name="autostart_dialog_msg">BYD Trip Stats was just installed or updated, which can switch it back on in the car\'s Disable Autostart list.\n\nOn the next screen, find BYD Trip Stats and switch it OFF. While it\'s on, the car blocks the app from starting by itself whenever it isn\'t already running (for example after the infotainment system restarts), so it only runs once you open it.\n\nNo reboot is needed. The change works straight away.</string>
     <string name="autostart_got_it">Got it</string>
     <string name="autostart_open_failed">Couldn\'t open the autostart screen on this head unit. Open it from the car\'s own Settings → Apps → Autostart (or Background apps) and make sure Trip Stats is allowed.</string>
     <string name="flavor_mismatch_title">⚠️ Wrong build for this car</string>

@@ -181,6 +181,13 @@ internal object RtDispatch {
     private fun inBootWindow(): Boolean =
         android.os.SystemClock.elapsedRealtime() < BOOT_WINDOW_MS
 
+    /** Whether the channel watch keeps going, [sinceWatchStartMs] after it began. */
+    internal fun channelWatchActive(sinceWatchStartMs: Long): Boolean = sinceWatchStartMs < BOOT_WINDOW_MS
+
+    /** Tight while the port is most likely to flip, then relaxed for the rest of the watch. */
+    internal fun channelWatchPollMs(sinceWatchStartMs: Long): Long =
+        if (sinceWatchStartMs < EARLY_PHASE_MS) EARLY_POLL_MS else LATE_POLL_MS
+
     /**
      * Dispatch as soon as the channel exists, rather than at a few guessed offsets.
      *
@@ -239,11 +246,15 @@ internal object RtDispatch {
         if (!AdbPermissionManager.isSetupComplete(context)) return false
 
         var sawPort = false
-        while (inBootWindow()) {
-            kotlinx.coroutines.delay(
-                if (android.os.SystemClock.elapsedRealtime() < EARLY_PHASE_MS) EARLY_POLL_MS
-                else LATE_POLL_MS,
-            )
+        // Timed from this watch's own start, not from kernel boot. Android can restart itself
+        // without a reboot — 2026-10-07, a Sealion 7 parked with the car on and the screen off:
+        // LOCKED_BOOT_COMPLETED at sinceBoot=10808s, the helper gone, adb cleared. Measured from
+        // kernel boot that was 3 hours past the window, so this loop never ran; the one dispatch
+        // above found the port still opening, nothing dispatched again, and the switch-off 8 minutes
+        // later force-stopped an app with no helper left to revive it.
+        val watchStart = android.os.SystemClock.elapsedRealtime()
+        while (channelWatchActive(android.os.SystemClock.elapsedRealtime() - watchStart)) {
+            kotlinx.coroutines.delay(channelWatchPollMs(android.os.SystemClock.elapsedRealtime() - watchStart))
             if (!sockOpen()) {
                 // Re-checked on every poll, not just once: BYD can switch adb off again after our
                 // first assert — at the user unlock, on a boot that started the app early.

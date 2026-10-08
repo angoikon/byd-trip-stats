@@ -78,6 +78,8 @@
     <string name="cells_awaiting">תאים: ממתין לנתונים…</string>
     <string name="cells_range">תאים: %1$s – %2$s V</string>
     <string name="cells_min_only">תאים: %1$s V</string>
+    <string name="cells_unavailable_di5">תאים: לא זמין ב-DiLink-5</string>
+    <string name="cell_voltage_unavailable_di5">DiLink-5 לא משתף את מתחי התאים עם אפליקציות, ולכן בינתיים אי אפשר להציג או לנטר אותם ברכב הזה.</string>
     <string name="battery_temp_value">טמפ׳: %1$s °C</string>
     <string name="soh_value">SoH: %1$s</string>
     <string name="hv_12v_pair">%1$s / %2$s</string>
@@ -1177,7 +1179,7 @@
     <string name="faq_q_offline_trip">האם היעדר קישוריות רשת אומר שהנסיעה תיעדר מההיסטוריה?</string>
     <string name="faq_a_offline_trip">לא. היסטוריית הנסיעות נשמרת מקומית ואינה תלויה בקליטה סלולרית או Wi-Fi.\n\nנסיעה עשויה להיסגר מעט מאוחר יותר רק אם הטלמטריה החיה עצמה נעצרת לזמן מה. במקרה כזה ה-watchdog סוגר את הנסיעה הפעילה לאחר 3 דקות של שקט טלמטריה, מעוגן לחבילה האחרונה שהאפליקציה קיבלה.</string>
     <string name="faq_q_stops_restart">האפליקציה מפסיקה לעבוד לאחר הפעלה מחדש של הרכב</string>
-    <string name="faq_a_stops_restart">צריך להחריג את BYD Trip Stats ממנגנון עצירת ההפעלה האוטומטית:\n\n1. פתחו את אפליקציית Disable Autostart (אפליקציית BYD מובנית, בדרך כלל ליד סייר הקבצים)\n2. מצאו את BYD Trip Stats והעבירו את הרשומה שלה למצב כבוי\n3. פתחו את האפליקציה והחזיקו את כפתור עוצמת הקול ~10 שניות כדי להפעיל מחדש את ממשק הרכב\n4. פתחו מחדש את האפליקציה\n\nחשוב: צריך לחזור על שלב זה לאחר כל עדכון אפליקציה, כי ההרשאה מתאפסת בהתקנה מחדש.</string>
+    <string name="faq_a_stops_restart">כנראה שהרשימה “השבת הפעלה אוטומטית” (Disable Autostart) של הרכב חוסמת אותה. כל עוד BYD Trip Stats דלוקה שם, הרכב מונע מהאפליקציה לעלות מעצמה כשהיא לא פועלת כבר.\n\n1. פתחו את האפליקציה “השבת הפעלה אוטומטית” (אפליקציה של BYD, בדרך כלל ליד מנהל הקבצים)\n2. מצאו את BYD Trip Stats וכבו את המתג\n3. פתחו את BYD Trip Stats פעם אחת\n\nאין צורך באתחול. השינוי חל מיד.\n\nחשוב: בדקו שוב אחרי כל עדכון של האפליקציה, כי התקנת עדכון עלולה להדליק את המתג שוב.</string>
     <string name="faq_q_backup">איך אני מגבה את נתוני הנסיעות שלי?</string>
     <string name="faq_a_backup">זמינות מספר שיטות — כולן מייצרות את אותו קובץ SQLite סטנדרטי:\n\nמקומי (הפשוט ביותר): הגדרות ← אפליקציה ← גיבוי ושחזור ← גבה עכשיו.\n\nכרטיס SD (Pro): גיבוי ושחזור ← גיבוי לכרטיס SD. שורד הסרת אפליקציה.\n\nTelegram (מומלץ): חברו בוט תחת הגדרות ← חיבורים ← Telegram, ואז שלחו ידנית או לפי תזמון.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
     <string name="faq_q_recover">התקנתי מחדש את האפליקציה — האם אני יכול לשחזר את הגיבויים?</string>
@@ -1266,7 +1268,7 @@
 
     <!-- MainActivity dialogs -->
     <string name="autostart_dialog_title">⚠️ נדרשת פעולה — הפעלה אוטומטית</string>
-    <string name="autostart_dialog_msg">הותקנה גרסה חדשה. עליכם לכבות את \"disable autostart\" עבור אפליקציה זו, מה שמאפשר לשירותי חזית / רקע לפעול.\nנדרשת הפעלה מחדש חד-פעמית של הרכב, ורק כשאתם מתקינים את האפליקציה בפעם הראשונה ואחרי שכיביתם את \"disable autostart\". אם אתם מעדכנים מגרסה ישנה יותר, אין צורך להפעיל מחדש</string>
+    <string name="autostart_dialog_msg">BYD Trip Stats הותקנה או עודכנה זה עתה, וזה עלול להדליק אותה שוב ברשימה “השבת הפעלה אוטומטית” (Disable Autostart) של הרכב.\n\nבמסך הבא, מצאו את BYD Trip Stats וכבו את המתג. כל עוד הוא דלוק, הרכב מונע מהאפליקציה לעלות מעצמה כשהיא לא פועלת כבר (למשל אחרי שמערכת המולטימדיה עולה מחדש), כך שהיא תפעל רק אחרי שתפתחו אותה.\n\nאין צורך באתחול. השינוי חל מיד.</string>
     <string name="autostart_got_it">הבנתי</string>
     <string name="autostart_open_failed">לא ניתן היה לפתוח את מסך ההפעלה האוטומטית ביחידה זו. פתח אותו מההגדרות של הרכב עצמו ← אפליקציות ← הפעלה אוטומטית (או אפליקציות רקע) וודא ש-Trip Stats מותרת.</string>
     <string name="flavor_mismatch_title">⚠️ גרסה שגויה לרכב הזה</string>

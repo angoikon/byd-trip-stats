@@ -81,6 +81,8 @@
     <string name="cells_awaiting">Células: a aguardar dados…</string>
     <string name="cells_range">Células: %1$s – %2$s V</string>
     <string name="cells_min_only">Células: %1$s V</string>
+    <string name="cells_unavailable_di5">Células: indisponível no DiLink-5</string>
+    <string name="cell_voltage_unavailable_di5">O DiLink-5 não partilha as tensões das células com as aplicações, por isso, de momento, não podem ser mostradas nem monitorizadas neste carro.</string>
     <string name="battery_temp_value">Temp.: %1$s °C</string>
     <string name="soh_value">SoH: %1$s</string>
     <string name="hv_12v_pair">%1$s / %2$s</string>
@@ -1181,7 +1183,7 @@
     <string name="faq_q_offline_trip">A ausência de conectividade de rede significa que a viagem estará ausente do histórico?</string>
     <string name="faq_a_offline_trip">Não. O histórico de viagens é armazenado localmente e não depende de sinal móvel ou Wi-Fi.\n\nUma viagem pode fechar um pouco mais tarde apenas se a própria telemetria em tempo real parar durante algum tempo. Nesse caso, o watchdog fecha a viagem ativa após 3 minutos de silêncio de telemetria, ancorado ao último pacote recebido pela aplicação.</string>
     <string name="faq_q_stops_restart">A aplicação para de funcionar após um reinício do carro</string>
-    <string name="faq_a_stops_restart">Precisa de excluir o BYD Trip Stats do eliminador de arranque automático:\n\n1. Abra a aplicação Desativar Arranque Automático (aplicação nativa BYD, normalmente perto do explorador de ficheiros)\n2. Encontre o BYD Trip Stats e desative a sua entrada\n3. Abra a aplicação e mantenha premido o botão de volume durante ~10 segundos para reiniciar a interface do carro\n4. Reabra a aplicação\n\nImportante: deve repetir este passo após cada atualização da aplicação, pois a permissão é reposta na reinstalação.</string>
+    <string name="faq_a_stops_restart">Provavelmente é a lista “Desativar início automático” (Disable Autostart) do carro que a está a bloquear. Enquanto o BYD Trip Stats estiver ligado aí, o carro impede a app de arrancar sozinha quando ainda não está em execução.\n\n1. Abra a app Desativar início automático (uma app da BYD, normalmente perto do gestor de ficheiros)\n2. Procure o BYD Trip Stats e desligue o interruptor\n3. Abra o BYD Trip Stats uma vez\n\nNão é preciso reiniciar. A alteração tem efeito imediato.\n\nImportante: volte a verificar após cada atualização da app, porque instalar uma atualização pode voltar a ligá-lo.</string>
     <string name="faq_q_backup">Como faço cópia de segurança dos meus dados de viagem?</string>
     <string name="faq_a_backup">Estão disponíveis vários métodos — todos produzem o mesmo ficheiro SQLite padrão:\n\nLocal (mais simples): Definições → Aplicação → Cópia de Segurança &amp; Restauro → Fazer Cópia Agora.\n\nCartão SD (Pro): Cópia de Segurança &amp; Restauro → Cópia de segurança para SD. Sobrevive a uma desinstalação da aplicação.\n\nTelegram (recomendado): Ligue um bot em Definições → Ligações → Telegram, depois envie manualmente ou numa agenda.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FICHEIRO.db &gt; local.db</string>
     <string name="faq_q_recover">Reinstalei a aplicação — posso recuperar as minhas cópias de segurança?</string>
@@ -1270,7 +1272,7 @@
 
     <!-- MainActivity dialogs -->
     <string name="autostart_dialog_title">⚠️ Ação necessária — Início automático</string>
-    <string name="autostart_dialog_msg">Uma nova versão foi instalada. Precisas de desativar o início automático desta app, o que permite a execução de serviços em primeiro plano / segundo plano.\nÉ necessário um reinício único do carro, e apenas quando instalas a app pela primeira vez e depois de desativares o início automático. Se estás a atualizar a partir de uma versão anterior, não precisas de reiniciar</string>
+    <string name="autostart_dialog_msg">O BYD Trip Stats acabou de ser instalado ou atualizado, o que pode voltar a ativá-lo na lista “Desativar início automático” (Disable Autostart) do carro.\n\nNo ecrã seguinte, procura o BYD Trip Stats e desliga o interruptor. Enquanto estiver ligado, o carro impede a app de arrancar sozinha quando ainda não está em execução (por exemplo, depois de o sistema de infoentretenimento reiniciar), por isso só funciona quando a abrires.\n\nNão é preciso reiniciar. A alteração tem efeito imediato.</string>
     <string name="autostart_got_it">Entendido</string>
     <string name="autostart_open_failed">Não foi possível abrir o ecrã de arranque automático nesta unidade. Abra-o nas Definições do próprio carro → Aplicações → Arranque automático (ou Aplicações em segundo plano) e certifique-se de que o Trip Stats é permitido.</string>
     <string name="flavor_mismatch_title">⚠️ Versão errada para este carro</string>

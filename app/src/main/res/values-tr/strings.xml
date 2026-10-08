@@ -81,6 +81,8 @@
     <string name="cells_awaiting">Hücreler: veri bekleniyor…</string>
     <string name="cells_range">Hücreler: %1$s – %2$s V</string>
     <string name="cells_min_only">Hücreler: %1$s V</string>
+    <string name="cells_unavailable_di5">Hücreler: DiLink-5\'te kullanılamıyor</string>
+    <string name="cell_voltage_unavailable_di5">DiLink-5 hücre voltajlarını uygulamalarla paylaşmıyor, bu yüzden şimdilik bu araçta gösterilemiyor veya izlenemiyor.</string>
     <string name="battery_temp_value">Sıcaklık: %1$s °C</string>
     <string name="soh_value">SoH: %1$s</string>
     <string name="hv_12v_pair">%1$s / %2$s</string>
@@ -1181,7 +1183,7 @@
     <string name="faq_q_offline_trip">Ağ bağlantısı olmaması seyahatin geçmişte eksik olacağı anlamına mı gelir?</string>
     <string name="faq_a_offline_trip">Hayır. Seyahat geçmişi yerel olarak depolanır ve mobil sinyal veya WiFi\'a bağlı değildir.\n\nBir seyahat yalnızca canlı telemetri bir süre durduğunda biraz daha geç kapanabilir. Bu durumda bekçi, uygulamanın aldığı son pakete sabitlenmiş şekilde 3 dakika telemetri sessizliğinin ardından etkin seyahati kapatır.</string>
     <string name="faq_q_stops_restart">Araç yeniden başlatıldıktan sonra uygulama çalışmayı durduruyor</string>
-    <string name="faq_a_stops_restart">BYD Trip Stats\'ı otomatik başlatma kaldırıcısından hariç tutmanız gerekiyor:\n\n1. Otomatik Başlatmayı Devre Dışı Bırak uygulamasını açın (yerel BYD uygulaması, genellikle dosya gezgininin yakınında)\n2. BYD Trip Stats\'ı bulun ve girişini KAPALI konuma getirin\n3. Uygulamayı açın ve araç arayüzünü yeniden başlatmak için ses düğmesini ~10 saniye basılı tutun\n4. Uygulamayı yeniden açın\n\nÖnemli: Bu adımı her uygulama güncellemesinden sonra tekrarlamanız gerekir çünkü yeniden yüklemede izin sıfırlanır.</string>
+    <string name="faq_a_stops_restart">Büyük olasılıkla aracın “Otomatik Başlatmayı Devre Dışı Bırak” (Disable Autostart) listesi uygulamayı engelliyor. BYD Trip Stats orada açık olduğu sürece araç, zaten çalışmıyorsa uygulamanın kendiliğinden başlamasını engeller.\n\n1. Otomatik Başlatmayı Devre Dışı Bırak uygulamasını açın (bir BYD uygulaması, genellikle dosya yöneticisinin yakınında)\n2. BYD Trip Stats\'ı bulun ve anahtarını kapatın\n3. BYD Trip Stats\'ı bir kez açın\n\nYeniden başlatmaya gerek yok. Değişiklik hemen geçerli olur.\n\nÖnemli: her uygulama güncellemesinden sonra tekrar kontrol edin, çünkü bir güncellemeyi yüklemek anahtarı yeniden açabilir.</string>
     <string name="faq_q_backup">Seyahat verilerimi nasıl yedeklerim?</string>
     <string name="faq_a_backup">Çeşitli yöntemler mevcuttur — tümü aynı standart SQLite dosyasını üretir:\n\nYerel (en basit): Ayarlar → Uygulama → Yedekleme &amp; Geri Yükleme → Şimdi Yedekle.\n\nSD kart (Pro): Yedekleme &amp; Geri Yükleme → SD karta yedekle. Uygulama kaldırılmasına karşı dayanıklıdır.\n\nTelegram (önerilir): Ayarlar → Bağlantılar → Telegram altından bir bot bağlayın, ardından manuel olarak veya programla gönderin.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/DOSYAADI.db &gt; yerel.db</string>
     <string name="faq_q_recover">Uygulamayı yeniden yükledim — yedeklerimi kurtarabilir miyim?</string>
@@ -1270,7 +1272,7 @@
 
     <!-- MainActivity dialogs -->
     <string name="autostart_dialog_title">⚠️ Eylem Gerekli — Otomatik Başlatma</string>
-    <string name="autostart_dialog_msg">Yeni bir sürüm yüklendi. Bu uygulama için otomatik başlatmayı kapatman gerekiyor; bu, ön plan / arka plan hizmetlerinin çalışmasını sağlar.\nAracın bir kez yeniden başlatılması gerekir; yalnızca uygulamayı ilk kez yüklediğinde ve otomatik başlatmayı kapattıktan sonra. Daha eski bir sürümden güncelliyorsan yeniden başlatmana gerek yok</string>
+    <string name="autostart_dialog_msg">BYD Trip Stats az önce yüklendi veya güncellendi; bu, uygulamayı aracın “Otomatik Başlatmayı Devre Dışı Bırak” (Disable Autostart) listesinde yeniden açık hâle getirebilir.\n\nSonraki ekranda BYD Trip Stats\'ı bul ve anahtarını kapat. Anahtar açık kaldığı sürece araç, zaten çalışmıyorsa uygulamanın kendiliğinden başlamasını engeller (örneğin bilgi-eğlence sistemi yeniden başladıktan sonra); bu yüzden uygulama ancak sen açınca çalışır.\n\nYeniden başlatmaya gerek yok. Değişiklik hemen geçerli olur.</string>
     <string name="autostart_got_it">Anlaşıldı</string>
     <string name="autostart_open_failed">Otomatik başlatma ekranı bu ünitede açılamadı. Aracın kendi Ayarlar → Uygulamalar → Otomatik başlatma (veya Arka plan uygulamaları) menüsünden açın ve Trip Stats\'a izin verildiğinden emin olun.</string>
     <string name="flavor_mismatch_title">⚠️ Bu araç için yanlış sürüm</string>

@@ -78,6 +78,8 @@
     <string name="cells_awaiting">Ogniwa: oczekiwanie na dane…</string>
     <string name="cells_range">Ogniwa: %1$s – %2$s V</string>
     <string name="cells_min_only">Ogniwa: %1$s V</string>
+    <string name="cells_unavailable_di5">Ogniwa: niedostępne w DiLink-5</string>
+    <string name="cell_voltage_unavailable_di5">DiLink-5 nie udostępnia aplikacjom napięć ogniw, więc na razie nie można ich wyświetlać ani monitorować w tym samochodzie.</string>
     <string name="battery_temp_value">Temp: %1$s °C</string>
     <string name="soh_value">SoH: %1$s</string>
     <string name="hv_12v_pair">%1$s / %2$s</string>
@@ -1177,7 +1179,7 @@
     <string name="faq_q_offline_trip">Czy brak łączności sieciowej oznacza, że podróży zabraknie w historii?</string>
     <string name="faq_a_offline_trip">Nie. Historia podróży jest przechowywana lokalnie i nie zależy od sygnału komórkowego ani Wi-Fi.\n\nPodróż może zamknąć się nieco później tylko wtedy, gdy sama telemetria na żywo na chwilę się zatrzyma. W takim przypadku watchdog zamyka aktywną podróż po 3 minutach ciszy telemetrii, licząc od ostatniego pakietu odebranego przez aplikację.</string>
     <string name="faq_q_stops_restart">Aplikacja przestaje działać po restarcie samochodu</string>
-    <string name="faq_a_stops_restart">Musisz wykluczyć BYD Trip Stats z blokady autostartu:\n\n1. Otwórz aplikację Disable Autostart (natywna aplikacja BYD, zwykle obok eksploratora plików)\n2. Znajdź BYD Trip Stats i przełącz jej wpis na WYŁ.\n3. Otwórz aplikację i przytrzymaj przycisk głośności ~10 sekund, aby zrestartować interfejs samochodu\n4. Otwórz aplikację ponownie\n\nWażne: musisz powtórzyć ten krok po każdej aktualizacji aplikacji, bo uprawnienie resetuje się przy reinstalacji.</string>
+    <string name="faq_a_stops_restart">Prawdopodobnie blokuje ją lista „Wyłącz autostart” (Disable Autostart) w samochodzie. Dopóki BYD Trip Stats jest tam włączona, samochód nie pozwala aplikacji uruchomić się samodzielnie, gdy jeszcze nie działa.\n\n1. Otwórz aplikację Wyłącz autostart (aplikacja BYD, zwykle obok menedżera plików)\n2. Znajdź BYD Trip Stats i wyłącz przełącznik\n3. Otwórz raz BYD Trip Stats\n\nRestart nie jest potrzebny. Zmiana działa od razu.\n\nWażne: sprawdzaj to po każdej aktualizacji aplikacji, bo instalacja aktualizacji może ponownie ją włączyć.</string>
     <string name="faq_q_backup">Jak wykonać kopię zapasową danych podróży?</string>
     <string name="faq_a_backup">Dostępnych jest kilka metod — wszystkie tworzą ten sam standardowy plik SQLite:\n\nLokalnie (najprościej): Ustawienia → Aplikacja → Kopia zapasowa i przywracanie → Utwórz kopię teraz.\n\nKarta SD (Pro): Kopia zapasowa i przywracanie → Kopia na kartę SD. Przetrwa odinstalowanie aplikacji.\n\nTelegram (zalecane): Połącz bota w Ustawienia → Połączenia → Telegram, potem wysyłaj ręcznie lub według harmonogramu.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/NAZWAPLIKU.db &gt; local.db</string>
     <string name="faq_q_recover">Przeinstalowałem aplikację — czy mogę odzyskać kopie zapasowe?</string>
@@ -1266,7 +1268,7 @@
 
     <!-- MainActivity dialogs -->
     <string name="autostart_dialog_title">⚠️ Wymagane działanie — Autostart</string>
-    <string name="autostart_dialog_msg">Zainstalowano nową wersję. Musisz przełączyć na wyłączone „disable autostart” dla tej aplikacji, co umożliwia działanie usług pierwszoplanowych / w tle.\nJednorazowy restart samochodu jest potrzebny tylko przy pierwszej instalacji aplikacji i po wyłączeniu „disable autostart”. Jeśli aktualizujesz ze starszej wersji, nie musisz restartować</string>
+    <string name="autostart_dialog_msg">BYD Trip Stats została właśnie zainstalowana lub zaktualizowana, co może ponownie włączyć ją na liście „Wyłącz autostart” (Disable Autostart) w samochodzie.\n\nNa następnym ekranie znajdź BYD Trip Stats i wyłącz przełącznik. Dopóki jest włączony, samochód nie pozwala aplikacji uruchomić się samodzielnie, gdy jeszcze nie działa (na przykład po ponownym uruchomieniu systemu multimedialnego), więc działa ona dopiero po jej otwarciu.\n\nRestart nie jest potrzebny. Zmiana działa od razu.</string>
     <string name="autostart_got_it">Rozumiem</string>
     <string name="autostart_open_failed">Nie można otworzyć ekranu autostartu na tej jednostce. Otwórz go w Ustawieniach samochodu → Aplikacje → Autostart (lub Aplikacje w tle) i upewnij się, że Trip Stats jest dozwolony.</string>
     <string name="flavor_mismatch_title">⚠️ Nieprawidłowa wersja dla tego samochodu</string>

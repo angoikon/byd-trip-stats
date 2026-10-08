@@ -78,6 +78,8 @@
     <string name="cells_awaiting">Celule: se așteaptă date…</string>
     <string name="cells_range">Celule: %1$s – %2$s V</string>
     <string name="cells_min_only">Celule: %1$s V</string>
+    <string name="cells_unavailable_di5">Celule: indisponibil pe DiLink-5</string>
+    <string name="cell_voltage_unavailable_di5">DiLink-5 nu transmite aplicațiilor tensiunile celulelor, așa că deocamdată nu pot fi afișate sau monitorizate pe această mașină.</string>
     <string name="battery_temp_value">Temp: %1$s °C</string>
     <string name="soh_value">SoH: %1$s</string>
     <string name="hv_12v_pair">%1$s / %2$s</string>
@@ -1177,7 +1179,7 @@
     <string name="faq_q_offline_trip">Lipsa conectivității înseamnă că o călătorie va lipsi din istoric?</string>
     <string name="faq_a_offline_trip">Nu. Istoricul călătoriilor se stochează local și nu depinde de semnal mobil sau Wi-Fi.\n\nO călătorie se poate închide puțin mai târziu doar dacă telemetria live în sine se oprește o vreme. În acest caz, watchdog-ul închide călătoria activă după 3 minute de tăcere a telemetriei, raportat la ultimul pachet primit de aplicație.</string>
     <string name="faq_q_stops_restart">Aplicația nu mai funcționează după repornirea mașinii</string>
-    <string name="faq_a_stops_restart">Trebuie să excludeți BYD Trip Stats din blocatorul de autostart:\n\n1. Deschideți aplicația Disable Autostart (aplicație nativă BYD, de obicei lângă exploratorul de fișiere)\n2. Găsiți BYD Trip Stats și comutați intrarea ei pe OPRIT\n3. Deschideți aplicația și țineți apăsat butonul de volum ~10 secunde pentru a reporni interfața mașinii\n4. Redeschideți aplicația\n\nImportant: trebuie să repetați acest pas după fiecare actualizare a aplicației, deoarece permisiunea se resetează la reinstalare.</string>
+    <string name="faq_a_stops_restart">Probabil o blochează lista „Dezactivează pornirea automată” (Disable Autostart) a mașinii. Cât timp BYD Trip Stats este pornită acolo, mașina împiedică aplicația să pornească singură atunci când nu rulează deja.\n\n1. Deschideți aplicația Dezactivează pornirea automată (o aplicație BYD, de obicei lângă managerul de fișiere)\n2. Găsiți BYD Trip Stats și opriți comutatorul\n3. Deschideți BYD Trip Stats o dată\n\nNu este nevoie de repornire. Schimbarea se aplică imediat.\n\nImportant: verificați din nou după fiecare actualizare a aplicației, deoarece instalarea unei actualizări o poate reactiva.</string>
     <string name="faq_q_backup">Cum îmi fac backup la datele călătoriilor?</string>
     <string name="faq_a_backup">Sunt disponibile mai multe metode — toate produc același fișier SQLite standard:\n\nLocal (cel mai simplu): Setări → Aplicație → Backup și restaurare → Backup acum.\n\nCard SD (Pro): Backup și restaurare → Backup pe card SD. Supraviețuiește dezinstalării aplicației.\n\nTelegram (recomandat): Conectați un bot din Setări → Conexiuni → Telegram, apoi trimiteți manual sau programat.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/NUMEFISIER.db &gt; local.db</string>
     <string name="faq_q_recover">Am reinstalat aplicația — pot recupera backupurile?</string>
@@ -1266,7 +1268,7 @@
 
     <!-- MainActivity dialogs -->
     <string name="autostart_dialog_title">⚠️ Acțiune necesară — Autostart</string>
-    <string name="autostart_dialog_msg">A fost instalată o versiune nouă. Trebuie să dezactivați „disable autostart” pentru această aplicație, ceea ce permite rularea serviciilor din prim-plan / fundal.\nEste necesară o repornire unică a mașinii, doar la prima instalare a aplicației și după ce dezactivați „disable autostart”. Dacă actualizați de la o versiune mai veche, nu trebuie să reporniți</string>
+    <string name="autostart_dialog_msg">BYD Trip Stats tocmai a fost instalată sau actualizată, ceea ce o poate reactiva în lista „Dezactivează pornirea automată” (Disable Autostart) a mașinii.\n\nPe ecranul următor, găsiți BYD Trip Stats și opriți comutatorul. Cât timp este pornit, mașina împiedică aplicația să pornească singură atunci când nu rulează deja (de exemplu după repornirea sistemului multimedia), așa că funcționează doar după ce o deschideți.\n\nNu este nevoie de repornire. Schimbarea se aplică imediat.</string>
     <string name="autostart_got_it">Am înțeles</string>
     <string name="autostart_open_failed">Ecranul de pornire automată nu a putut fi deschis pe această unitate. Deschide-l din Setările mașinii → Aplicații → Pornire automată (sau Aplicații în fundal) și asigură-te că Trip Stats este permis.</string>
     <string name="flavor_mismatch_title">⚠️ Versiune greșită pentru această mașină</string>

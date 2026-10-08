@@ -81,6 +81,8 @@
     <string name="cells_awaiting">セル：データ待機中…</string>
     <string name="cells_range">セル：%1$s – %2$s V</string>
     <string name="cells_min_only">セル：%1$s V</string>
+    <string name="cells_unavailable_di5">セル：DiLink-5 では利用できません</string>
+    <string name="cell_voltage_unavailable_di5">DiLink-5 はセル電圧をアプリに提供しないため、この車では現在、表示も監視もできません。</string>
     <string name="battery_temp_value">温度：%1$s °C</string>
     <string name="soh_value">SoH：%1$s</string>
     <string name="hv_12v_pair">%1$s / %2$s</string>
@@ -1181,7 +1183,7 @@
     <string name="faq_q_offline_trip">ネットワーク接続がないと、トリップが履歴から欠けますか？</string>
     <string name="faq_a_offline_trip">いいえ。トリップ履歴はローカルに保存されており、モバイル信号やWiFiに依存しません。\n\nトリップが少し遅れて終了する可能性があるのは、ライブテレメトリー自体がしばらく停止した場合のみです。その場合、ウォッチドッグはアプリが受け取った最後のパケットから3分間テレメトリーが無音の後、アクティブなトリップを終了します。</string>
     <string name="faq_q_stops_restart">車を再起動するとアプリが動作しなくなります</string>
-    <string name="faq_a_stops_restart">BYD Trip Statsを自動起動キラーから除外する必要があります：\n\n1. 自動起動を無効にするアプリを開く（BYDのネイティブアプリ、通常はファイルエクスプローラーの近く）\n2. BYD Trip Statsを見つけてエントリをオフに切り替え\n3. アプリを開き、ボリュームボタンを約10秒間長押しして車のUIを再起動\n4. アプリを再度開く\n\n重要：この手順はアプリ更新のたびに繰り返す必要があります。再インストール時にアクセス許可がリセットされるためです。</string>
+    <string name="faq_a_stops_restart">車の「オートスタートを無効にする」（Disable Autostart）リストがブロックしている可能性があります。そこで BYD Trip Stats がオンになっていると、アプリが起動していないときに車がアプリの自動起動をブロックします。\n\n1. 「オートスタートを無効にする」アプリを開く（BYD のアプリ、通常はファイルマネージャーの近く）\n2. BYD Trip Stats を探し、スイッチをオフにする\n3. BYD Trip Stats を一度開く\n\n再起動は不要です。変更はすぐに反映されます。\n\n重要：アプリを更新するたびに再度確認してください。更新をインストールすると再びオンになる場合があります。</string>
     <string name="faq_q_backup">走行データをバックアップするにはどうすればよいですか？</string>
     <string name="faq_a_backup">いくつかの方法があります — すべて同じ標準SQLiteファイルを生成します：\n\nローカル（最も簡単）：設定 → アプリ → バックアップ &amp; 復元 → 今すぐバックアップ。\n\nSDカード（Pro）：バックアップ &amp; 復元 → SDカードにバックアップ。アプリのアンインストール後も残ります。\n\nTelegram（推奨）：設定 → 接続 → Telegram でボットを接続し、手動またはスケジュールで送信。\n\nADB：adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
     <string name="faq_q_recover">アプリを再インストールしましたが、バックアップを復元できますか？</string>
@@ -1270,7 +1272,7 @@
 
     <!-- MainActivity dialogs -->
     <string name="autostart_dialog_title">⚠️ 操作が必要 — 自動起動</string>
-    <string name="autostart_dialog_msg">新しいバージョンがインストールされました。このアプリの自動起動を無効にする必要があります。これにより、フォアグラウンド / バックグラウンドサービスの実行が有効になります。\n車の再起動が一度だけ必要です。アプリを初めてインストールしたときと、自動起動を無効にした後のみです。以前のバージョンから更新する場合は、再起動する必要はありません</string>
+    <string name="autostart_dialog_msg">BYD Trip Stats がインストールまたは更新されました。これにより、車の「オートスタートを無効にする」（Disable Autostart）リストで本アプリが再びオンになる場合があります。\n\n次の画面で BYD Trip Stats を探し、スイッチをオフにしてください。オンのままだと、アプリが起動していないときに車がアプリの自動起動をブロックします（例：インフォテインメントシステムの再起動後）。その場合、アプリを開くまで動作しません。\n\n再起動は不要です。変更はすぐに反映されます。</string>
     <string name="autostart_got_it">了解</string>
     <string name="autostart_open_failed">このヘッドユニットで自動起動画面を開けませんでした。車両側の設定 → アプリ → 自動起動（またはバックグラウンドアプリ）から開き、Trip Stats が許可されていることを確認してください。</string>
     <string name="flavor_mismatch_title">⚠️ この車に合わないビルドです</string>

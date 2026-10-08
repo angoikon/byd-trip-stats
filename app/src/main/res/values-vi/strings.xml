@@ -78,6 +78,8 @@
     <string name="cells_awaiting">Cell: đang chờ dữ liệu…</string>
     <string name="cells_range">Cell: %1$s – %2$s V</string>
     <string name="cells_min_only">Cell: %1$s V</string>
+    <string name="cells_unavailable_di5">Cell: không khả dụng trên DiLink-5</string>
+    <string name="cell_voltage_unavailable_di5">DiLink-5 không chia sẻ điện áp cell với ứng dụng, nên hiện chưa thể hiển thị hay theo dõi trên xe này.</string>
     <string name="battery_temp_value">Nhiệt: %1$s °C</string>
     <string name="soh_value">SoH: %1$s</string>
     <string name="hv_12v_pair">%1$s / %2$s</string>
@@ -1177,7 +1179,7 @@
     <string name="faq_q_offline_trip">Không có kết nối mạng nghĩa là chuyến đi sẽ vắng khỏi lịch sử?</string>
     <string name="faq_a_offline_trip">Không. Lịch sử chuyến đi được lưu cục bộ và không phụ thuộc vào tín hiệu di động hay Wi-Fi.\n\nMột chuyến đi có thể đóng muộn hơn một chút chỉ khi chính đo từ xa trực tiếp dừng một lúc. Trong trường hợp đó, watchdog đóng chuyến đi đang hoạt động sau 3 phút im lặng đo từ xa, neo theo gói tin cuối cùng ứng dụng nhận được.</string>
     <string name="faq_q_stops_restart">Ứng dụng ngừng hoạt động sau khi khởi động lại xe</string>
-    <string name="faq_a_stops_restart">Bạn cần loại BYD Trip Stats khỏi trình chặn tự khởi động:\n\n1. Mở ứng dụng Disable Autostart (ứng dụng BYD gốc, thường gần trình quản lý tệp)\n2. Tìm BYD Trip Stats và chuyển mục của nó thành TẮT\n3. Mở ứng dụng và giữ nút âm lượng ~10 giây để khởi động lại giao diện xe\n4. Mở lại ứng dụng\n\nQuan trọng: bạn phải lặp lại bước này sau mỗi lần cập nhật ứng dụng, vì quyền được đặt lại khi cài lại.</string>
+    <string name="faq_a_stops_restart">Có thể danh sách “Tắt Tự Động Khởi Động” (Disable Autostart) của xe đang chặn ứng dụng. Khi BYD Trip Stats còn bật ở đó, xe sẽ chặn ứng dụng tự khởi động nếu nó chưa chạy sẵn.\n\n1. Mở ứng dụng Tắt Tự Động Khởi Động (ứng dụng của BYD, thường nằm gần trình quản lý tệp)\n2. Tìm BYD Trip Stats và tắt công tắc\n3. Mở BYD Trip Stats một lần\n\nKhông cần khởi động lại. Thay đổi có hiệu lực ngay.\n\nQuan trọng: hãy kiểm tra lại sau mỗi lần cập nhật ứng dụng, vì cài đặt bản cập nhật có thể bật lại công tắc.</string>
     <string name="faq_q_backup">Làm sao để sao lưu dữ liệu chuyến đi của tôi?</string>
     <string name="faq_a_backup">Có sẵn nhiều phương pháp — tất cả đều tạo cùng một tệp SQLite chuẩn:\n\nCục bộ (đơn giản nhất): Cài đặt → Ứng dụng → Sao lưu &amp; Khôi phục → Sao lưu Ngay.\n\nThẻ SD (Pro): Sao lưu &amp; Khôi phục → Sao lưu vào thẻ SD. Tồn tại sau khi gỡ ứng dụng.\n\nTelegram (khuyến nghị): Kết nối bot trong Cài đặt → Kết nối → Telegram, rồi gửi thủ công hoặc theo lịch.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/TÊNTỆP.db &gt; local.db</string>
     <string name="faq_q_recover">Tôi cài lại ứng dụng — có thể khôi phục các bản sao lưu không?</string>
@@ -1266,7 +1268,7 @@
 
     <!-- MainActivity dialogs -->
     <string name="autostart_dialog_title">⚠️ Cần Hành động — Tự khởi động</string>
-    <string name="autostart_dialog_msg">Một phiên bản mới đã được cài đặt. Bạn cần tắt „disable autostart” cho ứng dụng này, việc này cho phép các dịch vụ tiền cảnh / nền chạy.\nCần khởi động lại xe một lần, và chỉ khi bạn cài đặt ứng dụng lần đầu và sau khi tắt „disable autostart”. Nếu bạn đang cập nhật từ phiên bản cũ hơn, bạn không cần khởi động lại</string>
+    <string name="autostart_dialog_msg">BYD Trip Stats vừa được cài đặt hoặc cập nhật, việc này có thể bật lại ứng dụng trong danh sách “Tắt Tự Động Khởi Động” (Disable Autostart) của xe.\n\nỞ màn hình tiếp theo, hãy tìm BYD Trip Stats và tắt công tắc. Khi công tắc còn bật, xe sẽ chặn ứng dụng tự khởi động nếu nó chưa chạy sẵn (ví dụ sau khi hệ thống thông tin giải trí khởi động lại), nên ứng dụng chỉ chạy khi bạn mở nó.\n\nKhông cần khởi động lại. Thay đổi có hiệu lực ngay.</string>
     <string name="autostart_got_it">Đã hiểu</string>
     <string name="autostart_open_failed">Không thể mở màn hình tự khởi động trên bộ này. Hãy mở từ Cài đặt của chính xe → Ứng dụng → Tự khởi động (hoặc Ứng dụng chạy nền) và đảm bảo Trip Stats được cho phép.</string>
     <string name="flavor_mismatch_title">⚠️ Sai bản dựng cho xe này</string>

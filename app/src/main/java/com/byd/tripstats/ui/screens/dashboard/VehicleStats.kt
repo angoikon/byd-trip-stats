@@ -24,6 +24,7 @@ import com.byd.tripstats.data.config.Drivetrain
 import com.byd.tripstats.data.model.VehicleTelemetry
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.data.preferences.distanceUnit
+import com.byd.tripstats.sdk.DiLink5Platform
 import com.byd.tripstats.sdk.VehicleTelemetrySnapshot
 import com.byd.tripstats.ui.components.energyModeLabel
 import com.byd.tripstats.ui.theme.AccelerationOrange
@@ -157,6 +158,8 @@ fun VehicleStats(
                         stringResource(R.string.cells_min_only, String.format("%.3f", cellMin))
                     cellMax != null ->
                         stringResource(R.string.cells_min_only, String.format("%.3f", cellMax))
+                    // DiLink-5 has no cell-voltage source, so "awaiting" would wait forever.
+                    DiLink5Platform.isDiLink5 -> stringResource(R.string.cells_unavailable_di5)
                     else -> stringResource(R.string.cells_awaiting)
                 }
             },

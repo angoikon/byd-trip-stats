@@ -297,6 +297,7 @@ object TailscaleManager {
             .putString(KEY_AUTH_KEY, key)
             .putBoolean(KEY_ENABLED, true)
             .apply()
+        ensureHttpsServe(context)
         publish(queryStatus(context) ?: Status(State.ERROR, detail = "Signed in but no status"))
     }
 
@@ -362,7 +363,8 @@ object TailscaleManager {
                 publish(s)
                 if (s.state == State.RUNNING) {
                     diag(context, "browser login: authorised, ip=${s.ip}")
-                    return@withContext s
+                    ensureHttpsServe(context)
+                    return@withContext refresh(context)
                 }
                 // The URL expiring (or the user cancelling in the browser) drops us back here.
                 if (s.state == State.NEEDS_KEY) return@withContext s
@@ -416,6 +418,8 @@ object TailscaleManager {
         if (s.state == State.NEEDS_KEY) {
             val key = savedAuthKey(context)
             if (key.isNotEmpty()) connect(context, key)
+        } else if (s.state == State.RUNNING) {
+            ensureHttpsServe(context)
         }
     }
 
@@ -503,6 +507,28 @@ object TailscaleManager {
         _httpsEnabled.value = false
         diag(context, "https disabled")
         refresh(context)
+    }
+
+    /**
+     * Puts the HTTPS forwarding back when the switch is on but the daemon doesn't forward to the
+     * companion. A `serve` config belongs to a login, so a logout — Disconnect, Cancel sign-in, any
+     * fresh sign-in — wipes it while the switch's own setting survives: the switch read on and the
+     * app showed an https:// address that nothing served (2026-10-08, "No serve config" on a car
+     * signed in again). Also covers a companion moved to another port. When all is well it costs one
+     * `serve status` and writes nothing.
+     */
+    private suspend fun ensureHttpsServe(context: Context) {
+        if (!isHttpsEnabled(context)) return
+        val port = com.byd.tripstats.server.WebServerManager.currentPort()
+        val serve = sh(context, "TS_BE_CLI=1 $BIN --socket=$SOCKET serve status 2>&1", 15_000L) ?: return
+        if (serve.contains("127.0.0.1:$port")) return
+        diag(context, "https: switch on but not served — setting it up again on :443 -> 127.0.0.1:$port")
+        val out = sh(
+            context,
+            "TS_BE_CLI=1 $BIN --socket=$SOCKET serve --bg --https=443 http://127.0.0.1:$port 2>&1; echo EXIT=$?",
+            60_000L,
+        ).orEmpty()
+        if (!out.contains("EXIT=0")) diag(context, "https: setting it up again FAILED :: ${out.replace('\n', ' ').take(160)}")
     }
 
     // ── Internals ─────────────────────────────────────────────────────────────

@@ -496,15 +496,16 @@ tailnet) that know its PIN — it never sends anything out.
 
 ## Autostart / Survival
 
-DiLink may kill background apps aggressively. To improve survival:
+The car's **Disable Autostart** app lists apps the car won't let start by themselves. While BYD Trip Stats is switched on there, the car blocks the app from starting by itself whenever it isn't already running, so it only runs once you open it. To fix it:
 
 1. Open the car's **Disable Autostart** app
 2. Find **BYD Trip Stats**
-3. Toggle its entry **OFF** (so autostart is effectively enabled)
-4. Reboot the car UI
-5. Open BYD Trip Stats again
+3. Switch its entry **OFF**
+4. Open BYD Trip Stats once
 
-**Important:** this setting often resets after app updates. Re-check it after every install.
+No reboot is needed. The change works straight away.
+
+**Important:** on DiLink 3, every install and update switches the app back on in that list. After each update the app reminds you and opens the screen for you.
 
 The app uses a foreground telemetry service, wake lock, Wi-Fi lock, boot receiver, and a watchdog worker — but survival still depends on the OEM system behaviour. With the one-time ADB authorisation, a small background helper also brings the app back after the car has stopped it.
 

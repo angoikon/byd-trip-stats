@@ -70,6 +70,8 @@
     <string name="cells_awaiting">셀: 데이터 대기 중…</string>
     <string name="cells_range">셀: %1$s – %2$s V</string>
     <string name="cells_min_only">셀: %1$s V</string>
+    <string name="cells_unavailable_di5">셀: DiLink-5에서는 사용할 수 없음</string>
+    <string name="cell_voltage_unavailable_di5">DiLink-5는 셀 전압을 앱에 제공하지 않으므로, 현재 이 차량에서는 표시하거나 모니터링할 수 없습니다.</string>
     <string name="battery_temp_value">온도: %1$s °C</string>
     <string name="soh_value">SoH: %1$s</string>
     <string name="hv_12v_pair">%1$s / %2$s</string>
@@ -1090,7 +1092,7 @@
     <string name="faq_q_offline_trip">네트워크 없음이 주행이 기록에 없다는 의미인가요?</string>
     <string name="faq_a_offline_trip">아니요. 주행 기록은 로컬에 저장되며 모바일 신호나 WiFi에 의존하지 않습니다.\n\n라이브 텔레메트리 자체가 잠시 중단되는 경우에만 주행이 약간 늦게 닫힐 수 있습니다. 그 경우 감시자가 앱이 마지막으로 받은 패킷을 기준으로 3분 텔레메트리 침묵 후 활성 주행을 닫습니다.</string>
     <string name="faq_q_stops_restart">차량 재시작 후 앱이 작동하지 않습니다</string>
-    <string name="faq_a_stops_restart">BYD Trip Stats를 자동 시작 관리자에서 제외해야 합니다:\n\n1. Disable Autostart 앱 열기\n2. BYD Trip Stats를 찾아 비활성화\n3. 앱을 열고 볼륨 버튼을 ~10초 길게 눌러 차량 인터페이스 재시작</string>
+    <string name="faq_a_stops_restart">차량의 “오토 스타트 금지”(Disable Autostart) 목록이 막고 있을 가능성이 높습니다. 그곳에서 BYD Trip Stats가 켜져 있으면 앱이 실행 중이 아닐 때 차량이 앱의 자동 시작을 막습니다.\n\n1. “오토 스타트 금지” 앱 열기(BYD 앱, 보통 파일 관리자 근처에 있음)\n2. BYD Trip Stats를 찾아 스위치 끄기\n3. BYD Trip Stats를 한 번 열기\n\n재부팅은 필요 없습니다. 변경 사항은 바로 적용됩니다.\n\n중요: 앱을 업데이트할 때마다 다시 확인하세요. 업데이트를 설치하면 다시 켜질 수 있습니다.</string>
     <string name="faq_q_backup">주행 데이터를 백업하는 방법은 무엇인가요?</string>
     <string name="faq_a_backup">여러 방법이 있으며 모두 동일한 표준 SQLite 파일을 생성합니다:\n\n로컬(가장 간단): 설정 → 앱 → 백업 &amp; 복원 → 지금 백업.\n\nSD 카드(Pro): 백업 &amp; 복원 → SD 카드에 백업. 앱 제거 후에도 유지됩니다.\n\nTelegram(권장): 설정 → 연결 → Telegram에서 봇을 연결한 후 수동 또는 예약 전송.\n\nADB: adb shell run-as com.byd.tripstats cat files/db_backup/FILENAME.db &gt; local.db</string>
     <string name="faq_q_recover">앱을 재설치했습니다 — 백업을 복원할 수 있나요?</string>
@@ -1158,7 +1160,7 @@
     <string name="qr_failed_msg">QR 코드를 렌더링할 수 없습니다. \"링크 복사\"를 사용하여 %1$s(으)로 이메일을 보내세요.</string>
     <string name="compat_telegram_action">Telegram</string>
     <string name="autostart_dialog_title">⚠️ 작업 필요 — 자동 시작</string>
-    <string name="autostart_dialog_msg">새 버전이 설치되었습니다. 이 앱의 자동 시작을 비활성화해야 합니다. 이를 통해 포그라운드 / 백그라운드 서비스가 실행될 수 있습니다.\n차량을 한 번 재부팅해야 하며, 앱을 처음 설치할 때와 자동 시작을 비활성화한 후에만 필요합니다. 이전 버전에서 업데이트하는 경우 재부팅할 필요가 없습니다</string>
+    <string name="autostart_dialog_msg">BYD Trip Stats가 방금 설치되거나 업데이트되어, 차량의 “오토 스타트 금지”(Disable Autostart) 목록에서 다시 켜졌을 수 있습니다.\n\n다음 화면에서 BYD Trip Stats를 찾아 스위치를 끄세요. 스위치가 켜져 있으면 앱이 실행 중이 아닐 때 차량이 앱의 자동 시작을 막습니다(예: 인포테인먼트 시스템이 재시작된 후). 그러면 앱을 직접 열어야만 작동합니다.\n\n재부팅은 필요 없습니다. 변경 사항은 바로 적용됩니다.</string>
     <string name="autostart_got_it">알겠습니다</string>
     <string name="autostart_open_failed">이 헤드 유닛에서 자동 시작 화면을 열 수 없습니다. 차량 자체의 설정 → 앱 → 자동 시작(또는 백그라운드 앱)에서 열고 Trip Stats가 허용되어 있는지 확인하세요.</string>
     <string name="flavor_mismatch_title">⚠️ 이 차량에 맞지 않는 빌드</string>

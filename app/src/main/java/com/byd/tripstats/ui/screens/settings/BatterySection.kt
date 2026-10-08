@@ -16,6 +16,7 @@ import com.byd.tripstats.R
 import com.byd.tripstats.data.entitlement.EntitlementManager
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.data.preferences.SocSource
+import com.byd.tripstats.sdk.DiLink5Platform
 import com.byd.tripstats.ui.components.BrandSwitch
 import com.byd.tripstats.ui.theme.BydElectricAzure
 import kotlinx.coroutines.launch
@@ -163,6 +164,11 @@ internal fun BatterySection(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            // The alert runs on cell voltages, which DiLink-5 doesn't provide. The switch stays usable
+            // so the alert starts working on its own if a source turns up.
+            if (DiLink5Platform.isDiLink5) {
+                CellVoltageUnavailableNote()
+            }
             if (isPro && cellImbalanceAlertEnabled) {
                 Text(
                     stringResource(R.string.current_limit_value, "%.0f".format(cellImbalanceThresholdV * 1000)),
@@ -228,6 +234,28 @@ internal fun BatterySection(
             dismissButton = {
                 TextButton(onClick = { showCellImbalanceThresholdDialog = false }) { Text(stringResource(R.string.cancel)) }
             }
+        )
+    }
+}
+
+/** DiLink-5 only: the cell-imbalance alert has no cell voltages to watch. Shared with the Pro tab. */
+@Composable
+internal fun CellVoltageUnavailableNote() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            Icons.Filled.Warning,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.error,
+            modifier = Modifier.size(16.dp)
+        )
+        Text(
+            stringResource(R.string.cell_voltage_unavailable_di5),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
