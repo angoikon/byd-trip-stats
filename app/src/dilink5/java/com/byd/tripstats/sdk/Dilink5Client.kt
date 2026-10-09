@@ -17,14 +17,8 @@ import android.hardware.bydauto.pm2p5.AbsBYDAutoPM2p5Listener
 import android.hardware.bydauto.energy.AbsBYDAutoEnergyListener
 import android.hardware.bydauto.ac.AbsBYDAutoAcListener
 import android.hardware.bydauto.BYDAutoEventValue
-import com.byd.tripstats.runtimebridge.RuntimeExtensionBridge
 import com.byd.tripstats.util.DiagLog
 import kotlin.math.roundToInt
-
-// Cell-voltage probe limits, per process: event lines, poll lines, and slow ticks (~30 s each).
-private const val CELLV_EVENT_LINES_MAX = 12
-private const val CELLV_POLL_LINES_MAX = 4
-private const val CELLV_POLL_ATTEMPTS_MAX = 20
 
 /**
  * DiLink-5 (Sealion 7) telemetry client — present ONLY in the `dilink5` flavor; loaded reflectively
@@ -110,28 +104,6 @@ class Dilink5Client {
     // boot-loop pattern. isCarOn does not read any of this.
     private var lastCarState: String? = null
 
-    // ── Cell-voltage probe (diagnostic only — feeds nothing) ─────────────────────
-    // DiLink-5 has no known cell-voltage source. BydVehicleDataSource polls the statistic feature IDs
-    // that carry them on DiLink-3 and gets nothing usable here, and its feature subscription never
-    // attaches: this firmware's statistic listener is an abstract class, which that code can't proxy.
-    // So these IDs had never been subscribed on DiLink-5. This probe subscribes them on a listener of
-    // its own (the typed listener's subscription above is left as it is) and reads each ID through
-    // every get() signature, writing what comes back to diag.log and the compat probe. Bounded: a few
-    // diag lines per process, and the poll gives up after about ten minutes.
-    private var cellVListener: AbsBYDAutoStatisticListener? = null
-    private val cellVEventLines = java.util.concurrent.atomic.AtomicInteger()
-    private val cellVLastLogged = java.util.concurrent.ConcurrentHashMap<Int, String>()
-    private var cellVPollAttempts = 0
-    private var cellVPollLines = 0
-    private var cellVLastPollLine: String? = null
-    // label → feature ID, from the private extension (empty without it, and the probe does nothing).
-    private val cellVoltageFeatures: Map<String, Int> by lazy {
-        RuntimeExtensionBridge.labeledIntGroup("l02").filterKeys { it.startsWith("cellV") }
-    }
-    private val cellVoltageLabels: Map<Int, String> by lazy {
-        cellVoltageFeatures.entries.associate { (label, id) -> id to label }
-    }
-
     // derived-power state
     private var lastUsableKwh: Double = Double.NaN
     private var lastUsableAtMs: Long = 0L
@@ -149,6 +121,8 @@ class Dilink5Client {
         Log.i(tag, "starting DiLink-5 client")
 
         // 1) statistic typed listener (push) — primes the adapter + delivers soc/mileage/range/kWh
+        // No cell voltages here: the statistic cell-voltage feature IDs read BYD's no-data value
+        // through every get() and push no events, car on or driving (probed 2026-10, see CLAUDE.md).
         try {
             val dev = BYDAutoStatisticDevice.getInstance(ctx)
             statDevice = dev
@@ -190,7 +164,6 @@ class Dilink5Client {
         } catch (t: Throwable) {
             Log.w(tag, "statistic listener failed: ${t.javaClass.simpleName}: ${t.message}")
         }
-        statDevice?.let { registerCellVoltageProbe(it) }
 
         // 2) bind the reflective devices once (sequential, guarded)
         chargingDev = bind(ctx, "android.hardware.bydauto.charging.BYDAutoChargingDevice")
@@ -278,10 +251,7 @@ class Dilink5Client {
         running = false
         pollThread?.interrupt(); pollThread = null
         try { statListener?.let { statDevice?.unregisterListener(it) } } catch (_: Throwable) {}
-        try { cellVListener?.let { statDevice?.unregisterListener(it) } } catch (_: Throwable) {}
-        statListener = null; cellVListener = null; statDevice = null
-        cellVEventLines.set(0); cellVLastLogged.clear()
-        cellVPollAttempts = 0; cellVPollLines = 0; cellVLastPollLine = null
+        statListener = null; statDevice = null
         try { tyreListener?.let { l -> tyreDev?.javaClass?.getMethod("unregisterListener", AbsBYDAutoTyreListener::class.java)?.invoke(tyreDev, l) } } catch (_: Throwable) {}
         // NOTE: collectdata uses "unRegisterListener" (capital R), unlike the others.
         try { collectDataListener?.let { l -> collectDataDev?.javaClass?.getMethod("unRegisterListener", AbsBYDAutoCollectDataListener::class.java)?.invoke(collectDataDev, l) } } catch (_: Throwable) {}
@@ -345,7 +315,6 @@ class Dilink5Client {
                 ?.let { ds.applyDilink5Telemetry(elecRangeKm = it) }
             safeGet { d.getEVRemainingBatteryPower().toDouble() }?.takeIf { it in 0.5..200.0 }
                 ?.let { onUsable(it, ds) }
-            probeCellVoltagePoll(d)
         }
         reflGetInt(healthDev, "getBatteryHealthStatus")?.takeIf { it in 50..110 }
             ?.let { ds.applyDilink5Telemetry(sohPct = it.toDouble()) }
@@ -648,98 +617,6 @@ class Dilink5Client {
         }
         registerInstrumentListener(dev, ds)
     }
-
-    // Cell-voltage probe, event side: subscribes the cell-voltage feature IDs the same way the
-    // instrument listener subscribes fid 4208 (registerListener(l, int[]), confirmed on DiLink-5).
-    private fun registerCellVoltageProbe(dev: BYDAutoStatisticDevice) {
-        val ids = cellVoltageFeatures.values.toIntArray()
-        if (ids.isEmpty()) return
-        try {
-            val l = object : AbsBYDAutoStatisticListener() {
-                // Runs on a BYD thread, where a throw would escape every catch of ours. `value` is
-                // nullable so Kotlin's parameter null-check (which runs before the try) can't throw.
-                override fun onDataEventChanged(featureId: Int, value: BYDAutoEventValue?) {
-                    try { onCellVoltageEvent(featureId, value) } catch (_: Throwable) {}
-                }
-            }
-            dev.registerListener(l, ids)
-            cellVListener = l
-            diag("cell-voltage probe: subscribed ${cellVoltageFeatures.keys.joinToString()}")
-        } catch (t: Throwable) {
-            val c = (t as? java.lang.reflect.InvocationTargetException)?.cause ?: t
-            diag("cell-voltage probe: subscribe FAILED: ${c.javaClass.simpleName}: ${c.message}")
-        }
-    }
-
-    private fun onCellVoltageEvent(featureId: Int, value: BYDAutoEventValue?) {
-        val label = cellVoltageLabels[featureId] ?: return
-        val raw = describeRaw(value)
-        VehicleCompatibilityProbe.recordTypedEvent("statistic-cellv", "onDataEventChanged($label)", raw)
-        // Each ID's first value, then its changes, up to a fixed number of lines per process.
-        if (cellVLastLogged.put(featureId, raw) != raw && cellVEventLines.incrementAndGet() <= CELLV_EVENT_LINES_MAX) {
-            diag("cell-voltage probe: event $label=$raw")
-        }
-    }
-
-    // Cell-voltage probe, poll side (slow tick). The main poll converts every get() result to Int and
-    // then range-checks it as millivolts, so a reading in volts (3.3 → 3) would be dropped without a
-    // trace; this logs each signature's raw result instead. Logs on change only, and stops after
-    // CELLV_POLL_ATTEMPTS_MAX ticks or CELLV_POLL_LINES_MAX lines.
-    private fun probeCellVoltagePoll(dev: BYDAutoStatisticDevice) {
-        if (cellVoltageFeatures.isEmpty()) return
-        if (cellVPollAttempts >= CELLV_POLL_ATTEMPTS_MAX || cellVPollLines >= CELLV_POLL_LINES_MAX) return
-        cellVPollAttempts++
-        val getArray = runCatching { dev.javaClass.getMethod("get", IntArray::class.java, Class::class.java) }.getOrNull()
-        val getSingle = runCatching { dev.javaClass.getMethod("get", Int::class.javaPrimitiveType) }.getOrNull()
-        val line = cellVoltageFeatures.entries.joinToString(" ") { (label, id) ->
-            fun byArray(type: Class<*>) =
-                if (getArray == null) "n/a" else readRaw { getArray.invoke(dev, intArrayOf(id), type) }
-            val raw = "ev=${byArray(BYDAutoEventValue::class.java)} I=${byArray(Int::class.javaObjectType)} " +
-                "F=${byArray(Float::class.javaObjectType)} D=${byArray(Double::class.javaObjectType)} " +
-                "g=${if (getSingle == null) "n/a" else readRaw { getSingle.invoke(dev, id) }}"
-            VehicleCompatibilityProbe.recordTypedEvent("statistic-cellv", "poll($label)", raw)
-            "$label[$raw]"
-        }
-        if (line != cellVLastPollLine) {
-            cellVLastPollLine = line
-            cellVPollLines++
-            diag("cell-voltage probe: poll #$cellVPollAttempts $line")
-        }
-    }
-
-    private inline fun readRaw(read: () -> Any?): String = try {
-        describeRaw(read())
-    } catch (t: Throwable) {
-        "!" + ((t as? java.lang.reflect.InvocationTargetException)?.cause ?: t).javaClass.simpleName
-    }
-
-    // A returned value as text: numbers as they are; an event-value object as its non-default public
-    // fields, e.g. {intValue=3312}, or {} when all are zero. Field reads only — never a method call on
-    // the BYD object.
-    private fun describeRaw(v: Any?): String = when (v) {
-        null -> "null"
-        is Number, is Boolean, is String -> v.toString()
-        else -> runCatching {
-            v.javaClass.fields
-                .filter { !java.lang.reflect.Modifier.isStatic(it.modifiers) }
-                .mapNotNull { f -> f.get(v)?.let(::fieldText)?.let { "${f.name}=$it" } }
-                .joinToString(",", "{", "}")
-        }.getOrDefault(v.javaClass.simpleName)
-    }
-
-    // null for a default value (0, false, empty), so describeRaw shows only what was set.
-    private fun fieldText(x: Any): String? = when (x) {
-        is Number -> x.takeIf { it.toDouble() != 0.0 }?.toString()
-        is Boolean -> x.takeIf { it }?.toString()
-        is String -> x.takeIf { it.isNotEmpty() }
-        is IntArray -> x.takeIf { it.isNotEmpty() }?.contentToString()
-        is FloatArray -> x.takeIf { it.isNotEmpty() }?.contentToString()
-        is DoubleArray -> x.takeIf { it.isNotEmpty() }?.contentToString()
-        is LongArray -> x.takeIf { it.isNotEmpty() }?.contentToString()
-        is ByteArray -> x.takeIf { it.isNotEmpty() }?.let { "bytes[${it.size}]" }
-        is Array<*> -> x.takeIf { it.isNotEmpty() }?.contentToString()
-        else -> x.toString()
-    }?.take(60)
 
     private fun diag(msg: String) {
         appCtx?.let { DiagLog.event(it, tag, msg) }
