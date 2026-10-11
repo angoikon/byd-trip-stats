@@ -1399,10 +1399,11 @@ class BydVehicleDataSource(context: Context) {
             DiagLog.event(appContext, TAG, "⚙️ gear EVENT: $label (raw=$gear)")
         }
         override fun onGearboxAutoModeTypeChanged(type: Int) {
-            // DORMANT (see CLAUDE.md): the GearboxDevice does NOT register on this firmware
-            // (gearboxDeviceRegistered=false), so this never fires here and gear stays
-            // speed-inference only. Kinex reads gear via com.ts.lib.caradapter, not bydauto.
-            // Correct/harmless; would work on firmwares where the gearbox device registers — keep it.
+            // The GearboxDevice registers on current DiLink-3 firmware (see CLAUDE.md), so this
+            // listener is attached there and diag.log shows "gear EVENT (autoModeType)" when it
+            // fires. On older DiLink-3 firmware the device doesn't register
+            // (gearboxDeviceRegistered=false), and on DiLink-5 start() never registers this
+            // listener; either way gear falls back to speed inference in the snapshot builder.
             //
             // The gear SELECTOR position is reported here as the "auto mode type"
             // (1=P 2=R 3=N 4=D 5=M 6=S). On firmwares where onCurrentGearChanged
@@ -1619,8 +1620,9 @@ class BydVehicleDataSource(context: Context) {
         // Not on DiLink-5. There it has only ever failed (SecurityException: BYDAUTO_GEARBOX_COMMON),
         // and once that permission is granted for the car on/off probe this listener would become
         // live — the open-source Overdrive app disabled exactly this gearbox listener after its
-        // learningEPB() path killed the BYD device manager's HandlerThread. DiLink-5 reads the gear
-        // selector by polling getGearboxAutoModeType() in Dilink5Client's probe instead.
+        // learningEPB() path killed the BYD device manager's HandlerThread. DiLink-5 has no gear
+        // source: Dilink5Client supplies none and the uid-2000 daemon doesn't run there, so gear is
+        // inferred from speed in the snapshot builder (D when moving, otherwise the "P" default).
         if (!DiLink5Platform.isDiLink5) tryDevice("Gearbox") {
             gearboxDevice = BYDAutoGearboxDevice.getInstance(ctx)?.also {
                 it.registerListener(gearboxListener)
@@ -5344,13 +5346,11 @@ class BydVehicleDataSource(context: Context) {
                 _vehicleSnapshot.value = _vehicleSnapshot.value.copy(bodyworkPowerLevel = level)
                 publishSnapshot()
                 Log.d(TAG, "🚗 bodyworkPowerLevel=$level")
-                // Capture the off→on power-level transitions to diag.log so the
-                // value→state mapping can be learned (this bodywork power level is the
-                // car-on signal other apps use; the power-device MCU status is silent on
-                // these firmwares). Once mapped, derive carOn from it for instant on/off.
-                // DORMANT (see CLAUDE.md): BodyworkDevice doesn't register in-process on this
-                // firmware, so onPowerLevelChanged never fires here (car-on via power level was
-                // other apps' approach via a different API). Harmless capture; keep it.
+                // Log power-level transitions to diag.log. The BodyworkDevice registers on
+                // current DiLink-3 firmware (see CLAUDE.md), where the power device's MCU status
+                // reads null; this level then backs carOn when the power state is missing
+                // (VehicleTelemetrySnapshot.effectiveCarOn(), mapping in carOnFromBodyworkPowerLevel).
+                // DiLink-3 only: effectiveCarOn() ignores this level on DiLink-5.
                 if (level != prevLevel) {
                     DiagLog.event(appContext, TAG, "🚗 bodyworkPowerLevel: $prevLevel → $level")
                 }
