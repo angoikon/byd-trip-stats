@@ -979,7 +979,7 @@
     <string name="keepalive_not_armed"> • לא דרוך</string>
     <string name="wifi_keepalive_label">השאר את ה-Wi-Fi פעיל כשהרכב כבוי</string>
     <string name="wifi_keepalive_desc">מפעיל מחדש את ה-Wi-Fi לאחר שהרכב כובה — יחידת הראש מכבה אותו כמה דקות מאוחר יותר — כדי ש-Web Companion וכלים מקומיים אחרים (ברשת הביתית) יישארו נגישים. פועל רק כשהרכב כבוי, ונסוג אם מתח סוללת ה-12V או מצב הטעינה יורד. צורך מעט אנרגיה נוספת כל עוד הרכב כבוי.\n\nאם אתה משתמש גם ב-Electro, ב-Overdrive או בכל אפליקציה אחרת ששומרת על Wi-Fi פעיל, הפעל זאת רק באחת מהן והשבת בשאר — שני מנגנוני שמירה הפועלים יחד עלולים להתנגש זה בזה ולבזבז אנרגיה.</string>
-    <string name="wifi_keepalive_needs_setup">מחייב את הגדרת ה-ADB המתקדמת (זהה לטלמטריה מיידית). השלם אותה תחילה כדי להפעיל זאת.</string>
+    <string name="requires_adb_setup_hint">מחייב את הגדרת ה-ADB המתקדמת (זהה לטלמטריה מיידית). השלם אותה תחילה כדי להפעיל זאת.</string>
 
     <!-- Settings dialogs -->
     <string name="tariff_dialog_title">תעריף חשמל</string>
@@ -1328,6 +1328,11 @@
     <string name="d5_consent_decline_body">ללא הרשאה זו האפליקציה אינה יכולה לקרוא נתוני רכב כלשהם. אפשר להעניק אותה בכל עת מדף ההגדרות.</string>
     <string name="d5_consent_decline_confirm">כן, דלג</string>
     <string name="d5_consent_decline_back">חזרה</string>
+    <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
+    <string name="d5_mobile_data_section">נתונים סלולריים (4G)</string>
+    <string name="d5_mobile_data_title">פתיחת ה־4G של הרכב להעלאות</string>
+    <string name="d5_mobile_data_desc">ביחידת הבקרה הזו הרכב חוסם אפליקציות של צד שלישי מהרשת הסלולרית שלו, ולכן MQTT‏, ABRP‏, Telegram ועדכוני האפליקציה עובדים רק ב־Wi-Fi. כשהאפשרות פעילה, האפליקציה מסירה את החסימה עבור עצמה דרך חיבור ה־ADB החד־פעמי שלה — רשימת היתרים במדיניות הרשת לאפליקציה זו בלבד, שמוחלת מחדש בכל הפעלה — ומדליקה נדידת נתונים, מכיוון שה־SIM של הרכב תמיד בנדידה. כבוי = ההגדרות של הרכב נותרות ללא שינוי. גיבויים מתוזמנים ל-Telegram עדיין ממתינים ל-Wi-Fi כל עוד המתג “Wi-Fi בלבד” מופעל (ברירת המחדל).</string>
+    <string name="d5_mobile_data_on_status">ה־4G פתוח</string>
     <string name="driving_widget_consent_title">להציג widget נהיגה?</string>
     <string name="driving_widget_consent_body">ברכב הזה, Android מסתיר את מסך האפליקציה בכל פעם שהרכב אינו ב-P. הקלטת הנסיעה ממשיכה ברקע כך או כך.\n\nבמקום זאת, האפליקציה יכולה להציג widget קטן מעל אפליקציות אחרות בזמן שאתה נוהג, עם המהירות, ההספק, הסוללה והטווח שלך — אותו סוג widget שאפליקציות רכב אחרות משתמשות בו. הוא נועד למבט חטוף, כמו לוח המחוונים: שמור את עיניך על הכביש. הוא נעלם ב-P, שם לוח המחוונים המלא חוזר.\n\nאפשר להפעיל או לכבות אותו מאוחר יותר בהגדרות.</string>
     <string name="driving_widget_consent_allow">הצג widget</string>

@@ -979,7 +979,7 @@
     <string name="keepalive_not_armed"> • nearmat</string>
     <string name="wifi_keepalive_label">Menține Wi-Fi activ când mașina e oprită</string>
     <string name="wifi_keepalive_desc">Reactivează Wi-Fi după oprirea mașinii — unitatea îl oprește câteva minute mai târziu — astfel încât Web Companion și alte instrumente locale (rețea de acasă) să rămână accesibile. Acționează doar când mașina e oprită și se retrage dacă bateria de 12V sau nivelul de încărcare scade. Consumă puțină energie în plus cât timp mașina e oprită.\n\nDacă folosești și Electro, Overdrive sau orice altă aplicație care menține Wi-Fi activ, activează asta într-o SINGURĂ dintre ele și dezactiveaz-o în celelalte — două mecanisme care rulează împreună se pot bloca reciproc și irosi energie.</string>
-    <string name="wifi_keepalive_needs_setup">Necesită configurarea ADB avansată (aceeași ca la telemetria instantanee). Finalizeaz-o mai întâi pentru a activa asta.</string>
+    <string name="requires_adb_setup_hint">Necesită configurarea ADB avansată (aceeași ca la telemetria instantanee). Finalizeaz-o mai întâi pentru a activa asta.</string>
 
     <!-- Settings dialogs -->
     <string name="tariff_dialog_title">Tarif energie electrică</string>
@@ -1328,6 +1328,11 @@
     <string name="d5_consent_decline_body">Fără această permisiune aplicația nu poate citi date despre vehicul. O puteți acorda oricând din pagina Setări.</string>
     <string name="d5_consent_decline_confirm">Da, omite</string>
     <string name="d5_consent_decline_back">Înapoi</string>
+    <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
+    <string name="d5_mobile_data_section">Date mobile (4G)</string>
+    <string name="d5_mobile_data_title">Deblochează 4G-ul mașinii pentru încărcări</string>
+    <string name="d5_mobile_data_desc">Pe această unitate, mașina blochează aplicațiile terților din propria rețea mobilă, deci MQTT, ABRP, Telegram și actualizările aplicației funcționează doar pe Wi-Fi. Când e activat, aplicația ridică această blocare pentru sine prin conexiunea sa ADB unică — o listă de permisiuni în politica de rețea doar pentru această aplicație, reaplicată la fiecare pornire — și activează roamingul de date, deoarece SIM-ul mașinii este mereu în roaming. Dezactivat = setările mașinii rămân neatinse. Backup-urile programate în Telegram așteaptă în continuare Wi-Fi cât timp comutatorul lor „Doar Wi-Fi” este pornit (implicit).</string>
+    <string name="d5_mobile_data_on_status">4G deblocat</string>
     <string name="driving_widget_consent_title">Afișezi un widget de conducere?</string>
     <string name="driving_widget_consent_body">La această mașină, Android ascunde ecranul aplicației ori de câte ori mașina nu este în P. Înregistrarea cursei continuă oricum în fundal.\n\nÎn schimb, aplicația poate afișa un mic widget peste alte aplicații în timp ce conduci, cu viteza, puterea, bateria și autonomia ta — același tip de widget pe care îl folosesc alte aplicații auto. Este făcut pentru o privire scurtă, ca blocul de instrumente: ține ochii pe drum. Dispare în P, unde revine tabloul de bord complet.\n\nÎl poți activa sau dezactiva mai târziu în Setări.</string>
     <string name="driving_widget_consent_allow">Arată widgetul</string>

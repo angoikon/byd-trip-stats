@@ -7,6 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.res.stringResource
 import com.byd.tripstats.R
 import com.byd.tripstats.adb.AdbPermissionManager
+import com.byd.tripstats.adb.Di5MobileDataGate
 import com.byd.tripstats.data.preferences.OffStateMode
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.sdk.DiLink5Platform
@@ -77,6 +78,10 @@ internal fun AppManagementTab(
                     // Off here means the app shows no vehicle data at all, so it earns a mention.
                     if (!AdbPermissionManager.hasHiddenApiConsent(context)) {
                         add(stringResource(R.string.d5_vehicle_access_off_status))
+                    }
+                    // Opt-in; showing it confirms the toggle took effect on the head unit.
+                    if (Di5MobileDataGate.hasConsent(context)) {
+                        add(stringResource(R.string.d5_mobile_data_on_status))
                     }
                 } else if (wifiKeepalive) {
                     add(stringResource(R.string.wifi_keepalive_on_status))

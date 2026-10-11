@@ -982,7 +982,7 @@
     <string name="keepalive_not_armed"> · 準備未完了</string>
     <string name="wifi_keepalive_label">車がオフのときも Wi-Fi を維持</string>
     <string name="wifi_keepalive_desc">車をオフにした後に Wi-Fi を再びオンにします（ヘッドユニットは数分後にオフにします）。これにより Webコンパニオンやその他のローカル（自宅ネットワーク）ツールに引き続きアクセスできます。車がオフのときのみ動作し、12V バッテリーや充電状態が低下すると動作を控えます。車がオフの間、わずかに追加の電力を消費します。\n\nElectro、Overdrive、その他 Wi-Fi を維持するアプリも使っている場合は、そのうちの1つだけでこれをオンにし、他ではオフにしてください — 2つの維持機能が同時に動くと互いに干渉し、電力を無駄にすることがあります。</string>
-    <string name="wifi_keepalive_needs_setup">高度な ADB セットアップ（即時テレメトリと同じ）が必要です。これを有効にするには、まずそれを完了してください。</string>
+    <string name="requires_adb_setup_hint">高度な ADB セットアップ（即時テレメトリと同じ）が必要です。これを有効にするには、まずそれを完了してください。</string>
 
     <!-- Settings dialogs -->
     <string name="tariff_dialog_title">電気料金</string>
@@ -1332,6 +1332,11 @@
     <string name="d5_consent_decline_body">この権限がないとアプリは車両データを読み取れません。設定ページからいつでも許可できます。</string>
     <string name="d5_consent_decline_confirm">はい、スキップ</string>
     <string name="d5_consent_decline_back">戻る</string>
+    <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
+    <string name="d5_mobile_data_section">モバイルデータ（4G）</string>
+    <string name="d5_mobile_data_title">アップロード用に車の4Gを解放</string>
+    <string name="d5_mobile_data_desc">このヘッドユニットでは、車がサードパーティ製アプリを自車のモバイルネットワークから締め出すため、MQTT・ABRP・Telegram・アプリのアップデートはWi-Fiでのみ動作します。オンにすると、アプリが一回限りのADB接続を通じてこのブロックを自分用に解除します — このアプリ専用のネットワークポリシーのホワイトリストで、起動のたびに再適用されます — また、車のSIMは常にローミング中のため、データローミングをオンにします。オフ = 車の設定には一切触れません。Telegramへの定期バックアップは、「Wi-Fiのみ」スイッチがオン（既定）の間はWi-Fiを待ちます。</string>
+    <string name="d5_mobile_data_on_status">4G解放済み</string>
     <string name="driving_widget_consent_title">運転中ウィジェットを表示しますか？</string>
     <string name="driving_widget_consent_body">この車では、車が P 以外のときはいつでも Android がアプリの画面を隠します。どちらにしてもトリップの記録はバックグラウンドで続きます。\n\n代わりに、運転中はアプリが他のアプリの上に小さなウィジェットを表示できます。速度、パワー、バッテリー、航続距離を — 他の車用アプリが使うのと同じ種類のウィジェットです。メーターのように、ちらっと見るためのものです。道路から目を離さないでください。P では消え、完全なダッシュボードが戻ります。\n\n後で設定からオン・オフを切り替えられます。</string>
     <string name="driving_widget_consent_allow">ウィジェットを表示</string>

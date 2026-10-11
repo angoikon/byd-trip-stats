@@ -982,7 +982,7 @@
     <string name="keepalive_not_armed"> · 未啟用</string>
     <string name="wifi_keepalive_label">車輛熄火時保持 Wi-Fi 開啟</string>
     <string name="wifi_keepalive_desc">在車輛熄火後重新開啟 Wi-Fi——車機會在幾分鐘後將其關閉——讓 Web 伴侶和其他本機（家庭網路）工具保持可存取。僅在車輛熄火時作用，並在 12V 電池或電量偏低時自動退讓。車輛熄火期間會消耗少量額外電量。\n\n如果你還使用 Electro、Overdrive 或任何其他保持 Wi-Fi 的應用，請只在其中一個中開啟此項，並在其他應用中關閉——兩個保活機制同時執行可能會互相衝突並浪費電量。</string>
-    <string name="wifi_keepalive_needs_setup">需要進階 ADB 設定（與即時遙測相同）。請先完成該設定以啟用此功能。</string>
+    <string name="requires_adb_setup_hint">需要進階 ADB 設定（與即時遙測相同）。請先完成該設定以啟用此功能。</string>
 
     <!-- Settings dialogs -->
     <string name="tariff_dialog_title">電費費率</string>
@@ -1332,6 +1332,11 @@
     <string name="d5_consent_decline_body">沒有此權限，應用程式無法讀取任何車輛資料。你可以隨時在「設定」頁面授予。</string>
     <string name="d5_consent_decline_confirm">是，略過</string>
     <string name="d5_consent_decline_back">返回</string>
+    <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
+    <string name="d5_mobile_data_section">行動數據（4G）</string>
+    <string name="d5_mobile_data_title">為上傳解鎖車機的 4G</string>
+    <string name="d5_mobile_data_desc">在這台車機上，車輛把第三方應用程式擋在自己的行動網路之外，因此 MQTT、ABRP、Telegram 和應用程式更新只能在 Wi-Fi 下使用。開啟後，應用程式會透過一次性 ADB 連線為自身解除這一限制 —— 一條僅對本應用程式生效的網路政策白名單，每次啟動時重新套用 —— 並開啟數據漫遊，因為車的 SIM 卡始終處於漫遊狀態。關閉 = 不更動車輛的設定。只要「僅 Wi-Fi」開關保持開啟（預設），Telegram 排程備份仍會等待 Wi-Fi。</string>
+    <string name="d5_mobile_data_on_status">4G 已解鎖</string>
     <string name="driving_widget_consent_title">顯示駕駛小工具？</string>
     <string name="driving_widget_consent_body">在這輛車上，只要車輛不在 P 檔，Android 就會隱藏應用的畫面。無論如何，行程記錄都會在背景繼續。\n\n作為替代，應用可以在你駕駛時於其他應用之上顯示一個小工具，包含你的速度、功率、電池和續航——與其他車載應用使用的同類小工具。它用於瞥一眼，就像儀表板：請注視道路。回到 P 檔時它會消失，完整儀表板隨之回來。\n\n你之後可以在設定中開啟或關閉它。</string>
     <string name="driving_widget_consent_allow">顯示小工具</string>

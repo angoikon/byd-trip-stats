@@ -907,7 +907,7 @@
     <string name="keepalive_not_armed"> • nicht aktiviert</string>
     <string name="wifi_keepalive_label">Wi-Fi aktiv halten, wenn das Auto aus ist</string>
     <string name="wifi_keepalive_desc">Schaltet das Wi-Fi wieder ein, nachdem das Auto ausgeschaltet wurde — die Head-Unit trennt es wenige Minuten später —, damit der Web-Begleiter und andere lokale Tools (Heimnetzwerk) erreichbar bleiben. Wirkt nur, während das Auto aus ist, und zieht sich zurück, wenn die 12V-Batterie oder der Ladezustand niedrig wird. Verbraucht etwas zusätzlichen Strom, solange das Auto aus ist.\n\nWenn du auch Electro, Overdrive oder eine andere App verwendest, die das Wi-Fi aktiv hält, aktiviere dies nur in EINER davon und deaktiviere es in den anderen — zwei gleichzeitig laufende Keepalives können sich gegenseitig behindern und Strom verschwenden.</string>
-    <string name="wifi_keepalive_needs_setup">Erfordert die erweiterte ADB-Einrichtung (wie bei der Sofort-Telemetrie). Schließe diese zuerst ab, um dies zu aktivieren.</string>
+    <string name="requires_adb_setup_hint">Erfordert die erweiterte ADB-Einrichtung (wie bei der Sofort-Telemetrie). Schließe diese zuerst ab, um dies zu aktivieren.</string>
     <string name="tariff_dialog_title">Stromtarif</string>
     <string name="tariff_input_desc">Geben Sie Ihren Heimladepreis ein, damit Fahrtkosten Ihren festen Tarif als Basis verwenden.</string>
     <string name="price_per_kwh_label">Preis pro kWh</string>
@@ -1231,6 +1231,11 @@
     <string name="d5_consent_decline_body">Ohne diese Berechtigung kann die App keine Fahrzeugdaten lesen. Sie können sie jederzeit auf der Seite Einstellungen erteilen.</string>
     <string name="d5_consent_decline_confirm">Ja, überspringen</string>
     <string name="d5_consent_decline_back">Zurück</string>
+    <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
+    <string name="d5_mobile_data_section">Mobile Daten (4G)</string>
+    <string name="d5_mobile_data_title">Das 4G des Autos für Uploads freischalten</string>
+    <string name="d5_mobile_data_desc">Auf diesem Head-Unit sperrt das Auto Drittanbieter-Apps vom eigenen Mobilfunknetz aus, sodass MQTT, ABRP, Telegram und App-Updates nur über WLAN funktionieren. Wenn eingeschaltet, hebt die App diese Sperre für sich selbst über ihre einmalige ADB-Verbindung auf — eine Netzwerk-Richtlinien-Whitelist nur für diese App, bei jedem Start neu angewandt — und aktiviert Daten-Roaming, da die SIM-Karte des Autos immer im Roaming ist. Aus = die Einstellungen des Autos bleiben unangetastet. Geplante Telegram-Sicherungen warten weiterhin auf WLAN, solange ihr Schalter „Nur WLAN“ an ist (Standard).</string>
+    <string name="d5_mobile_data_on_status">4G freigeschaltet</string>
     <string name="driving_widget_consent_title">Fahr-Widget anzeigen?</string>
     <string name="driving_widget_consent_body">Bei diesem Auto blendet Android den Bildschirm der App aus, sobald das Auto nicht in P steht. Die Fahrtaufzeichnung läuft so oder so im Hintergrund weiter.\n\nStattdessen kann die App während der Fahrt ein kleines Widget über anderen Apps anzeigen, mit deiner Geschwindigkeit, Leistung, Batterie und Reichweite — dieselbe Art von Widget, die andere Auto-Apps nutzen. Es ist für einen kurzen Blick gedacht, wie das Kombiinstrument: Behalte die Straße im Auge. In P verschwindet es, dort ist das vollständige Dashboard zurück.\n\nDu kannst es später in den Einstellungen ein- oder ausschalten.</string>
     <string name="driving_widget_consent_allow">Widget anzeigen</string>

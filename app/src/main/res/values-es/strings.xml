@@ -982,7 +982,7 @@
     <string name="keepalive_not_armed"> · no armado</string>
     <string name="wifi_keepalive_label">Mantener el Wi-Fi activo cuando el coche está apagado</string>
     <string name="wifi_keepalive_desc">Vuelve a activar el Wi-Fi después de apagar el coche — la unidad lo apaga unos minutos más tarde — para que el Web Companion y otras herramientas locales (de la red doméstica) sigan accesibles. Solo actúa mientras el coche está apagado y se retira si la batería de 12V o el estado de carga baja. Consume un poco de energía adicional mientras el coche está apagado.\n\nSi también usas Electro, Overdrive o cualquier otra app que mantenga el Wi-Fi activo, actívalo en SOLO UNA de ellas y desactívalo en las demás — dos keepalives funcionando a la vez pueden entrar en conflicto y malgastar energía.</string>
-    <string name="wifi_keepalive_needs_setup">Requiere la configuración ADB avanzada (la misma que la telemetría instantánea). Complétala primero para habilitar esto.</string>
+    <string name="requires_adb_setup_hint">Requiere la configuración ADB avanzada (la misma que la telemetría instantánea). Complétala primero para habilitar esto.</string>
 
     <!-- Settings dialogs -->
     <string name="tariff_dialog_title">Tarifa eléctrica</string>
@@ -1332,6 +1332,11 @@
     <string name="d5_consent_decline_body">Sin este permiso la app no puede leer datos del vehículo. Puedes concederlo en cualquier momento desde la página de Ajustes.</string>
     <string name="d5_consent_decline_confirm">Sí, omitir</string>
     <string name="d5_consent_decline_back">Atrás</string>
+    <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
+    <string name="d5_mobile_data_section">Datos móviles (4G)</string>
+    <string name="d5_mobile_data_title">Desbloquear el 4G del coche para las subidas</string>
+    <string name="d5_mobile_data_desc">En esta unidad el coche bloquea a las aplicaciones de terceros en su propia red móvil, así que MQTT, ABRP, Telegram y las actualizaciones de la app solo funcionan con Wi-Fi. Al activarlo, la app levanta ese bloqueo para sí misma a través de su conexión ADB única — una lista blanca en la política de red solo para esta app, que se vuelve a aplicar en cada arranque — y activa la itinerancia de datos, ya que la SIM del coche está siempre en roaming. Desactivado = los ajustes del coche quedan intactos. Las copias de seguridad programadas de Telegram siguen esperando al Wi-Fi mientras su interruptor «Solo Wi-Fi» esté activado (opción predeterminada).</string>
+    <string name="d5_mobile_data_on_status">4G desbloqueado</string>
     <string name="driving_widget_consent_title">¿Mostrar un widget de conducción?</string>
     <string name="driving_widget_consent_body">En este coche, Android oculta la pantalla de la app siempre que el coche no está en P. La grabación del viaje continúa en segundo plano de todas formas.\n\nEn su lugar, la app puede mostrar un pequeño widget sobre otras apps mientras conduces, con tu velocidad, potencia, batería y autonomía — el mismo tipo de widget que usan otras apps de coche. Está pensado para un vistazo, como el cuadro de instrumentos: mantén la vista en la carretera. Desaparece en P, donde vuelve el panel completo.\n\nPuedes activarlo o desactivarlo más tarde en Ajustes.</string>
     <string name="driving_widget_consent_allow">Mostrar widget</string>

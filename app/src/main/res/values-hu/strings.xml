@@ -979,7 +979,7 @@
     <string name="keepalive_not_armed"> • nincs élesítve</string>
     <string name="wifi_keepalive_label">Wi-Fi ébren tartása, amikor az autó ki van kapcsolva</string>
     <string name="wifi_keepalive_desc">Újra bekapcsolja a Wi-Fit az autó kikapcsolása után — a fejegység néhány perc múlva lekapcsolja —, hogy a Web Companion és más helyi (otthoni hálózati) eszközök elérhetők maradjanak. Csak akkor működik, amikor az autó ki van kapcsolva, és visszavonul, ha a 12V-os akkumulátor vagy a töltöttség lecsökken. Egy kis többletáramot fogyaszt, amíg az autó ki van kapcsolva.\n\nHa Electrót, Overdrive-ot vagy bármely más, a Wi-Fit ébren tartó alkalmazást is használsz, csak az EGYIKÜKBEN kapcsold be, a többiben pedig tiltsd le — két egyszerre futó keepalive akadályozhatja egymást és pazarolhatja az energiát.</string>
-    <string name="wifi_keepalive_needs_setup">A speciális ADB-beállítást igényli (ugyanaz, mint az azonnali telemetriánál). Először végezd el, hogy engedélyezhesd ezt.</string>
+    <string name="requires_adb_setup_hint">A speciális ADB-beállítást igényli (ugyanaz, mint az azonnali telemetriánál). Először végezd el, hogy engedélyezhesd ezt.</string>
 
     <!-- Settings dialogs -->
     <string name="tariff_dialog_title">Villamosenergia-tarifa</string>
@@ -1328,6 +1328,11 @@
     <string name="d5_consent_decline_body">E jogosultság nélkül az alkalmazás nem tud járműadatokat olvasni. Bármikor megadhatja a Beállítások oldalon.</string>
     <string name="d5_consent_decline_confirm">Igen, kihagyom</string>
     <string name="d5_consent_decline_back">Vissza</string>
+    <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
+    <string name="d5_mobile_data_section">Mobiladat (4G)</string>
+    <string name="d5_mobile_data_title">Az autó 4G-jének feloldása feltöltésekhez</string>
+    <string name="d5_mobile_data_desc">Ezen a központi egységen az autó letiltja a harmadik felek alkalmazásait a saját mobilhálózatán, így az MQTT, az ABRP, a Telegram és az alkalmazásfrissítések csak Wi-FIn működnek. Bekapcsolva az alkalmazás saját maga számára feloldja ezt a tiltást az egyszeri ADB-kapcsolatán keresztül — csak erre az alkalmazásra érvényes hálózati szabályzati engedély, minden indításkor újra alkalmazva —, és bekapcsolja az adatroamingot, mert az autó SIM-kártyája mindig roamingban van. Kikapcsolva = az autó beállításai érintetlenek maradnak. Az ütemezett Telegram-mentések továbbra is Wi-Fi-re várnak, amíg a „Csak Wi-Fi” kapcsolójuk be van kapcsolva (alapértelmezés).</string>
+    <string name="d5_mobile_data_on_status">4G feloldva</string>
     <string name="driving_widget_consent_title">Megjelenik a vezetési widget?</string>
     <string name="driving_widget_consent_body">Ennél az autónál az Android elrejti az alkalmazás képernyőjét, valahányszor az autó nem P-ben van. Az útrögzítés így is, úgy is folytatódik a háttérben.\n\nHelyette az alkalmazás vezetés közben egy kis widgetet jeleníthet meg más alkalmazások fölött a sebességeddel, teljesítményeddel, akkumulátoroddal és hatótávoddal — ugyanolyan widget, amilyet más autós alkalmazások használnak. Egy pillantásra szánták, mint a műszerfalat: tartsd a szemed az úton. P-ben eltűnik, ott visszatér a teljes irányítópult.\n\nKésőbb be- vagy kikapcsolhatod a Beállításokban.</string>
     <string name="driving_widget_consent_allow">Widget megjelenítése</string>

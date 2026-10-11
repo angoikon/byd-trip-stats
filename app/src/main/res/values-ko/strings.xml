@@ -907,7 +907,7 @@
     <string name="keepalive_not_armed"> • 비활성화됨</string>
     <string name="wifi_keepalive_label">차량이 꺼져 있을 때 Wi-Fi 유지</string>
     <string name="wifi_keepalive_desc">차량을 끈 후 Wi-Fi를 다시 켭니다 — 헤드 유닛은 몇 분 뒤에 이를 끕니다 — 그래서 웹 컴패니언 및 기타 로컬(홈 네트워크) 도구에 계속 접근할 수 있습니다. 차량이 꺼져 있을 때만 작동하며, 12V 배터리나 충전 상태가 낮아지면 물러납니다. 차량이 꺼져 있는 동안 약간의 추가 전력을 사용합니다.\n\nElectro, Overdrive 또는 Wi-Fi를 유지하는 다른 앱도 사용한다면, 그중 하나에서만 이 기능을 켜고 나머지에서는 끄세요 — 두 개의 유지 기능이 동시에 실행되면 서로 충돌하여 전력을 낭비할 수 있습니다.</string>
-    <string name="wifi_keepalive_needs_setup">고급 ADB 설정(즉시 텔레메트리와 동일)이 필요합니다. 이 기능을 사용하려면 먼저 해당 설정을 완료하세요.</string>
+    <string name="requires_adb_setup_hint">고급 ADB 설정(즉시 텔레메트리와 동일)이 필요합니다. 이 기능을 사용하려면 먼저 해당 설정을 완료하세요.</string>
     <string name="tariff_dialog_title">전기 요금</string>
     <string name="tariff_input_desc">주행 비용이 고정 요금을 기준으로 사용하도록 가정용 충전 가격을 입력하세요.</string>
     <string name="price_per_kwh_label">kWh당 가격</string>
@@ -1231,6 +1231,11 @@
     <string name="d5_consent_decline_body">이 권한이 없으면 앱은 차량 데이터를 읽을 수 없습니다. 설정 페이지에서 언제든지 허용할 수 있습니다.</string>
     <string name="d5_consent_decline_confirm">예, 건너뛰기</string>
     <string name="d5_consent_decline_back">뒤로</string>
+    <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
+    <string name="d5_mobile_data_section">모바일 데이터(4G)</string>
+    <string name="d5_mobile_data_title">업로드를 위해 차량의 4G 잠금 해제</string>
+    <string name="d5_mobile_data_desc">이 헤드 유닛에서 차량은 서드파티 앱을 자체 이동통신망에서 차단하므로 MQTT, ABRP, Telegram, 앱 업데이트는 Wi-Fi에서만 작동합니다. 켜면 앱이 일회성 ADB 연결을 통해 이 차단을 자기 자신에 대해 해제합니다 — 이 앱만을 위한 네트워크 정책 화이트리스트로, 시작할 때마다 다시 적용됩니다 — 그리고 차량의 SIM이 항상 로밍 중이므로 데이터 로밍을 켭니다. 끄기 = 차량 설정은 그대로 둡니다. 예약된 Telegram 백업은 ‘Wi-Fi 전용’ 스위치가 켜져 있는 동안(기본값) 계속 Wi-Fi를 기다립니다.</string>
+    <string name="d5_mobile_data_on_status">4G 잠금 해제됨</string>
     <string name="driving_widget_consent_title">주행 위젯을 표시할까요?</string>
     <string name="driving_widget_consent_body">이 차량에서는 차량이 P가 아닐 때마다 Android가 앱 화면을 숨깁니다. 주행 기록은 어느 쪽이든 백그라운드에서 계속됩니다.\n\n대신 주행 중에는 앱이 다른 앱 위에 작은 위젯을 표시할 수 있습니다. 속도, 출력, 배터리, 주행 가능 거리를 — 다른 차량 앱이 사용하는 것과 같은 종류의 위젯입니다. 계기판처럼 한눈에 보기 위한 것입니다. 도로에서 눈을 떼지 마세요. P에서는 사라지고 전체 대시보드가 돌아옵니다.\n\n나중에 설정에서 켜거나 끌 수 있습니다.</string>
     <string name="driving_widget_consent_allow">위젯 표시</string>

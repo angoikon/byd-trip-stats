@@ -982,7 +982,7 @@
     <string name="keepalive_not_armed"> • ikke aktivert</string>
     <string name="wifi_keepalive_label">Hold Wi-Fi aktivt når bilen er av</string>
     <string name="wifi_keepalive_desc">Slår Wi-Fi på igjen etter at bilen er slått av — hovedenheten slår det av noen minutter senere — slik at Webfølgesvenn og andre lokale verktøy (hjemmenettverk) forblir tilgjengelige. Virker bare mens bilen er av, og trekker seg tilbake hvis 12V-batteriet eller ladenivået blir lavt. Bruker litt ekstra strøm så lenge bilen er av.\n\nHvis du også bruker Electro, Overdrive eller en annen app som holder Wi-Fi aktivt, slå dette på i bare ÉN av dem og deaktiver det i de andre — to keepalives som kjører samtidig, kan motarbeide hverandre og sløse strøm.</string>
-    <string name="wifi_keepalive_needs_setup">Krever det avanserte ADB-oppsettet (samme som direkte telemetri). Fullfør det først for å aktivere dette.</string>
+    <string name="requires_adb_setup_hint">Krever det avanserte ADB-oppsettet (samme som direkte telemetri). Fullfør det først for å aktivere dette.</string>
 
     <!-- Settings dialogs -->
     <string name="tariff_dialog_title">Strømtariff</string>
@@ -1332,6 +1332,11 @@
     <string name="d5_consent_decline_body">Uten denne tillatelsen kan appen ikke lese noen kjøretøydata. Du kan gi den når som helst fra Innstillinger-siden.</string>
     <string name="d5_consent_decline_confirm">Ja, hopp over</string>
     <string name="d5_consent_decline_back">Tilbake</string>
+    <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
+    <string name="d5_mobile_data_section">Mobildata (4G)</string>
+    <string name="d5_mobile_data_title">Lås opp bilens 4G for opplastinger</string>
+    <string name="d5_mobile_data_desc">På denne headenheten blokkerer bilen tredjepartsapper fra sitt eget mobilnett, så MQTT, ABRP, Telegram og appoppdateringer fungerer bare på Wi-Fi. Når den er på, fjerner appen den blokkeringen for seg selv via sin engangs ADB-tilkobling — en hviteliste i nettverkspolitikken kun for denne appen, som legges på nytt ved hver oppstart — og skrur på dataroaming, siden bilens SIM-kort alltid roamer. Av = bilens innstillinger urørt. Planlagte Telegram-sikkerhetskopier venter fortsatt på Wi-Fi så lenge «Kun Wi-Fi»-bryteren deres er på (standard).</string>
+    <string name="d5_mobile_data_on_status">4G låst opp</string>
     <string name="driving_widget_consent_title">Vis en kjøre-widget?</string>
     <string name="driving_widget_consent_body">I denne bilen skjuler Android appens skjerm hver gang bilen ikke står i P. Turregistreringen fortsetter uansett i bakgrunnen.\n\nI stedet kan appen vise en liten widget oppå andre apper mens du kjører, med hastighet, effekt, batteri og rekkevidde — samme type widget som andre bilapper bruker. Den er ment for et raskt blikk, som instrumentpanelet: hold øynene på veien. Den forsvinner i P, der det fullstendige dashbordet er tilbake.\n\nDu kan slå den på eller av senere i Innstillinger.</string>
     <string name="driving_widget_consent_allow">Vis widget</string>

@@ -1004,7 +1004,8 @@
     <string name="keepalive_not_armed"> • not armed</string>
     <string name="wifi_keepalive_label">Keep Wi-Fi alive when car is off</string>
     <string name="wifi_keepalive_desc">Turns Wi-Fi back on after the car is switched off — the head unit drops it a few minutes later — so the Web Companion and other local (home-network) tools stay reachable. Only acts while the car is off, and backs off if the 12V battery or state of charge gets low. Draws a little extra power while the car is off.\n\nIf you also use Electro, Overdrive or any other app that keeps Wi-Fi alive, turn this on in only ONE of them and disable it in the others — two keepalives running together can fight each other and waste power.</string>
-    <string name="wifi_keepalive_needs_setup">Requires the advanced ADB setup (same as instant telemetry). Complete that first to enable this.</string>
+    <!-- Shared hint: shown where a toggle (Wi-Fi keepalive, DiLink-5 vehicle data / 4G) is dead without the one-time ADB setup -->
+    <string name="requires_adb_setup_hint">Requires the advanced ADB setup (same as instant telemetry). Complete that first to enable this.</string>
 
     <!-- Settings dialogs -->
     <string name="tariff_dialog_title">Electricity tariff</string>
@@ -1355,6 +1356,11 @@
     <string name="d5_consent_decline_body">Without this permission the app can\'t read any vehicle data. You can grant it anytime from the Settings page.</string>
     <string name="d5_consent_decline_confirm">Yes, skip</string>
     <string name="d5_consent_decline_back">Go back</string>
+    <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
+    <string name="d5_mobile_data_section">Mobile data (4G)</string>
+    <string name="d5_mobile_data_title">Unlock the car\'s 4G for uploads</string>
+    <string name="d5_mobile_data_desc">On this head unit the car blocks third-party apps from its mobile network, so MQTT, ABRP, Telegram and app updates only work on Wi-Fi. When on, the app lifts that block for itself over its one-time ADB connection — a network-policy whitelist for this app, re-applied at every start — and turns on data roaming, since the car\'s SIM is always roaming. Off = the car\'s settings are left untouched. Scheduled Telegram backups still wait for Wi-Fi while their “Wi-Fi only” switch is on (the default).</string>
+    <string name="d5_mobile_data_on_status">4G unlocked</string>
     <!-- Driving widget — Android Automotive head units (Atto 3 EVO / DiLink 100) only -->
     <string name="driving_widget_consent_title">Show a driving widget?</string>
     <string name="driving_widget_consent_body">On this car, Android hides the app\'s screen whenever the car is out of P. Trip recording carries on in the background either way.\n\nInstead, the app can show a small widget over other apps while you drive, with your speed, power, battery and range — the same kind of widget other car apps use. It is meant for a glance, like the instrument cluster: keep your eyes on the road. It goes away in P, where the full dashboard is back.\n\nYou can turn it on or off later in Settings.</string>

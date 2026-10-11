@@ -979,7 +979,7 @@
     <string name="keepalive_not_armed"> • tidak terpasang</string>
     <string name="wifi_keepalive_label">Jaga Wi-Fi tetap aktif saat mobil mati</string>
     <string name="wifi_keepalive_desc">Menyalakan kembali Wi-Fi setelah mobil dimatikan — unit kepala mematikannya beberapa menit kemudian — agar Web Companion dan alat lokal lainnya (jaringan rumah) tetap dapat dijangkau. Hanya bekerja saat mobil mati, dan mundur jika baterai 12V atau tingkat pengisian rendah. Menarik sedikit daya tambahan selama mobil mati.\n\nJika Anda juga menggunakan Electro, Overdrive, atau aplikasi lain yang menjaga Wi-Fi tetap aktif, aktifkan ini hanya di SALAH SATU saja dan nonaktifkan di yang lain — dua keepalive yang berjalan bersamaan dapat saling bertentangan dan memboroskan daya.</string>
-    <string name="wifi_keepalive_needs_setup">Memerlukan penyiapan ADB lanjutan (sama seperti telemetri instan). Selesaikan itu dulu untuk mengaktifkan ini.</string>
+    <string name="requires_adb_setup_hint">Memerlukan penyiapan ADB lanjutan (sama seperti telemetri instan). Selesaikan itu dulu untuk mengaktifkan ini.</string>
 
     <!-- Settings dialogs -->
     <string name="tariff_dialog_title">Tarif listrik</string>
@@ -1328,6 +1328,11 @@
     <string name="d5_consent_decline_body">Tanpa izin ini aplikasi tidak dapat membaca data kendaraan apa pun. Anda dapat memberikannya kapan saja dari halaman Pengaturan.</string>
     <string name="d5_consent_decline_confirm">Ya, lewati</string>
     <string name="d5_consent_decline_back">Kembali</string>
+    <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
+    <string name="d5_mobile_data_section">Data seluler (4G)</string>
+    <string name="d5_mobile_data_title">Buka 4G mobil untuk unggahan</string>
+    <string name="d5_mobile_data_desc">Di unit kepala ini, mobil memblokir aplikasi pihak ketiga dari jaringan selulernya sendiri, sehingga MQTT, ABRP, Telegram, dan pembaruan aplikasi hanya berfungsi di Wi-Fi. Saat aktif, aplikasi mencabut blokir itu untuk dirinya sendiri lewat koneksi ADB satu kalinya — daftar putih kebijakan jaringan khusus aplikasi ini, diterapkan ulang setiap kali mulai — dan menyalakan roaming data, karena SIM mobil selalu roaming. Nonaktif = pengaturan mobil tidak disentuh. Cadangan Telegram terjadwal tetap menunggu Wi-Fi selama sakelar “Hanya Wi-Fi” aktif (bawaan).</string>
+    <string name="d5_mobile_data_on_status">4G terbuka</string>
     <string name="driving_widget_consent_title">Tampilkan widget berkendara?</string>
     <string name="driving_widget_consent_body">Di mobil ini, Android menyembunyikan layar aplikasi setiap kali mobil tidak di P. Perekaman perjalanan tetap berjalan di latar belakang.\n\nSebagai gantinya, aplikasi dapat menampilkan widget kecil di atas aplikasi lain saat Anda berkendara, dengan kecepatan, daya, baterai, dan jangkauan Anda — jenis widget yang sama seperti yang digunakan aplikasi mobil lain. Ini dimaksudkan untuk sekilas pandang, seperti panel instrumen: tetap fokus ke jalan. Ia hilang di P, tempat dasbor lengkap kembali.\n\nAnda dapat mengaktifkan atau menonaktifkannya nanti di Pengaturan.</string>
     <string name="driving_widget_consent_allow">Tampilkan widget</string>

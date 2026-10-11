@@ -982,7 +982,7 @@
     <string name="keepalive_not_armed"> · etkin değil</string>
     <string name="wifi_keepalive_label">Araç kapalıyken Wi-Fi\'yi açık tut</string>
     <string name="wifi_keepalive_desc">Araç kapatıldıktan sonra Wi-Fi\'yi tekrar açar — ana ünite birkaç dakika sonra kapatır — böylece Web Arkadaşı ve diğer yerel (ev ağı) araçlar erişilebilir kalır. Yalnızca araç kapalıyken çalışır ve 12V akü ya da şarj durumu düşerse geri çekilir. Araç kapalı olduğu sürece biraz fazladan güç harcar.\n\nWi-Fi\'yi açık tutan Electro, Overdrive veya başka bir uygulama da kullanıyorsanız, bunu yalnızca BİRİNDE açın ve diğerlerinde kapatın — aynı anda çalışan iki keepalive birbiriyle çakışıp güç israf edebilir.</string>
-    <string name="wifi_keepalive_needs_setup">Gelişmiş ADB kurulumunu gerektirir (anlık telemetriyle aynı). Bunu etkinleştirmek için önce onu tamamlayın.</string>
+    <string name="requires_adb_setup_hint">Gelişmiş ADB kurulumunu gerektirir (anlık telemetriyle aynı). Bunu etkinleştirmek için önce onu tamamlayın.</string>
 
     <!-- Settings dialogs -->
     <string name="tariff_dialog_title">Elektrik tarifesi</string>
@@ -1332,6 +1332,11 @@
     <string name="d5_consent_decline_body">Bu izin olmadan uygulama hiçbir araç verisini okuyamaz. Ayarlar sayfasından istediğiniz zaman verebilirsiniz.</string>
     <string name="d5_consent_decline_confirm">Evet, atla</string>
     <string name="d5_consent_decline_back">Geri</string>
+    <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
+    <string name="d5_mobile_data_section">Mobil veri (4G)</string>
+    <string name="d5_mobile_data_title">Yüklemeler için arabanın 4G\'sini aç</string>
+    <string name="d5_mobile_data_desc">Bu baş unitte araba, üçüncü taraf uygulamaları kendi mobil ağından dışarıyor; bu yüzden MQTT, ABRP, Telegram ve uygulama güncellemeleri yalnızca Wi-Fi\'da çalışıyor. Açıkken uygulama, tek seferlik ADB bağlantısı üzerinden bu engeli kendisi için kaldırır — yalnızca bu uygulamaya özel bir ağ politikası izin listesi, her başlangıçta yeniden uygulanır — ve arabanın SIM\'i sürekli dolaşımda olduğu için veri dolaşımını açar. Kapalı = arabanın ayarlarına dokunulmaz. Zamanlanmış Telegram yedeklemeleri, “Yalnızca Wi-Fi” anahtarı açık olduğu sürece (varsayılan) Wi-Fi bekler.</string>
+    <string name="d5_mobile_data_on_status">4G açıldı</string>
     <string name="driving_widget_consent_title">Sürüş widget\'ı gösterilsin mi?</string>
     <string name="driving_widget_consent_body">Bu araçta Android, araç P\'de olmadığı her an uygulamanın ekranını gizler. Yolculuk kaydı yine de arka planda sürer.\n\nBunun yerine uygulama, sürüş sırasında diğer uygulamaların üzerinde küçük bir widget gösterebilir; hızınız, gücünüz, bataryanız ve menzilinizle — diğer araç uygulamalarının kullandığı türden bir widget. Gösterge paneli gibi bir bakış içindir: gözünüzü yoldan ayırmayın. P\'de kaybolur ve tam gösterge paneli geri gelir.\n\nDaha sonra Ayarlar\'dan açıp kapatabilirsiniz.</string>
     <string name="driving_widget_consent_allow">Widget\'ı göster</string>

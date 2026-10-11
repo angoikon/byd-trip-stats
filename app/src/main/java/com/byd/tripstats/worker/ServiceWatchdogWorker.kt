@@ -46,6 +46,12 @@ class ServiceWatchdogWorker(
         runCatching { RtDispatch.reassertAndAwaitPort(applicationContext, "watchdog adb assert") }
         runCatching { RtDispatch.launch(applicationContext) }
             .onFailure { Log.w(TAG, "runtime dispatch retry threw: ${it.message}") }
+        // DiLink-5, opt-in: re-check the car's third-party 4G block (netpolicy + roaming) —
+        // BYD can re-apply it mid-session the same way it re-clears the adb settings at user
+        // unlock, which a check at process start alone would sleep through. A no-op without
+        // consent, on any other platform, or while idle; logs only on change.
+        runCatching { com.byd.tripstats.adb.Di5MobileDataGate.reassert(applicationContext, label = "watchdog") }
+            .onFailure { Log.w(TAG, "mobile-data gate threw: ${it.message}") }
         return try {
             VehicleTelemetryService.start(applicationContext)
             Log.i(TAG, "✅ Watchdog restart complete")

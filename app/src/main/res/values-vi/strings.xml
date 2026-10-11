@@ -979,7 +979,7 @@
     <string name="keepalive_not_armed"> • chưa kích</string>
     <string name="wifi_keepalive_label">Giữ Wi-Fi hoạt động khi xe tắt máy</string>
     <string name="wifi_keepalive_desc">Bật lại Wi-Fi sau khi xe tắt máy — head unit tắt nó vài phút sau đó — để Web Companion và các công cụ cục bộ khác (mạng gia đình) vẫn có thể truy cập. Chỉ hoạt động khi xe tắt máy và lùi lại nếu pin 12V hoặc mức sạc xuống thấp. Tiêu thụ thêm một chút điện khi xe còn tắt máy.\n\nNếu bạn cũng dùng Electro, Overdrive hoặc bất kỳ ứng dụng nào khác giữ Wi-Fi hoạt động, chỉ bật tính năng này ở MỘT ứng dụng và tắt ở những ứng dụng còn lại — hai cơ chế keepalive chạy cùng lúc có thể xung đột và lãng phí điện.</string>
-    <string name="wifi_keepalive_needs_setup">Yêu cầu thiết lập ADB nâng cao (giống như đo từ xa tức thời). Hãy hoàn tất bước đó trước để bật tính năng này.</string>
+    <string name="requires_adb_setup_hint">Yêu cầu thiết lập ADB nâng cao (giống như đo từ xa tức thời). Hãy hoàn tất bước đó trước để bật tính năng này.</string>
 
     <!-- Settings dialogs -->
     <string name="tariff_dialog_title">Biểu giá điện</string>
@@ -1328,6 +1328,11 @@
     <string name="d5_consent_decline_body">Không có quyền này, ứng dụng không thể đọc bất kỳ dữ liệu xe nào. Bạn có thể cấp quyền bất cứ lúc nào từ trang Cài đặt.</string>
     <string name="d5_consent_decline_confirm">Có, bỏ qua</string>
     <string name="d5_consent_decline_back">Quay lại</string>
+    <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
+    <string name="d5_mobile_data_section">Dữ liệu di động (4G)</string>
+    <string name="d5_mobile_data_title">Mở khóa 4G của xe để tải lên</string>
+    <string name="d5_mobile_data_desc">Trên đầu unit này, xe chặn các ứng dụng bên thứ ba khỏi mạng di động của chính nó, nên MQTT, ABRP, Telegram và bản cập nhật ứng dụng chỉ hoạt động trên Wi-Fi. Khi bật, ứng dụng sẽ gỡ chặn đó cho chính nó qua kết nối ADB một lần của mình — một danh sách trắng trong chính sách mạng chỉ dành cho ứng dụng này, được áp dụng lại mỗi lần khởi động — và bật chuyển vùng dữ liệu, vì SIM của xe luôn đang chuyển vùng. Tắt = các cài đặt của xe được giữ nguyên. Các bản sao lưu Telegram theo lịch vẫn chờ Wi-Fi khi công tắc “Chỉ Wi-Fi” đang bật (mặc định).</string>
+    <string name="d5_mobile_data_on_status">Đã mở khóa 4G</string>
     <string name="driving_widget_consent_title">Hiển thị widget lái xe?</string>
     <string name="driving_widget_consent_body">Trên xe này, Android ẩn màn hình của ứng dụng bất cứ khi nào xe không ở P. Việc ghi chuyến đi vẫn tiếp tục ở chế độ nền.\n\nThay vào đó, ứng dụng có thể hiển thị một widget nhỏ phía trên các ứng dụng khác khi bạn lái, với tốc độ, công suất, pin và tầm hoạt động của bạn — cùng loại widget mà các ứng dụng xe khác dùng. Nó dành cho việc liếc nhanh, như cụm đồng hồ: hãy nhìn đường. Nó biến mất khi ở P, nơi bảng điều khiển đầy đủ trở lại.\n\nBạn có thể bật hoặc tắt sau trong Cài đặt.</string>
     <string name="driving_widget_consent_allow">Hiển thị widget</string>

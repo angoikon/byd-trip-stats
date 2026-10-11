@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.byd.tripstats.R
 import com.byd.tripstats.ui.components.BrandSwitch
 import com.byd.tripstats.adb.AdbPermissionManager
+import com.byd.tripstats.adb.Di5MobileDataGate
 import com.byd.tripstats.data.preferences.OffStateMode
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.receiver.OffStateKeepaliveReceiver
@@ -44,9 +45,10 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
     val wifiKeepalive by preferencesManager.wifiKeepaliveWhenOff.collectAsState(
         initial = preferencesManager.getCachedWifiKeepaliveWhenOff()
     )
-    // The Wi-Fi keepalive (while the car is off) runs in the privileged UID-2000 daemon (DiLink-3 only) and needs the
-    // adb setup complete; without it there is nothing to enforce the toggle.
-    val wifiKeepaliveSetupOk = remember { AdbPermissionManager.isSetupComplete(context) }
+    // Several toggles on this page act through the one-time ADB setup — the Wi-Fi keepalive
+    // (DiLink-3 only) and the DiLink-5 vehicle-data and 4G switches are all dead switches
+    // without it, so they render disabled with the needs-setup hint until it's done.
+    val adbSetupOk = remember { AdbPermissionManager.isSetupComplete(context) }
 
     SectionHeader(icon = Icons.Filled.PowerSettingsNew, title = stringResource(R.string.section_power))
 
@@ -193,8 +195,8 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                         )
                         Text(
                             stringResource(
-                                if (wifiKeepaliveSetupOk) R.string.wifi_keepalive_desc
-                                else R.string.wifi_keepalive_needs_setup
+                                if (adbSetupOk) R.string.wifi_keepalive_desc
+                                else R.string.requires_adb_setup_hint
                             ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -203,7 +205,7 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                     Spacer(Modifier.width(12.dp))
                     BrandSwitch(
                         checked = wifiKeepalive,
-                        enabled = wifiKeepaliveSetupOk,
+                        enabled = adbSetupOk,
                         onCheckedChange = { enabled ->
                             scope.launch {
                                 preferencesManager.saveWifiKeepaliveWhenOff(enabled)
@@ -247,14 +249,18 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            stringResource(R.string.d5_vehicle_access_desc),
+                            stringResource(
+                                if (adbSetupOk) R.string.d5_vehicle_access_desc
+                                else R.string.requires_adb_setup_hint
+                            ),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     Spacer(Modifier.width(12.dp))
-                    Switch(
+                    BrandSwitch(
                         checked = vehicleAccessOn,
+                        enabled = adbSetupOk,
                         onCheckedChange = { on ->
                             vehicleAccessOn = on
                             AdbPermissionManager.setHiddenApiConsent(context, on)
@@ -264,6 +270,61 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                                 // fork (same fork-latch as the first-run consent dialog).
                                 val applied = AdbPermissionManager.ensureVehicleApiAccess(context)
                                 if (applied) AdbPermissionManager.restartApp(context)
+                            }
+                        }
+                    )
+                }
+            }
+        }
+
+        // DiLink-5 only: opt-in for lifting BYD's third-party 4G block (a netpolicy whitelist
+        // for this app + data roaming). Without it, MQTT/ABRP/Telegram/updates only work on
+        // Wi-Fi. Re-asserted at every start and watchdog tick while on; off = the car's
+        // settings are left untouched. Same card shape as the vehicle-access switch above.
+        var mobileDataOn by remember { mutableStateOf(Di5MobileDataGate.hasConsent(context)) }
+        SettingsGroupLabel(stringResource(R.string.d5_mobile_data_section))
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            stringResource(R.string.d5_mobile_data_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            stringResource(
+                                if (adbSetupOk) R.string.d5_mobile_data_desc
+                                else R.string.requires_adb_setup_hint
+                            ),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    BrandSwitch(
+                        checked = mobileDataOn,
+                        enabled = adbSetupOk,
+                        onCheckedChange = { on ->
+                            mobileDataOn = on
+                            Di5MobileDataGate.setConsent(context, on)
+                            if (on) scope.launch {
+                                // Apply now rather than waiting for the next start — and log
+                                // unconditionally (force), since this is a user action.
+                                Di5MobileDataGate.reassert(context, label = "settings", force = true)
                             }
                         }
                     )

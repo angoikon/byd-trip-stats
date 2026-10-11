@@ -982,7 +982,7 @@
     <string name="keepalive_not_armed"> • niet gewapend</string>
     <string name="wifi_keepalive_label">Wi-Fi actief houden als de auto uit is</string>
     <string name="wifi_keepalive_desc">Schakelt Wi-Fi weer in nadat de auto is uitgeschakeld — de head-unit zet het een paar minuten later uit — zodat de Webcompanion en andere lokale tools (thuisnetwerk) bereikbaar blijven. Werkt alleen terwijl de auto uit staat en trekt zich terug als de 12V-accu of de laadstatus laag wordt. Verbruikt wat extra stroom zolang de auto uit staat.\n\nAls je ook Electro, Overdrive of een andere app gebruikt die Wi-Fi actief houdt, schakel dit dan in slechts ÉÉN daarvan in en zet het in de andere uit — twee keepalives die samen draaien kunnen elkaar tegenwerken en stroom verspillen.</string>
-    <string name="wifi_keepalive_needs_setup">Vereist de geavanceerde ADB-configuratie (dezelfde als voor directe telemetrie). Voltooi die eerst om dit in te schakelen.</string>
+    <string name="requires_adb_setup_hint">Vereist de geavanceerde ADB-configuratie (dezelfde als voor directe telemetrie). Voltooi die eerst om dit in te schakelen.</string>
 
     <!-- Settings dialogs -->
     <string name="tariff_dialog_title">Elektriciteitstarief</string>
@@ -1332,6 +1332,11 @@
     <string name="d5_consent_decline_body">Zonder deze toestemming kan de app geen voertuiggegevens lezen. Je kunt deze op elk moment verlenen op de pagina Instellingen.</string>
     <string name="d5_consent_decline_confirm">Ja, overslaan</string>
     <string name="d5_consent_decline_back">Terug</string>
+    <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
+    <string name="d5_mobile_data_section">Mobiele data (4G)</string>
+    <string name="d5_mobile_data_title">Ontgrendel de 4G van de auto voor uploads</string>
+    <string name="d5_mobile_data_desc">Op dit head-unit blokkeert de auto apps van derden van zijn eigen mobiele netwerk, dus MQTT, ABRP, Telegram en app-updates werken alleen via Wi-Fi. Aan staan betekent dat de app die blokkade voor zichzelf opheft via zijn eenmalige ADB-verbinding — een netwerkbeleid-whitelist alléén voor deze app, opnieuw toegepast bij elke start — en dataroaming aanzet, want de simkaart van de auto roamt altijd. Uit = de instellingen van de auto blijven onaangeroerd. Geplande Telegram-back-ups wachten nog steeds op wifi zolang hun schakelaar ‘Alleen wifi’ aan staat (standaard).</string>
+    <string name="d5_mobile_data_on_status">4G ontgrendeld</string>
     <string name="driving_widget_consent_title">Een rij-widget tonen?</string>
     <string name="driving_widget_consent_body">In deze auto verbergt Android het scherm van de app zodra de auto niet in P staat. De ritregistratie loopt hoe dan ook door op de achtergrond.\n\nIn plaats daarvan kan de app tijdens het rijden een kleine widget over andere apps tonen, met je snelheid, vermogen, accu en actieradius — hetzelfde soort widget dat andere auto-apps gebruiken. Het is bedoeld voor een blik, zoals het instrumentenpaneel: houd je ogen op de weg. In P verdwijnt het en is het volledige dashboard terug.\n\nJe kunt het later aan- of uitzetten in Instellingen.</string>
     <string name="driving_widget_consent_allow">Widget tonen</string>

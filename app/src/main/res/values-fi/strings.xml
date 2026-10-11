@@ -982,7 +982,7 @@
     <string name="keepalive_not_armed"> · ei viritetty</string>
     <string name="wifi_keepalive_label">Pidä Wi-Fi aktiivisena, kun auto on sammutettu</string>
     <string name="wifi_keepalive_desc">Kytkee Wi-Fin takaisin päälle auton sammuttamisen jälkeen — pääyksikkö katkaisee sen muutaman minuutin kuluttua — jotta Web Companion ja muut paikalliset työkalut (kotiverkko) pysyvät tavoitettavina. Toimii vain auton ollessa sammutettuna ja vetäytyy, jos 12V-akku tai varaustaso laskee. Kuluttaa hieman lisävirtaa niin kauan kuin auto on sammutettuna.\n\nJos käytät myös Electroa, Overdrivea tai muuta sovellusta, joka pitää Wi-Fin aktiivisena, ota tämä käyttöön vain YHDESSÄ niistä ja poista se käytöstä muissa — kaksi yhtä aikaa toimivaa pitomekanismia voivat haitata toisiaan ja tuhlata virtaa.</string>
-    <string name="wifi_keepalive_needs_setup">Vaatii edistyneen ADB-määrityksen (sama kuin välittömässä telemetriassa). Tee se ensin, jotta voit ottaa tämän käyttöön.</string>
+    <string name="requires_adb_setup_hint">Vaatii edistyneen ADB-määrityksen (sama kuin välittömässä telemetriassa). Tee se ensin, jotta voit ottaa tämän käyttöön.</string>
 
     <!-- Settings dialogs -->
     <string name="tariff_dialog_title">Sähkötariffi</string>
@@ -1332,6 +1332,11 @@
     <string name="d5_consent_decline_body">Ilman tätä lupaa sovellus ei voi lukea ajoneuvon tietoja. Voit myöntää sen milloin tahansa Asetukset-sivulta.</string>
     <string name="d5_consent_decline_confirm">Kyllä, ohita</string>
     <string name="d5_consent_decline_back">Takaisin</string>
+    <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
+    <string name="d5_mobile_data_section">Mobiilidata (4G)</string>
+    <string name="d5_mobile_data_title">Avaa auton 4G lähetysten käyttöön</string>
+    <string name="d5_mobile_data_desc">Tässä pääyksikössä auto estää kolmannen osapuolen sovellukset omasta mobiiliverkostaan, joten MQTT, ABRP, Telegram ja sovelluspäivitykset toimivat vain Wi-Fin kautta. Kun tämä on päällä, sovellus poistaa eston itseltään kertakäyttöisen ADB-yhteytensä kautta — verkkopolitiikan sallittujen lista vain tälle sovellukselle, joka otetaan uudelleen käyttöön jokaisella käynnistyksellä — ja ottaa datan verkkovierailun käyttöön, koska auton SIM on aina verkkovierailussa. Pois = auton asetuksia ei kosketa. Ajastetut Telegram-varmuuskopiot odottavat edelleen Wi-Fi-yhteyttä, kun niiden ”Vain Wi-Fi” -kytkin on päällä (oletus).</string>
+    <string name="d5_mobile_data_on_status">4G avattu</string>
     <string name="driving_widget_consent_title">Näytetäänkö ajowidget?</string>
     <string name="driving_widget_consent_body">Tässä autossa Android piilottaa sovelluksen näytön aina, kun auto ei ole P-asennossa. Matkan tallennus jatkuu joka tapauksessa taustalla.\n\nSen sijaan sovellus voi näyttää ajon aikana pienen widgetin muiden sovellusten päällä, jossa näkyvät nopeutesi, teho, akku ja toimintamatka — samanlaisen widgetin kuin muut autosovellukset. Se on tarkoitettu vilkaisuun, kuten mittaristo: pidä katse tiessä. P-asennossa se katoaa, ja koko koontinäyttö palaa.\n\nVoit kytkeä sen päälle tai pois myöhemmin Asetuksista.</string>
     <string name="driving_widget_consent_allow">Näytä widget</string>
