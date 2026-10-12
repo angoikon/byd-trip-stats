@@ -15,7 +15,8 @@ internal fun shouldTestShellStorage(isDiLink5: Boolean, relocated: Boolean, disp
 
 /**
  * Where the files the app runs as the shell user live: the background restarter's script, log and
- * pid files, the telemetry daemon's pid file, a staged in-app update, and Tailscale.
+ * pid files, the telemetry daemon's pid file, and Tailscale. (Not the in-app update: its APK is
+ * pushed by adbd itself, which the Shark lets write /data/local/tmp — see installApkViaShell.)
  *
  * They have always lived in /data/local/tmp, and on every head unit but one they still do. A Shark 6
  * (DiLink 5, Desay SV firmware) labels that folder `data_local` for SELinux instead of

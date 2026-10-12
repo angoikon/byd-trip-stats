@@ -11,7 +11,6 @@ import com.byd.tripstats.R
 import com.byd.tripstats.runtimebridge.RuntimeExtensionBridge
 import com.byd.tripstats.sdk.AaosPlatform
 import com.byd.tripstats.util.DiagLog
-import com.byd.tripstats.util.ShellStorage
 import dadb.AdbKeyPair
 import dadb.Dadb
 import kotlinx.coroutines.Dispatchers
@@ -677,20 +676,19 @@ object AdbPermissionManager {
             // this one is installing from. Two at once (two taps on Install) used to share one name:
             // each deleted the other's copy and both failed. Distinctive prefix, so anything matching
             // it is always ours to clean up, never a user's file.
-            // The shell's folder: /data/local/tmp, or the shell's own data folder on a head unit
-            // where it can't write there (ShellStorage — Shark 6).
-            val dir = ShellStorage.dir(context)
-            val remote = "$dir/.bydts-update-${System.currentTimeMillis()}.apk"
+            //
+            // Stays in /data/local/tmp even on a Shark 6, whose shell can't create files there
+            // (ShellStorage). The push is written by adbd itself, not by a shell command, and pm
+            // only reads it — an in-app update from 2.17.1 to 2.17.2 worked this way on that car.
+            val remote = "/data/local/tmp/.bydts-update-${System.currentTimeMillis()}.apk"
             var prepared = false
             try {
                 // Leftovers: a successful install kills this process before its own clean-up runs.
-                // Only copies older than 30 minutes, and the pre-2.17.1 fixed name. The moved folder
-                // may not exist yet; the push below needs it.
+                // Only copies older than 30 minutes, and the pre-2.17.1 fixed name.
                 runCatching {
                     dadb.shell(
-                        (if (dir != ShellStorage.LEGACY_DIR) "mkdir -p $dir; " else "") +
-                            "rm -f $dir/.bydts-update.apk; " +
-                            "find $dir -maxdepth 1 -name '.bydts-update-*.apk' -mmin +30 -delete",
+                        "rm -f /data/local/tmp/.bydts-update.apk; " +
+                            "find /data/local/tmp -maxdepth 1 -name '.bydts-update-*.apk' -mmin +30 -delete",
                     )
                 }
                 dadb.push(apkFile, remote)
