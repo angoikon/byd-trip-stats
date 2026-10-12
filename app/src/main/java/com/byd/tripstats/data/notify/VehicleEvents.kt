@@ -2,6 +2,7 @@ package com.byd.tripstats.data.notify
 
 import android.content.Context
 import android.util.Log
+import com.byd.tripstats.connections.MqttConnectionManager
 import com.byd.tripstats.data.analysis.TripReport
 import com.byd.tripstats.data.entitlement.EntitlementManager
 import com.byd.tripstats.data.local.entity.ChargingSessionEntity
@@ -51,11 +52,16 @@ class VehicleEvents private constructor(private val context: Context) {
      * and [fleetAvgEfficiency] is the lifetime average in kWh/100 km, already including this trip
      * since the row is written before the average is queried.
      *
-     * **Live closes only**, decided by [liveClose] — the caller's own close path, not a guess
-     * from timestamps. A trip is not always closed when the driving stops: the cold-start-recovery
-     * path finalises it on the *next* start, and on DiLink-5 that is the normal path, since the
-     * OEM force-stops the app at ignition-off. Announcing it anyway would buzz the user's phone
-     * with "Trip finished" at the moment they switch the car back on, about the drive before.
+     * **The notification channels take live closes only**, decided by [liveClose] — the caller's
+     * own close path, not a guess from timestamps. A trip is not always closed when the driving
+     * stops: the cold-start-recovery path finalises it on the *next* start, and on DiLink-5 that
+     * is the normal path, since the OEM force-stops the app at ignition-off. Announcing it anyway
+     * would buzz the user's phone with "Trip finished" at the moment they switch the car back on,
+     * about the drive before.
+     *
+     * MQTT takes both, carrying [liveClose] in the payload. A retained topic read by a machine has
+     * no present tense to lie about, and gating it the same way would leave DiLink-5 publishing no
+     * trips at all.
      *
      * Note what this does NOT gate on: how long after parking the trip ended. The car-off timeout
      * is user-configurable, so someone who sets 45 minutes has *defined* their trip as ending 45
@@ -70,20 +76,8 @@ class VehicleEvents private constructor(private val context: Context) {
     ) {
         val distance = trip.distance ?: return
         if (distance < MIN_TRIP_DISTANCE_KM) return
-        if (!liveClose) {
-            Log.i(TAG, "Trip ${trip.id} closed from a reconstructed state — not announced")
-            return
-        }
-        // Backstop only, for a close that is live by path but ancient by clock (a frozen service
-        // coming back, a back-dated override). Never the mechanism above.
-        val endedAgoMs = System.currentTimeMillis() - (trip.endTime ?: return)
-        if (endedAgoMs > TRIP_MAX_AGE_MS) {
-            Log.i(TAG, "Trip ${trip.id} ended ${endedAgoMs / 3_600_000} h ago — not announced")
-            return
-        }
         val avgSpeed = stats?.avgSpeed?.takeIf { it > 0.0 }
-        publish(
-            TelegramEventMessages.tripSummary(
+        val event = TelegramEventMessages.tripSummary(
                 tripId = trip.id,
                 distanceKm = distance,
                 durationMs = trip.duration,
@@ -100,9 +94,27 @@ class VehicleEvents private constructor(private val context: Context) {
                 startTimeMs = trip.startTime,
                 endTimeMs = trip.endTime,
                 socFromBms = appPrefs.getCachedSocSource() == SocSource.BMS,
-            ),
-            pushEnabled = telegram.tripSummaryEnabled.value,
         )
+
+        // The only place the channels disagree. The gate below is right for a push, which would
+        // otherwise announce yesterday's drive at today's ignition; a retained topic read by a
+        // machine has no present tense to lie about, and honouring it here would mean publishing
+        // no trips at all on DiLink-5. How the close happened travels in the payload instead.
+        MqttConnectionManager.queueEvent(context, "trip", event.facts + ("live_close" to liveClose))
+
+        if (!liveClose) {
+            Log.i(TAG, "Trip ${trip.id} closed from a reconstructed state — not announced")
+            return
+        }
+        // Backstop only, for a close that is live by path but ancient by clock (a frozen service
+        // coming back, a back-dated override). Never the mechanism above.
+        val endTime = trip.endTime ?: return
+        val endedAgoMs = System.currentTimeMillis() - endTime
+        if (endedAgoMs > TRIP_MAX_AGE_MS) {
+            Log.i(TAG, "Trip ${trip.id} ended ${endedAgoMs / 3_600_000} h ago — not announced")
+            return
+        }
+        publish(event, pushEnabled = telegram.tripSummaryEnabled.value)
     }
 
     /**
@@ -120,8 +132,7 @@ class VehicleEvents private constructor(private val context: Context) {
     fun onChargingSessionClosed(session: ChargingSessionEntity, ratePerKwh: Double?) {
         val socEnd = preferredSoc(session.socEndPanel, session.socEnd) ?: return
         if ((session.kwhAdded ?: 0.0) < MIN_CHARGE_KWH) return
-        publish(
-            TelegramEventMessages.chargingFinished(
+        val event = TelegramEventMessages.chargingFinished(
                 sessionId = session.id,
                 socEnd = socEnd,
                 socStart = preferredSoc(session.socStartPanel, session.socStart) ?: session.socStart,
@@ -134,9 +145,11 @@ class VehicleEvents private constructor(private val context: Context) {
                 socFromBms = appPrefs.getCachedSocSource() == SocSource.BMS,
                 startTimeMs = session.startTime,
                 endTimeMs = session.endTime,
-            ),
-            pushEnabled = telegram.chargingFinishedEnabled.value,
         )
+        // Only the live close reaches here at all, so unlike the trip above this channel sees
+        // exactly what the push sees. Sessions finalised by orphan recovery stay unpublished.
+        MqttConnectionManager.queueEvent(context, "charge_session", event.facts)
+        publish(event, pushEnabled = telegram.chargingFinishedEnabled.value)
     }
 
     /**

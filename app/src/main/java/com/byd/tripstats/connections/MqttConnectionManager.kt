@@ -262,12 +262,57 @@ class MqttConnectionManager(context: Context) {
                     lastOnlineAssertMs = now
                     publishRetained(availabilityTopic, "online")
                 }
+                // Strictly after the state publish has succeeded, and strictly unable to affect
+                // it: `ok` is already decided, and anything thrown in here is swallowed. A broker
+                // that refuses the event topics — an ACL, a quota, a malformed payload — must not
+                // be able to mark this connection dead or stall the next state tick.
+                try {
+                    flushEvents()
+                } catch (t: Throwable) {
+                    Log.w(TAG, "Event flush failed", t)
+                }
             }
             return ok
         } catch (t: Throwable) {
             Log.e(TAG, "MQTT publish error", t)
             synchronized(lock) { connected = false }
             return false
+        }
+    }
+
+    /**
+     * Sends whatever closed while the broker was out of reach, on its own topic per kind.
+     *
+     * Deliberately fire-and-forget: the state tick is the thing that matters and must not wait on
+     * these. An event that fails to send is put back rather than dropped, so the next successful
+     * state publish tries it again; the queue's own cap is what stops a permanently rejecting
+     * broker from growing it without limit.
+     */
+    private fun flushEvents() {
+        if (!MqttConnectionStore.hasPendingEvents(appContext)) return
+        val activeClient = client ?: return
+        val deviceId = currentDeviceId
+        if (deviceId.isBlank()) return
+        for (stored in MqttConnectionStore.drainEvents(appContext)) {
+            try {
+                val envelope = JSONObject(stored)
+                val kind = envelope.getString(KEY_EVENT_KIND)
+                if (kind !in EVENT_TOPICS) continue
+                activeClient.publishWith()
+                    .topic("byd-trip-stats/$deviceId/$kind")
+                    .payload(envelope.getJSONObject(KEY_EVENT_PAYLOAD).toString().toByteArray(Charsets.UTF_8))
+                    .qos(MqttQos.AT_LEAST_ONCE)
+                    .retain(true)
+                    .send()
+                    .whenComplete { _, throwable ->
+                        if (throwable != null) {
+                            Log.w(TAG, "Event publish failed, re-queued", throwable)
+                            MqttConnectionStore.enqueueEvent(appContext, stored)
+                        }
+                    }
+            } catch (t: Throwable) {
+                Log.w(TAG, "Malformed queued event dropped", t)
+            }
         }
     }
 
@@ -576,6 +621,45 @@ class MqttConnectionManager(context: Context) {
     companion object {
         private const val TAG = "MqttConnectionMgr"
         private const val ONLINE_REASSERT_INTERVAL_MS = 30_000L
+        private const val KEY_EVENT_KIND = "kind"
+        private const val KEY_EVENT_PAYLOAD = "payload"
+
+        /**
+         * The event kinds that get a topic, which is also the whitelist a queued kind is checked
+         * against before it is ever interpolated into one. Alerts are absent on purpose: they are
+         * advice about a condition, not a record of something that finished, and a retained alert
+         * would outlive the state that caused it.
+         */
+        private val EVENT_TOPICS = setOf("trip", "charge_session")
+
+        /**
+         * Offers a closed trip or charge session to the broker, additively: a new retained topic
+         * beside `state` and `availability`, and nothing a subscriber that has not asked for it
+         * can observe. It contributes nothing to the discovery fingerprint, so it cannot trigger a
+         * republish of the retained configs.
+         *
+         * Only queues. Publishing happens on the service's long-lived connection at its next tick,
+         * which keeps the close path free of network work and means this is safe to call from
+         * anywhere, including the cold start where a trip from the previous drive is finalised
+         * before the client has finished connecting.
+         */
+        fun queueEvent(context: Context, kind: String, facts: Map<String, Any?>) {
+            if (kind !in EVENT_TOPICS || facts.isEmpty()) return
+            try {
+                val config = MqttConnectionStore.load(context)
+                // Nothing is stored when the user has no broker: an app that does not publish
+                // should not accumulate things to publish.
+                if (!config.enabled || config.brokerUrl.isBlank()) return
+                val payload = JSONObject()
+                for ((key, value) in facts) if (value != null) payload.put(key, value)
+                val envelope = JSONObject()
+                    .put(KEY_EVENT_KIND, kind)
+                    .put(KEY_EVENT_PAYLOAD, payload)
+                MqttConnectionStore.enqueueEvent(context.applicationContext, envelope.toString())
+            } catch (t: Throwable) {
+                Log.w(TAG, "Could not queue $kind event", t)
+            }
+        }
         private const val DISCOVERY_REFRESH_INTERVAL_MS = 24L * 60 * 60 * 1000
         private const val HA_STATUS_TOPIC = "homeassistant/status"
 
