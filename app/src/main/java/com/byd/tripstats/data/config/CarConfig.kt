@@ -180,6 +180,26 @@ object CarCatalog {
         cdA = 0.653
     )
 
+    // BYD Seagull GSi 380 — the Uruguay / Latin America trim. Official sheet: 38 kWh Blade LFP,
+    // 55 kW FWD motor (135 Nm), 380 km NEDC. Its 55 kW motor sets it apart from the 45 kW
+    // Atto 1 / Dolphin Surf, and the pack is the 38.88 kWh (120S) one the Atto 1 Premium uses,
+    // marketed as "38 kWh" — so the pack-derived figures mirror BYD_SEAGULL_FLYING.
+    val BYD_SEAGULL_GSI_380 = CarConfig(
+        id = "BYD_SEAGULL_GSI_380",
+        displayName = "Seagull GSi 380",
+        drivetrain = Drivetrain.FWD,
+        batteryKwh = 38.0,          // official sheet figure
+        estimatedKerbMassKg = 1280.0, // estimate — mirrors the Atto 1 Premium (same pack/body)
+        wltpKm = 300,               // converted from 380 km NEDC at ~0.78 (NEDC overstates real
+                                    // EV range by ~20-25%) = ~296, rounded to match the Atto 1 Premium
+        referenceConsumptionKwhPer100km = 15.8, // mirrors the Atto 1 Premium (same body/pack)
+        frontTyrePressureBar = 2.5, // owner-reported
+        rearTyrePressureBar = 2.5,  // owner-reported
+        frontMotorRatedKw = 55,    // official sheet
+        cellCount = 120,            // estimate: 38 kWh class pack = 120S LFP, as the Atto 1 Premium
+        cdA = 0.653                 // same body as the Atto 1
+    )
+
     val BYD_ATTO_2_ACTIVE = CarConfig(
         id = "BYD_ATTO_2_ACTIVE",
         displayName = "Atto 2 Active",
@@ -925,6 +945,7 @@ object CarCatalog {
         BYD_SEAL_U_DESIGN,
         BYD_SEAGULL_ACTIVE,
         BYD_SEAGULL_FLYING,
+        BYD_SEAGULL_GSI_380,
         BYD_DOLPHIN_SURF_ACTIVE,
         BYD_DOLPHIN_SURF_BOOST,
         BYD_DOLPHIN_SURF_COMFORT,
@@ -975,7 +996,7 @@ object CarCatalog {
         "BYD Atto 3" to listOf(BYD_ATTO_3_SR, BYD_ATTO_3, BYD_ATTO_3_PREMIUM),
         "BYD Atto 3 EVO (DiLink 100)" to listOf(BYD_ATTO_3_EVO_DESIGN, BYD_ATTO_3_EVO_EXCELLENCE),
         "BYD Seal U" to listOf(BYD_SEAL_U_COMFORT, BYD_SEAL_U_DESIGN),
-        "BYD Seagull / Dolphin Surf / Atto 1" to listOf(BYD_SEAGULL_ACTIVE, BYD_SEAGULL_FLYING, BYD_DOLPHIN_SURF_ACTIVE, BYD_DOLPHIN_SURF_BOOST, BYD_DOLPHIN_SURF_COMFORT),
+        "BYD Seagull / Dolphin Surf / Atto 1" to listOf(BYD_SEAGULL_ACTIVE, BYD_SEAGULL_FLYING, BYD_SEAGULL_GSI_380, BYD_DOLPHIN_SURF_ACTIVE, BYD_DOLPHIN_SURF_BOOST, BYD_DOLPHIN_SURF_COMFORT),
         "BYD M6" to listOf(BYD_M6_STANDARD_120KW, BYD_M6_SUPERIOR_100KW, BYD_M6_SUPERIOR_150KW),
         "BYD Seal 6" to listOf(BYD_SEAL_6_PREMIUM_95KW, BYD_SEAL_6_PREMIUM_160KW),
         "BYD Sealion 6" to listOf(BYD_SEALION_6_EV_STANDARD, BYD_SEALION_6_EV_EXTENDED),

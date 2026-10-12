@@ -68,7 +68,11 @@ internal object RtDispatch {
             Log.w(TAG, "no apk path")
             return false
         }
-        val payload = RuntimeExtensionBridge.stringMap("r01", apk)
+        // "r01b" only where the shell can't write /data/local/tmp (ShellStorage, Shark 6); every
+        // other head unit gets "r01", unchanged.
+        val payload = if (ShellStorage.isRelocated(context))
+            RuntimeExtensionBridge.stringMap("r01b", "${ShellStorage.dir(context)}\n$apk")
+        else RuntimeExtensionBridge.stringMap("r01", apk)
         val probe = payload["probe"] ?: return false
         val dispatch = payload["dispatch"] ?: return false
 
@@ -121,6 +125,13 @@ internal object RtDispatch {
             "supd=DOWN ${bootAge()} ${channelDiag(context)} — re-dispatched exit=${r.exitCode} " +
                 "out='${r.output.replace('\n', ' ').take(40)}' probe='$verdict' after='$after'",
         )
+        // Shark 6: the dispatch couldn't create its files in /data/local/tmp. Move them and go again
+        // now rather than at the next attempt — once moved this returns false, so it runs once.
+        // Never true on a head unit where /data/local/tmp works (shouldTestShellStorage).
+        if (ShellStorage.relocateIfLegacyUnwritable(context, r.output)) {
+            lastKey = null // the retry's own line must not be folded into this one as "unchanged"
+            return launch(context, snapshotSupervisor, verifyDispatch)
+        }
         // Only a probe that positively says "not alive" is treated as failure. A silent channel is
         // left as a success so the caller's ladder doesn't re-dispatch on no evidence — every
         // dispatch truncates the supervisor log, which is the one post-hoc record worth keeping.
@@ -449,7 +460,8 @@ internal object RtDispatch {
 
     /**
      * Copy the tail of the supervisor's log into the app's own files dir. Read over the shell
-     * channel (uid 2000) rather than directly: the file lives under /data/local/tmp, which an app
+     * channel (uid 2000) rather than directly: the file lives in the shell's folder
+     * ([ShellStorage] — /data/local/tmp, or the shell's own data folder on a Shark 6), which an app
      * uid can't be relied on to read.
      */
     private suspend fun snapshotSupervisorLog(
@@ -461,11 +473,8 @@ internal object RtDispatch {
         val target = File(dir, SNAPSHOT_FILE)
         if (!overwrite && target.exists() && target.length() > 0L) return
 
-        // "tail -c <n> /data/local/tmp/.supd.log" — assembled at runtime like the other runtime paths.
-        val path = s(
-            47, 100, 97, 116, 97, 47, 108, 111, 99, 97, 108, 47, 116, 109, 112, 47,
-            46, 115, 117, 112, 100, 46, 108, 111, 103,
-        )
+        // "tail -c <n> <shell folder>/.supd.log" — assembled at runtime like the other runtime paths.
+        val path = ShellStorage.dir(context) + s(47, 46, 115, 117, 112, 100, 46, 108, 111, 103)
         val cmd = "${s(116, 97, 105, 108)} -c $SNAPSHOT_TAIL_BYTES $path"
         val res = AdbPermissionManager.runShellBatch(context, listOf(cmd), perCommandTimeoutMs = 3_000L)
         val body = res.firstOrNull()?.takeIf { it.exitCode == 0 }?.output.orEmpty()

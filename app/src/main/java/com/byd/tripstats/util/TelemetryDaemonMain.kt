@@ -89,8 +89,12 @@ object TelemetryDaemonMain {
         log("up pid=${Process.myPid()} uid=${Process.myUid()} port=$DAEMON_PORT")
         // Write our pid so the supervisor/health-probe can detect us reliably. (pgrep can't —
         // app_process --nice-name replaces our cmdline with the nice-name, not the FQCN.)
+        // In the folder the supervisor passes when the shell can't write /data/local/tmp on this
+        // head unit (ShellStorage — Shark 6); with no argument, /data/local/tmp as always.
+        val dir = args.firstOrNull()?.takeIf { it.startsWith("/") }
+            ?: s(47,100,97,116,97,47,108,111,99,97,108,47,116,109,112)
         runCatching {
-            java.io.File(s(47,100,97,116,97,47,108,111,99,97,108,47,116,109,112,47,46,98,121,100,116,101,108,101,109,100,46,112,105,100))
+            java.io.File(dir + s(47,46,98,121,100,116,101,108,101,109,100,46,112,105,100))
                 .writeText(Process.myPid().toString())
         }
         runCatching { prepareMainLooper() }.onFailure { log("looper: ${it.message}") }

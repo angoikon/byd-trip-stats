@@ -102,8 +102,8 @@ class CarCatalogTest {
         assertEquals(Drivetrain.FWD, CarCatalog.BYD_SEAL_U_DESIGN.drivetrain)
     }
 
-    @Test fun `catalog contains all 48 expected cars`() {
-        assertEquals(48, CarCatalog.allCars.size)
+    @Test fun `catalog contains all 49 expected cars`() {
+        assertEquals(49, CarCatalog.allCars.size)
     }
 
     /** The EVO breaks the Atto 3 family's FWD pattern — Design is RWD, Excellence is dual-motor AWD. */

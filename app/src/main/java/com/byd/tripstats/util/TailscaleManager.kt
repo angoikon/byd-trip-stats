@@ -57,11 +57,15 @@ object TailscaleManager {
     private const val KEY_HOSTNAME = "hostname"
     private const val KEY_HTTPS = "https_serve"
 
-    /** Shell-owned, and the only directory the daemon and our shell channel can both write. */
-    private const val DIR = "/data/local/tmp/.tailscale"
-    private const val BIN = "$DIR/tsd"
+    /**
+     * Shell-owned, and the only directory the daemon and our shell channel can both write: in
+     * /data/local/tmp, or in the shell's own data folder on a head unit whose shell can't write
+     * there ([ShellStorage] — Shark 6).
+     */
+    private fun dir(context: Context) = ShellStorage.dir(context) + "/.tailscale"
+    private fun bin(context: Context) = dir(context) + "/tsd"
     private const val SOCKET = "@tailscaled"
-    private const val LOG = "$DIR/log"
+    private fun logFile(context: Context) = dir(context) + "/log"
 
     /** Rotate the daemon's log above this much disk use, keeping its last [LOG_KEEP_KB] in `log.prev`. */
     private const val LOG_MAX_KB = 4 * 1024
@@ -96,7 +100,7 @@ object TailscaleManager {
      * undoing the whole trick. And the kill has to be its own command — a line that also mentions
      * the unbracketed path (a `logout` before it, say) reintroduces the self-match.
      */
-    private const val KILL_PATTERN = "$DIR/[t]sd"
+    private fun killPattern(context: Context) = dir(context) + "/[t]sd"
 
     enum class State {
         /** No binary in this build (or a non-arm64 device) — the feature cannot run at all. */
@@ -157,7 +161,7 @@ object TailscaleManager {
         val host = hostname(context)
         diag(context, "hostname: '$host'")
         if (_status.value.state == State.RUNNING) {
-            sh(context, "TS_BE_CLI=1 $BIN --socket=$SOCKET set --hostname=$host 2>&1", timeoutMs = 20_000L)
+            sh(context, "TS_BE_CLI=1 ${bin(context)} --socket=$SOCKET set --hostname=$host 2>&1", timeoutMs = 20_000L)
         }
         refresh(context)
     }
@@ -228,7 +232,7 @@ object TailscaleManager {
             // it — which is how an app update used to look like a broken feature. Restart instead.
             diag(context, "start: daemon is the previous build — restarting it to pick up the update")
             publish(Status(State.STARTING))
-            sh(context, "pkill -f '$KILL_PATTERN'", timeoutMs = 10_000L)
+            sh(context, "pkill -f '${killPattern(context)}'", timeoutMs = 10_000L)
             kotlinx.coroutines.delay(500)
         }
 
@@ -242,8 +246,8 @@ object TailscaleManager {
         // backgrounded now, with all three of its streams redirected.
         sh(
             context,
-            "cd $DIR || exit 1; HOME=$DIR SSL_CERT_DIR=$CA_CERT_DIRS setsid $BIN --tun=userspace-networking " +
-                "--statedir=$DIR --socket=$SOCKET >> $LOG 2>&1 < /dev/null &",
+            "cd ${dir(context)} || exit 1; HOME=${dir(context)} SSL_CERT_DIR=$CA_CERT_DIRS setsid ${bin(context)} --tun=userspace-networking " +
+                "--statedir=${dir(context)} --socket=$SOCKET >> ${logFile(context)} 2>&1 < /dev/null &",
             timeoutMs = 10_000L,
         )
 
@@ -257,7 +261,7 @@ object TailscaleManager {
             }
         }
         diag(context, "start: daemon never answered after 10 polls")
-        publish(Status(State.ERROR, detail = "Daemon did not come up — see $LOG"))
+        publish(Status(State.ERROR, detail = "Daemon did not come up — see ${logFile(context)}"))
     }
 
     /** Signs in with [authKey] (and remembers it, so a later restart can re-register silently). */
@@ -276,7 +280,7 @@ object TailscaleManager {
         // invites the tailnet-DNS-outage failure mode described in MD/TAILSCALE.md.
         val out = sh(
             context,
-            "TS_BE_CLI=1 $BIN --socket=$SOCKET up --authkey='${key.replace("'", "")}' " +
+            "TS_BE_CLI=1 ${bin(context)} --socket=$SOCKET up --authkey='${key.replace("'", "")}' " +
                 "--hostname=${hostname(context)} --accept-dns=false 2>&1; echo EXIT=$?",
             timeoutMs = 60_000L,
         ).orEmpty()
@@ -324,10 +328,10 @@ object TailscaleManager {
         sh(
             context,
             // `cd …;` for the same reason as the daemon launch in start(): only `up` is backgrounded.
-            "cd $DIR || exit 1; HOME=$DIR TS_BE_CLI=1 setsid $BIN --socket=$SOCKET up " +
+            "cd ${dir(context)} || exit 1; HOME=${dir(context)} TS_BE_CLI=1 setsid ${bin(context)} --socket=$SOCKET up " +
                 // stdin from /dev/null too: `up` waits for the sign-in, and an inherited input is
                 // enough for a shell to wait on it instead of returning straight away.
-                "--hostname=${hostname(context)} --accept-dns=false > $DIR/up.log 2>&1 < /dev/null &",
+                "--hostname=${hostname(context)} --accept-dns=false > ${dir(context)}/up.log 2>&1 < /dev/null &",
             timeoutMs = 15_000L,
         )
 
@@ -388,8 +392,8 @@ object TailscaleManager {
         signInCancelled = true
         diag(context, "browser login: cancelled")
         prefs(context).edit().putBoolean(KEY_ENABLED, false).apply()
-        sh(context, "TS_BE_CLI=1 $BIN --socket=$SOCKET logout 2>&1", timeoutMs = 20_000L)
-        sh(context, "pkill -f '$KILL_PATTERN'", timeoutMs = 10_000L)
+        sh(context, "TS_BE_CLI=1 ${bin(context)} --socket=$SOCKET logout 2>&1", timeoutMs = 20_000L)
+        sh(context, "pkill -f '${killPattern(context)}'", timeoutMs = 10_000L)
         publish(Status(State.STOPPED))
     }
 
@@ -401,8 +405,8 @@ object TailscaleManager {
             .apply()
         // Two calls, not one line: a command that also names the unbracketed binary would put that
         // path in the shell's own command line, and pkill would match the shell as well.
-        sh(context, "TS_BE_CLI=1 $BIN --socket=$SOCKET logout 2>&1", timeoutMs = 20_000L)
-        sh(context, "pkill -f '$KILL_PATTERN'", timeoutMs = 10_000L)
+        sh(context, "TS_BE_CLI=1 ${bin(context)} --socket=$SOCKET logout 2>&1", timeoutMs = 20_000L)
+        sh(context, "pkill -f '${killPattern(context)}'", timeoutMs = 10_000L)
         publish(Status(State.STOPPED))
     }
 
@@ -476,7 +480,7 @@ object TailscaleManager {
 
         val out = sh(
             context,
-            "TS_BE_CLI=1 $BIN --socket=$SOCKET serve --bg --https=443 " +
+            "TS_BE_CLI=1 ${bin(context)} --socket=$SOCKET serve --bg --https=443 " +
                 "http://127.0.0.1:$port 2>&1; echo EXIT=$?",
             60_000L,
         ) ?: return@withContext publish(
@@ -502,7 +506,7 @@ object TailscaleManager {
     }
 
     suspend fun disableHttps(context: Context): Status = withContext(Dispatchers.IO) {
-        sh(context, "TS_BE_CLI=1 $BIN --socket=$SOCKET serve --https=443 off 2>&1; echo EXIT=$?", 30_000L)
+        sh(context, "TS_BE_CLI=1 ${bin(context)} --socket=$SOCKET serve --https=443 off 2>&1; echo EXIT=$?", 30_000L)
         prefs(context).edit().putBoolean(KEY_HTTPS, false).apply()
         _httpsEnabled.value = false
         diag(context, "https disabled")
@@ -520,12 +524,12 @@ object TailscaleManager {
     private suspend fun ensureHttpsServe(context: Context) {
         if (!isHttpsEnabled(context)) return
         val port = com.byd.tripstats.server.WebServerManager.currentPort()
-        val serve = sh(context, "TS_BE_CLI=1 $BIN --socket=$SOCKET serve status 2>&1", 15_000L) ?: return
+        val serve = sh(context, "TS_BE_CLI=1 ${bin(context)} --socket=$SOCKET serve status 2>&1", 15_000L) ?: return
         if (serve.contains("127.0.0.1:$port")) return
         diag(context, "https: switch on but not served — setting it up again on :443 -> 127.0.0.1:$port")
         val out = sh(
             context,
-            "TS_BE_CLI=1 $BIN --socket=$SOCKET serve --bg --https=443 http://127.0.0.1:$port 2>&1; echo EXIT=$?",
+            "TS_BE_CLI=1 ${bin(context)} --socket=$SOCKET serve --bg --https=443 http://127.0.0.1:$port 2>&1; echo EXIT=$?",
             60_000L,
         ).orEmpty()
         if (!out.contains("EXIT=0")) diag(context, "https: setting it up again FAILED :: ${out.replace('\n', ' ').take(160)}")
@@ -549,7 +553,7 @@ object TailscaleManager {
      */
     private suspend fun installBinary(context: Context, source: File): Boolean {
         val want = sha256(source)
-        val have = sh(context, "sha256sum $BIN 2>/dev/null", timeoutMs = 20_000L)
+        val have = sh(context, "sha256sum ${bin(context)} 2>/dev/null", timeoutMs = 20_000L)
             ?.trim()?.substringBefore(' ')?.takeIf { it.length == 64 }
 
         if (want != null && want == have) {
@@ -558,11 +562,11 @@ object TailscaleManager {
         }
         diag(context, "install: replacing daemon have=${have?.take(12) ?: "none"} want=${want?.take(12)}")
 
-        val staged = "$BIN.new"
+        val staged = "${bin(context)}.new"
         val out = sh(
             context,
-            "mkdir -p $DIR && cp ${source.absolutePath} $staged && chmod 755 $staged && " +
-                "mv -f $staged $BIN && echo OK",
+            "mkdir -p ${dir(context)} && cp ${source.absolutePath} $staged && chmod 755 $staged && " +
+                "mv -f $staged ${bin(context)} && echo OK",
             timeoutMs = 30_000L,
         )
         if (out?.contains("OK") != true) {
@@ -588,7 +592,7 @@ object TailscaleManager {
     }.getOrNull()
 
     private suspend fun queryStatus(context: Context): Status? {
-        val json = sh(context, "TS_BE_CLI=1 $BIN --socket=$SOCKET status --json 2>/dev/null", 15_000L)
+        val json = sh(context, "TS_BE_CLI=1 ${bin(context)} --socket=$SOCKET status --json 2>/dev/null", 15_000L)
             ?.trim()
             ?.takeIf { it.startsWith("{") }
             ?: return null
@@ -645,7 +649,7 @@ object TailscaleManager {
     private suspend fun rotateLogIfLarge(context: Context) {
         sh(
             context,
-            "f=$LOG; if [ -f \$f ] && [ \$(du -k \$f | cut -f1) -gt $LOG_MAX_KB ]; then " +
+            "f=${logFile(context)}; if [ -f \$f ] && [ \$(du -k \$f | cut -f1) -gt $LOG_MAX_KB ]; then " +
                 "tail -c ${LOG_KEEP_KB * 1024} \$f > \$f.prev && : > \$f && echo rotated; " +
                 "else echo kept; fi",
             timeoutMs = 20_000L,
