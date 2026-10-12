@@ -1,6 +1,7 @@
 package com.byd.tripstats.connections
 
 import android.content.Context
+import android.content.SharedPreferences
 import org.json.JSONArray
 
 data class MqttConnectionConfig(
@@ -38,6 +39,14 @@ object MqttConnectionStore {
 
     /** Bounded, so an unreachable broker cannot grow this file without limit. Oldest goes first. */
     private const val MAX_PENDING_EVENTS = 20
+
+    /**
+     * The event queue is one preferences string read, modified and written back, and it is touched
+     * from both the telemetry thread that closes a trip and the MQTT callback thread that clears a
+     * sent one. Without this, a close landing mid-flush is overwritten by the flush, or overwrites
+     * it.
+     */
+    private val eventLock = Any()
 
     private const val DEFAULT_INTERVAL_SECONDS = 1
 
@@ -119,24 +128,45 @@ object MqttConnectionStore {
      * wait on the network.
      */
     fun enqueueEvent(context: Context, payload: String) {
-        val prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val queue = readQueue(prefs.getString(KEY_PENDING_EVENTS, null))
-        queue.add(payload)
-        while (queue.size > MAX_PENDING_EVENTS) queue.removeAt(0)
-        prefs.edit().putString(KEY_PENDING_EVENTS, JSONArray(queue).toString()).apply()
+        synchronized(eventLock) {
+            val prefs = prefs(context)
+            val queue = readQueue(prefs.getString(KEY_PENDING_EVENTS, null))
+            queue.add(payload)
+            while (queue.size > MAX_PENDING_EVENTS) queue.removeAt(0)
+            writeQueue(prefs, queue)
+        }
     }
 
-    /** Takes everything queued and clears it, so a flush cannot send the same event twice. */
-    fun drainEvents(context: Context): List<String> {
-        val prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val queue = readQueue(prefs.getString(KEY_PENDING_EVENTS, null))
-        if (queue.isNotEmpty()) prefs.edit().remove(KEY_PENDING_EVENTS).apply()
-        return queue
+    /**
+     * Everything still waiting, oldest first. Reading does not remove: an event leaves the queue
+     * only in [removeEvent], once the broker has acknowledged it.
+     */
+    fun readEvents(context: Context): List<String> =
+        synchronized(eventLock) { readQueue(prefs(context).getString(KEY_PENDING_EVENTS, null)) }
+
+    /** Drops one event the broker has taken, matched on the exact payload that was queued. */
+    fun removeEvent(context: Context, payload: String) {
+        synchronized(eventLock) {
+            val prefs = prefs(context)
+            val queue = readQueue(prefs.getString(KEY_PENDING_EVENTS, null))
+            if (queue.remove(payload)) writeQueue(prefs, queue)
+        }
     }
 
     fun hasPendingEvents(context: Context): Boolean =
-        !context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getString(KEY_PENDING_EVENTS, null).isNullOrEmpty()
+        !prefs(context).getString(KEY_PENDING_EVENTS, null).isNullOrEmpty()
+
+    private fun prefs(context: Context) =
+        context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+    private fun writeQueue(prefs: SharedPreferences, queue: List<String>) {
+        val edit = prefs.edit()
+        if (queue.isEmpty()) edit.remove(KEY_PENDING_EVENTS) else edit.putString(KEY_PENDING_EVENTS, JSONArray(queue).toString())
+        // commit(), not apply(), for the same reason the Telegram outbox uses it: these writes
+        // happen as the car parks and the process can be killed at any moment, and an un-flushed
+        // queue is a lost summary.
+        edit.commit()
+    }
 
     // A stored queue that will not parse is discarded: an unsendable event is not worth a loop.
     private fun readQueue(stored: String?): MutableList<String> {

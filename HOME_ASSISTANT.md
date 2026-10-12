@@ -22,7 +22,9 @@ BYD Trip Stats publishes telemetry via MQTT using **Home Assistant MQTT Discover
 
 Both carry `started_at` / `ended_at` as ISO 8601 UTC and `started_at_ms` / `ended_at_ms` as epoch milliseconds, plus `duration_s` and `soc_source` (`panel` or `bms`). `energy_added_kwh` is the energy that reached the pack, derived from the SoC delta, so it reads lower than what a charger bills.
 
-If the broker is unreachable when an event closes, it is held and sent with the next successful state publish, so a summary is not lost to a drive that ended out of range.
+These topics are **retained**, so a subscriber that connects later sees only the most recent trip and the most recent charging session. To capture every event you have to be subscribed when it is published.
+
+If the broker is unreachable when an event closes, it is held and sent with the next successful state publish, so a summary is not lost to a drive that ended out of range. A queued event is only dropped once the broker has acknowledged it, which means an app killed mid-send can publish the same event again on the next start. There is no replay protection: **dedupe on `trip_id` / `session_id`** rather than treating every message as a new event.
 
 ---
 
