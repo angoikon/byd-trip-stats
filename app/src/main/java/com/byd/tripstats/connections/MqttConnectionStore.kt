@@ -1,6 +1,7 @@
 package com.byd.tripstats.connections
 
 import android.content.Context
+import org.json.JSONArray
 
 data class MqttConnectionConfig(
     val enabled: Boolean = false,
@@ -33,6 +34,10 @@ object MqttConnectionStore {
     private const val KEY_LAST_PUBLISH_AT_MS = "last_publish_at_ms"
     private const val KEY_DISCOVERY_FINGERPRINT = "discovery_fingerprint"
     private const val KEY_DISCOVERY_PUBLISHED_AT = "discovery_published_at_ms"
+    private const val KEY_PENDING_EVENTS = "pending_events"
+
+    /** Bounded, so an unreachable broker cannot grow this file without limit. Oldest goes first. */
+    private const val MAX_PENDING_EVENTS = 20
 
     private const val DEFAULT_INTERVAL_SECONDS = 1
 
@@ -106,6 +111,42 @@ object MqttConnectionStore {
             .putString(KEY_DISCOVERY_FINGERPRINT, fingerprint)
             .putLong(KEY_DISCOVERY_PUBLISHED_AT, publishedAtMs)
             .apply()
+    }
+
+    /**
+     * Holds an event that closed while the broker was unreachable. On DiLink-5 a trip is finalised
+     * at cold start, exactly when the client is still connecting, so the close path must never
+     * wait on the network.
+     */
+    fun enqueueEvent(context: Context, payload: String) {
+        val prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val queue = readQueue(prefs.getString(KEY_PENDING_EVENTS, null))
+        queue.add(payload)
+        while (queue.size > MAX_PENDING_EVENTS) queue.removeAt(0)
+        prefs.edit().putString(KEY_PENDING_EVENTS, JSONArray(queue).toString()).apply()
+    }
+
+    /** Takes everything queued and clears it, so a flush cannot send the same event twice. */
+    fun drainEvents(context: Context): List<String> {
+        val prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val queue = readQueue(prefs.getString(KEY_PENDING_EVENTS, null))
+        if (queue.isNotEmpty()) prefs.edit().remove(KEY_PENDING_EVENTS).apply()
+        return queue
+    }
+
+    fun hasPendingEvents(context: Context): Boolean =
+        !context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getString(KEY_PENDING_EVENTS, null).isNullOrEmpty()
+
+    // A stored queue that will not parse is discarded: an unsendable event is not worth a loop.
+    private fun readQueue(stored: String?): MutableList<String> {
+        if (stored.isNullOrBlank()) return mutableListOf()
+        return try {
+            val array = JSONArray(stored)
+            MutableList(array.length()) { array.getString(it) }
+        } catch (_: Throwable) {
+            mutableListOf()
+        }
     }
 
     fun mask(value: String): String = when {

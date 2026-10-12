@@ -115,6 +115,13 @@ object TelegramEventMessages {
 
         tripScore?.let { lines += "Trip score $it/100" }
 
+        // Canonical units throughout, never the imperial ones above: the reader of this is a
+        // broker subscriber that cannot see the unit preference the prose was rendered with.
+        val tripCost = if (energyKwh != null && energyKwh > 0.0 && energyRatePerKwh != null && energyRatePerKwh > 0.0) {
+            energyKwh * energyRatePerKwh
+        } else {
+            null
+        }
         return VehicleEvent(
             type = VehicleEvent.Type.TRIP,
             // The number is the one Trip History prints on the trip's card (#756), so a message can
@@ -122,6 +129,29 @@ object TelegramEventMessages {
             title = "🚗 Trip #$tripId finished",
             lines = lines,
             key = "trip-$tripId",
+            facts = facts(
+                "event" to "trip",
+                "trip_id" to tripId,
+                "started_at" to iso(startTimeMs),
+                "ended_at" to iso(endTimeMs),
+                "started_at_ms" to startTimeMs,
+                "ended_at_ms" to endTimeMs,
+                "duration_s" to durationMs?.takeIf { it > 0 }?.div(1000),
+                "distance_km" to distanceKm,
+                "energy_kwh" to energyKwh,
+                "efficiency_kwh_per_100km" to efficiencyKwh100km,
+                "fleet_avg_kwh_per_100km" to fleetAvgKwh100km?.takeIf { it > 0.0 },
+                "avg_speed_kmh" to avgSpeedKmh?.takeIf { it > 0.0 },
+                "soc_start_pct" to startSoc,
+                "soc_end_pct" to endSoc,
+                "soc_source" to if (socFromBms) "bms" else "panel",
+                "trip_score" to tripScore,
+                "energy_rate_per_kwh" to energyRatePerKwh?.takeIf { it > 0.0 },
+                "cost" to tripCost,
+                // Only alongside a cost: a currency on its own says nothing and invites a consumer
+                // to pair it with the wrong number.
+                "currency" to currencySymbol.takeIf { tripCost != null },
+            ),
         )
     }
 
@@ -180,6 +210,7 @@ object TelegramEventMessages {
             lines += if (cost <= 0.0) "Cost free" else "Cost $currencySymbol${fmt(cost, 2)}"
         }
 
+        val chargeCost = if (kwhAdded != null && kwhAdded > 0.0 && ratePerKwh != null) kwhAdded * ratePerKwh else null
         return VehicleEvent(
             type = VehicleEvent.Type.CHARGING,
             // Numbered as Charging History numbers the session's card, for the same reason.
@@ -187,6 +218,30 @@ object TelegramEventMessages {
                     else "🔌 Charging #$sessionId stopped at ${fmt(socEnd, 0)}%",
             lines = lines,
             key = "charge-$sessionId",
+            facts = facts(
+                "event" to "charge_session",
+                "session_id" to sessionId,
+                "started_at" to iso(startTimeMs),
+                "ended_at" to iso(endTimeMs),
+                "started_at_ms" to startTimeMs,
+                "ended_at_ms" to endTimeMs,
+                "duration_s" to durationMs?.takeIf { it > 0 }?.div(1000),
+                // Named as the app names it. This is the energy that reached the pack, derived
+                // from the SoC delta, so it is smaller than what the charger billed: a consumer
+                // pricing a session from it will land under the meter.
+                "energy_added_kwh" to kwhAdded?.takeIf { it > 0.0 },
+                "soc_start_pct" to socStart,
+                "soc_end_pct" to socEnd,
+                "soc_source" to if (socFromBms) "bms" else "panel",
+                // A session rebuilt from the SoC delta has no power readings at all, so these are
+                // absent rather than zero for exactly the sessions that never measured them.
+                "avg_kw" to avgKw.takeIf { it > 0.0 },
+                "peak_kw" to peakKw.takeIf { it > 0.0 },
+                "rate_per_kwh" to ratePerKwh,
+                "cost" to chargeCost,
+                "currency" to currencySymbol.takeIf { chargeCost != null },
+                "complete" to complete,
+            ),
         )
     }
 
@@ -217,6 +272,17 @@ object TelegramEventMessages {
     // ── Formatting helpers ────────────────────────────────────────────────────
 
     /** Locale-independent: a German head unit must not emit "18,3" into a bot message. */
+    /**
+     * The machine-readable half of an event. Drops every key the car did not report, so a consumer
+     * storing the payload can still tell "no reading" from "a reading of zero" — the same rule the
+     * state payload already follows by omitting the cell voltages this car never publishes.
+     */
+    private fun facts(vararg pairs: Pair<String, Any?>): Map<String, Any?> =
+        pairs.filter { it.second != null }.toMap()
+
+    /** Epoch millis as ISO 8601 UTC, beside the raw millis so neither side has to parse. */
+    private fun iso(ms: Long?): String? = ms?.let { Instant.ofEpochMilli(it).toString() }
+
     private fun fmt(value: Double, decimals: Int): String =
         String.format(java.util.Locale.US, "%.${decimals}f", value)
 

@@ -291,3 +291,128 @@ class TelegramEventMessagesTest {
         assertTrue(text, text.contains("62 mV exceeds 50 mV at 64% SoC"))
     }
 }
+
+/**
+ * Tests for the structured half of an event, the one MQTT publishes.
+ *
+ * What matters here is different from the prose: a subscriber cannot see the unit system or the
+ * currency the app is set to, cannot ask what a missing reading was, and will store whatever it
+ * is given. So the cases below are the ones a parser gets wrong silently — imperial leaking into
+ * the numbers, a zero standing in for a reading that never happened, and a currency symbol next
+ * to a cost the app itself refused to print.
+ */
+class VehicleEventFactsTest {
+
+    private fun trip(
+        distanceKm: Double = 20.0,
+        efficiencyKwh100km: Double? = 17.0,
+        energyKwh: Double? = 3.4,
+        avgSpeedKmh: Double? = 40.0,
+        energyRatePerKwh: Double? = null,
+        currencySymbol: String = "€",
+        imperial: Boolean = false,
+    ) = TelegramEventMessages.tripSummary(
+        tripId = 756L,
+        distanceKm = distanceKm,
+        durationMs = 30 * 60_000L,
+        energyKwh = energyKwh,
+        efficiencyKwh100km = efficiencyKwh100km,
+        fleetAvgKwh100km = 17.0,
+        startSoc = 80.0,
+        endSoc = 76.0,
+        avgSpeedKmh = avgSpeedKmh,
+        tripScore = 82,
+        energyRatePerKwh = energyRatePerKwh,
+        currencySymbol = currencySymbol,
+        imperial = imperial,
+        startTimeMs = 1_760_000_000_000L,
+        endTimeMs = 1_760_001_800_000L,
+    ).facts
+
+    private fun charge(
+        kwhAdded: Double? = 26.5,
+        avgKw: Double = 29.4,
+        peakKw: Double = 43.3,
+        ratePerKwh: Double? = 0.59,
+    ) = TelegramEventMessages.chargingFinished(
+        sessionId = 12L,
+        socEnd = 81.0,
+        socStart = 49.0,
+        kwhAdded = kwhAdded,
+        durationMs = 3_773_000L,
+        avgKw = avgKw,
+        peakKw = peakKw,
+        ratePerKwh = ratePerKwh,
+        currencySymbol = "A$",
+        startTimeMs = 1_760_000_000_000L,
+        endTimeMs = 1_760_003_773_000L,
+    ).facts
+
+    @Test
+    fun `an imperial user still publishes metric, because the subscriber cannot see the setting`() {
+        val metric = trip(imperial = false)
+        val imperial = trip(imperial = true)
+        assertEquals(20.0, metric["distance_km"])
+        assertEquals("the payload must not follow the display preference", metric, imperial)
+    }
+
+    @Test
+    fun `a reading the car never reported is absent, not zero`() {
+        // A trip the app could not price, and a session rebuilt from the SoC delta with no power
+        // readings at all. A zero here would be stored as a measurement of zero.
+        val unpriced = trip(energyRatePerKwh = null)
+        assertFalse(unpriced.containsKey("energy_rate_per_kwh"))
+        assertFalse(unpriced.containsKey("cost"))
+
+        val reconstructed = charge(avgKw = 0.0, peakKw = 0.0)
+        assertFalse(reconstructed.containsKey("avg_kw"))
+        assertFalse(reconstructed.containsKey("peak_kw"))
+    }
+
+    @Test
+    fun `a currency only travels with a cost it belongs to`() {
+        assertFalse(trip(energyRatePerKwh = null).containsKey("currency"))
+        assertEquals("€", trip(energyRatePerKwh = 0.30)["currency"])
+    }
+
+    @Test
+    fun `the cost is the one the prose prints, not a second opinion`() {
+        val facts = trip(energyKwh = 3.4, energyRatePerKwh = 0.59)
+        assertEquals(3.4 * 0.59, facts["cost"] as Double, 1e-9)
+    }
+
+    @Test
+    fun `a trip carries what it takes to place it on a timeline`() {
+        val facts = trip()
+        assertEquals("trip", facts["event"])
+        assertEquals(756L, facts["trip_id"])
+        assertEquals(1_760_000_000_000L, facts["started_at_ms"])
+        assertEquals(1800L, facts["duration_s"])
+        // Both forms, so neither side has to parse to compare and neither has to format to read.
+        assertEquals("2025-10-09T08:53:20Z", facts["started_at"])
+    }
+
+    @Test
+    fun `a charge says what reached the pack, how fast, and what it cost`() {
+        val facts = charge()
+        assertEquals("charge_session", facts["event"])
+        assertEquals(12L, facts["session_id"])
+        assertEquals(26.5, facts["energy_added_kwh"])
+        assertEquals(43.3, facts["peak_kw"])
+        assertEquals(0.59, facts["rate_per_kwh"])
+        assertEquals(26.5 * 0.59, facts["cost"] as Double, 1e-9)
+        assertEquals("A$", facts["currency"])
+        // Below the full-SoC threshold, so the session stopped rather than completed — the same
+        // fact the title states, in a form something other than a human can branch on.
+        assertEquals(false, facts["complete"])
+    }
+
+    @Test
+    fun `which SoC source produced the numbers travels with them`() {
+        val panel = TelegramEventMessages.tripSummary(
+            1L, 20.0, null, null, null, null, 80.0, 76.0, null, null, null, "€", false,
+            socFromBms = false,
+        ).facts
+        assertEquals("panel", panel["soc_source"])
+    }
+}

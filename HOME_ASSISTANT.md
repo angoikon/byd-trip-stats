@@ -11,6 +11,18 @@ BYD Trip Stats publishes telemetry via MQTT using **Home Assistant MQTT Discover
 - Each discovery config uses a `value_template` to extract its field from that JSON (e.g. `{{ value_json.soc }}`), so HA always has the latest value even after a restart.
 - An availability topic (`byd-trip-stats/<name>/availability`) carries `online` / `offline` (Last Will and Testament), so HA marks entities unavailable on unexpected disconnect.
 - While the car is **on**, state is published at your configured interval (1–120 s). While the **car is off**, it publishes every 30 s regardless of your setting (to keep HA's availability alive without flooding the broker).
+- When a **trip** or a **charging session** closes, its summary is published as retained JSON to `byd-trip-stats/<name>/trip` and `byd-trip-stats/<name>/charge_session`. These are events rather than sensors, so they carry no discovery config and create no entities: subscribe to them directly, or template your own sensor from them. Values are always metric and unprefixed by unit system (km, kWh, kWh/100 km, kW, percent) no matter how the app is set to display them, and a field the car did not report is left out rather than sent as zero. A trip summary also carries `live_close`, which is `false` when the trip was finalised at the next ignition rather than when you parked — the normal path on DiLink-5.
+
+### Event topics
+
+| Topic | Sent when | Notable fields |
+| --- | --- | --- |
+| `byd-trip-stats/<name>/trip` | A trip is finalised | `trip_id`, `distance_km`, `energy_kwh`, `efficiency_kwh_per_100km`, `fleet_avg_kwh_per_100km`, `avg_speed_kmh`, `soc_start_pct`, `soc_end_pct`, `trip_score`, `cost`, `currency`, `live_close` |
+| `byd-trip-stats/<name>/charge_session` | A charging session closes | `session_id`, `energy_added_kwh`, `avg_kw`, `peak_kw`, `rate_per_kwh`, `cost`, `currency`, `complete` |
+
+Both carry `started_at` / `ended_at` as ISO 8601 UTC and `started_at_ms` / `ended_at_ms` as epoch milliseconds, plus `duration_s` and `soc_source` (`panel` or `bms`). `energy_added_kwh` is the energy that reached the pack, derived from the SoC delta, so it reads lower than what a charger bills.
+
+If the broker is unreachable when an event closes, it is held and sent with the next successful state publish, so a summary is not lost to a drive that ended out of range.
 
 ---
 
