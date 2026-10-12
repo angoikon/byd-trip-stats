@@ -1335,7 +1335,7 @@
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_section">行動數據（4G）</string>
     <string name="d5_mobile_data_title">為上傳解鎖車機的 4G</string>
-    <string name="d5_mobile_data_desc">在這台車機上，車輛把第三方應用程式擋在自己的行動網路之外，因此 MQTT、ABRP、Telegram 和應用程式更新只能在 Wi-Fi 下使用。開啟後，應用程式會透過一次性 ADB 連線為自身解除這一限制 —— 一條僅對本應用程式生效的網路政策白名單，每次啟動時重新套用 —— 並開啟數據漫遊，因為車的 SIM 卡始終處於漫遊狀態。關閉 = 不更動車輛的設定。只要「僅 Wi-Fi」開關保持開啟（預設），Telegram 排程備份仍會等待 Wi-Fi。</string>
+    <string name="d5_mobile_data_desc">車輛把第三方應用程式擋在自己的行動網路之外，因此沒有此選項時，MQTT、ABRP、Telegram 和應用程式更新只能在 Wi-Fi 下使用。開啟期間（預設），應用程式會透過 ADB 連線為自身解除這一限制 —— 一條僅對本應用程式生效的網路政策例外，每次啟動時檢查 —— 並開啟數據漫遊，因為車的 SIM 卡始終處於漫遊狀態。只要「僅 Wi-Fi」開關保持開啟（預設），Telegram 排程備份仍會等待 Wi-Fi。關閉後：檢查停止，若數據漫遊是由應用程式更改的則會還原，但車輛的限制不會恢復（Android 沒有還原它的指令），因此若不想讓應用程式使用行動數據，還需關閉 MQTT、ABRP 和 Telegram。</string>
     <string name="d5_mobile_data_on_status">4G 已解鎖</string>
     <string name="driving_widget_consent_title">顯示駕駛小工具？</string>
     <string name="driving_widget_consent_body">在這輛車上，只要車輛不在 P 檔，Android 就會隱藏應用的畫面。無論如何，行程記錄都會在背景繼續。\n\n作為替代，應用可以在你駕駛時於其他應用之上顯示一個小工具，包含你的速度、功率、電池和續航——與其他車載應用使用的同類小工具。它用於瞥一眼，就像儀表板：請注視道路。回到 P 檔時它會消失，完整儀表板隨之回來。\n\n你之後可以在設定中開啟或關閉它。</string>

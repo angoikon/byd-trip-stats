@@ -1234,7 +1234,7 @@
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_section">모바일 데이터(4G)</string>
     <string name="d5_mobile_data_title">업로드를 위해 차량의 4G 잠금 해제</string>
-    <string name="d5_mobile_data_desc">이 헤드 유닛에서 차량은 서드파티 앱을 자체 이동통신망에서 차단하므로 MQTT, ABRP, Telegram, 앱 업데이트는 Wi-Fi에서만 작동합니다. 켜면 앱이 일회성 ADB 연결을 통해 이 차단을 자기 자신에 대해 해제합니다 — 이 앱만을 위한 네트워크 정책 화이트리스트로, 시작할 때마다 다시 적용됩니다 — 그리고 차량의 SIM이 항상 로밍 중이므로 데이터 로밍을 켭니다. 끄기 = 차량 설정은 그대로 둡니다. 예약된 Telegram 백업은 ‘Wi-Fi 전용’ 스위치가 켜져 있는 동안(기본값) 계속 Wi-Fi를 기다립니다.</string>
+    <string name="d5_mobile_data_desc">차량은 서드파티 앱을 자체 이동통신망에서 차단하므로, 이 기능이 없으면 MQTT, ABRP, Telegram, 앱 업데이트는 Wi-Fi에서만 작동합니다. 켜져 있는 동안(기본값) 앱은 ADB 연결을 통해 이 차단을 자기 자신에 대해 해제합니다 — 이 앱만을 위한 네트워크 정책 예외로, 시작할 때마다 확인됩니다 — 그리고 차량의 SIM이 항상 로밍 중이므로 데이터 로밍을 켭니다. 예약된 Telegram 백업은 ‘Wi-Fi 전용’ 스위치가 켜져 있는 동안(기본값) 계속 Wi-Fi를 기다립니다. 끄면 확인이 멈추고 앱이 바꾼 데이터 로밍은 원래대로 돌아가지만, 차량의 차단은 돌아오지 않습니다(Android에는 이를 복원하는 명령이 없습니다). 앱이 모바일 데이터를 쓰지 않게 하려면 MQTT, ABRP, Telegram도 꺼야 합니다.</string>
     <string name="d5_mobile_data_on_status">4G 잠금 해제됨</string>
     <string name="driving_widget_consent_title">주행 위젯을 표시할까요?</string>
     <string name="driving_widget_consent_body">이 차량에서는 차량이 P가 아닐 때마다 Android가 앱 화면을 숨깁니다. 주행 기록은 어느 쪽이든 백그라운드에서 계속됩니다.\n\n대신 주행 중에는 앱이 다른 앱 위에 작은 위젯을 표시할 수 있습니다. 속도, 출력, 배터리, 주행 가능 거리를 — 다른 차량 앱이 사용하는 것과 같은 종류의 위젯입니다. 계기판처럼 한눈에 보기 위한 것입니다. 도로에서 눈을 떼지 마세요. P에서는 사라지고 전체 대시보드가 돌아옵니다.\n\n나중에 설정에서 켜거나 끌 수 있습니다.</string>

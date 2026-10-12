@@ -2,7 +2,6 @@ package com.byd.tripstats.connections
 
 import android.content.Context
 import android.content.SharedPreferences
-import org.json.JSONArray
 
 data class MqttConnectionConfig(
     val enabled: Boolean = false,
@@ -130,9 +129,8 @@ object MqttConnectionStore {
     fun enqueueEvent(context: Context, payload: String) {
         synchronized(eventLock) {
             val prefs = prefs(context)
-            val queue = readQueue(prefs.getString(KEY_PENDING_EVENTS, null))
-            queue.add(payload)
-            while (queue.size > MAX_PENDING_EVENTS) queue.removeAt(0)
+            val queue = PendingEventQueue.parse(prefs.getString(KEY_PENDING_EVENTS, null))
+            PendingEventQueue.append(queue, payload, MAX_PENDING_EVENTS)
             writeQueue(prefs, queue)
         }
     }
@@ -142,13 +140,13 @@ object MqttConnectionStore {
      * only in [removeEvent], once the broker has acknowledged it.
      */
     fun readEvents(context: Context): List<String> =
-        synchronized(eventLock) { readQueue(prefs(context).getString(KEY_PENDING_EVENTS, null)) }
+        synchronized(eventLock) { PendingEventQueue.parse(prefs(context).getString(KEY_PENDING_EVENTS, null)) }
 
     /** Drops one event the broker has taken, matched on the exact payload that was queued. */
     fun removeEvent(context: Context, payload: String) {
         synchronized(eventLock) {
             val prefs = prefs(context)
-            val queue = readQueue(prefs.getString(KEY_PENDING_EVENTS, null))
+            val queue = PendingEventQueue.parse(prefs.getString(KEY_PENDING_EVENTS, null))
             if (queue.remove(payload)) writeQueue(prefs, queue)
         }
     }
@@ -161,22 +159,12 @@ object MqttConnectionStore {
 
     private fun writeQueue(prefs: SharedPreferences, queue: List<String>) {
         val edit = prefs.edit()
-        if (queue.isEmpty()) edit.remove(KEY_PENDING_EVENTS) else edit.putString(KEY_PENDING_EVENTS, JSONArray(queue).toString())
+        val encoded = PendingEventQueue.encode(queue)
+        if (encoded == null) edit.remove(KEY_PENDING_EVENTS) else edit.putString(KEY_PENDING_EVENTS, encoded)
         // commit(), not apply(), for the same reason the Telegram outbox uses it: these writes
         // happen as the car parks and the process can be killed at any moment, and an un-flushed
         // queue is a lost summary.
         edit.commit()
-    }
-
-    // A stored queue that will not parse is discarded: an unsendable event is not worth a loop.
-    private fun readQueue(stored: String?): MutableList<String> {
-        if (stored.isNullOrBlank()) return mutableListOf()
-        return try {
-            val array = JSONArray(stored)
-            MutableList(array.length()) { array.getString(it) }
-        } catch (_: Throwable) {
-            mutableListOf()
-        }
     }
 
     fun mask(value: String): String = when {

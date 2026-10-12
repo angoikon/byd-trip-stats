@@ -277,11 +277,12 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
             }
         }
 
-        // DiLink-5 only: opt-in for lifting BYD's third-party 4G block (a netpolicy whitelist
+        // DiLink-5 only, on by default: lifts BYD's third-party 4G block (a netpolicy whitelist
         // for this app + data roaming). Without it, MQTT/ABRP/Telegram/updates only work on
-        // Wi-Fi. Re-asserted at every start and watchdog tick while on; off = the car's
-        // settings are left untouched. Same card shape as the vehicle-access switch above.
-        var mobileDataOn by remember { mutableStateOf(Di5MobileDataGate.hasConsent(context)) }
+        // Wi-Fi. Re-checked at every start and watchdog tick while on; off puts roaming back if
+        // the app changed it (the block itself can't be restored — see Di5MobileDataGate).
+        // Same card shape as the vehicle-access switch above.
+        var mobileDataOn by remember { mutableStateOf(Di5MobileDataGate.isEnabled(context)) }
         SettingsGroupLabel(stringResource(R.string.d5_mobile_data_section))
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -320,11 +321,12 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                         enabled = adbSetupOk,
                         onCheckedChange = { on ->
                             mobileDataOn = on
-                            Di5MobileDataGate.setConsent(context, on)
-                            if (on) scope.launch {
-                                // Apply now rather than waiting for the next start — and log
-                                // unconditionally (force), since this is a user action.
-                                Di5MobileDataGate.reassert(context, label = "settings", force = true)
+                            Di5MobileDataGate.setEnabled(context, on)
+                            scope.launch {
+                                // Act now rather than at the next start — and log unconditionally
+                                // (force), since this is a user action.
+                                if (on) Di5MobileDataGate.reassert(context, label = "settings", force = true)
+                                else Di5MobileDataGate.restoreAfterSwitchOff(context)
                             }
                         }
                     )

@@ -1,6 +1,7 @@
 package com.byd.tripstats.connections
 
 import android.content.Context
+import android.os.SystemClock
 import android.util.Log
 import com.byd.tripstats.data.model.VehicleTelemetry
 import com.byd.tripstats.data.preferences.PreferencesManager
@@ -26,7 +27,7 @@ class MqttConnectionManager(context: Context) {
     private val appContext = context.applicationContext
     private val lock = Any()
     private val inFlight = AtomicBoolean(false)
-    private val eventFlushInFlight = AtomicBoolean(false)
+    private val eventFlushGate = EventFlushGate()
     @Volatile private var client: Mqtt3AsyncClient? = null
     @Volatile private var connected = false
     @Volatile private var lastEndpoint: String = ""
@@ -288,69 +289,83 @@ class MqttConnectionManager(context: Context) {
      * Deliberately fire-and-forget: the state tick is the thing that matters and must not wait on
      * these. An event is removed from the queue only once its send completes, so being killed
      * mid-flush costs a repeat rather than the summary itself; the queue's own cap is what stops a
-     * permanently rejecting broker from growing it without limit.
+     * permanently rejecting broker from growing it without limit. [eventFlushGate] keeps one flush
+     * at a time, abandons one whose sends never settle, and backs off after a failure so a broker
+     * that refuses the topics is not retried on every state tick.
      */
     private fun flushEvents() {
         val activeClient = client ?: return
         val deviceId = currentDeviceId
         if (deviceId.isBlank()) return
         if (!MqttConnectionStore.hasPendingEvents(appContext)) return
-        // One flush at a time: a send settles after this method has returned, and until it does
-        // the event is still queued, so a second flush would publish it again.
-        if (!eventFlushInFlight.compareAndSet(false, true)) return
-        val pending = MqttConnectionStore.readEvents(appContext)
-        if (pending.isEmpty()) {
-            eventFlushInFlight.set(false)
-            return
+        val token = eventFlushGate.tryStart(SystemClock.elapsedRealtime()) ?: return
+
+        val failedAny = AtomicBoolean(false)
+        // The loop holds one count of its own, released in `finally`, so the gate cannot close
+        // while sends are still being started — a send can settle before the next one begins.
+        val outstanding = AtomicInteger(1)
+        fun settle() {
+            if (outstanding.decrementAndGet() == 0) {
+                eventFlushGate.finish(token, !failedAny.get(), SystemClock.elapsedRealtime())
+            }
         }
-        // Whichever send settles last reopens the gate.
-        val outstanding = AtomicInteger(pending.size)
-        for (stored in pending) {
-            val message = try {
-                val envelope = JSONObject(stored)
-                val kind = envelope.getString(KEY_EVENT_KIND)
-                if (kind in EVENT_TOPICS) {
-                    kind to envelope.getJSONObject(KEY_EVENT_PAYLOAD).toString().toByteArray(Charsets.UTF_8)
-                } else {
+        try {
+            for (stored in MqttConnectionStore.readEvents(appContext)) {
+                outstanding.incrementAndGet()
+                val message = try {
+                    val envelope = JSONObject(stored)
+                    val kind = envelope.getString(KEY_EVENT_KIND)
+                    if (kind in EVENT_TOPICS) {
+                        kind to envelope.getJSONObject(KEY_EVENT_PAYLOAD).toString().toByteArray(Charsets.UTF_8)
+                    } else {
+                        null
+                    }
+                } catch (t: Throwable) {
+                    Log.w(TAG, "Malformed queued event dropped", t)
                     null
                 }
-            } catch (t: Throwable) {
-                Log.w(TAG, "Malformed queued event dropped", t)
-                null
-            }
-            if (message == null) {
-                // No topic will ever take this one, and an event now stays queued until a send
-                // succeeds, so leaving it would retry it on every tick for ever.
-                MqttConnectionStore.removeEvent(appContext, stored)
-                if (outstanding.decrementAndGet() == 0) eventFlushInFlight.set(false)
-                continue
-            }
-            val (kind, payload) = message
-            val sending = try {
-                activeClient.publishWith()
-                    .topic("byd-trip-stats/$deviceId/$kind")
-                    .payload(payload)
-                    .qos(MqttQos.AT_LEAST_ONCE)
-                    .retain(true)
-                    .send()
-            } catch (t: Throwable) {
-                Log.w(TAG, "Event publish failed, still queued", t)
-                null
-            }
-            if (sending == null) {
-                if (outstanding.decrementAndGet() == 0) eventFlushInFlight.set(false)
-                continue
-            }
-            sending.whenComplete { _, throwable ->
-                // Only here, and only on success. A kill anywhere before this line leaves the
-                // event on disk, which is the whole point of queuing it.
-                if (throwable == null) {
+                if (message == null) {
+                    // No topic will ever take this one, and an event stays queued until a send
+                    // succeeds, so leaving it would retry it on every flush for ever. Not a
+                    // failure of the broker, so it does not count towards the back-off.
                     MqttConnectionStore.removeEvent(appContext, stored)
-                } else {
-                    Log.w(TAG, "Event publish failed, still queued", throwable)
+                    settle()
+                    continue
                 }
-                if (outstanding.decrementAndGet() == 0) eventFlushInFlight.set(false)
+                val (kind, payload) = message
+                val sending = try {
+                    activeClient.publishWith()
+                        .topic("byd-trip-stats/$deviceId/$kind")
+                        .payload(payload)
+                        .qos(MqttQos.AT_LEAST_ONCE)
+                        .retain(true)
+                        .send()
+                } catch (t: Throwable) {
+                    Log.w(TAG, "Event publish failed, still queued", t)
+                    null
+                }
+                if (sending == null) {
+                    failedAny.set(true)
+                    settle()
+                    continue
+                }
+                sending.whenComplete { _, throwable ->
+                    // Only here, and only on success. A kill anywhere before this line leaves the
+                    // event on disk, which is the whole point of queuing it.
+                    if (throwable == null) {
+                        MqttConnectionStore.removeEvent(appContext, stored)
+                    } else {
+                        failedAny.set(true)
+                        Log.w(TAG, "Event publish failed, still queued", throwable)
+                    }
+                    settle()
+                }
             }
+        } catch (t: Throwable) {
+            failedAny.set(true)
+            Log.w(TAG, "Event flush aborted, remaining events stay queued", t)
+        } finally {
+            settle()
         }
     }
 

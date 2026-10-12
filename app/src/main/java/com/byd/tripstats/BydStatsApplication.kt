@@ -219,7 +219,7 @@ class BydStatsApplication : Application(), Configuration.Provider {
                 Log.w(TAG, "In-process patches threw: ${e.message}")
             }
         }
-        // DiLink-5, opt-in (see Di5MobileDataGate): lift BYD's third-party 4G block for this app.
+        // DiLink-5, on by default (see Di5MobileDataGate): lift BYD's third-party 4G block for this app.
         // Its own coroutine, so it doesn't wait behind the channel watch below, which can run for
         // 20 minutes when adb is down — the roaming half needs no channel at all. The netpolicy
         // half does, so it is checked again once the watch has the channel (end of the next block).

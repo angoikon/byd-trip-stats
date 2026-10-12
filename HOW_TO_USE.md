@@ -281,7 +281,7 @@ configure that connection on its own page.
 | Connection | What it does |
 |---|---|
 | **ABRP** | Sends a live telemetry snapshot (SoC, speed, power, GPS) to ABRP servers via the Link Generic API, using your user token |
-| **MQTT** | Publishes full telemetry JSON at a configurable interval to a broker you specify (host, port, topic, credentials) |
+| **MQTT** | Publishes full telemetry JSON at a configurable interval to a broker you specify (host, port, topic, credentials), plus a summary of each finished trip and charging session on their own topics (see [HOME_ASSISTANT.md](HOME_ASSISTANT.md)) |
 | **Web Companion** | The companion's on/off switch, port and PIN, and every address it can be reached at |
 | **Tailscale** | Puts the car on your private network so the web companion and ADB work from anywhere |
 | **Telegram** | Links your own bot — used for backups, notifications, diagnostics and trip exports |
@@ -483,7 +483,7 @@ By default, **nothing leaves the car**. The following are opt-in only:
 
 - **Telegram backup** — a compressed (not encrypted) database file sent to your own private Telegram bot when you configure it and trigger a backup
 - **Telegram notifications** — a short text card (trip summary, charge finished, battery alert) sent to that same bot, only for the events you switch on
-- **MQTT** — live telemetry JSON published to a broker you specify, at the interval you set
+- **MQTT** — live telemetry JSON published to a broker you specify, at the interval you set, and a summary of each finished trip and charging session
 - **ABRP** — live telemetry snapshot sent to ABRP using the token you provide
 - **Tailscale** — once you sign the car in, it joins your own private network; traffic goes to your devices (end-to-end encrypted) and sign-in to Tailscale's servers, and nothing is exposed publicly
 - **Email via QR code** — when you tap it on Vehicle Compatibility or App Diagnostics, that report or log is uploaded to a temporary file host so you can email its link; the link expires after 24 hours

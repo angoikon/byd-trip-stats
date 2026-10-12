@@ -118,4 +118,25 @@ class Di5MobileDataGateTest {
         assertTrue(Di5MobileDataGate.shouldEnableDataRoaming(-1))  // setting row absent
         assertFalse(Di5MobileDataGate.shouldEnableDataRoaming(1))  // already on
     }
+
+    @Test
+    fun `switching off restores the roaming value the gate replaced`() {
+        assertEquals(0, Di5MobileDataGate.roamingToRestore(saved = 0, current = 1))
+    }
+
+    @Test
+    fun `a missing roaming row is restored as off`() {
+        assertEquals(0, Di5MobileDataGate.roamingToRestore(saved = -1, current = 1))
+    }
+
+    @Test
+    fun `roaming the gate never changed is left alone`() {
+        // Already on when the gate first looked (or set by hand, as on the Shark 6): nothing saved.
+        assertNull(Di5MobileDataGate.roamingToRestore(saved = null, current = 1))
+    }
+
+    @Test
+    fun `roaming changed again since the gate wrote it is left alone`() {
+        assertNull(Di5MobileDataGate.roamingToRestore(saved = 0, current = 0))
+    }
 }

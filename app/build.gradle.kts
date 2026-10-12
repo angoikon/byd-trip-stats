@@ -42,8 +42,8 @@ android {
     // version, so beta testers automatically receive the stable upgrade via sideload.
     val versionMajor    = 2
     val versionMinor    = 17
-    val versionPatch    = 2
-    val versionPre      = 99 // 99 = stable; 1–98 = beta (e.g. 1 → "beta01")
+    val versionPatch    = 3
+    val versionPre      = 9 // 99 = stable; 1–98 = beta (e.g. 1 → "beta01")
     // Hotfix revision for the SAME versionName. Bumps versionCode ONLY — the in-app
     // updater compares the GitHub tag against versionName (UpdateRepository.isNewerVersion),
     // NOT versionCode, so this does NOT auto-trigger an update, yet it lets us rebuild the
@@ -345,6 +345,8 @@ dependencies {
 
     // Testing
     testImplementation(libs.junit)
+    // android.jar's org.json is a stub that throws in unit tests; the queue's storage rules need the real one.
+    testImplementation("org.json:json:20240303")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

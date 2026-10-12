@@ -24,7 +24,7 @@ Both carry `started_at` / `ended_at` as ISO 8601 UTC and `started_at_ms` / `ende
 
 These topics are **retained**, so a subscriber that connects later sees only the most recent trip and the most recent charging session. To capture every event you have to be subscribed when it is published.
 
-If the broker is unreachable when an event closes, it is held and sent with the next successful state publish, so a summary is not lost to a drive that ended out of range. A queued event is only dropped once the broker has acknowledged it, which means an app killed mid-send can publish the same event again on the next start. There is no replay protection: **dedupe on `trip_id` / `session_id`** rather than treating every message as a new event.
+If the broker is unreachable when an event closes, it is held and sent with the next successful state publish, so a summary is not lost to a drive that ended out of range. A queued event is only dropped once the broker has acknowledged it, which means an app killed mid-send, or a send that never got an answer, can publish the same event again. If a send fails, the next attempt waits 5 seconds, then 10, doubling up to a minute, so a broker that refuses these topics is not retried on every state publish; the state itself is never delayed by it. There is no replay protection: **dedupe on `trip_id` / `session_id`** rather than treating every message as a new event.
 
 ---
 

@@ -314,7 +314,7 @@ Two complementary mechanisms cover all charging scenarios with no user interacti
 The app remains standalone for normal use, but can optionally talk to the outside world. Each connection has its own page under **Settings → Connections**:
 
 - **ABRP** — upload live car telemetry to ABRP via Link Generic token
-- **MQTT** — publish Electro-compatible JSON to an external broker and topic, with drive/regen modes exported as readable names. Supports plain TCP, TLS (mqtts), and MQTT-over-WebSocket (ws/wss) so the broker can sit behind an HTTP reverse proxy. *(WebSocket requires a WebSocket listener enabled on the broker itself — e.g. Mosquitto needs a `listener` with `protocol websockets`; the reverse proxy forwards to that listener, it does not create one.)*
+- **MQTT** — publish Electro-compatible JSON to an external broker and topic, with drive/regen modes exported as readable names. Supports plain TCP, TLS (mqtts), and MQTT-over-WebSocket (ws/wss) so the broker can sit behind an HTTP reverse proxy. A summary of every finished trip and charging session is also published, as retained JSON on its own topic (`…/trip`, `…/charge_session`), always in metric units. *(WebSocket requires a WebSocket listener enabled on the broker itself — e.g. Mosquitto needs a `listener` with `protocol websockets`; the reverse proxy forwards to that listener, it does not create one.)*
 
 - **Web companion** — trips, charging history, notifications, the 12V / HV chart and a PIN-protected **Files** tab (backups, exports, the diagnostics log), in any browser on your Wi-Fi. On by default; it only answers on your own network
 - **Tailscale** — puts the car on your own private network, so the web companion and ADB work from anywhere, including over mobile data. Setup is a QR code you scan with your phone
@@ -387,7 +387,7 @@ All of these are **disabled by default** and require explicit configuration. You
 | Integration | What is sent | Destination |
 |---|---|---|
 | **Telegram bot** | Database backups (gzip-compressed, **not encrypted**) and the notifications you switch on | Your own private Telegram bot (bot token + chat ID you supply). Data goes to Telegram's servers over Telegram's encrypted connection, as messages and file attachments to your bot. |
-| **MQTT broker** | Live telemetry JSON (speed, SoC, power, GPS, gear, etc.) at a configurable interval | An external MQTT broker you specify (e.g. HiveMQ Cloud, a self-hosted broker). You control the host, topic, and credentials. |
+| **MQTT broker** | Live telemetry JSON (speed, SoC, power, GPS, gear, etc.) at a configurable interval, and a summary of each finished trip and charging session | An external MQTT broker you specify (e.g. HiveMQ Cloud, a self-hosted broker). You control the host, topic, and credentials. |
 | **ABRP (A Better Route Planner)** | Live telemetry snapshot (SoC, speed, power, GPS) | ABRP servers, via the Link Generic API using a user token you provide. Subject to ABRP's own privacy policy. |
 | **Tailscale** | Encrypted (WireGuard) traffic between your own devices, to reach the web companion and ADB | Your own Tailscale network. Tailscale's servers handle sign-in and key exchange; your traffic is end-to-end encrypted between your devices, and relayed — still encrypted — through Tailscale's relay servers only when no direct path is possible. |
 | **Email via QR code** | A compatibility report or the diagnostics log — only when you tap the button | A temporary file host (litterbox.catbox.moe); the link expires after 24 hours |

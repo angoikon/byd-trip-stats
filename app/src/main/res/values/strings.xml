@@ -1359,7 +1359,7 @@
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_section">Mobile data (4G)</string>
     <string name="d5_mobile_data_title">Unlock the car\'s 4G for uploads</string>
-    <string name="d5_mobile_data_desc">On this head unit the car blocks third-party apps from its mobile network, so MQTT, ABRP, Telegram and app updates only work on Wi-Fi. When on, the app lifts that block for itself over its one-time ADB connection — a network-policy whitelist for this app, re-applied at every start — and turns on data roaming, since the car\'s SIM is always roaming. Off = the car\'s settings are left untouched. Scheduled Telegram backups still wait for Wi-Fi while their “Wi-Fi only” switch is on (the default).</string>
+    <string name="d5_mobile_data_desc">The car blocks third-party apps from its mobile network, so without this, MQTT, ABRP, Telegram and app updates only work on Wi-Fi. While it is on (the default), the app lifts that block for itself over its ADB connection — a network-policy exception for this app only, checked at every start — and turns on data roaming, since the car\'s SIM is always roaming. Scheduled Telegram backups still wait for Wi-Fi while their “Wi-Fi only” switch is on (the default). Off: the checks stop and data roaming is set back if the app changed it, but the car\'s block doesn\'t come back (Android has no command to restore it), so to keep the app off mobile data, also switch off MQTT, ABRP and Telegram.</string>
     <string name="d5_mobile_data_on_status">4G unlocked</string>
     <!-- Driving widget — Android Automotive head units (Atto 3 EVO / DiLink 100) only -->
     <string name="driving_widget_consent_title">Show a driving widget?</string>

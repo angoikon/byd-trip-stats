@@ -1335,7 +1335,7 @@
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_section">モバイルデータ（4G）</string>
     <string name="d5_mobile_data_title">アップロード用に車の4Gを解放</string>
-    <string name="d5_mobile_data_desc">このヘッドユニットでは、車がサードパーティ製アプリを自車のモバイルネットワークから締め出すため、MQTT・ABRP・Telegram・アプリのアップデートはWi-Fiでのみ動作します。オンにすると、アプリが一回限りのADB接続を通じてこのブロックを自分用に解除します — このアプリ専用のネットワークポリシーのホワイトリストで、起動のたびに再適用されます — また、車のSIMは常にローミング中のため、データローミングをオンにします。オフ = 車の設定には一切触れません。Telegramへの定期バックアップは、「Wi-Fiのみ」スイッチがオン（既定）の間はWi-Fiを待ちます。</string>
+    <string name="d5_mobile_data_desc">車はサードパーティ製アプリを自車のモバイルネットワークから締め出すため、これがないとMQTT・ABRP・Telegram・アプリのアップデートはWi-Fiでのみ動作します。オンの間（既定）、アプリはADB接続を通じてこのブロックを自分用に解除します — このアプリ専用のネットワークポリシーの例外で、起動のたびに確認されます — また、車のSIMは常にローミング中のため、データローミングをオンにします。Telegramへの定期バックアップは、「Wi-Fiのみ」スイッチがオン（既定）の間はWi-Fiを待ちます。オフにすると確認は止まり、アプリが変更したデータローミングは元に戻りますが、車のブロックは戻りません（Androidにはそれを元に戻すコマンドがありません）。アプリにモバイルデータを使わせない場合は、MQTT・ABRP・Telegramもオフにする必要があります。</string>
     <string name="d5_mobile_data_on_status">4G解放済み</string>
     <string name="driving_widget_consent_title">運転中ウィジェットを表示しますか？</string>
     <string name="driving_widget_consent_body">この車では、車が P 以外のときはいつでも Android がアプリの画面を隠します。どちらにしてもトリップの記録はバックグラウンドで続きます。\n\n代わりに、運転中はアプリが他のアプリの上に小さなウィジェットを表示できます。速度、パワー、バッテリー、航続距離を — 他の車用アプリが使うのと同じ種類のウィジェットです。メーターのように、ちらっと見るためのものです。道路から目を離さないでください。P では消え、完全なダッシュボードが戻ります。\n\n後で設定からオン・オフを切り替えられます。</string>

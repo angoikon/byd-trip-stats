@@ -79,8 +79,8 @@ internal fun AppManagementTab(
                     if (!AdbPermissionManager.hasHiddenApiConsent(context)) {
                         add(stringResource(R.string.d5_vehicle_access_off_status))
                     }
-                    // Opt-in; showing it confirms the toggle took effect on the head unit.
-                    if (Di5MobileDataGate.hasConsent(context)) {
+                    // On by default; shown only where the adb setup lets the app actually apply it.
+                    if (Di5MobileDataGate.isEnabled(context) && AdbPermissionManager.isSetupComplete(context)) {
                         add(stringResource(R.string.d5_mobile_data_on_status))
                     }
                 } else if (wifiKeepalive) {
