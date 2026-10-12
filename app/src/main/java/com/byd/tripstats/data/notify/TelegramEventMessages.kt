@@ -272,6 +272,9 @@ object TelegramEventMessages {
     // ── Formatting helpers ────────────────────────────────────────────────────
 
     /** Locale-independent: a German head unit must not emit "18,3" into a bot message. */
+    private fun fmt(value: Double, decimals: Int): String =
+        String.format(java.util.Locale.US, "%.${decimals}f", value)
+
     /**
      * The machine-readable half of an event. Drops every key the car did not report, so a consumer
      * storing the payload can still tell "no reading" from "a reading of zero" — the same rule the
@@ -282,9 +285,6 @@ object TelegramEventMessages {
 
     /** Epoch millis as ISO 8601 UTC, beside the raw millis so neither side has to parse. */
     private fun iso(ms: Long?): String? = ms?.let { Instant.ofEpochMilli(it).toString() }
-
-    private fun fmt(value: Double, decimals: Int): String =
-        String.format(java.util.Locale.US, "%.${decimals}f", value)
 
     // SoC as the trip screen shows it for the selected source (Settings → SoC): the BMS reading
     // with one decimal and labelled, the panel reading as whole percent. Rounding BMS to whole
