@@ -834,7 +834,7 @@
     <string name="schedule_monthly">毎月</string>
     <string name="danger_zone_title">危険ゾーン</string>
     <string name="danger_zone_desc">すべての旅行、データポイント、統計を完全に削除します。リセット前にローカルバックアップが自動的に作成されます。</string>
-    <string name="send_diag_log_desc">診断ログを共有する方法は3つあり、バックグラウンドヘルパー自身のログがあればそれも一緒に送ります。Telegram はボットにログ全体を送信します（設定 → 接続 → Telegram でボットを設定）。保存 は車内の Download/BydTripStats/ にコピーします。QRコードでメール は最新部分をアップロードしてコードを表示し、スマートフォンで読み取るとそのリンクをメールで送れます。リンクの有効期限は24時間です。</string>
+    <string name="send_diag_log_desc">診断ログを共有する方法は3つあり、バックグラウンドヘルパー自身のログがあればそれも一緒に送ります。Telegram は圧縮した .gz ファイルとしてボットに送信し、ローテーションされている場合は以前のログも含めます（設定 → 接続 → Telegram でボットを設定）。保存 は車内の Download/BydTripStats/ にコピーします。QRコードでメール は最新部分をアップロードしてコードを表示し、スマートフォンで読み取るとそのリンクをメールで送れます。リンクの有効期限は24時間です。</string>
     <string name="compat_privacy_notice_body">レポートは車のヘッドユニットのすべてのデータソースから生の値を取得します—数値、文字列、配列。\n\nGPSの緯度と経度は含まれません。\n\nその他すべてが含まれます：バッテリー状態、モーターデータ、ギア、速度、ドライブモード、空調状態、充電状態、PHEV固有の値など。\n\n自動送信されるものはありません。"QRコードでメール"はレポートを一時的な公開ホスト（litterbox）にアップロードし、24時間後に自動削除されるリンクを表示します；それまでリンクを持つ誰でも読めます。他のオプションはレポートをデバイスに保存します。</string>
     <string name="compat_sending_label">送信中…</string>
     <string name="compat_email_qr_label">QRコードでメール</string>

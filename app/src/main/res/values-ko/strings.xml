@@ -771,7 +771,7 @@
     <string name="schedule_monthly">매월</string>
     <string name="danger_zone_title">위험 구역</string>
     <string name="danger_zone_desc">모든 여행, 데이터 포인트 및 통계를 영구적으로 삭제합니다. 초기화 전에 로컬 백업이 자동으로 생성됩니다.</string>
-    <string name="send_diag_log_desc">진단 로그를 공유하는 세 가지 방법이며, 백그라운드 도우미 자체 로그가 있으면 함께 보냅니다. Telegram은 로그 전체를 봇으로 보냅니다(설정 → 연결 → Telegram에서 봇 설정). 저장은 차량의 Download/BydTripStats/에 복사합니다. QR 코드로 이메일은 최신 부분을 업로드하고 코드를 표시하며, 휴대폰으로 스캔하면 그 링크를 이메일로 보낼 수 있습니다. 링크는 24시간 후 만료됩니다.</string>
+    <string name="send_diag_log_desc">진단 로그를 공유하는 세 가지 방법이며, 백그라운드 도우미 자체 로그가 있으면 함께 보냅니다. Telegram은 압축된 .gz 파일로 봇에 보내며, 로테이션된 경우 이전 로그도 포함합니다(설정 → 연결 → Telegram에서 봇 설정). 저장은 차량의 Download/BydTripStats/에 복사합니다. QR 코드로 이메일은 최신 부분을 업로드하고 코드를 표시하며, 휴대폰으로 스캔하면 그 링크를 이메일로 보낼 수 있습니다. 링크는 24시간 후 만료됩니다.</string>
     <string name="compat_privacy_notice_body">보고서는 차량 헤드 유닛의 모든 데이터 소스에서 원시 값을 캡처합니다 — 숫자 값, 문자열 및 배열.\n\nGPS 위도 및 경도는 포함되지 않습니다.\n\n배터리 상태, 모터 데이터, 기어, 속도, 주행 모드, 공조 상태, 충전 상태, PHEV 전용 값 등 모든 것이 포함됩니다.\n\n자동으로 전송되는 것은 없습니다. "QR 코드로 이메일"은 보고서를 임시 공개 호스트(litterbox)에 업로드하고 24시간 후 자동 삭제되는 링크를 표시합니다; 그때까지 링크를 가진 누구나 읽을 수 있습니다. 다른 옵션은 보고서를 기기에 보관합니다.</string>
     <string name="compat_sending_label">전송 중…</string>
     <string name="compat_email_qr_label">QR 코드로 이메일</string>

@@ -834,7 +834,7 @@
     <string name="schedule_monthly">每月</string>
     <string name="danger_zone_title">危險區域</string>
     <string name="danger_zone_desc">永久刪除所有行程、資料點和統計資料。重置前會自動建立本機備份。</string>
-    <string name="send_diag_log_desc">共有三種方式分享診斷日誌；如有背景助手本身的日誌，也會一併附上。Telegram 將完整日誌傳送到您的機器人（在 設定 → 連線 → Telegram 中設定）。儲存 將其複製到車機的 Download/BydTripStats/。透過 QR 碼傳送郵件 會上傳最新部分並顯示 QR 碼，用手機掃描即可透過郵件傳送其連結；連結 24 小時後失效。</string>
+    <string name="send_diag_log_desc">共有三種方式分享診斷日誌；如有背景助手本身的日誌，也會一併附上。Telegram 將日誌以壓縮的 .gz 檔案傳送到您的機器人，若已輪替則包含上一份日誌（在 設定 → 連線 → Telegram 中設定）。儲存 將其複製到車機的 Download/BydTripStats/。透過 QR 碼傳送郵件 會上傳最新部分並顯示 QR 碼，用手機掃描即可透過郵件傳送其連結；連結 24 小時後失效。</string>
     <string name="compat_privacy_notice_body">報告擷取汽車主機每個資料來源的原始值——數值、字串和陣列。\n\n不包含 GPS 經緯度。\n\n包含其他所有內容：電池狀態、電機資料、檔位、速度、駕駛模式、空調狀態、充電狀態、PHEV 專用值等。\n\n不會自動傳送任何內容。"透過 QR 碼傳送郵件"將報告上傳到臨時公開主機（litterbox）並顯示一個 24 小時後自動刪除的連結；在此之前任何有連結的人都可以讀取。其他選項將報告儲存在您的裝置上。</string>
     <string name="compat_sending_label">傳送中…</string>
     <string name="compat_email_qr_label">透過 QR 碼傳送郵件</string>

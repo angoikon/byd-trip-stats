@@ -151,6 +151,8 @@ class LocalWebServer(
             uri.matches(Regex("/api/trips/\\d+/points"))      -> serveTripPoints(uri.tripId())
             uri.matches(Regex("/api/trips/\\d+"))             -> serveTripDetail(uri.lastSegmentLong())
             uri == "/api/notifications"                       -> serveNotifications()
+            isPost && uri == "/api/notifications/delete"      -> deleteNotification(session)
+            isPost && uri == "/api/notifications/clear"       -> clearNotifications()
             uri == "/api/battery"                             -> serveBatteryHistory()
             uri == "/api/charges"                             -> serveCharges()
             uri.matches(Regex("/api/charges/\\d+/points"))    -> serveChargePoints(uri.chargeId())
@@ -185,6 +187,29 @@ class LocalWebServer(
             })
         }
         return serveJson(arr.toString())
+    }
+
+    /**
+     * Deletes one entry from the feed: `POST /api/notifications/delete?key=trip-42`. The feed is
+     * the car's own list, read by every browser that has the companion open, so a delete is made
+     * here rather than hidden in one browser's storage — otherwise it would reappear on the next
+     * device, or after the site data is cleared. The key is remembered, so a replayed close can't
+     * bring the entry back ([VehicleEventLog.remove]).
+     */
+    private fun deleteNotification(session: IHTTPSession): Response {
+        val key = session.parameters["key"]?.firstOrNull()?.takeIf { it.isNotBlank() }
+            ?: return newFixedLengthResponse(
+                Response.Status.BAD_REQUEST, "application/json",
+                JSONObject().put("ok", false).put("error", "missing key").toString()
+            )
+        val removed = VehicleEventLog.getInstance(context).remove(key)
+        return serveJson(JSONObject().put("ok", true).put("removed", removed).toString())
+    }
+
+    /** Empties the feed: `POST /api/notifications/clear`. */
+    private fun clearNotifications(): Response {
+        val removed = VehicleEventLog.getInstance(context).clear()
+        return serveJson(JSONObject().put("ok", true).put("removed", removed).toString())
     }
 
     // ── Favourite toggle (live mode write-back) ──────────────────────────────────

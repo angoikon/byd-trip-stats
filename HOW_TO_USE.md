@@ -345,7 +345,7 @@ Wi-Fi. It is **on by default**. **Settings → Connections → Web Companion** s
 address it answers on — open one in a browser and enter the PIN.
 
 It shows your trips and charging history, a **notification feed** (the bell in the header: trip
-summaries, finished charges, the Pro cell-imbalance alert — it works with no Telegram bot at all),
+summaries, finished charges, the Pro cell-imbalance alert — it works with no Telegram bot at all; delete one with its **✕**, or empty the list with **Clear all**),
 the **battery history** chart and a **Files** tab (both below). Away from home, use
 [Tailscale](#remote-access-tailscale).
 

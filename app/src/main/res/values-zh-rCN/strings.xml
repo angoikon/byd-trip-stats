@@ -834,7 +834,7 @@
     <string name="schedule_monthly">每月</string>
     <string name="danger_zone_title">危险区域</string>
     <string name="danger_zone_desc">永久删除所有行程、数据点和统计信息。重置前会自动创建本地备份。</string>
-    <string name="send_diag_log_desc">共有三种方式分享诊断日志；如有后台助手自身的日志，也会一并附上。Telegram 将完整日志发送到您的机器人（在 设置 → 连接 → Telegram 中设置）。保存 将其复制到车机的 Download/BydTripStats/。通过二维码发送邮件 会上传最新部分并显示二维码，用手机扫描即可通过邮件发送其链接；链接 24 小时后失效。</string>
+    <string name="send_diag_log_desc">共有三种方式分享诊断日志；如有后台助手自身的日志，也会一并附上。Telegram 将日志以压缩的 .gz 文件发送到您的机器人，若已轮转则包含上一份日志（在 设置 → 连接 → Telegram 中设置）。保存 将其复制到车机的 Download/BydTripStats/。通过二维码发送邮件 会上传最新部分并显示二维码，用手机扫描即可通过邮件发送其链接；链接 24 小时后失效。</string>
     <string name="compat_privacy_notice_body">报告捕获汽车主机每个数据源的原始值——数值、字符串和数组。\n\n不包含 GPS 经纬度。\n\n包含其他所有内容：电池状态、电机数据、档位、速度、驾驶模式、空调状态、充电状态、PHEV 专用值等。\n\n不会自动发送任何内容。"通过二维码发送邮件"将报告上传到临时公共主机（litterbox）并显示一个 24 小时后自动删除的链接；在此之前任何有链接的人都可以读取。其他选项将报告保存在您的设备上。</string>
     <string name="compat_sending_label">发送中…</string>
     <string name="compat_email_qr_label">通过二维码发送邮件</string>

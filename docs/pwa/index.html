@@ -86,7 +86,16 @@ nav button.active { background: var(--panel-2); color: var(--accent); }
   background: none; border: none; color: var(--muted);
   font-size: 12px; cursor: pointer; padding: 2px 4px;
 }
-.notif-item { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.notif-actions { display: flex; gap: 6px; }
+.notif-head button:disabled { opacity: .4; cursor: default; }
+/* Right padding leaves room for the delete button, so a long title never runs under it. */
+.notif-item { position: relative; padding: 10px 44px 10px 14px; border-bottom: 1px solid var(--border); }
+.notif-del {
+  position: absolute; top: 6px; right: 8px; width: 32px; height: 32px;
+  background: none; border: none; border-radius: 6px;
+  color: var(--muted); font-size: 14px; line-height: 1; cursor: pointer;
+}
+.notif-del:hover { background: var(--border); color: var(--text); }
 .notif-item:last-child { border-bottom: none; }
 .notif-item.unseen { background: var(--panel-2); }
 .notif-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
@@ -509,7 +518,10 @@ span.star { cursor: default; }
     <div class="notif-panel" id="notif-panel" style="display:none">
       <div class="notif-head">
         <span>Notifications</span>
-        <button onclick="markNotificationsSeen()">Mark all read</button>
+        <div class="notif-actions">
+          <button onclick="markNotificationsSeen()">Mark all read</button>
+          <button id="notif-clear" onclick="clearNotifications()" disabled>Clear all</button>
+        </div>
       </div>
       <div id="notif-list"></div>
     </div>
@@ -897,6 +909,8 @@ function renderNotifications() {
   badge.textContent   = unseen > 9 ? '9+' : String(unseen);
   badge.style.display = unseen ? 'block' : 'none';
 
+  document.getElementById('notif-clear').disabled = !notifications.length;
+
   const list = document.getElementById('notif-list');
   if (!notifications.length) {
     list.innerHTML = '<div class="notif-empty">Nothing yet. Finished trips, charges and battery alerts show up here.</div>';
@@ -904,6 +918,8 @@ function renderNotifications() {
   }
   list.innerHTML = notifications.map(n => `
     <div class="notif-item${n.timestamp > notifSeenTs ? ' unseen' : ''}">
+      <button class="notif-del" title="Delete" aria-label="Delete notification"
+              data-key="${esc(n.key)}" onclick="deleteNotification(event, this.dataset.key)">✕</button>
       <div class="notif-title">${esc(n.title)}</div>
       <div class="notif-body">${esc(n.body)}</div>
       <div class="notif-time">${fmtDate(n.timestamp)}</div>
@@ -924,6 +940,42 @@ function markNotificationsSeen() {
   notifSeenTs = Date.now();
   localStorage.setItem('notifSeenTs', String(notifSeenTs));
   renderNotifications();
+}
+
+// Deleting is done on the car, not in this browser: the list belongs to the car and every device
+// that opens the companion reads the same one, so hiding an entry locally would bring it back on
+// the next device or after the site data is cleared. The page shows the change at once and
+// resyncs from the car if the car didn't confirm it.
+async function postNotificationAction(url) {
+  const r = await fetch(url, { method: 'POST' });
+  if (r.status === 401 && liveMode) {
+    goToLogin();
+    throw new Error('Logged out — opening the PIN screen');
+  }
+  if (!r.ok) throw new Error(`Server returned ${r.status} for ${url}`);
+}
+
+async function deleteNotification(ev, key) {
+  // Re-rendering the list removes the tapped button before the click reaches the document-level
+  // "tap outside closes the panel" handler, which would then see a target outside the panel.
+  ev.stopPropagation();
+  notifications = notifications.filter(n => n.key !== key);
+  renderNotifications();
+  try {
+    await postNotificationAction('/api/notifications/delete?key=' + encodeURIComponent(key));
+  } catch (e) { console.error('deleteNotification:', e); loadNotifications(false); }
+}
+
+async function clearNotifications() {
+  if (!notifications.length) return;
+  // The one tap here that can't be undone for a whole list, on what is often a car touchscreen.
+  const n = notifications.length;
+  if (!confirm(`Clear ${n === 1 ? 'the notification' : `all ${n} notifications`}?\n\nThis cannot be undone.`)) return;
+  notifications = [];
+  renderNotifications();
+  try {
+    await postNotificationAction('/api/notifications/clear');
+  } catch (e) { console.error('clearNotifications:', e); loadNotifications(false); }
 }
 
 /** Only possible in a secure context; a no-op everywhere else, by design. */

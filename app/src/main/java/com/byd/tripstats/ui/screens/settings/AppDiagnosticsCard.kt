@@ -44,6 +44,7 @@ import com.byd.tripstats.ui.theme.BydElectricAzure
 import com.byd.tripstats.ui.theme.AccelerationOrange
 import com.byd.tripstats.ui.theme.BatteryBlue
 import com.byd.tripstats.ui.theme.RegenGreen
+import com.byd.tripstats.util.DiagLogExport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -314,6 +315,7 @@ internal fun AppDiagnosticsCard() {
     var diagQrUrl by remember { mutableStateOf<String?>(null) }
     var diagUploading by remember { mutableStateOf(false) }
     var diagStatus by remember { mutableStateOf<String?>(null) }
+    val diagTelegramSending by DiagLogExport.telegramSending.collectAsState()
     val diagnostics by AppDiagnosticsMonitor.snapshot.collectAsState()
     val diagnosticsEnabled by AppDiagnosticsMonitor.enabled.collectAsState()
 
@@ -374,59 +376,47 @@ internal fun AppDiagnosticsCard() {
             ) {
                 OutlinedButton(
                     modifier = Modifier.weight(1f),
+                    // Off from the tap until the send ends: the log is compressed before the upload,
+                    // and a button that stays live through that looks like the tap did nothing.
+                    enabled = !diagTelegramSending,
                     onClick = {
                         val telegram = TelegramManager.getInstance(context)
-                        val f = java.io.File(context.getExternalFilesDir(null), "diag.log")
-                        when {
-                            telegram.config.value == null ->
-                                android.widget.Toast.makeText(
-                                    context,
-                                    context.getString(R.string.no_telegram_configured),
-                                    android.widget.Toast.LENGTH_LONG,
-                                ).show()
-                            !f.exists() || f.length() == 0L ->
-                                android.widget.Toast.makeText(
-                                    context,
-                                    "diag.log is empty (no diagnostic events recorded yet).",
-                                    android.widget.Toast.LENGTH_SHORT,
-                                ).show()
-                            else -> scope.launch {
-                                try {
-                                    telegram.sendFile(f, caption = "BYD Trip Stats — diagnostics log")
-                                    // Ship the supervisor-log snapshot alongside it when one exists. It is
-                                    // taken just before the app re-dispatches the background restarter
-                                    // (which truncates the original), so it is the only post-hoc record of
-                                    // whether that restarter was alive through a failed auto-start.
-                                    // Best-effort: a failure here must not lose the diagnostics send above.
-                                    val supd = java.io.File(
-                                        context.getExternalFilesDir(null),
-                                        com.byd.tripstats.util.RtDispatch.SNAPSHOT_FILE,
-                                    )
-                                    val supdSent = supd.exists() && supd.length() > 0L && runCatching {
-                                        telegram.sendFile(
-                                            supd,
-                                            caption = "BYD Trip Stats — supervisor log snapshot",
-                                        )
-                                    }.isSuccess
-                                    android.widget.Toast.makeText(
-                                        context,
-                                        if (supdSent) "Diagnostics + supervisor log sent via Telegram ✓"
-                                        else "Diagnostics log sent via Telegram ✓",
-                                        android.widget.Toast.LENGTH_SHORT,
-                                    ).show()
-                                } catch (e: Exception) {
-                                    android.widget.Toast.makeText(
-                                        context, context.getString(R.string.telegram_send_failed, e.message),
-                                        android.widget.Toast.LENGTH_LONG,
-                                    ).show()
+                        if (telegram.config.value == null) {
+                            android.widget.Toast.makeText(
+                                context,
+                                context.getString(R.string.no_telegram_configured),
+                                android.widget.Toast.LENGTH_LONG,
+                            ).show()
+                        } else {
+                            DiagLogExport.sendToTelegram(scope, context, telegram) { result ->
+                                val msg = when (result) {
+                                    is DiagLogExport.TelegramResult.NothingToSend ->
+                                        "diag.log is empty (no diagnostic events recorded yet)."
+                                    is DiagLogExport.TelegramResult.Sent ->
+                                        if (result.withSupervisorLog) "Diagnostics + supervisor log sent via Telegram ✓"
+                                        else "Diagnostics log sent via Telegram ✓"
+                                    is DiagLogExport.TelegramResult.Failed ->
+                                        context.getString(R.string.telegram_send_failed, result.reason)
                                 }
+                                android.widget.Toast.makeText(
+                                    context, msg,
+                                    if (result is DiagLogExport.TelegramResult.Sent) android.widget.Toast.LENGTH_SHORT
+                                    else android.widget.Toast.LENGTH_LONG,
+                                ).show()
                             }
                         }
                     }
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.Send, null, modifier = Modifier.size(16.dp))
+                    if (diagTelegramSending) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                    } else {
+                        Icon(Icons.AutoMirrored.Filled.Send, null, modifier = Modifier.size(16.dp))
+                    }
                     Spacer(Modifier.width(6.dp))
-                    Text(stringResource(R.string.telegram_title_label))
+                    Text(
+                        if (diagTelegramSending) stringResource(R.string.sending)
+                        else stringResource(R.string.telegram_title_label)
+                    )
                 }
 
                 OutlinedButton(
