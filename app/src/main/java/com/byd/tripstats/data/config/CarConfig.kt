@@ -69,6 +69,16 @@ data class CarConfig(
     val motorRpmScaleRear: Double = 1.0,
     val hvCurrentOffset: Int = 0,
     val hvCurrentScale: Double = 1.0,
+    /**
+     * DiLink-5 only: count the FRONT motor's current too. `onMotorMCUGeneratrixCurrent(a, b)` is
+     * (front, rear) motor-controller DC-bus current — separate `_FRONT`/`_REAR` HAL IDs in BYD's
+     * CollectDataManagerImpl — and the app has always read the rear (`b`) alone. That is the whole
+     * current on a single-motor car and most of it on the Sealion 7 AWD. On a Shark 6 the front
+     * motor does the electric driving: `a` moves while `b` sits at its zero, so rear-only read
+     * ~0 A and power stayed at 0. True adds the two, each checked on its own (see
+     * decodeHvCurrentAmps). False — every other car — keeps the rear-only reading unchanged.
+     */
+    val hvCurrentSumChannels: Boolean = false,
 )
 
 // The reference consumption (kWh/100km) is taken via ev-database.org
@@ -925,6 +935,9 @@ object CarCatalog {
         motorRpmScaleFront = -1.0,
         hvCurrentOffset = 10000,
         hvCurrentScale = 0.1,
+        // The front motor carries the electric driving: compat probes (2026-08-06, 10-05) show
+        // `a` moving (10041 = +4.1 A while pulling away) with `b` held at 10000.
+        hvCurrentSumChannels = true,
     )
 
     val allCars: List<CarConfig> = listOf(

@@ -487,8 +487,10 @@ class Dilink5Client {
     // CollectDataManagerImpl.collectData() confirms (a, b) = (front, rear) for onDriverMotorSpeed —
     // separate HAL IDs/packet fields per side, not a tag. On RWD "a" reads a constant 50535 (outside
     // the RPM guard below, so it's naturally suppressed); on AWD it should carry real front RPM.
-    // Volt/current stay rear-only (untested whether "a" is meaningful there too, and both callbacks
-    // are @Deprecated in the real listener).
+    // Volt/current are split the same way — separate _FRONT/_REAR HAL IDs ("generatrix" is 母线,
+    // each motor controller's DC bus), and both callbacks are @Deprecated in the real listener. The
+    // rear current is the whole current on a single-motor car and is all most cars read; a car whose
+    // front motor does the work (Shark 6) adds both, see CarConfig.hvCurrentSumChannels.
     //
     // RAW values are logged unconditionally via VehicleCompatibilityProbe (both before AND after
     // the per-model decode) so a compat probe from a not-yet-calibrated DiLink-5 car always carries
@@ -505,15 +507,18 @@ class Dilink5Client {
                 override fun onMotorMCUGeneratrixCurrent(a: Int, b: Int) {
                     VehicleCompatibilityProbe.recordTypedEvent("collectdata", "onMotorMCUGeneratrixCurrent", "a=$a b=$b")
                     val cfg = collectDataCarConfig()
-                    val decoded = (b - (cfg?.hvCurrentOffset ?: 0)) * (cfg?.hvCurrentScale ?: 1.0)
-                    val decodedStr = decoded.toString()
+                    val amps = decodeHvCurrentAmps(front = a, rear = b, cfg = cfg)
+                    // Probe evidence: the decoded rear channel as always, plus the total where the
+                    // car adds both channels.
+                    val rearDecoded = decodeCollectChannel(b, cfg?.hvCurrentOffset ?: 0, cfg?.hvCurrentScale ?: 1.0)
+                    val decodedStr = if (cfg?.hvCurrentSumChannels == true) "$rearDecoded sum=$amps" else rearDecoded.toString()
                     if (lastLoggedDecodedCurrent != decodedStr) {
                         lastLoggedDecodedCurrent = decodedStr
-                        VehicleCompatibilityProbe.recordTypedEvent("collectdata", "onMotorMCUGeneratrixCurrent-decoded", decoded)
+                        VehicleCompatibilityProbe.recordTypedEvent("collectdata", "onMotorMCUGeneratrixCurrent-decoded", decodedStr)
                     }
                     // Kept as Double (not rounded to Int) end to end — a fractional scale like
                     // Shark's 0.1 A/step is otherwise thrown away before it reaches the power calc.
-                    decoded.takeIf { it in -2000.0..2000.0 }?.let {
+                    amps?.let {
                         lastHvCurrent = it; ds.applyDilink5HvCurrent(it); pushPower(ds)  // signed A (regen negative)
                     }
                 }
@@ -525,9 +530,9 @@ class Dilink5Client {
                     // hit 0 at standstill and scale linearly with speed), so a plain offset alone
                     // reads 0 parked and goes negative (rejected by the guard) the moment it moves.
                     // Default scale 1.0 keeps this a no-op for every model but Shark (front = -1.0).
-                    val front = ((a - (cfg?.motorRpmOffsetFront ?: 0)) * (cfg?.motorRpmScaleFront ?: 1.0))
+                    val front = decodeCollectChannel(a, cfg?.motorRpmOffsetFront ?: 0, cfg?.motorRpmScaleFront ?: 1.0)
                         .roundToInt().takeIf { it in 0..30_000 }
-                    val rear = ((b - (cfg?.motorRpmOffsetRear ?: 0)) * (cfg?.motorRpmScaleRear ?: 1.0))
+                    val rear = decodeCollectChannel(b, cfg?.motorRpmOffsetRear ?: 0, cfg?.motorRpmScaleRear ?: 1.0)
                         .roundToInt().takeIf { it in 0..30_000 }
                     val decodedStr = "front=$front rear=$rear"
                     if (lastLoggedDecodedRpm != decodedStr) {
