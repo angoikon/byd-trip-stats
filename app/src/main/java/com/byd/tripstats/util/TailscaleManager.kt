@@ -346,8 +346,25 @@ object TailscaleManager {
             }
             if (s?.state == State.RUNNING) return@withContext publish(s)
         }
-        diag(context, "browser login: no url after 20s")
+        diag(context, "browser login: no url after 20s :: ${loginFailureClues(context)}")
         publish(Status(State.ERROR, detail = "Could not start the sign-in — check the car's connection"))
+    }
+
+    /**
+     * Why a browser sign-in minted no URL, for diag.log: Tailscale's own health warnings (such as no
+     * connection to the coordination server) and the end of `up`'s output. The logged status lines
+     * are cut short before the Health field, so without this a car that never gets a URL can't say
+     * why (Sealion 7, 2026-10-13: "Starting" with a node key and no URL, on Wi-Fi and on 4G alike).
+     */
+    private suspend fun loginFailureClues(context: Context): String {
+        val health = sh(context, "TS_BE_CLI=1 ${bin(context)} --socket=$SOCKET status --json 2>/dev/null", 15_000L)
+            ?.trim()?.takeIf { it.startsWith("{") }
+            ?.let { runCatching { JSONObject(it).optJSONArray("Health") }.getOrNull() }
+            ?.let { arr -> (0 until arr.length()).joinToString(" | ") { arr.optString(it) } }
+            ?.takeIf { it.isNotBlank() } ?: "none"
+        val up = sh(context, "tail -c 400 ${dir(context)}/up.log 2>/dev/null", 5_000L)
+            ?.replace('\n', ' ')?.trim()?.takeIf { it.isNotBlank() } ?: "empty"
+        return "health=[${health.take(400)}] up.log=[${up.take(400)}]"
     }
 
     /**

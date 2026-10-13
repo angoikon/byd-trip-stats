@@ -65,7 +65,7 @@ private const val DIRECT_CHARGING_POWER_TIMEOUT_MS = 4_000L
 // DiLink-5 polls charge power (Dilink5Client.pollIntervalMs, 5 s on AC) where DiLink-3 has it
 // pushed, so its window spans a missed poll: one stray reading mid-charge would otherwise close the
 // charging session and open a new one on the next.
-private const val DI5_CHARGING_POWER_TIMEOUT_MS = 12_000L
+internal const val DI5_CHARGING_POWER_TIMEOUT_MS = 12_000L
 // DiLink 100: how long one "charging" read of the car's EV_CHARGE_STATE keeps the session open. The
 // reader polls every second, so this spans a few missed reads without letting a stale one linger.
 private const val AAOS_CHARGING_FRESH_MS = 6_000L
@@ -202,6 +202,26 @@ internal fun di5ChargingPowerKw(powerKw: Double?, gunState: Int?): Double? {
     if (kotlin.math.abs(powerKw - DI5_CHARGING_POWER_AT_REST_KW) < 0.05) return null
     return powerKw.takeIf { it > 0.1 && it <= DI5_CHARGING_POWER_MAX_KW }
 }
+
+/**
+ * How long a DiLink-5 charge outlives its last counted power reading while the cable stays in.
+ * Unlocking the car pauses an AC charge: on a Sealion 7 (@cagdas, 2026-10-11, 11 kW wallbox) the
+ * power read 0 for about 15 s at a brief unlock and about 30 s at the unlock before unplugging,
+ * with the gun at 1 throughout. With only [DI5_CHARGING_POWER_TIMEOUT_MS], each pause closed the
+ * session, sent "charging finished", and opened a new session seconds later. Five minutes covers
+ * a longer stop at the car. A charge that ends with the cable left in (full, or a schedule's end)
+ * closes this much later, but keeps its real end time: no data point is stored while nothing is
+ * counted (ChargingRepository).
+ */
+internal const val DI5_CHARGING_PAUSE_HOLD_MS = 5 * 60_000L
+
+/**
+ * How long after the last counted reading a DiLink-5 charge still counts as on: [DI5_CHARGING_PAUSE_HOLD_MS]
+ * while a charging gun is in — a pause, not an end — and [DI5_CHARGING_POWER_TIMEOUT_MS] once it's out
+ * (or not read), so unplugging still ends the charge within seconds.
+ */
+internal fun di5ChargingWindowMs(gunState: Int?): Long =
+    if (gunState != null && gunState in 1..3) DI5_CHARGING_PAUSE_HOLD_MS else DI5_CHARGING_POWER_TIMEOUT_MS
 
 /** How long a measured DiLink-5 power reading (HV volts × amps) keeps the power value its own. */
 internal const val DI5_MEASURED_POWER_FRESH_MS = 5_000L
@@ -5676,25 +5696,55 @@ class BydVehicleDataSource(context: Context) {
      * the value was stored without the stamp, so a DiLink-5 charge was never detected (a 35-min DC
      * charge on 2026-10-03 opened no session and held a trip open). A reading that doesn't count
      * (see [di5ChargingPowerKw]) is not a stop by itself: the charge ends when nothing has counted
-     * for [DI5_CHARGING_POWER_TIMEOUT_MS]. Returns true when the snapshot needs publishing.
+     * for [di5ChargingWindowMs] — minutes while the cable is in, seconds once it's out. Returns true
+     * when the snapshot needs publishing.
      */
     private fun applyDi5ChargingPower(rawKw: Double): Boolean {
         val countedKw = di5ChargingPowerKw(rawKw, di5GunState)
         if (countedKw != null) updateDirectChargingPower(countedKw)
-        val charging = hasFreshDirectChargingPower()
+        val now = SystemClock.elapsedRealtime()
+        val charging = hasFreshDirectChargingPower(now)
         if (!charging) _chargingPowerKw.value = 0.0
-        val flipped = charging != di5ChargingLogged
-        if (flipped) {
+        var changed = countedKw != null
+        if (charging != di5ChargingLogged) {
             di5ChargingLogged = charging
+            changed = true
             DiagLog.event(
                 appContext, TAG,
                 if (charging) "🔌 DiLink-5 charge detected: gun=$di5GunState power=$rawKw kW"
                 else "🔌 DiLink-5 charge ended: gun=${di5GunState ?: "-"} power=$rawKw " +
-                    "(nothing counted for ${DI5_CHARGING_POWER_TIMEOUT_MS / 1000}s)"
+                    "(nothing counted for ${di5SinceLastCounted(now)})"
             )
         }
-        return countedKw != null || flipped
+        // A pause with the cable in is held, not ended (di5ChargingWindowMs). Both edges are logged,
+        // so a session that spans an unlock shows where its power stopped and came back.
+        val paused = charging && di5ChargePaused(now)
+        if (paused != di5PauseLogged) {
+            di5PauseLogged = paused
+            changed = true
+            if (paused) {
+                DiagLog.event(appContext, TAG, "🔌 DiLink-5 charge paused: gun=$di5GunState power=$rawKw " +
+                    "— cable in, held up to ${DI5_CHARGING_PAUSE_HOLD_MS / 60_000} min")
+            } else if (charging) {
+                DiagLog.event(appContext, TAG, "🔌 DiLink-5 charge resumed: gun=$di5GunState power=$rawKw kW")
+            }
+        }
+        return changed
     }
+
+    @Volatile private var di5PauseLogged = false
+
+    /**
+     * DiLink-5: a charge held through a pause — still on (see [di5ChargingWindowMs]), but nothing has
+     * counted for longer than a missed poll, so no power is flowing now.
+     */
+    private fun di5ChargePaused(nowElapsedMs: Long): Boolean =
+        DiLink5Platform.isDiLink5 && lastChargingPowerRawElapsedMs != 0L &&
+            nowElapsedMs - lastChargingPowerRawElapsedMs > DI5_CHARGING_POWER_TIMEOUT_MS
+
+    private fun di5SinceLastCounted(nowElapsedMs: Long): String =
+        if (lastChargingPowerRawElapsedMs == 0L) "a while"
+        else "${(nowElapsedMs - lastChargingPowerRawElapsedMs) / 1000}s"
 
     /**
      * DiLink-5 PHEV telemetry. On a DiLink-5 PHEV (e.g. Shark 6 DM-O) the statistic/energy
@@ -6092,7 +6142,8 @@ class BydVehicleDataSource(context: Context) {
         //   cars instead, add a tier here sourcing |enginePower| (m23) while charging.
         val effectiveChargingPowerKw = when {
             recentPackPower -> _packChargingPowerKw.value     // m33 pack power — authoritative, sees DC (to 500 kW)
-            recentDirectPower -> _chargingPowerRaw.value
+            // A DiLink-5 charge held through a pause has no power flowing — show 0, not the last reading.
+            recentDirectPower -> if (di5ChargePaused(nowElapsedMs)) 0.0 else _chargingPowerRaw.value
             recentCapacityActivity -> _chargingPowerKw.value  // capacity-rate = NET into battery (see note above)
             else -> 0.0
         }
@@ -7107,7 +7158,7 @@ class BydVehicleDataSource(context: Context) {
     }
 
     private fun hasFreshDirectChargingPower(nowElapsedMs: Long = SystemClock.elapsedRealtime()): Boolean {
-        val timeoutMs = if (DiLink5Platform.isDiLink5) DI5_CHARGING_POWER_TIMEOUT_MS
+        val timeoutMs = if (DiLink5Platform.isDiLink5) di5ChargingWindowMs(di5GunState)
                         else DIRECT_CHARGING_POWER_TIMEOUT_MS
         return lastChargingPowerRawElapsedMs != 0L &&
             nowElapsedMs - lastChargingPowerRawElapsedMs <= timeoutMs &&

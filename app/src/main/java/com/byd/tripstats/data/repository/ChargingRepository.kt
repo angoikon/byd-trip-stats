@@ -12,6 +12,7 @@ import com.byd.tripstats.data.local.entity.ChargingSessionEntity
 import com.byd.tripstats.data.model.VehicleTelemetry
 import com.byd.tripstats.data.notify.VehicleEvents
 import com.byd.tripstats.data.preferences.PreferencesManager
+import com.byd.tripstats.sdk.DiLink5Platform
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -221,6 +222,12 @@ class ChargingRepository private constructor(context: Context) {
             settleSessionId = null; settleUntilMs = 0L   // active charging — cancel any pending settle top-up
             if (activeSession == null) {
                 startSession(telemetry, carConfig)
+            } else if (DiLink5Platform.isDiLink5 && telemetry.chargingPower <= 0.1) {
+                // DiLink-5 holds a charge through a pause with the cable in and reports 0 kW
+                // meanwhile (DI5_CHARGING_PAUSE_HOLD_MS). No point is stored, so a charge that
+                // finished with the cable left in ends at its last real reading, not when the
+                // hold runs out. DiLink-3 keeps recording: there, a 0 kW tick can be a real
+                // off-state AC charge with the power reading absent.
             } else {
                 recordDataPoint(telemetry)
             }

@@ -2,6 +2,7 @@ package com.byd.tripstats.sdk
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -56,5 +57,27 @@ class Di5ChargingPowerTest {
         assertNull(di5ChargingPowerKw(null, 2))
         assertNull(di5ChargingPowerKw(Double.NaN, 2))
         assertNull(di5ChargingPowerKw(-5.0, 2))
+    }
+
+    // ── How long a charge outlives its last counted reading ──────────────────────────────
+
+    @Test
+    fun `a pause with the cable in is held for minutes`() {
+        // AC wallbox paused by an unlock, gun at 1 throughout (@cagdas, 2026-10-11).
+        assertEquals(DI5_CHARGING_PAUSE_HOLD_MS, di5ChargingWindowMs(1))
+        assertEquals(DI5_CHARGING_PAUSE_HOLD_MS, di5ChargingWindowMs(2))
+        assertEquals(DI5_CHARGING_PAUSE_HOLD_MS, di5ChargingWindowMs(3))
+    }
+
+    @Test
+    fun `the 15 and 30 second unlock pauses fit inside the hold`() {
+        assertTrue(30_000L < di5ChargingWindowMs(1))
+    }
+
+    @Test
+    fun `unplugged, the charge ends within seconds`() {
+        assertEquals(DI5_CHARGING_POWER_TIMEOUT_MS, di5ChargingWindowMs(0))
+        assertEquals(DI5_CHARGING_POWER_TIMEOUT_MS, di5ChargingWindowMs(4))    // discharge (V2L) gun
+        assertEquals(DI5_CHARGING_POWER_TIMEOUT_MS, di5ChargingWindowMs(null)) // gun not read
     }
 }
