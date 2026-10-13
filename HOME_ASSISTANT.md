@@ -11,16 +11,33 @@ BYD Trip Stats publishes telemetry via MQTT using **Home Assistant MQTT Discover
 - Each discovery config uses a `value_template` to extract its field from that JSON (e.g. `{{ value_json.soc }}`), so HA always has the latest value even after a restart.
 - An availability topic (`byd-trip-stats/<name>/availability`) carries `online` / `offline` (Last Will and Testament), so HA marks entities unavailable on unexpected disconnect.
 - While the car is **on**, state is published at your configured interval (1–120 s). While the **car is off**, it publishes every 30 s regardless of your setting (to keep HA's availability alive without flooding the broker).
-- When a **trip** or a **charging session** closes, its summary is published as retained JSON to `byd-trip-stats/<name>/trip` and `byd-trip-stats/<name>/charge_session`. These are events rather than sensors, so they carry no discovery config and create no entities: subscribe to them directly, or template your own sensor from them. Values are always metric and unprefixed by unit system (km, kWh, kWh/100 km, kW, percent) no matter how the app is set to display them, and a field the car did not report is left out rather than sent as zero. A trip summary also carries `live_close`, which is `false` when the trip was finalised at the next ignition rather than when you parked — the normal path on DiLink-5.
+- When a **trip** or a **charging session** closes, its summary is published as retained JSON to `byd-trip-stats/<name>/trip` and `byd-trip-stats/<name>/charge_session`. These are events rather than sensors, so they carry no discovery config and create no entities: subscribe to them directly, or template your own sensor from them. Values are always metric and unprefixed by unit system (km, kWh, kWh/100 km, kW, percent) no matter how the app is set to display them, and a field the car did not report is left out rather than sent as zero. A trip summary also carries `live_close`, which is `false` when the trip was finalised at the next ignition rather than when you parked — the normal path on DiLink-5 — and a charge summary carries `origin`, which says whether the session was watched, interrupted or inferred.
 
 ### Event topics
 
 | Topic | Sent when | Notable fields |
 | --- | --- | --- |
 | `byd-trip-stats/<name>/trip` | A trip is finalised | `trip_id`, `distance_km`, `energy_kwh`, `efficiency_kwh_per_100km`, `fleet_avg_kwh_per_100km`, `avg_speed_kmh`, `soc_start_pct`, `soc_end_pct`, `trip_score`, `cost`, `currency`, `live_close` |
-| `byd-trip-stats/<name>/charge_session` | A charging session closes | `session_id`, `energy_added_kwh`, `avg_kw`, `peak_kw`, `rate_per_kwh`, `cost`, `currency`, `complete` |
+| `byd-trip-stats/<name>/charge_session` | A charging session is finalised | `session_id`, `origin`, `energy_added_kwh`, `avg_kw`, `peak_kw`, `rate_per_kwh`, `cost`, `currency`, `complete` |
 
-Both carry `started_at` / `ended_at` as ISO 8601 UTC and `started_at_ms` / `ended_at_ms` as epoch milliseconds, plus `duration_s` and `soc_source` (`panel` or `bms`). `energy_added_kwh` is the energy that reached the pack, derived from the SoC delta, so it reads lower than what a charger bills.
+Both carry `started_at` / `ended_at` as ISO 8601 UTC and `started_at_ms` / `ended_at_ms` as epoch milliseconds, plus `soc_source` (`panel` or `bms`). A trip always carries `duration_s`; a charge carries it only when one was measured, which is explained below. `energy_added_kwh` is the energy that reached the pack, derived from the SoC delta, so it reads lower than what a charger bills.
+
+#### How a charging session was recorded
+
+Not every charge is watched. A charge the car takes while it is off can be reconstructed rather than recorded, depending on whether the head unit stays awake while it charges: some keep the app running for the whole session, others force-stop it at ignition-off and only find the charge at the next start. `origin` says which happened, and a charge summary also carries `closed_at` / `closed_at_ms`: when the app published the record, which for the last two is usually hours after the samples it describes.
+
+| `origin` | What it means | What you get |
+| --- | --- | --- |
+| `live` | Watched from plug to unplug. | Everything, including `duration_s`, `complete` and the power readings. |
+| `recovered` | Watched, then the app stopped watching: it was killed mid-charge and the row is finalised at the next start. | Real samples that stop before the app did, so `duration_s` and the energy are **lower bounds**. **No `complete`** — the app never saw the end, so whether the charge reached full is unknown rather than false. |
+| `soc_estimate` | Never watched: the car was off. Inferred from the state of charge at shutdown against the one at wake-up. | Energy and SoC only. No power readings, and **no `duration_s`** — `started_at` and `ended_at` bound a window the charge happened somewhere inside, most of which was parking. |
+
+A `live` charge is the equivalent of a trip's `live_close: true`. Only `live` reaches the phone notification, since a charge that ended overnight is not news the next morning; all three are published here. **A payload with no `origin` at all is `live`**: it was queued by a version of the app from before this field existed and flushed after the update.
+
+Two things `recovered` does *not* promise:
+
+- **It is not necessarily over.** `recovered` means the app stopped watching, not that the charge stopped. If the app is revived more than 15 minutes after it was killed and the car is still charging, the interrupted row is closed and published, and a new `live` session opens for the same cable. `ended_at` is where the samples stop.
+- **It can be half of one charge.** A charge the app was killed through can reach you as two events with different `session_id`s: a `recovered` one for the stretch the app saw, and a `soc_estimate` one for the stretch after it died. They are disjoint in SoC and their energies sum to the charge, but a consumer counting charges or totalling cost per session will see two. Dedupe does not merge them, because they are genuinely different records.
 
 These topics are **retained**, so a subscriber that connects later sees only the most recent trip and the most recent charging session. To capture every event you have to be subscribed when it is published.
 

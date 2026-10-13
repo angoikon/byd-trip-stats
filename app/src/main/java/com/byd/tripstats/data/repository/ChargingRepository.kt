@@ -10,9 +10,11 @@ import com.byd.tripstats.data.local.BydStatsDatabase
 import com.byd.tripstats.data.local.entity.ChargingDataPointEntity
 import com.byd.tripstats.data.local.entity.ChargingSessionEntity
 import com.byd.tripstats.data.model.VehicleTelemetry
+import com.byd.tripstats.data.notify.ChargeOrigin
 import com.byd.tripstats.data.notify.VehicleEvents
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.sdk.DiLink5Platform
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -23,6 +25,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Hybrid charging session management:
@@ -74,9 +77,15 @@ class ChargingRepository private constructor(context: Context) {
     private var settleBaselineSoc: Double = 0.0
     private var settleUntilMs: Long = 0L
 
-    /** Prevents reconstruction from running more than once per car wake-up cycle. */
-    private var reconstructionAttempted = false
-    private var activeSessionRecoveryAttempted = false
+    /**
+     * Prevents reconstruction from running more than once per car wake-up cycle, and orphan
+     * recovery from running more than once per process. Both are read on the caller's thread
+     * and claimed inside a coroutine on [Dispatchers.IO], so two packets arriving together at
+     * cold start would both pass a plain check-then-set. The claim is the compareAndSet, which
+     * one of them loses.
+     */
+    private val reconstructionAttempted = AtomicBoolean(false)
+    private val activeSessionRecoveryAttempted = AtomicBoolean(false)
     private var wasCarOn = false
 
     private data class ShutdownState(
@@ -107,32 +116,31 @@ class ChargingRepository private constructor(context: Context) {
         // the previous wake-up. Reset it here so every car wake-up gets one attempt,
         // which is required to catch off-state charging that happened while the service
         // was continuously alive.
-        if (telemetry.isCarOn && !wasCarOn && reconstructionAttempted) {
+        if (telemetry.isCarOn && !wasCarOn && reconstructionAttempted.get()) {
             Log.i(TAG, "Car transitioned off→on — resetting reconstruction guard for new wake-up")
-            reconstructionAttempted = false
+            reconstructionAttempted.set(false)
         }
         wasCarOn = telemetry.isCarOn
 
         val previousShutdownState =
-            if (telemetry.isCarOn && !reconstructionAttempted) readShutdownState() else null
+            if (telemetry.isCarOn && !reconstructionAttempted.get()) readShutdownState() else null
 
         // Persist only while the car is on. Off-state packets would overwrite the
         // pre-sleep baseline as SoC climbs during an off-state charge, making the
         // subsequent wake-up delta zero and dropping the reconstructed session.
         //
-        // On the very first car-on packet of each wake cycle (reconstructionAttempted = false),
+        // On the very first car-on packet of each wake cycle (reconstructionAttempted still false),
         // we defer persisting until AFTER the reconstruction coroutine runs. Persisting
         // immediately would overwrite the pre-charge SoC with the post-charge value if the
         // process is killed mid-reconstruction (e.g. an app update installed while the car is
         // waking up), making the next start's SoC delta zero and silently dropping the session.
-        // Subsequent packets (reconstructionAttempted = true) persist synchronously as before.
-        if (telemetry.isCarOn && reconstructionAttempted) {
+        // Subsequent packets (reconstructionAttempted already true) persist synchronously as before.
+        if (telemetry.isCarOn && reconstructionAttempted.get()) {
             persistShutdownState(telemetry)
         }
 
         scope.launch {
-            if (!activeSessionRecoveryAttempted) {
-                activeSessionRecoveryAttempted = true
+            if (activeSessionRecoveryAttempted.compareAndSet(false, true)) {
                 recoverOrphanActiveSessions(telemetry, carConfig)
             }
 
@@ -140,8 +148,7 @@ class ChargingRepository private constructor(context: Context) {
                 // First carOn packet after service start → attempt reconstruction
                 // only if no data points were recorded while car was off
                 // (process survived → real-time data exists → no reconstruction needed).
-                if (!reconstructionAttempted) {
-                    reconstructionAttempted = true
+                if (reconstructionAttempted.compareAndSet(false, true)) {
                     val hasLiveData = activeSession?.id?.let {
                         sessionDao.getDataPointsForSessionSync(it).isNotEmpty()
                     } ?: false
@@ -206,7 +213,9 @@ class ChargingRepository private constructor(context: Context) {
                 _isCharging.value = true
                 Log.i(TAG, "Resumed active charging session ${session.id}")
             } else {
+                // The app was killed mid-charge, so this row is finalised long after the fact.
                 closePersistedActiveSession(session, points, carConfig)
+                    ?.let { notifyChargingFinished(it.id, settleArmed = false, origin = ChargeOrigin.RECOVERED) }
             }
         }
     }
@@ -335,11 +344,11 @@ class ChargingRepository private constructor(context: Context) {
         _activeSessionId.value = null
         _isCharging.value = false
 
-        // "Charging finished" event, from the live close path only — the orphan
-        // recovery close above finalises a session that ended while the app was dead, and
-        // announcing it the next morning would report a present-tense event that is over.
+        // The live close: this one is news, so it reaches the push as well as the wire.
         // null means the row was dropped as a phantom or a charger-handshake flap.
-        closed?.let { notifyChargingFinished(it.id, settleArmed = settleSessionId == it.id) }
+        closed?.let {
+            notifyChargingFinished(it.id, settleArmed = settleSessionId == it.id, origin = ChargeOrigin.LIVE)
+        }
     }
 
     /**
@@ -349,17 +358,30 @@ class ChargingRepository private constructor(context: Context) {
      * is the kind of small disagreement that costs trust in every other number in it. The row
      * is re-read at the end of the wait so whatever settled is what gets sent.
      */
-    private fun notifyChargingFinished(sessionId: Long, settleArmed: Boolean) {
+    private fun notifyChargingFinished(sessionId: Long, settleArmed: Boolean, origin: ChargeOrigin) {
         scope.launch {
-            if (settleArmed) delay(SETTLE_GRACE_MS + SETTLE_SEND_MARGIN_MS)
-            val row = sessionDao.getSessionById(sessionId) ?: return@launch
-            val prefs = PreferencesManager(appContext)
-            VehicleEvents.getInstance(appContext).onChargingSessionClosed(
-                session = row,
-                // The charging screen's own rule: the session's price when it has one (0.0 is a
-                // valid "free"), otherwise the global tariff, and no cost at all without either.
-                ratePerKwh = row.pricePerKwh ?: prefs.getCachedElectricityPrice().takeIf { it > 0.0 },
-            )
+            // The scope carries no exception handler, so anything thrown here would reach the
+            // thread's default handler and take the process down. This now runs at cold start on
+            // every DiLink-5 ignition, where the cost of that would be the app itself.
+            try {
+                if (settleArmed) delay(SETTLE_GRACE_MS + SETTLE_SEND_MARGIN_MS)
+                val row = sessionDao.getSessionById(sessionId) ?: return@launch
+                val prefs = PreferencesManager(appContext)
+                VehicleEvents.getInstance(appContext).onChargingSessionClosed(
+                    session = row,
+                    // The charging screen's own rule: the session's price when it has one (0.0 is
+                    // a valid "free"), otherwise the global tariff, and no cost without either.
+                    ratePerKwh = row.pricePerKwh ?: prefs.getCachedElectricityPrice().takeIf { it > 0.0 },
+                    origin = origin,
+                )
+            } catch (e: CancellationException) {
+                // The settle wait is the long part of this coroutine, so a cancelled scope lands
+                // here before anything else does. Cancellation is not a failure to log, and a
+                // coroutine that swallows it reports itself as having completed normally.
+                throw e
+            } catch (t: Throwable) {
+                Log.w(TAG, "Could not announce charging session $sessionId (${origin.wireName})", t)
+            }
         }
     }
 
@@ -526,6 +548,7 @@ class ChargingRepository private constructor(context: Context) {
         val id = sessionDao.insertSession(session)
         Log.i(TAG, "✅ Synthetic session created (id=$id  " +
             "${"%.1f".format(socDelta)}%  ${"%.2f".format(kwhAdded)} kWh)")
+        notifyChargingFinished(id, settleArmed = false, origin = ChargeOrigin.SOC_ESTIMATE)
     }
 
     private fun persistShutdownState(telemetry: VehicleTelemetry) {

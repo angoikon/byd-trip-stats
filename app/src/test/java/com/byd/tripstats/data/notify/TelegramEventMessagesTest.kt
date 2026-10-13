@@ -138,7 +138,7 @@ class TelegramEventMessagesTest {
         assertEquals("trip-1", TelegramEventMessages.tripSummary(
             1L, 20.0, null, null, null, null, 80.0, null, null, null, null, "€", false).key)
         assertEquals("charge-7", TelegramEventMessages.chargingFinished(
-            7L, 43.0, 31.0, 9.8, null, 0.0, 0.0, null, "€").key)
+            7L, 43.0, 31.0, 9.8, null, 0.0, 0.0, null, "€", ChargeOrigin.LIVE).key)
     }
 
     // ── Charging ────────────────────────────────────────────────────────────────
@@ -152,8 +152,9 @@ class TelegramEventMessagesTest {
         peakKw: Double = 11.0,
         ratePerKwh: Double? = null,
         currencySymbol: String = "€",
+        origin: ChargeOrigin = ChargeOrigin.LIVE,
     ) = TelegramEventMessages.chargingFinished(
-        7L, socEnd, socStart, kwhAdded, durationMs, avgKw, peakKw, ratePerKwh, currencySymbol,
+        7L, socEnd, socStart, kwhAdded, durationMs, avgKw, peakKw, ratePerKwh, currencySymbol, origin,
     ).text()
 
     @Test
@@ -181,8 +182,33 @@ class TelegramEventMessagesTest {
         assertEquals("🚗 Trip #756 finished", trip.title)
         assertTrue(trip.telegramHtml, trip.telegramHtml.startsWith("<b>🚗 Trip #756 finished</b>"))
         val charge = TelegramEventMessages.chargingFinished(
-            12L, 43.0, 31.0, 9.8, null, 0.0, 0.0, null, "€")
+            12L, 43.0, 31.0, 9.8, null, 0.0, 0.0, null, "€", ChargeOrigin.LIVE)
         assertEquals("🔌 Charging #12 stopped at 43%", charge.title)
+    }
+
+    /**
+     * A reconstructed session is bounded by a shutdown and a wake-up, not measured between them,
+     * so the span is the whole park. Printing it as a charging time turns an eight-hour night
+     * into an eight-hour charge. The payload drops it for the same reason, and the two must not
+     * tell different stories.
+     */
+    @Test
+    fun `the charging card claims a duration only when one was measured`() {
+        val watched = charging()
+        val inferred = charging(origin = ChargeOrigin.SOC_ESTIMATE)
+        assertTrue(watched, watched.contains("Added 9.80 kWh in 1 h 12 min"))
+        assertTrue(inferred, inferred.contains("Added 9.80 kWh"))
+        assertFalse(inferred, inferred.contains("1 h 12 min"))
+    }
+
+    /**
+     * A recovered session was watched, just not to the end, so what it did measure stands: the
+     * samples stop before the charge did, which makes its duration a floor rather than a fiction.
+     */
+    @Test
+    fun `an interrupted session still reports the time it did measure`() {
+        val text = charging(origin = ChargeOrigin.RECOVERED)
+        assertTrue(text, text.contains("Added 9.80 kWh in 1 h 12 min"))
     }
 
     /** A session reconstructed from the SoC delta has no power readings to report. */
@@ -241,7 +267,7 @@ class TelegramEventMessagesTest {
     fun `charging summary leads with its start and end time`() {
         val text = TelegramEventMessages.chargingFinished(
             sessionId = 7L, socEnd = 80.0, socStart = 43.0, kwhAdded = 30.0, durationMs = 5 * 3_600_000L,
-            avgKw = 6.1, peakKw = 7.0, ratePerKwh = null, currencySymbol = "€",
+            avgKw = 6.1, peakKw = 7.0, ratePerKwh = null, currencySymbol = "€", origin = ChargeOrigin.LIVE,
             startTimeMs = at("2026-09-26T22:00:00Z"), endTimeMs = at("2026-09-27T03:00:00Z"), zone = utc,
         ).text()
         assertTrue(text, text.contains("Sep 26 22:00 → Sep 27 03:00"))
@@ -259,7 +285,7 @@ class TelegramEventMessagesTest {
         assertTrue(bms, bms.contains("SoC (BMS) 53.5% → 48.7% (−4.8%)"))
         assertTrue(tripSummary().contains("SoC 80% → 76% (−4%)"))
         val charge = TelegramEventMessages.chargingFinished(
-            7L, 43.0, 31.2, 9.8, null, 0.0, 0.0, null, "€", socFromBms = true,
+            7L, 43.0, 31.2, 9.8, null, 0.0, 0.0, null, "€", ChargeOrigin.LIVE, socFromBms = true,
         ).text()
         assertTrue(charge, charge.contains("SoC (BMS) 31.2% → 43.0%"))
     }
@@ -334,6 +360,8 @@ class VehicleEventFactsTest {
         avgKw: Double = 29.4,
         peakKw: Double = 43.3,
         ratePerKwh: Double? = 0.59,
+        origin: ChargeOrigin = ChargeOrigin.LIVE,
+        closedAtMs: Long? = 1_760_003_773_000L,
     ) = TelegramEventMessages.chargingFinished(
         sessionId = 12L,
         socEnd = 81.0,
@@ -346,6 +374,8 @@ class VehicleEventFactsTest {
         currencySymbol = "A$",
         startTimeMs = 1_760_000_000_000L,
         endTimeMs = 1_760_003_773_000L,
+        origin = origin,
+        closedAtMs = closedAtMs,
     ).facts
 
     @Test
@@ -414,5 +444,65 @@ class VehicleEventFactsTest {
             socFromBms = false,
         ).facts
         assertEquals("panel", panel["soc_source"])
+    }
+
+    @Test
+    fun `how a charge was recorded travels with it`() {
+        assertEquals("live", charge()["origin"])
+        assertEquals("recovered", charge(origin = ChargeOrigin.RECOVERED)["origin"])
+        assertEquals("soc_estimate", charge(origin = ChargeOrigin.SOC_ESTIMATE)["origin"])
+    }
+
+    /**
+     * The one number a reconstructed session must not state. Its timestamps are a shutdown and a
+     * wake-up, so the span between them is the whole park: publishing it as duration turns an
+     * eight-hour night into an eight-hour charge, and anything dividing energy by it is wrong by
+     * however long the car sat there.
+     */
+    @Test
+    fun `a session nobody watched reports no charging duration`() {
+        assertEquals(3773L, charge(origin = ChargeOrigin.LIVE)["duration_s"])
+        assertEquals(3773L, charge(origin = ChargeOrigin.RECOVERED)["duration_s"])
+        assertFalse(charge(origin = ChargeOrigin.SOC_ESTIMATE).containsKey("duration_s"))
+    }
+
+    /**
+     * When the app finalised the record, which is not when the charge ended. A consumer that
+     * reads a recovered session as fresh will believe the car is still plugged in.
+     */
+    @Test
+    fun `a late record says when it was actually written`() {
+        val facts = charge(origin = ChargeOrigin.RECOVERED, closedAtMs = 1_760_040_000_000L)
+        assertEquals(1_760_040_000_000L, facts["closed_at_ms"])
+        assertEquals("2025-10-09T20:00:00Z", facts["closed_at"])
+        assertEquals(1_760_003_773_000L, facts["ended_at_ms"])
+    }
+
+    @Test
+    fun `only a charge that ended just now is news`() {
+        // The push gate, as a value rather than a branch inside a class that needs a Context.
+        // The other two are finalised at the next ignition, hours after the charge ended.
+        assertTrue(ChargeOrigin.LIVE.announced)
+        assertFalse(ChargeOrigin.RECOVERED.announced)
+        assertFalse(ChargeOrigin.SOC_ESTIMATE.announced)
+    }
+
+    /**
+     * The app was killed somewhere in the middle, so where the samples stop is not where the
+     * charge stopped. Reporting `complete: false` there would call a charge that ran on to 100%
+     * an interrupted one, on the strength of a reading taken before it finished.
+     */
+    @Test
+    fun `an interrupted session does not say whether the charge reached full`() {
+        assertEquals(false, charge(origin = ChargeOrigin.LIVE)["complete"])
+        assertEquals(false, charge(origin = ChargeOrigin.SOC_ESTIMATE)["complete"])
+        assertFalse(charge(origin = ChargeOrigin.RECOVERED).containsKey("complete"))
+    }
+
+    @Test
+    fun `a record with no publication time says nothing about one`() {
+        val facts = charge(closedAtMs = null)
+        assertFalse(facts.containsKey("closed_at"))
+        assertFalse(facts.containsKey("closed_at_ms"))
     }
 }
