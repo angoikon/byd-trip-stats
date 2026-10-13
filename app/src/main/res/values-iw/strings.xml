@@ -332,6 +332,7 @@
     <string name="soc_end_label">SoC בסוף</string>
     <string name="soc_added_label">SoC שנוסף</string>
     <string name="kwh_added_label">kWh שנוספו</string>
+    <string name="kwh_received_label">kWh שהתקבלו</string>
     <string name="battery_car_label">סוללה (HV)</string>
     <string name="peak_power_label">הספק שיא</string>
     <string name="average_power_label">הספק ממוצע</string>

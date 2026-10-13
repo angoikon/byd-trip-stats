@@ -302,6 +302,7 @@
     <string name="soc_end_label">SoC समाप्ति</string>
     <string name="soc_added_label">SoC जोड़ा</string>
     <string name="kwh_added_label">kWh जोड़ा</string>
+    <string name="kwh_received_label">kWh प्राप्त</string>
     <string name="battery_car_label">बैटरी (कार)</string>
     <string name="peak_power_label">पीक पावर</string>
     <string name="average_power_label">औसत पावर</string>

@@ -335,6 +335,7 @@
     <string name="soc_end_label">SoC fine</string>
     <string name="soc_added_label">SoC aggiunto</string>
     <string name="kwh_added_label">kWh aggiunti</string>
+    <string name="kwh_received_label">kWh ricevuti</string>
     <string name="battery_car_label">Batteria (HV)</string>
     <string name="peak_power_label">Potenza di picco</string>
     <string name="average_power_label">Potenza media</string>

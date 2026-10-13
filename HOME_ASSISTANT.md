@@ -18,9 +18,36 @@ BYD Trip Stats publishes telemetry via MQTT using **Home Assistant MQTT Discover
 | Topic | Sent when | Notable fields |
 | --- | --- | --- |
 | `byd-trip-stats/<name>/trip` | A trip is finalised | `trip_id`, `distance_km`, `energy_kwh`, `efficiency_kwh_per_100km`, `fleet_avg_kwh_per_100km`, `avg_speed_kmh`, `soc_start_pct`, `soc_end_pct`, `trip_score`, `cost`, `currency`, `live_close`, `closed_at` |
-| `byd-trip-stats/<name>/charge_session` | A charging session is finalised | `session_id`, `origin`, `energy_added_kwh`, `avg_kw`, `peak_kw`, `rate_per_kwh`, `cost`, `currency`, `complete` |
+| `byd-trip-stats/<name>/charge_session` | A charging session is finalised | `session_id`, `origin`, `energy_added_kwh`, `energy_received_kwh`, `avg_kw`, `peak_kw`, `rate_per_kwh`, `cost`, `currency`, `complete` |
 
 Both carry `started_at` / `ended_at` as ISO 8601 UTC and `started_at_ms` / `ended_at_ms` as epoch milliseconds, `closed_at` / `closed_at_ms` (when the app published the record — for a trip with `live_close: false`, usually hours after it ended), plus `soc_source` (`panel` or `bms`). A trip always carries `duration_s`; a charge carries it only when one was measured, which is explained below. `energy_added_kwh` is the energy that reached the pack, derived from the SoC delta, so it reads lower than what a charger bills.
+
+#### The two energies on a charge
+
+A charge summary can carry two different quantities, and they are not interchangeable.
+
+| Field | What it is |
+| --- | --- |
+| `energy_added_kwh` | What the pack ended up holding: the SoC change times the pack's capacity. Always present. |
+| `energy_received_kwh` | What the car measured arriving, integrated from the power readings the session recorded. Present only when the session measured it. |
+
+The second is the larger of the two by whatever was lost on the way in. It is **the car's own measurement, not a meter reading**, and where the car takes that measurement decides what it includes:
+
+- **On DC** the charger feeds the pack directly and the car reads the power coming in, so the figure tracks the charger's own meter closely. On one metered session the car integrated to 28.36 kWh against 28.93 kWh on the charger, 2.0% under, where the SoC delta's 26.5 kWh was 8.4% under.
+- **On AC** the car reports what leaves its on-board charger, and nothing in the car can see what went into it. A 7 kW wallbox reads about 6.2 kW in the car, so the conversion loss is missing from this figure and it sits below a wall-side meter — around 10% below, and further on a slow charge.
+
+So treat it as what the car saw arrive, not as what you were billed. **`cost` is unchanged: it is `rate_per_kwh` times `energy_added_kwh`, exactly as before this field existed**, and `rate_per_kwh` is still the price the owner entered or the global tariff. If you want cost on a metered basis, enter the receipt total against the session, or price it here from your charger's own data.
+
+`energy_received_kwh` is **absent whenever the recorded samples cannot account for the whole charge**:
+
+- the session recorded no power readings at all, which is every `soc_estimate` session and every car whose SDK never reports charging power;
+- it recorded fewer than two usable readings, or every reading was zero;
+- the samples are too sparse to integrate, because the app was not running for part of the charge;
+- or the integral does not come out at least 1% larger than `energy_added_kwh`. More arrives than the pack keeps, so an integral that fails to clear it has missed part of the charge, or is reading the pack side rather than the power coming in, where integrating it just reproduces the SoC delta. An efficient AC charge can fail this too, and a withheld figure is the intended outcome in all of those cases.
+
+It is left out rather than sent as zero, for the same reason every other unreported reading is.
+
+A `recovered` session's received figure, like its energy and its duration, is a lower bound: the samples stop where the app was killed.
 
 #### How a charging session was recorded
 
@@ -37,7 +64,7 @@ A `live` charge is the equivalent of a trip's `live_close: true`. Only `live` re
 Two things `recovered` does *not* promise:
 
 - **It is not necessarily over.** `recovered` means the app stopped watching, not that the charge stopped. If the app is revived more than 15 minutes after it was killed and the car is still charging, the interrupted row is closed and published, and a new `live` session opens for the same cable. `ended_at` is where the samples stop.
-- **It can be half of one charge.** A charge the app was killed through can reach you as two events with different `session_id`s: a `recovered` one for the stretch the app saw, and a `soc_estimate` one for the stretch after it died. They are disjoint in SoC and their energies sum to the charge, but a consumer counting charges or totalling cost per session will see two. Dedupe does not merge them, because they are genuinely different records. This needs a charge that started while the car was still on: the app keeps saving the car's state while it is on, so the starting point for the estimate moves past the start of the charge, and the recovered session no longer covers the window the estimate would claim. A charge plugged in after the car was switched off can't split this way: the recovered session stops the estimate from being made at all.
+- **It can be half of one charge.** A charge the app was killed through can reach you as two events with different `session_id`s: a `recovered` one for the stretch the app saw, and a `soc_estimate` one for the stretch after it died. They are disjoint in SoC and it is their `energy_added_kwh` figures that sum to the charge, but a consumer counting charges or totalling cost per session will see two. Only the watched half can carry `energy_received_kwh`, so the two received figures do not sum to anything: use `energy_added_kwh` to total a split charge. Dedupe does not merge them, because they are genuinely different records. This needs a charge that started while the car was still on: the app keeps saving the car's state while it is on, so the starting point for the estimate moves past the start of the charge, and the recovered session no longer covers the window the estimate would claim. A charge plugged in after the car was switched off can't split this way: the recovered session stops the estimate from being made at all.
 
 These topics are **retained**, so a subscriber that connects later sees only the most recent trip and the most recent charging session. To capture every event you have to be subscribed when it is published.
 

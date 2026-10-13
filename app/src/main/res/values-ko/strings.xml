@@ -302,6 +302,7 @@
     <string name="soc_end_label">종료 SoC</string>
     <string name="soc_added_label">추가된 SoC</string>
     <string name="kwh_added_label">추가된 kWh</string>
+    <string name="kwh_received_label">받은 kWh</string>
     <string name="battery_car_label">배터리 (차량)</string>
     <string name="peak_power_label">최대 출력</string>
     <string name="average_power_label">평균 출력</string>

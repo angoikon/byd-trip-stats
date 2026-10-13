@@ -332,6 +332,7 @@
     <string name="soc_end_label">SoC la sfârșit</string>
     <string name="soc_added_label">SoC adăugat</string>
     <string name="kwh_added_label">kWh adăugați</string>
+    <string name="kwh_received_label">kWh primiți</string>
     <string name="battery_car_label">Baterie (HV)</string>
     <string name="peak_power_label">Putere de vârf</string>
     <string name="average_power_label">Putere medie</string>

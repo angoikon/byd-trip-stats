@@ -332,6 +332,7 @@
     <string name="soc_end_label">SoC końcowy</string>
     <string name="soc_added_label">Dodany SoC</string>
     <string name="kwh_added_label">Dodane kWh</string>
+    <string name="kwh_received_label">Odebrane kWh</string>
     <string name="battery_car_label">Bateria (HV)</string>
     <string name="peak_power_label">Moc szczytowa</string>
     <string name="average_power_label">Moc średnia</string>

@@ -335,6 +335,7 @@
     <string name="soc_end_label">结束 SoC</string>
     <string name="soc_added_label">增加的 SoC</string>
     <string name="kwh_added_label">增加的 kWh</string>
+    <string name="kwh_received_label">接收的 kWh</string>
     <string name="battery_car_label">电池（车辆）</string>
     <string name="peak_power_label">峰值功率</string>
     <string name="average_power_label">平均功率</string>

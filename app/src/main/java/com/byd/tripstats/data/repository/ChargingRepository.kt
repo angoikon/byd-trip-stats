@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.room.withTransaction
+import com.byd.tripstats.data.analysis.ChargingEnergy
 import com.byd.tripstats.data.config.CarCatalog
 import com.byd.tripstats.data.config.CarConfig
 import com.byd.tripstats.data.local.BydStatsDatabase
@@ -390,7 +391,8 @@ class ChargingRepository private constructor(context: Context) {
      * a few minutes (the CV/settle phase, e.g. 98.5% → 100%). While within the settle
      * window and the car stays parked, revise the closed session's end SoC (and energy)
      * to the higher value. Capped at [SETTLE_MAX_RISE_PCT] and gated so it can never absorb
-     * a drive or a separate charge.
+     * a drive or a separate charge. Raising the pack figure can invalidate the session's
+     * received figure, which is re-checked against it here rather than left to contradict it.
      */
     private suspend fun applyPostChargeSettle(telemetry: VehicleTelemetry) {
         val sid = settleSessionId ?: return
@@ -406,10 +408,22 @@ class ChargingRepository private constructor(context: Context) {
 
         val session = sessionDao.getSessionById(sid) ?: run { settleSessionId = null; return }
         val newDelta = (cur - session.socStart).coerceAtLeast(0.0)
+        val newKwhAdded = (newDelta / 100.0) * session.batteryKwh
+        // Settling moves the pack figure, which is the received figure's only sanity check.
+        // Less energy cannot have arrived than the pack ended up holding, so an integral the
+        // revised figure catches up with was never a reading of this whole charge, and the
+        // session goes back to reporting no measurement like any other unmeasured one.
+        val received = session.energyReceivedKwh?.takeIf { ChargingEnergy.plausible(it, newKwhAdded) }
+        if (received == null && session.energyReceivedKwh != null) {
+            Log.i(TAG, "Post-charge settle: session $sid dropped its received figure — " +
+                "${"%.2f".format(session.energyReceivedKwh)} kWh no longer clears a pack gain " +
+                "of ${"%.2f".format(newKwhAdded)} kWh")
+        }
         val updated = session.copy(
             socEnd      = cur,
             socEndPanel = maxOf(session.socEndPanel ?: 0.0, telemetry.socPanel.toDouble()),
-            kwhAdded    = (newDelta / 100.0) * session.batteryKwh,
+            kwhAdded    = newKwhAdded,
+            energyReceivedKwh = received,
         )
         sessionDao.updateSession(updated)
         settleBaselineSoc = cur
@@ -440,6 +454,11 @@ class ChargingRepository private constructor(context: Context) {
         val positivePowers = dataPoints.map { it.chargingPower }.filter { it > 0.1 }
         val avgKw = positivePowers.average().takeIf { positivePowers.isNotEmpty() } ?: 0.0
         val peakKw = maxOf(session.peakKw, positivePowers.maxOrNull() ?: 0.0)
+        // What the car measured arriving, as opposed to what the pack kept. Computed here and
+        // stored, because DatabaseTrimmer eventually deletes the points it is derived from. The
+        // pack figure goes in as the sanity check: an integral that does not clear it did not
+        // see the whole charge, and ChargingEnergy returns null rather than an understatement.
+        val receivedKwh = ChargingEnergy.receivedKwh(dataPoints, kwhAdded)
 
         // peakKw is deliberately excluded: a DC charger handshake can briefly report
         // high power (5-60 kW) via capacity-activity inference before actual charging
@@ -460,6 +479,7 @@ class ChargingRepository private constructor(context: Context) {
             socEnd       = endSoc,
             socEndPanel  = endSocPanel,
             kwhAdded     = kwhAdded,
+            energyReceivedKwh = receivedKwh,
             peakKw       = peakKw,
             avgKw        = avgKw,
             batteryTempEnd = lastPoint.batteryTempAvg,
@@ -467,7 +487,9 @@ class ChargingRepository private constructor(context: Context) {
             isActive     = false
         )
         sessionDao.updateSession(closed)
-        Log.i(TAG, "Charging session ${session.id} closed — ${session.socStart}% → $endSoc%  ${dataPoints.size} points")
+        val received = receivedKwh?.let { "%.2f".format(it) } ?: "unmeasured"
+        Log.i(TAG, "Charging session ${session.id} closed — ${session.socStart}% → $endSoc%  " +
+            "${dataPoints.size} points  pack ${"%.2f".format(kwhAdded)} kWh  received $received")
         return closed
     }
 

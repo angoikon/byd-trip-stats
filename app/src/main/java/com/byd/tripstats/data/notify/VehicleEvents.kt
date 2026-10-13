@@ -163,6 +163,7 @@ class VehicleEvents private constructor(private val context: Context) {
                 socEnd = socEnd,
                 socStart = preferredSoc(session.socStartPanel, session.socStart) ?: session.socStart,
                 kwhAdded = session.kwhAdded,
+                receivedKwh = session.energyReceivedKwh,
                 durationMs = session.endTime?.let { it - session.startTime },
                 avgKw = session.avgKw,
                 peakKw = session.peakKw,

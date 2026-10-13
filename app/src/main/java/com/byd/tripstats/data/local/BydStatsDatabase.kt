@@ -39,7 +39,7 @@ import java.io.File
         TagEntity::class,
         TripTagCrossRef::class
     ],
-    version = 13,
+    version = 14,
     // Schemas are exported to app/schemas/ and committed — see the ksp { } block in
     // app/build.gradle.kts for why.
     exportSchema = true
@@ -85,6 +85,11 @@ abstract class BydStatsDatabase : RoomDatabase() {
                     BydStatsDatabase::class.java,
                     DB_NAME
                 )
+                    // Both deliberately off. An older APK opening a newer file throws on every
+                    // Room call instead of starting, which is the right way round for a car that
+                    // holds the only copy of its own history: the file is left untouched and
+                    // reinstalling the newer build reaches it again, where a destructive fallback
+                    // would wipe years of trips to get a usable app.
                     // .fallbackToDestructiveMigration()
                     // .fallbackToDestructiveMigrationOnDowngrade()
                     // A file SQLite reports as corrupt is moved aside, never deleted.
@@ -92,7 +97,7 @@ abstract class BydStatsDatabase : RoomDatabase() {
                     .addMigrations(
                         MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
                         MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
-                        MIGRATION_11_12, MIGRATION_12_13
+                        MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14
                     )
                     .build()
                 INSTANCE = instance
@@ -379,6 +384,23 @@ abstract class BydStatsDatabase : RoomDatabase() {
                         db.execSQL("ALTER TABLE `charging_sessions` ADD COLUMN `$column` $type")
                         Log.i(TAG, "MIGRATION_12_13: added missing charging_sessions.$column")
                     }
+                }
+            }
+        }
+
+        // ── Migration 13 → 14 ────────────────────────────────────────────────
+        // Adds energyReceivedKwh to charging_sessions — the integral of the session's
+        // chargingPower samples, which is the energy the car measured arriving rather than what
+        // the pack kept. Nullable and left null on every existing row: DatabaseTrimmer has
+        // already deleted the data points of AC sessions older than 45 days, so a backfill
+        // would reach recent AC sessions and every DC one and leave the history inconsistent
+        // about which charges carry the figure. A charge that predates the column simply never
+        // measured this, which is what null says.
+        val MIGRATION_13_14 = object : Migration(13, 14) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                if ("energyReceivedKwh" !in db.columnsOf("charging_sessions")) {
+                    db.execSQL("ALTER TABLE `charging_sessions` ADD COLUMN `energyReceivedKwh` REAL")
+                    Log.i(TAG, "MIGRATION_13_14: added charging_sessions.energyReceivedKwh")
                 }
             }
         }

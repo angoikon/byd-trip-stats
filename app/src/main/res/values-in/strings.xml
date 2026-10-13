@@ -332,6 +332,7 @@
     <string name="soc_end_label">SoC akhir</string>
     <string name="soc_added_label">SoC ditambahkan</string>
     <string name="kwh_added_label">kWh ditambahkan</string>
+    <string name="kwh_received_label">kWh diterima</string>
     <string name="battery_car_label">Baterai (HV)</string>
     <string name="peak_power_label">Daya puncak</string>
     <string name="average_power_label">Daya rata-rata</string>

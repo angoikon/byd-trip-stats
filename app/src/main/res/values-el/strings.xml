@@ -302,6 +302,7 @@
     <string name="soc_end_label">SoC λήξης</string>
     <string name="soc_added_label">SoC που προστέθηκε</string>
     <string name="kwh_added_label">kWh που προστέθηκαν</string>
+    <string name="kwh_received_label">kWh που ελήφθησαν</string>
     <string name="battery_car_label">Μπαταρία (HV)</string>
     <string name="peak_power_label">Μέγιστη ισχύς</string>
     <string name="average_power_label">Μέση ισχύς</string>

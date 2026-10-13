@@ -332,6 +332,7 @@
     <string name="soc_end_label">SoC befejezés</string>
     <string name="soc_added_label">Hozzáadott SoC</string>
     <string name="kwh_added_label">Hozzáadott kWh</string>
+    <string name="kwh_received_label">Fogadott kWh</string>
     <string name="battery_car_label">Akkumulátor (HV)</string>
     <string name="peak_power_label">Csúcsteljesítmény</string>
     <string name="average_power_label">Átlagteljesítmény</string>

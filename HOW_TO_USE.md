@@ -208,7 +208,7 @@ Charging sessions are recorded separately from trips and cover two scenarios:
 ### Charging Detail
 
 Five tabs:
-- **Overview** — summary: kWh added, SoC start/end, peak/avg kW, duration, cost, and the distance driven since the previous charge
+- **Overview** — summary: kWh added, kWh received, SoC start/end, peak/avg kW, duration, cost, and the distance driven since the previous charge
 - **Power + SoC** — dual-axis chart; switch between Time and SoC x-axis (SoC mode is useful for DC taper analysis)
 - **Voltage** — HV bus voltage over time
 - **Cells** — each cell's high and low voltage, and the spread between them
@@ -219,6 +219,8 @@ Five tabs:
 Trip details can account for:
 - **Fixed home tariff** — set once in Settings → Preferences → Costs → Electricity tariff
 - **Custom DC charging cost override** — enter the real amount paid for a public charging stop on any individual trip
+
+A charge can show two energy figures. **kWh added** is what the battery ended up holding, worked out from the change in state of charge. **kWh received** is what the car measured arriving, worked out from the power readings recorded during the session, and it is the larger of the two by whatever was lost on the way in. It is the car's own measurement rather than a meter reading: on DC it comes close to what the charger charges you for, while on AC the car can only see what leaves its on-board charger, so the figure is below what a wallbox or a home meter would say. **Cost is calculated from kWh added**, as it always has been; for an exact amount, enter the total you paid against the session. A session reconstructed after charging with the car switched off has no power readings and shows no received figure at all.
 
 ---
 
