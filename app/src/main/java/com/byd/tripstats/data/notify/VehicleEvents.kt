@@ -43,6 +43,12 @@ class VehicleEvents private constructor(private val context: Context) {
             bms ?: panel?.takeIf { it > 0.0 }
         }
 
+    /** Logs the one drop that has no number to report, so both exits leave a trace. */
+    private fun preferredSocMissing(session: ChargingSessionEntity): Double? {
+        Log.i(TAG, "Charging session ${session.id} has no end SoC in either source — not published")
+        return null
+    }
+
     /**
      * Trip summary, fired from `TripRepository.doEndTrip` once the trip row is final and its
      * stats exist. Every value is read back from the stored row — nothing is recomputed here — so
@@ -118,20 +124,39 @@ class VehicleEvents private constructor(private val context: Context) {
     }
 
     /**
-     * A charging session that has just closed, fired from `ChargingRepository` on the live close
-     * path only — the orphan-recovery close finalises a session that ended while the app was
-     * dead, and "charging complete" delivered the next morning is a statement about the present
-     * tense that isn't true any more.
+     * A charging session that has just closed, fired from `ChargingRepository` by each of the
+     * three paths that can finalise one. [origin] says which, and the channels split on it the
+     * same way the trip above splits on `liveClose`: the push takes [ChargeOrigin.announced]
+     * closes only, MQTT takes all three and carries [origin] in the payload.
+     *
+     * A charge the app did not witness is still a charge that happened, and leaving those off the
+     * wire would publish the exception and withhold the rule. The payloads differ in vocabulary —
+     * a trip carries the boolean `live_close`, a charge the three-valued `origin` — because a
+     * charge can be unwatched in two ways that a consumer has to tell apart.
      *
      * [ratePerKwh] is resolved the charging screen's way (the session's own price, else the
      * global tariff, else null) so the cost line matches the session's own screen.
      *
-     * Sessions that added almost nothing are dropped: the BMS can flap in and out of charging on
-     * a handshake, and each flap closes a row.
+     * Sessions that added almost nothing are dropped on every channel: the BMS can flap in and
+     * out of charging on a handshake, and each flap closes a row.
      */
-    fun onChargingSessionClosed(session: ChargingSessionEntity, ratePerKwh: Double?) {
-        val socEnd = preferredSoc(session.socEndPanel, session.socEnd) ?: return
-        if ((session.kwhAdded ?: 0.0) < MIN_CHARGE_KWH) return
+    fun onChargingSessionClosed(session: ChargingSessionEntity, ratePerKwh: Double?, origin: ChargeOrigin) {
+        val socEnd = preferredSoc(session.socEndPanel, session.socEnd) ?: preferredSocMissing(session)
+            ?: return
+        if ((session.kwhAdded ?: 0.0) < MIN_CHARGE_KWH) {
+            // Said out loud because the row still exists: a session can clear the storage floor
+            // and miss this one, and without a line here the only symptom is a charge in History
+            // that the broker never heard of.
+            Log.i(TAG, "Charging session ${session.id} added ${session.kwhAdded} kWh — below the floor, not published")
+            return
+        }
+        // A window that ends before it starts is a head unit whose clock stepped back, not a
+        // charge. Publishing it would file the session ahead of itself on any timeline.
+        val endTime = session.endTime
+        if (endTime != null && endTime < session.startTime) {
+            Log.w(TAG, "Charging session ${session.id} ends before it starts — clock step, not published")
+            return
+        }
         val event = TelegramEventMessages.chargingFinished(
                 sessionId = session.id,
                 socEnd = socEnd,
@@ -145,10 +170,15 @@ class VehicleEvents private constructor(private val context: Context) {
                 socFromBms = appPrefs.getCachedSocSource() == SocSource.BMS,
                 startTimeMs = session.startTime,
                 endTimeMs = session.endTime,
+                origin = origin,
+                closedAtMs = System.currentTimeMillis(),
         )
-        // Only the live close reaches here at all, so unlike the trip above this channel sees
-        // exactly what the push sees. Sessions finalised by orphan recovery stay unpublished.
         MqttConnectionManager.queueEvent(context, "charge_session", event.facts)
+
+        if (!origin.announced) {
+            Log.i(TAG, "Charging session ${session.id} finalised as ${origin.wireName} — not announced")
+            return
+        }
         publish(event, pushEnabled = telegram.chargingFinishedEnabled.value)
     }
 

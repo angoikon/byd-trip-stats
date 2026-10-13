@@ -166,6 +166,12 @@ object TelegramEventMessages {
      * [ratePerKwh] follows the charging screen's own rule — the session's own price when it has
      * one, otherwise the global tariff, null when neither exists — so a session priced at zero
      * reads as free here exactly as it does there.
+     *
+     * [origin] says how much of this was watched, and it has no default: a caller that has not
+     * decided must not be able to claim the session was measured. It also decides what can
+     * honestly be said about duration, so [durationMs] is ignored for a
+     * [ChargeOrigin.SOC_ESTIMATE] session — that one is bounded by a shutdown and a wake-up
+     * rather than measured between them, and the span is mostly parking.
      */
     fun chargingFinished(
         sessionId: Long,
@@ -177,20 +183,32 @@ object TelegramEventMessages {
         peakKw: Double,
         ratePerKwh: Double?,
         currencySymbol: String,
+        origin: ChargeOrigin,
         socFromBms: Boolean = false,
         startTimeMs: Long? = null,
         endTimeMs: Long? = null,
+        closedAtMs: Long? = null,
         zone: ZoneId = ZoneId.systemDefault(),
     ): VehicleEvent {
         val complete = socEnd >= FULL_SOC_PCT
         val lines = mutableListOf<String>()
+
+        // A session nobody watched has no charging duration to report. Its timestamps are the
+        // shutdown and the wake-up, so the span between them is however long the car sat there,
+        // most of it not charging — an eight-hour night reads as an eight-hour charge.
+        val chargedForMs = durationMs?.takeIf { origin != ChargeOrigin.SOC_ESTIMATE }
+
+        // Whether the charge reached full is only knowable when the app saw the end of it. A
+        // recovered session ends where the app was killed, which can be the middle of a charge
+        // that went on to 100%, so "stopped at 61%" would be a claim about something unobserved.
+        val reachedFull = complete.takeIf { origin != ChargeOrigin.RECOVERED }
 
         // Same reason as the trip card: a queued message must say which session it describes.
         if (startTimeMs != null && endTimeMs != null) lines += timeRange(startTimeMs, endTimeMs, zone)
 
         val detail = StringBuilder()
         kwhAdded?.takeIf { it > 0 }?.let { detail.append("Added ${fmt(it, 2)} kWh") }
-        durationMs?.takeIf { it > 0 }?.let {
+        chargedForMs?.takeIf { it > 0 }?.let {
             detail.append(if (detail.isEmpty()) "Charged for ${duration(it)}" else " in ${duration(it)}")
         }
         if (detail.isNotEmpty()) lines += detail.toString()
@@ -225,7 +243,14 @@ object TelegramEventMessages {
                 "ended_at" to iso(endTimeMs),
                 "started_at_ms" to startTimeMs,
                 "ended_at_ms" to endTimeMs,
-                "duration_s" to durationMs?.takeIf { it > 0 }?.div(1000),
+                // When the app published this record, which is not when the charge ended: a
+                // session the app was killed through is published at the next start, hours later.
+                "closed_at" to iso(closedAtMs),
+                "closed_at_ms" to closedAtMs,
+                // How the app came by all of the above, since a consumer that reads an inference
+                // as a measurement has no way to tell from the numbers alone.
+                "origin" to origin.wireName,
+                "duration_s" to chargedForMs?.takeIf { it > 0 }?.div(1000),
                 // Named as the app names it. This is the energy that reached the pack, derived
                 // from the SoC delta, so it is smaller than what the charger billed: a consumer
                 // pricing a session from it will land under the meter.
@@ -240,7 +265,7 @@ object TelegramEventMessages {
                 "rate_per_kwh" to ratePerKwh,
                 "cost" to chargeCost,
                 "currency" to currencySymbol.takeIf { chargeCost != null },
-                "complete" to complete,
+                "complete" to reachedFull,
             ),
         )
     }
