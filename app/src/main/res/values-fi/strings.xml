@@ -1333,9 +1333,6 @@
     <string name="d5_consent_decline_confirm">Kyllä, ohita</string>
     <string name="d5_consent_decline_back">Takaisin</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
-    <string name="d5_mobile_data_section">Mobiilidata (4G)</string>
-    <string name="d5_mobile_data_title">Avaa auton 4G lähetysten käyttöön</string>
-    <string name="d5_mobile_data_desc">Auto estää kolmannen osapuolen sovellukset mobiiliverkostaan, joten ilman tätä MQTT, ABRP, Telegram ja sovelluspäivitykset toimivat vain Wi-Fin kautta. Kun tämä on päällä (oletus), sovellus poistaa eston itseltään ADB-yhteytensä kautta — verkkopolitiikan poikkeus vain tälle sovellukselle, tarkistetaan jokaisella käynnistyksellä — ja ottaa datan verkkovierailun käyttöön, koska auton SIM on aina verkkovierailussa. Ajastetut Telegram-varmuuskopiot odottavat edelleen Wi-Fi-yhteyttä, kun niiden ”Vain Wi-Fi” -kytkin on päällä (oletus). Pois: tarkistukset loppuvat ja datan verkkovierailu palautetaan, jos sovellus muutti sitä, mutta auton esto ei palaa (Androidissa ei ole komentoa sen palauttamiseen), joten jotta sovellus ei käyttäisi mobiilidataa, myös MQTT, ABRP ja Telegram on kytkettävä pois.</string>
     <string name="d5_mobile_data_on_status">4G avattu</string>
     <string name="driving_widget_consent_title">Näytetäänkö ajowidget?</string>
     <string name="driving_widget_consent_body">Tässä autossa Android piilottaa sovelluksen näytön aina, kun auto ei ole P-asennossa. Matkan tallennus jatkuu joka tapauksessa taustalla.\n\nSen sijaan sovellus voi näyttää ajon aikana pienen widgetin muiden sovellusten päällä, jossa näkyvät nopeutesi, teho, akku ja toimintamatka — samanlaisen widgetin kuin muut autosovellukset. Se on tarkoitettu vilkaisuun, kuten mittaristo: pidä katse tiessä. P-asennossa se katoaa, ja koko koontinäyttö palaa.\n\nVoit kytkeä sen päälle tai pois myöhemmin Asetuksista.</string>

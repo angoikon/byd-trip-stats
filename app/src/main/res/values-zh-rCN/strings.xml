@@ -1333,9 +1333,6 @@
     <string name="d5_consent_decline_confirm">是，跳过</string>
     <string name="d5_consent_decline_back">返回</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
-    <string name="d5_mobile_data_section">移动数据（4G）</string>
-    <string name="d5_mobile_data_title">为上传解锁车机的 4G</string>
-    <string name="d5_mobile_data_desc">车辆把第三方应用挡在自己的移动网络之外，因此没有此选项时，MQTT、ABRP、Telegram 和应用更新只能在 Wi-Fi 下使用。开启期间（默认），应用会通过 ADB 连接为自身解除这一限制 —— 一条仅对本应用生效的网络策略例外，每次启动时检查 —— 并打开数据漫游，因为车的 SIM 卡始终处于漫游状态。只要“仅 Wi-Fi”开关保持开启（默认），Telegram 定时备份仍会等待 Wi-Fi。关闭后：检查停止，若数据漫游是由应用更改的则会恢复，但车辆的限制不会恢复（Android 没有恢复它的命令），因此若不想让应用使用移动数据，还需关闭 MQTT、ABRP 和 Telegram。</string>
     <string name="d5_mobile_data_on_status">4G 已解锁</string>
     <string name="driving_widget_consent_title">显示驾驶小组件？</string>
     <string name="driving_widget_consent_body">在这辆车上，只要车辆不在 P 挡，Android 就会隐藏应用的画面。无论如何，行程记录都会在后台继续。\n\n作为替代，应用可以在你驾驶时于其他应用之上显示一个小组件，包含你的速度、功率、电池和续航——与其他车载应用使用的同类小组件。它用于瞥一眼，就像仪表盘：请注视道路。回到 P 挡时它会消失，完整仪表盘随之回来。\n\n你以后可以在设置中开启或关闭它。</string>

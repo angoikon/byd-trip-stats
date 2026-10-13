@@ -1333,9 +1333,6 @@
     <string name="d5_consent_decline_confirm">Ja, spring over</string>
     <string name="d5_consent_decline_back">Tilbage</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
-    <string name="d5_mobile_data_section">Mobildata (4G)</string>
-    <string name="d5_mobile_data_title">Lås bilens 4G op til uploads</string>
-    <string name="d5_mobile_data_desc">Bilen blokerer tredjepartsapps fra sit mobilnetværk, så uden dette virker MQTT, ABRP, Telegram og app-opdateringer kun på Wi-Fi. Så længe den er slået til (standard), fjerner appen blokeringen for sig selv via sin ADB-forbindelse — en undtagelse i netværkspolitikken kun for denne app, kontrolleret ved hver start — og slår dataroaming til, fordi bilens SIM-kort altid er i roaming. Planlagte Telegram-sikkerhedskopier venter stadig på Wi-Fi, så længe deres “Kun Wi-Fi”-kontakt er slået til (standard). Fra: kontrollerne stopper, og dataroaming sættes tilbage, hvis appen ændrede det, men bilens blokering kommer ikke tilbage (Android har ingen kommando til at genskabe den), så for at holde appen væk fra mobildata skal MQTT, ABRP og Telegram også slås fra.</string>
     <string name="d5_mobile_data_on_status">4G låst op</string>
     <string name="driving_widget_consent_title">Vis en køre-widget?</string>
     <string name="driving_widget_consent_body">I denne bil skjuler Android appens skærm, hver gang bilen ikke er i P. Turoptagelsen fortsætter alligevel i baggrunden.\n\nI stedet kan appen vise en lille widget oven på andre apps, mens du kører, med din hastighed, effekt, batteri og rækkevidde — den samme slags widget, som andre bil-apps bruger. Den er beregnet til et hurtigt blik, som instrumentgruppen: hold øjnene på vejen. Den forsvinder i P, hvor det fulde dashboard er tilbage.\n\nDu kan slå den til eller fra senere i Indstillinger.</string>

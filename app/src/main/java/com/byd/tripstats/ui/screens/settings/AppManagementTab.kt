@@ -79,8 +79,9 @@ internal fun AppManagementTab(
                     if (!AdbPermissionManager.hasHiddenApiConsent(context)) {
                         add(stringResource(R.string.d5_vehicle_access_off_status))
                     }
-                    // On by default; shown only where the adb setup lets the app actually apply it.
-                    if (Di5MobileDataGate.isEnabled(context) && AdbPermissionManager.isSetupComplete(context)) {
+                    // Only where the app actually lifted BYD's 4G block — a car that never had it
+                    // has nothing to report.
+                    if (Di5MobileDataGate.isUnblocked(context)) {
                         add(stringResource(R.string.d5_mobile_data_on_status))
                     }
                 } else if (wifiKeepalive) {

@@ -219,20 +219,6 @@ class BydStatsApplication : Application(), Configuration.Provider {
                 Log.w(TAG, "In-process patches threw: ${e.message}")
             }
         }
-        // DiLink-5, on by default (see Di5MobileDataGate): lift BYD's third-party 4G block for this app.
-        // Its own coroutine, so it doesn't wait behind the channel watch below, which can run for
-        // 20 minutes when adb is down — the roaming half needs no channel at all. The netpolicy
-        // half does, so it is checked again once the watch has the channel (end of the next block).
-        // On DiLink-5 every process start is a wake/boot event — the car force-stops the app at
-        // switch-off and the supervisor revives it — and the watchdog repeats this every 15 min
-        // in case BYD re-applies its bit mid-session.
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                com.byd.tripstats.adb.Di5MobileDataGate.reassert(applicationContext, label = "startup")
-            } catch (t: Throwable) {
-                Log.w(TAG, "Mobile-data gate threw: ${t.message}")
-            }
-        }
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 RtShellPatches.apply(applicationContext)
@@ -249,11 +235,14 @@ class BydStatsApplication : Application(), Configuration.Provider {
             } catch (e: Throwable) {
                 Log.w(TAG, "Dispatch threw: ${e.message}")
             }
-            // The 4G gate's second pass, now that the watch above has opened the channel (or given
-            // up): at a DiLink-5 cold boot the early pass usually finds adb still down and can only
-            // fix roaming. A repeat of an unchanged verdict isn't logged.
+            // DiLink-5 (see Di5MobileDataGate): lift BYD's third-party 4G block for this app where
+            // the car has it. After the watch above, because every step needs the
+            // channel — at a cold boot that is the moment adb is back. On DiLink-5 every process
+            // start is a wake/boot event (the car force-stops the app at switch-off and the
+            // supervisor revives it), and the watchdog repeats this every 15 minutes in case a
+            // firmware re-applies its bit mid-session.
             try {
-                com.byd.tripstats.adb.Di5MobileDataGate.reassert(applicationContext, label = "after-channel")
+                com.byd.tripstats.adb.Di5MobileDataGate.reassert(applicationContext, label = "startup")
             } catch (t: Throwable) {
                 Log.w(TAG, "Mobile-data gate threw: ${t.message}")
             }

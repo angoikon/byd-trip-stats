@@ -1329,9 +1329,6 @@
     <string name="d5_consent_decline_confirm">Có, bỏ qua</string>
     <string name="d5_consent_decline_back">Quay lại</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
-    <string name="d5_mobile_data_section">Dữ liệu di động (4G)</string>
-    <string name="d5_mobile_data_title">Mở khóa 4G của xe để tải lên</string>
-    <string name="d5_mobile_data_desc">Xe chặn các ứng dụng bên thứ ba khỏi mạng di động của chính nó, nên nếu không có tùy chọn này, MQTT, ABRP, Telegram và bản cập nhật ứng dụng chỉ hoạt động trên Wi-Fi. Khi bật (mặc định), ứng dụng sẽ gỡ chặn đó cho chính nó qua kết nối ADB của mình — một ngoại lệ trong chính sách mạng chỉ dành cho ứng dụng này, được kiểm tra mỗi lần khởi động — và bật chuyển vùng dữ liệu, vì SIM của xe luôn đang chuyển vùng. Các bản sao lưu Telegram theo lịch vẫn chờ Wi-Fi khi công tắc “Chỉ Wi-Fi” đang bật (mặc định). Tắt: việc kiểm tra dừng lại và chuyển vùng dữ liệu được đặt lại nếu ứng dụng đã thay đổi nó, nhưng lệnh chặn của xe không quay lại (Android không có lệnh nào để khôi phục), vì vậy để ứng dụng không dùng dữ liệu di động, cần tắt cả MQTT, ABRP và Telegram.</string>
     <string name="d5_mobile_data_on_status">Đã mở khóa 4G</string>
     <string name="driving_widget_consent_title">Hiển thị widget lái xe?</string>
     <string name="driving_widget_consent_body">Trên xe này, Android ẩn màn hình của ứng dụng bất cứ khi nào xe không ở P. Việc ghi chuyến đi vẫn tiếp tục ở chế độ nền.\n\nThay vào đó, ứng dụng có thể hiển thị một widget nhỏ phía trên các ứng dụng khác khi bạn lái, với tốc độ, công suất, pin và tầm hoạt động của bạn — cùng loại widget mà các ứng dụng xe khác dùng. Nó dành cho việc liếc nhanh, như cụm đồng hồ: hãy nhìn đường. Nó biến mất khi ở P, nơi bảng điều khiển đầy đủ trở lại.\n\nBạn có thể bật hoặc tắt sau trong Cài đặt.</string>

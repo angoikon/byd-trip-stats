@@ -1329,9 +1329,6 @@
     <string name="d5_consent_decline_confirm">Ano, přeskočit</string>
     <string name="d5_consent_decline_back">Zpět</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
-    <string name="d5_mobile_data_section">Mobilní data (4G)</string>
-    <string name="d5_mobile_data_title">Odemknout 4G vozu pro odesílání</string>
-    <string name="d5_mobile_data_desc">Auto blokuje aplikace třetích stran ve své mobilní síti, takže bez této volby fungují MQTT, ABRP, Telegram a aktualizace aplikace jen přes Wi-Fi. Dokud je zapnutá (výchozí stav), aplikace toto blokování zruší sama pro sebe přes své připojení ADB — výjimka v síťových zásadách jen pro tuto aplikaci, kontrolovaná při každém spuštění — a zapne datový roaming, protože SIM karta vozu je stále v roamingu. Plánované zálohy do Telegramu dál čekají na Wi-Fi, dokud je zapnutý jejich přepínač „Pouze Wi-Fi“ (výchozí stav). Vypnuto: kontroly se zastaví a datový roaming se vrátí, pokud ho aplikace změnila, ale blokování vozu se neobnoví (Android k tomu nemá žádný příkaz), takže aby aplikace nepoužívala mobilní data, je třeba vypnout také MQTT, ABRP a Telegram.</string>
     <string name="d5_mobile_data_on_status">4G odemčeno</string>
     <string name="driving_widget_consent_title">Zobrazit jízdní widget?</string>
     <string name="driving_widget_consent_body">V tomto autě Android skryje obrazovku aplikace, kdykoli auto není v P. Záznam jízdy tak či tak pokračuje na pozadí.\n\nMísto toho může aplikace během jízdy zobrazovat malý widget přes ostatní aplikace s vaší rychlostí, výkonem, baterií a dojezdem — stejný druh widgetu, jaký používají jiné aplikace pro auta. Je určen pro letmý pohled, jako přístrojový štít: sledujte silnici. V P zmizí a vrátí se úplný panel.\n\nPozději jej můžete zapnout nebo vypnout v Nastavení.</string>

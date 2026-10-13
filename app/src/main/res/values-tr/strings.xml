@@ -1333,9 +1333,6 @@
     <string name="d5_consent_decline_confirm">Evet, atla</string>
     <string name="d5_consent_decline_back">Geri</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
-    <string name="d5_mobile_data_section">Mobil veri (4G)</string>
-    <string name="d5_mobile_data_title">Yüklemeler için arabanın 4G\'sini aç</string>
-    <string name="d5_mobile_data_desc">Araba, üçüncü taraf uygulamaları kendi mobil ağının dışında tutar; bu yüzden bu seçenek olmadan MQTT, ABRP, Telegram ve uygulama güncellemeleri yalnızca Wi-Fi\'da çalışır. Açık olduğu sürece (varsayılan) uygulama, ADB bağlantısı üzerinden bu engeli kendisi için kaldırır — yalnızca bu uygulamaya özel bir ağ politikası istisnası, her başlangıçta kontrol edilir — ve arabanın SIM\'i sürekli dolaşımda olduğu için veri dolaşımını açar. Zamanlanmış Telegram yedeklemeleri, “Yalnızca Wi-Fi” anahtarı açık olduğu sürece (varsayılan) Wi-Fi bekler. Kapalı: kontroller durur ve uygulama değiştirdiyse veri dolaşımı eski haline döner, ancak arabanın engeli geri gelmez (Android\'de bunu geri yükleyecek bir komut yoktur); uygulamanın mobil veri kullanmaması için MQTT, ABRP ve Telegram da kapatılmalıdır.</string>
     <string name="d5_mobile_data_on_status">4G açıldı</string>
     <string name="driving_widget_consent_title">Sürüş widget\'ı gösterilsin mi?</string>
     <string name="driving_widget_consent_body">Bu araçta Android, araç P\'de olmadığı her an uygulamanın ekranını gizler. Yolculuk kaydı yine de arka planda sürer.\n\nBunun yerine uygulama, sürüş sırasında diğer uygulamaların üzerinde küçük bir widget gösterebilir; hızınız, gücünüz, bataryanız ve menzilinizle — diğer araç uygulamalarının kullandığı türden bir widget. Gösterge paneli gibi bir bakış içindir: gözünüzü yoldan ayırmayın. P\'de kaybolur ve tam gösterge paneli geri gelir.\n\nDaha sonra Ayarlar\'dan açıp kapatabilirsiniz.</string>

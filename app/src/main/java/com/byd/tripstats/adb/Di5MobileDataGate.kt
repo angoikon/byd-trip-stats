@@ -9,41 +9,41 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
- * The DiLink-5 "third-party apps have no internet over the car's 4G" gates — the verified
- * half of the four-gate model in `MD/WRITTEN_REPORT.md` §8.2 (field evidence:
- * Sealion 7, github.com/angoikon/byd-trip-stats/issues/26).
+ * The DiLink-5 "third-party apps have no internet over the car's 4G" block — gate 1 of the
+ * four-gate model in `MD/WRITTEN_REPORT.md` §8.2 (field evidence:
+ * github.com/angoikon/byd-trip-stats/issues/26).
  *
- * BYD's modified Android framework puts every sideloaded app on Android netpolicy
- * `policy=9 (DIABLE_METERED)` — stock bit 1 (reject metered in background) **plus a
- * BYD-only bit 8** that rejects metered networks even in the foreground. Stock Android 11
- * has no such bit, so "4G is up but every non-BYD app has no internet" is invisible in any
- * app's code: it lives in the framework. Two further gates stack behind it: the car's SIM
- * is permanently roaming while `Settings.Global.data_roaming` reads 0, and (unverified,
- * no field evidence yet) a per-app URL whitelist firewall in front of the T-Box.
+ * On some DiLink-5 cars BYD's modified Android framework puts sideloaded apps on Android
+ * netpolicy `policy=9 (DIABLE_METERED)` — stock bit 1 (reject metered in background) **plus a
+ * BYD-only bit 8** that rejects metered networks even in the foreground. Stock Android 11 has no
+ * such bit, so "4G is up but this app has no internet" is invisible in any app's code: it lives
+ * in the framework. Seen on a Sealion 7 (#26) and a Shark 6; absent on a Sealion 7 in Australia
+ * (no policy row, rules=0, MQTT publishing over 4G) and one in Turkey — so it is regional or
+ * firmware, not DiLink-5-wide.
  *
  * The stock `remove restrict-background-blacklist` no-ops on policy 9 (it only matches a
  * policy of exactly 1), but `cmd netpolicy add restrict-background-whitelist <uid>`
  * **replaces the whole policy** with `POLICY_ALLOW_METERED_BACKGROUND (4)`, wiping BYD's
  * bit — verified on the car: `policy=9 rules=4 (REJECT_METERED)` → `policy=4 rules=1
- * (ALLOW_METERED)`. Roaming is a plain Settings.Global write, which our
- * WRITE_SECURE_SETTINGS grant covers in-process.
+ * (ALLOW_METERED)`.
  *
- * On by default (Settings → App → Power & background, DiLink-5 only): the whitelist covers
- * this app alone, and every byte it lets through belongs to a feature the user switched on —
- * MQTT, ABRP, Telegram, update checks. Roaming is device-wide, but other sideloaded apps keep
- * their own policy 9 and BYD's apps already have 4G with it off, so in practice only this app
- * can gain from it. The car does not put its block back by itself: on a Shark 6 (2026-10-12)
- * the whitelist applied by hand four days earlier, and roaming a week earlier, were both
- * still in place across the nightly restarts. The check still runs at every process start —
- * on DiLink-5 a process start *is* the wake signal (the car force-stops the app at switch-off;
- * the supervisor/boot revives it) — and on each watchdog tick, since other firmwares may
- * differ; on a unit already cleared it costs one `dumpsys` and writes nothing.
+ * Data roaming is NOT a gate, though early betas also switched it on. The car's SIM always
+ * reports roaming, yet with `data_roaming=0` the T-Box network is up and validated, and on the
+ * unblocked Australian car this app publishes MQTT over it (2026-10-13). Where a beta saved the
+ * value it replaced, the next check puts it back once ([undoBetaRoaming]).
  *
- * Switching off can undo only the roaming half (restored to the value this gate replaced).
- * Android has no command that restores BYD's policy 9: removing the whitelist leaves policy 0,
- * no restriction at all, and the stock background restriction (policy 1) doesn't stop a
- * foreground service, which this app runs. So the car's block stays lifted, and the settings
- * text tells the user to switch the uploading features off to keep the app off mobile data.
+ * Always on, with no switch (DiLink-5 only): the whitelist covers this app alone, it is written
+ * only where BYD's bit is actually present, and every byte it lets through belongs to a feature the
+ * user switched on — MQTT, ABRP, Telegram, update checks. A switch could not have undone it anyway:
+ * Android has no command that restores BYD's policy 9 — `remove restrict-background-whitelist`
+ * resets to policy 0, no restriction at all, and the stock background restriction (policy 1)
+ * doesn't stop a foreground service, which this app runs. Pre-2.18.0 betas had an on/off switch;
+ * its stored value (`d5_mobile_data_consent_v1`) is no longer read.
+ *
+ * The car does not put its block back by itself (a Shark 6 kept the whitelist through four days
+ * of nightly restarts), but the check still runs at every process start — on DiLink-5 a process
+ * start *is* the wake signal — and on each watchdog tick, since other firmwares may differ; on a
+ * car already cleared, or never blocked, it costs one `dumpsys` and writes nothing.
  *
  * Never throws — every caller sits on the startup or watchdog path, where a throw is a
  * crash loop on this platform (DI5 checklist §1).
@@ -52,54 +52,54 @@ object Di5MobileDataGate {
     private const val TAG = "Di5MobileDataGate"
     private const val PREFS_NAME = "d5_mobile_data_prefs"
 
-    /**
-     * On/off. The key keeps its name from beta08, when the switch was opt-in: a tester who turned
-     * it on and back off then stays off, while everyone who never touched it is on.
-     */
-    private const val PREF_ENABLED = "d5_mobile_data_consent_v1"
+    /** Whether the last check found the block lifted — what Settings → App's "4G unlocked" shows. */
+    private const val PREF_UNBLOCKED = "d5_mobile_data_unblocked_v1"
 
-    /** `data_roaming` as it was before this gate first turned it on — what switching off restores. */
+    /**
+     * `data_roaming` as it was before a pre-2.18.0 beta switched it on — present only where one of
+     * those betas ran, and removed once [undoBetaRoaming] has put the value back.
+     */
     private const val PREF_ROAMING_BEFORE = "d5_roaming_before_v1"
 
     /**
-     * `POLICY_ALLOW_METERED_BACKGROUND` — the steady state the whitelist command leaves us
-     * in. Anything else read back from `dumpsys netpolicy` (BYD's 9, a user-set restrict, or
-     * no entry at all) means the whitelist is (re)applied; the command is idempotent.
+     * `POLICY_ALLOW_METERED_BACKGROUND` — the steady state the whitelist command leaves us in.
      */
     internal const val POLICY_ALLOW_METERED_BACKGROUND = 4
 
-    // ── The switch ─────────────────────────────────────────────────────────────────────────
+    /** BYD's own policy bit (`DIABLE_METERED` = 1 | 8): rejects metered networks even in the foreground. */
+    internal const val POLICY_BYD_REJECT_METERED = 8
+
+    // ── Status ─────────────────────────────────────────────────────────────────────────────
 
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     /**
-     * Whether the unlock is on — the default. Never throws: this is read on the boot path, where
-     * a LOCKED_BOOT_COMPLETED start can catch credential-encrypted storage still shut (same trap
-     * `isSetupComplete` guards), and an unreadable store reads as off, so nothing is written
-     * before the user unlocks — the boot watch and the watchdog re-run the check after unlock.
+     * Whether the last check found this app's block lifted: BYD's bit had been there and the
+     * whitelist now holds (policy 4). False on a car that never had the block, so Settings → App
+     * says "4G unlocked" only where the app actually changed something. Never throws.
      */
-    fun isEnabled(context: Context): Boolean = runCatching {
-        prefs(context).getBoolean(PREF_ENABLED, true)
+    fun isUnblocked(context: Context): Boolean = runCatching {
+        prefs(context).getBoolean(PREF_UNBLOCKED, false)
     }.getOrDefault(false)
 
-    /** Record the switch. Applying it, or undoing what can be undone, is the caller's next step. */
-    fun setEnabled(context: Context, on: Boolean) {
-        prefs(context).edit().putBoolean(PREF_ENABLED, on).apply()
+    private fun setUnblocked(context: Context, unblocked: Boolean) {
+        runCatching { prefs(context).edit().putBoolean(PREF_UNBLOCKED, unblocked).apply() }
     }
 
     // ── Pure decision helpers (unit-tested) ───────────────────────────────────────────────
 
-    /** A policy other than the whitelisted allow-metered bit needs the whitelist (re)applied. */
+    /**
+     * Only BYD's block is lifted: a policy carrying its bit 8. No policy row (an unblocked car), a
+     * policy of 0, or the user's own stock "restrict background data" (1) is left as it is, and the
+     * whitelist already in place (4) needs nothing.
+     */
     internal fun netPolicyNeedsWhitelist(policy: Int?): Boolean =
-        policy != POLICY_ALLOW_METERED_BACKGROUND
-
-    /** Roaming is left alone only where it is already on; -1 (row absent) counts as off. */
-    internal fun shouldEnableDataRoaming(current: Int): Boolean = current != 1
+        policy != null && (policy and POLICY_BYD_REJECT_METERED) != 0
 
     /**
-     * What switching off writes back to `data_roaming`, or null to leave it: only a value this
-     * gate replaced ([saved]; -1, a missing row, goes back as 0), and only while roaming still
-     * reads the 1 the gate wrote — anything else is someone else's later choice.
+     * What a beta's roaming change is put back to, or null to leave it: only a value the beta
+     * replaced ([saved]; -1, a missing row, goes back as 0), and only while roaming still reads
+     * the 1 the beta wrote — anything else is someone else's later choice.
      */
     internal fun roamingToRestore(saved: Int?, current: Int): Int? =
         if (saved == null || current != 1) null else saved.coerceAtLeast(0)
@@ -113,7 +113,7 @@ object Di5MobileDataGate {
      * below, or everything on one line), and of BYD's labels after the number
      * (`policy=9 (DIABLE_METERED)`): only the digits are taken. Walking stops at the next uid
      * line so one app's field can't be read from another's block, and a uid that never appears
-     * (or appears without the field) yields null — which the caller treats as "not whitelisted".
+     * (or appears without the field) yields null — for the policy, an app BYD never blocked.
      */
     internal fun parseUidIntField(dumpsysNetpolicy: String, uid: Int, field: String): Int? {
         val mine = Regex("(?i)\\buid[\\s=:]*$uid\\b")
@@ -138,41 +138,38 @@ object Di5MobileDataGate {
     internal fun parseUidPolicy(dumpsysNetpolicy: String, uid: Int): Int? =
         parseUidIntField(dumpsysNetpolicy, uid, "policy")
 
-    /** Our uid's computed `rules=` value — informational (BYD's numbering differs from stock). */
+    /** Our uid's computed `rules=` value — informational, logged beside the policy. */
     internal fun parseUidRules(dumpsysNetpolicy: String, uid: Int): Int? =
         parseUidIntField(dumpsysNetpolicy, uid, "rules")
 
     // ── The re-assert ──────────────────────────────────────────────────────────────────────
 
     /**
-     * Check and (only when needed) clear both gates: the BYD netpolicy block for this app and
-     * the roaming setting. A no-op returning null on every other platform, while switched off,
-     * or while the adb setup is missing — safe to call unconditionally from startup and the
-     * watchdog. Diag.log gets the full before→after verdict on the first check per process,
-     * every user action, and every *change* in between (so a 15-minute tick that finds BYD's
-     * bit back says so exactly once, not ninety-six times a day).
+     * Check for BYD's block on this app and, only where it is present, lift it. A no-op returning
+     * null on every other platform or while the adb setup is missing — safe to call
+     * unconditionally from startup and the watchdog. Diag.log gets the full before→after verdict
+     * on the first check per process and on every *change* after it (so a 15-minute tick that
+     * finds BYD's bit back says so exactly once, not ninety-six times a day).
      *
      * @return the verdict, or null when nothing was checked.
      */
-    suspend fun reassert(context: Context, label: String = "startup", force: Boolean = false): String? {
+    suspend fun reassert(context: Context, label: String = "startup"): String? {
         if (!DiLink5Platform.isDiLink5) return null
-        // The switch lives in credential-encrypted storage: nothing to check before the user
-        // unlocks. Skip cleanly rather than read a guaranteed false — the boot watch and the
-        // watchdog re-run this after unlock.
+        // The adb key and this gate's prefs live in credential-encrypted storage: nothing to do
+        // before the user unlocks — the boot watch and the watchdog re-run this after unlock.
         if (!AdbPermissionManager.isUserUnlocked(context)) return null
-        // Without the one-time adb setup there is neither the settings grant nor the channel:
-        // nothing to do, and on by default a "no-setup" line at every start would be noise.
+        // Without the one-time adb setup there is no channel: nothing to do, and a "no-setup" line
+        // at every start would be noise.
         if (!AdbPermissionManager.isSetupComplete(context)) return null
-        // One check at a time: start-up runs it twice (early, then again once the channel is up)
-        // and the watchdog can tick in between. Unserialised, two passes would both read BYD's 9
-        // and both write — harmless, but the log would show the same clearing twice. The switch
-        // is read inside the lock, so a pass queued behind a switch-off doesn't undo it.
+        // One check at a time: start-up and the watchdog can overlap. Unserialised, two passes
+        // would both read BYD's 9 and both write — harmless, but the log would show the same
+        // clearing twice.
         return mutex.withLock {
-            if (!isEnabled(context)) return@withLock null
-            val verdict = runCatching {
-                "roaming=${ensureRoamingAllowed(context)} netpolicy=${ensureNetPolicyWhitelisted(context)}"
-            }.getOrElse { "error(${it.javaClass.simpleName})" }
-            if (force || verdict != lastVerdict) {
+            runCatching { undoBetaRoaming(context) }.getOrNull()
+                ?.let { DiagLog.event(context, TAG, "4G gate[$label]: data roaming put back: $it") }
+            val verdict = runCatching { "netpolicy=${ensureNetPolicyWhitelisted(context)}" }
+                .getOrElse { "error(${it.javaClass.simpleName})" }
+            if (verdict != lastVerdict) {
                 DiagLog.event(context, TAG, "4G gate[$label]: $verdict")
             }
             lastVerdict = verdict
@@ -184,82 +181,48 @@ object Di5MobileDataGate {
     @Volatile private var lastVerdict: String? = null
 
     /**
-     * After the switch is turned off: put `data_roaming` back to what it was before this gate
-     * turned it on — the one half that can be undone (see the class doc for why the netpolicy
-     * half can't). A value the gate didn't change — already 1 when it first looked, or set by
-     * hand — is left alone. Serialised with [reassert], and logged, since it's a user action.
+     * Betas before 2.18.0 also switched `data_roaming` on, which turned out to gate nothing (see
+     * the class doc). Where one of them saved the value it replaced, put that back — once; the
+     * saved value is kept only while the write fails, so the next check retries.
+     *
+     * @return what happened, or null when nothing was saved — every install that never ran those betas.
      */
-    suspend fun restoreAfterSwitchOff(context: Context): String? {
-        if (!DiLink5Platform.isDiLink5) return null
-        if (!AdbPermissionManager.isUserUnlocked(context)) return null
-        return mutex.withLock {
-            // Switched back on while this waited for the lock: nothing to undo.
-            if (isEnabled(context)) return@withLock null
-            val verdict = runCatching { restoreRoaming(context) }
-                .getOrElse { "error(${it.javaClass.simpleName})" }
-            DiagLog.event(context, TAG, "4G gate[off]: roaming=$verdict")
-            // A later switch-on must log its first check again.
-            lastVerdict = null
-            verdict
-        }
-    }
-
-    private suspend fun restoreRoaming(context: Context): String {
+    private suspend fun undoBetaRoaming(context: Context): String? {
         val p = prefs(context)
-        val saved = if (p.contains(PREF_ROAMING_BEFORE)) p.getInt(PREF_ROAMING_BEFORE, 0) else null
+        if (!p.contains(PREF_ROAMING_BEFORE)) return null
+        val saved = p.getInt(PREF_ROAMING_BEFORE, 0)
         val current = readRoaming(context)
         val target = roamingToRestore(saved, current)
         if (target == null) {
             p.edit().remove(PREF_ROAMING_BEFORE).apply()
-            return if (saved == null) "left=$current (not changed by the app)" else "left=$current"
+            return "left=$current (changed since)"
         }
         val after = writeRoaming(context, target)
-        // Kept on failure, so switching off again retries with the same value.
         if (after == target) p.edit().remove(PREF_ROAMING_BEFORE).apply()
         return if (after == target) "1→$target" else "FAILED(target=$target after=$after)"
     }
-
-    /**
-     * Gate 2 — `Settings.Global.DATA_ROAMING`. Written in-process (WRITE_SECURE_SETTINGS is
-     * part of the one-time adb setup), so it works even while the shell channel is still down —
-     * the same essential property as `ensureAdbEnabled`. The car's SIM is permanently roaming,
-     * so with this off Android may refuse mobile data to apps even after the netpolicy gate is
-     * cleared. The value it replaces is kept (the first one only) for [restoreAfterSwitchOff].
-     */
-    private suspend fun ensureRoamingAllowed(context: Context): String = runCatching {
-        val before = readRoaming(context)
-        if (!shouldEnableDataRoaming(before)) return@runCatching "ok"
-        val after = writeRoaming(context, 1)
-        if (after == 1) {
-            val p = prefs(context)
-            if (!p.contains(PREF_ROAMING_BEFORE)) p.edit().putInt(PREF_ROAMING_BEFORE, before).apply()
-            "$before→1"
-        } else "FAILED(before=$before after=$after)"
-    }.getOrElse { "denied(${it.javaClass.simpleName})" }
 
     private fun readRoaming(context: Context): Int = runCatching {
         Settings.Global.getInt(context.contentResolver, Settings.Global.DATA_ROAMING, -1)
     }.getOrDefault(-1)
 
-    /** Write [value], in-process first; returns what reads back afterwards. */
+    /** Write [value] — in-process (WRITE_SECURE_SETTINGS), shell as the fallback; returns what reads back. */
     private suspend fun writeRoaming(context: Context, value: Int): Int {
         runCatching { Settings.Global.putInt(context.contentResolver, Settings.Global.DATA_ROAMING, value) }
         var after = readRoaming(context)
         if (after != value) {
-            // In-process write refused (revoked grant, ROM enforcement) — the shell can still
-            // do it: `settings put global` as uid 2000 is exactly what the field report used.
             shell(context, "settings put global data_roaming $value")?.let { after = readRoaming(context) }
         }
         return after
     }
 
     /**
-     * Gate 1 — the BYD netpolicy block. Read our uid's policy first (so an already-cleared
-     * unit costs one `dumpsys` and no write, and the "before" value answers the re-application
-     * question), and only when it isn't the allow-metered whitelist, replace it:
-     * `add restrict-background-whitelist` swaps the whole policy for bit 4 — the one command
-     * that wipes BYD's custom bit (see class doc). Verified by re-reading afterwards; a
-     * command that didn't take is reported, never retried within this call.
+     * The BYD netpolicy block. Read our uid's policy first (so a cleared or never-blocked unit
+     * costs one `dumpsys` and no write, and the "before" value answers the re-application
+     * question), and only when it carries BYD's bit, replace it: `add restrict-background-whitelist`
+     * swaps the whole policy for bit 4 — the one command that wipes BYD's custom bit (see class
+     * doc). Verified by re-reading afterwards; a command that didn't take is reported, never
+     * retried within this call.
      */
     private suspend fun ensureNetPolicyWhitelisted(context: Context): String = runCatching {
         val uid = android.os.Process.myUid()
@@ -268,14 +231,18 @@ object Di5MobileDataGate {
             return@runCatching "dumpsys-failed(exit=${first.exitCode})"
         }
         val beforePolicy = parseUidPolicy(first.output, uid)
-        if (!netPolicyNeedsWhitelist(beforePolicy)) {
-            return@runCatching "policy=${beforePolicy} rules=${parseUidRules(first.output, uid)} ok"
-        }
         val before = "policy=${beforePolicy ?: "absent"} rules=${parseUidRules(first.output, uid)}"
+        if (!netPolicyNeedsWhitelist(beforePolicy)) {
+            // 4 is a block already lifted (by us, an earlier beta, or by hand); anything else here
+            // is a car that never had it.
+            setUnblocked(context, beforePolicy == POLICY_ALLOW_METERED_BACKGROUND)
+            return@runCatching "$before ok"
+        }
         val added = shell(context, "cmd netpolicy add restrict-background-whitelist $uid")
             ?: return@runCatching "channel(after-dump)"
         val after = shell(context, "dumpsys netpolicy")
             ?.let { parseUidPolicy(it.output, uid) }
+        setUnblocked(context, after == POLICY_ALLOW_METERED_BACKGROUND)
         if (after == POLICY_ALLOW_METERED_BACKGROUND) "$before→policy=$after cleared"
         else "$before→policy=${after ?: "?"} FAILED exit=${added.exitCode} " +
             ":: ${added.output.replace('\n', ' ').take(60)}"

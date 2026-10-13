@@ -1329,9 +1329,6 @@
     <string name="d5_consent_decline_confirm">Tak, pomiń</string>
     <string name="d5_consent_decline_back">Wstecz</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
-    <string name="d5_mobile_data_section">Dane mobilne (4G)</string>
-    <string name="d5_mobile_data_title">Odblokuj 4G samochodu do wysyłania</string>
-    <string name="d5_mobile_data_desc">Samochód blokuje aplikacje innych dostawców we własnej sieci komórkowej, więc bez tej opcji MQTT, ABRP, Telegram i aktualizacje aplikacji działają tylko przez Wi-Fi. Dopóki jest włączona (domyślnie), aplikacja zdejmuje tę blokadę dla siebie przez swoje połączenie ADB — wyjątek w polityce sieciowej tylko dla tej aplikacji, sprawdzany przy każdym uruchomieniu — i włącza roaming danych, bo karta SIM samochodu jest zawsze w roamingu. Zaplanowane kopie zapasowe do Telegrama nadal czekają na Wi-Fi, dopóki ich przełącznik „Tylko Wi-Fi” jest włączony (domyślnie). Wył.: sprawdzanie ustaje, a roaming danych wraca do poprzedniej wartości, jeśli aplikacja go zmieniła, ale blokada samochodu nie wraca (Android nie ma polecenia, by ją przywrócić), więc aby aplikacja nie korzystała z danych komórkowych, trzeba wyłączyć także MQTT, ABRP i Telegram.</string>
     <string name="d5_mobile_data_on_status">4G odblokowane</string>
     <string name="driving_widget_consent_title">Pokazać widżet jazdy?</string>
     <string name="driving_widget_consent_body">W tym samochodzie Android ukrywa ekran aplikacji, gdy samochód nie jest w P. Rejestrowanie trasy i tak trwa w tle.\n\nZamiast tego aplikacja może pokazywać mały widżet nad innymi aplikacjami podczas jazdy, z Twoją prędkością, mocą, baterią i zasięgiem — taki sam widżet, jakiego używają inne aplikacje samochodowe. Jest przeznaczony na rzut oka, jak zegary: patrz na drogę. Znika w P, gdzie wraca pełny pulpit.\n\nMożesz go później włączyć lub wyłączyć w Ustawieniach.</string>

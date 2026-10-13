@@ -100,11 +100,21 @@ class Di5MobileDataGateTest {
     // ── Gate decisions ──────────────────────────────────────────────────────────────────
 
     @Test
-    fun `whitelist is needed for BYD's policy 9, a plain restrict, and no entry at all`() {
-        assertTrue(Di5MobileDataGate.netPolicyNeedsWhitelist(9))   // BYD bit 1+8
-        assertTrue(Di5MobileDataGate.netPolicyNeedsWhitelist(1))   // stock restrict-background
-        assertTrue(Di5MobileDataGate.netPolicyNeedsWhitelist(0))   // default, not whitelisted
-        assertTrue(Di5MobileDataGate.netPolicyNeedsWhitelist(null)) // absent from the dump
+    fun `whitelist is needed only where BYD's bit is present`() {
+        assertTrue(Di5MobileDataGate.netPolicyNeedsWhitelist(9))   // DIABLE_METERED, bits 1+8 (#26, Shark 6)
+        assertTrue(Di5MobileDataGate.netPolicyNeedsWhitelist(8))   // BYD's bit alone
+    }
+
+    @Test
+    fun `an unblocked car is left alone`() {
+        // Sealion 7, Australia (2026-10-13): no policy row, rules=0, MQTT publishing over 4G.
+        assertFalse(Di5MobileDataGate.netPolicyNeedsWhitelist(null))
+        assertFalse(Di5MobileDataGate.netPolicyNeedsWhitelist(0))
+    }
+
+    @Test
+    fun `the user's own background-data restriction is not overridden`() {
+        assertFalse(Di5MobileDataGate.netPolicyNeedsWhitelist(1))  // stock restrict-background only
     }
 
     @Test
@@ -113,14 +123,7 @@ class Di5MobileDataGateTest {
     }
 
     @Test
-    fun `roaming is written when off or absent, never when already on`() {
-        assertTrue(Di5MobileDataGate.shouldEnableDataRoaming(0))   // off
-        assertTrue(Di5MobileDataGate.shouldEnableDataRoaming(-1))  // setting row absent
-        assertFalse(Di5MobileDataGate.shouldEnableDataRoaming(1))  // already on
-    }
-
-    @Test
-    fun `switching off restores the roaming value the gate replaced`() {
+    fun `a beta's roaming change is put back to the value it replaced`() {
         assertEquals(0, Di5MobileDataGate.roamingToRestore(saved = 0, current = 1))
     }
 
@@ -130,13 +133,13 @@ class Di5MobileDataGateTest {
     }
 
     @Test
-    fun `roaming the gate never changed is left alone`() {
-        // Already on when the gate first looked (or set by hand, as on the Shark 6): nothing saved.
+    fun `roaming no beta changed is left alone`() {
+        // Already on when a beta first looked (or set by hand, as on the Shark 6): nothing saved.
         assertNull(Di5MobileDataGate.roamingToRestore(saved = null, current = 1))
     }
 
     @Test
-    fun `roaming changed again since the gate wrote it is left alone`() {
+    fun `roaming changed again since a beta wrote it is left alone`() {
         assertNull(Di5MobileDataGate.roamingToRestore(saved = 0, current = 0))
     }
 }
