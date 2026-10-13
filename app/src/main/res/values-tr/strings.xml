@@ -335,6 +335,7 @@
     <string name="soc_end_label">Bitiş SoC</string>
     <string name="soc_added_label">Eklenen SoC</string>
     <string name="kwh_added_label">Eklenen kWh</string>
+    <string name="kwh_received_label">Alınan kWh</string>
     <string name="battery_car_label">Pil (HV)</string>
     <string name="peak_power_label">Tepe güç</string>
     <string name="average_power_label">Ortalama güç</string>

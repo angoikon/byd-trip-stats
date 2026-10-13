@@ -332,6 +332,7 @@
     <string name="soc_end_label">SoC na konci</string>
     <string name="soc_added_label">Přidané SoC</string>
     <string name="kwh_added_label">Přidané kWh</string>
+    <string name="kwh_received_label">Přijaté kWh</string>
     <string name="battery_car_label">Baterie (HV)</string>
     <string name="peak_power_label">Špičkový výkon</string>
     <string name="average_power_label">Průměrný výkon</string>

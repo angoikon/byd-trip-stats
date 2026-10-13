@@ -138,7 +138,7 @@ class TelegramEventMessagesTest {
         assertEquals("trip-1", TelegramEventMessages.tripSummary(
             1L, 20.0, null, null, null, null, 80.0, null, null, null, null, "€", false).key)
         assertEquals("charge-7", TelegramEventMessages.chargingFinished(
-            7L, 43.0, 31.0, 9.8, null, 0.0, 0.0, null, "€", ChargeOrigin.LIVE).key)
+            7L, 43.0, 31.0, 9.8, null, null, 0.0, 0.0, null, "€", ChargeOrigin.LIVE).key)
     }
 
     // ── Charging ────────────────────────────────────────────────────────────────
@@ -147,6 +147,7 @@ class TelegramEventMessagesTest {
         socEnd: Double = 43.0,
         socStart: Double = 31.0,
         kwhAdded: Double? = 9.8,
+        receivedKwh: Double? = null,
         durationMs: Long? = 72 * 60_000L,
         avgKw: Double = 8.2,
         peakKw: Double = 11.0,
@@ -154,7 +155,8 @@ class TelegramEventMessagesTest {
         currencySymbol: String = "€",
         origin: ChargeOrigin = ChargeOrigin.LIVE,
     ) = TelegramEventMessages.chargingFinished(
-        7L, socEnd, socStart, kwhAdded, durationMs, avgKw, peakKw, ratePerKwh, currencySymbol, origin,
+        7L, socEnd, socStart, kwhAdded, receivedKwh, durationMs, avgKw, peakKw, ratePerKwh,
+        currencySymbol, origin,
     ).text()
 
     @Test
@@ -182,7 +184,7 @@ class TelegramEventMessagesTest {
         assertEquals("🚗 Trip #756 finished", trip.title)
         assertTrue(trip.telegramHtml, trip.telegramHtml.startsWith("<b>🚗 Trip #756 finished</b>"))
         val charge = TelegramEventMessages.chargingFinished(
-            12L, 43.0, 31.0, 9.8, null, 0.0, 0.0, null, "€", ChargeOrigin.LIVE)
+            12L, 43.0, 31.0, 9.8, null, null, 0.0, 0.0, null, "€", ChargeOrigin.LIVE)
         assertEquals("🔌 Charging #12 stopped at 43%", charge.title)
     }
 
@@ -228,6 +230,19 @@ class TelegramEventMessagesTest {
         assertTrue(charging(ratePerKwh = 0.30).contains("Cost €2.94"))
     }
 
+    /**
+     * The card is a notification, and the cost on it is the one the charging screen shows. The
+     * received figure is the car's own measurement rather than a meter reading, so it travels
+     * in the payload and changes nothing a reader is shown or charged: 9.8 kWh at €0.30 is
+     * €2.94 whether or not the session measured what arrived.
+     */
+    @Test
+    fun `a measured charge is costed on the pack figure, like every other charge`() {
+        val text = charging(receivedKwh = 10.5, ratePerKwh = 0.30)
+        assertTrue(text, text.contains("Cost €2.94"))
+        assertEquals(charging(receivedKwh = null, ratePerKwh = 0.30), text)
+    }
+
     // ── When the trip happened / which SoC ─────────────────────────────────────
 
     private val utc = java.time.ZoneId.of("UTC")
@@ -266,7 +281,8 @@ class TelegramEventMessagesTest {
     @Test
     fun `charging summary leads with its start and end time`() {
         val text = TelegramEventMessages.chargingFinished(
-            sessionId = 7L, socEnd = 80.0, socStart = 43.0, kwhAdded = 30.0, durationMs = 5 * 3_600_000L,
+            sessionId = 7L, socEnd = 80.0, socStart = 43.0, kwhAdded = 30.0, receivedKwh = null,
+            durationMs = 5 * 3_600_000L,
             avgKw = 6.1, peakKw = 7.0, ratePerKwh = null, currencySymbol = "€", origin = ChargeOrigin.LIVE,
             startTimeMs = at("2026-09-26T22:00:00Z"), endTimeMs = at("2026-09-27T03:00:00Z"), zone = utc,
         ).text()
@@ -285,7 +301,7 @@ class TelegramEventMessagesTest {
         assertTrue(bms, bms.contains("SoC (BMS) 53.5% → 48.7% (−4.8%)"))
         assertTrue(tripSummary().contains("SoC 80% → 76% (−4%)"))
         val charge = TelegramEventMessages.chargingFinished(
-            7L, 43.0, 31.2, 9.8, null, 0.0, 0.0, null, "€", ChargeOrigin.LIVE, socFromBms = true,
+            7L, 43.0, 31.2, 9.8, null, null, 0.0, 0.0, null, "€", ChargeOrigin.LIVE, socFromBms = true,
         ).text()
         assertTrue(charge, charge.contains("SoC (BMS) 31.2% → 43.0%"))
     }
@@ -357,6 +373,7 @@ class VehicleEventFactsTest {
 
     private fun charge(
         kwhAdded: Double? = 26.5,
+        receivedKwh: Double? = null,
         avgKw: Double = 29.4,
         peakKw: Double = 43.3,
         ratePerKwh: Double? = 0.59,
@@ -367,6 +384,7 @@ class VehicleEventFactsTest {
         socEnd = 81.0,
         socStart = 49.0,
         kwhAdded = kwhAdded,
+        receivedKwh = receivedKwh,
         durationMs = 3_773_000L,
         avgKw = avgKw,
         peakKw = peakKw,
@@ -397,6 +415,28 @@ class VehicleEventFactsTest {
         val reconstructed = charge(avgKw = 0.0, peakKw = 0.0)
         assertFalse(reconstructed.containsKey("avg_kw"))
         assertFalse(reconstructed.containsKey("peak_kw"))
+    }
+
+    /**
+     * Both energies travel, because they answer different questions: one is what the car
+     * watched arrive, the other is what the pack has to account for. `cost` keeps its meaning
+     * on the wire — `rate_per_kwh` times `energy_added_kwh` — so a consumer that only knows
+     * about `energy_added_kwh` reads the same numbers it always read.
+     */
+    @Test
+    fun `the payload carries the measured energy beside the pack energy`() {
+        val facts = charge(kwhAdded = 26.5, receivedKwh = 28.36)
+        assertEquals(26.5, facts["energy_added_kwh"])
+        assertEquals(28.36, facts["energy_received_kwh"])
+        assertEquals(26.5 * 0.59, facts["cost"] as Double, 1e-9)
+    }
+
+    /** A session with no samples publishes no received energy at all, rather than a zero. */
+    @Test
+    fun `an unmeasured charge omits the measured energy`() {
+        val facts = charge(kwhAdded = 26.5, receivedKwh = null)
+        assertFalse(facts.containsKey("energy_received_kwh"))
+        assertEquals(26.5 * 0.59, facts["cost"] as Double, 1e-9)
     }
 
     @Test

@@ -302,6 +302,7 @@
     <string name="soc_end_label">SoC Ende</string>
     <string name="soc_added_label">SoC zugeladen</string>
     <string name="kwh_added_label">kWh zugeladen</string>
+    <string name="kwh_received_label">kWh empfangen</string>
     <string name="battery_car_label">Batterie (HV)</string>
     <string name="peak_power_label">Spitzenleistung</string>
     <string name="average_power_label">Durchschnittsleistung</string>

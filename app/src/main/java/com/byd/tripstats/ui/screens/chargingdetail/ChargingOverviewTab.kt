@@ -123,6 +123,11 @@ internal fun ChargingOverviewTab(
                 session.kwhAdded?.let {
                     OverviewRow(stringResource(R.string.kwh_added_label), "%.2f kWh".format(it), valueColor = RegenGreen)
                 }
+                // Only when it was measured. A session without samples has nothing to show here,
+                // and showing the pack figure twice would imply nothing was lost on the way in.
+                session.energyReceivedKwh?.let {
+                    OverviewRow(stringResource(R.string.kwh_received_label), "%.2f kWh".format(it))
+                }
                 OverviewRow(stringResource(R.string.battery_car_label), "%.1f kWh".format(session.batteryKwh))
                 distanceSinceLastCharge?.takeIf { it >= 0.0 }?.let { km ->
                     OverviewRow(

@@ -15,6 +15,9 @@ import androidx.room.PrimaryKey
  * remains correct even if the user later switches car models.
  *
  * avgKw is computed from chargingPower readings; peakKw is the max observed.
+ *
+ * energyReceivedKwh integrates those same readings over time, which is the energy the car
+ * measured arriving rather than the energy the pack kept. See ChargingEnergy.
  */
 @Entity(tableName = "charging_sessions")
 data class ChargingSessionEntity(
@@ -32,6 +35,21 @@ data class ChargingSessionEntity(
 
     /** kWh added — computed on close, null while session is still active */
     val kwhAdded: Double? = null,
+
+    /**
+     * kWh the car measured arriving, integrated from this session's power samples on close.
+     *
+     * [kwhAdded] is what the pack ended up holding; this is what the car watched come in, and
+     * it is the larger of the two by whatever was lost on the way. It is the car's own
+     * measurement, not a meter reading: on DC it tracks the charger's meter closely, while on
+     * AC it is taken after the on-board charger and so reads below a wallbox. Nothing is priced
+     * from it — see ChargingEnergy.
+     *
+     * Null whenever it cannot be measured: a session reconstructed from the SoC delta, a car
+     * whose SDK never reports charging power, and any session whose samples do not account for
+     * the whole charge. Null is not zero.
+     */
+    val energyReceivedKwh: Double? = null,
 
     val peakKw: Double = 0.0,
     val avgKw: Double = 0.0,

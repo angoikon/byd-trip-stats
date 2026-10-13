@@ -332,6 +332,7 @@
     <string name="soc_end_label">SoC в конце</string>
     <string name="soc_added_label">Добавлено SoC</string>
     <string name="kwh_added_label">Добавлено кВт·ч</string>
+    <string name="kwh_received_label">Получено кВт·ч</string>
     <string name="battery_car_label">Батарея (HV)</string>
     <string name="peak_power_label">Пиковая мощность</string>
     <string name="average_power_label">Средняя мощность</string>

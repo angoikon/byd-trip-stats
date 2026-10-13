@@ -335,6 +335,7 @@
     <string name="soc_end_label">SoC einde</string>
     <string name="soc_added_label">SoC toegevoegd</string>
     <string name="kwh_added_label">kWh toegevoegd</string>
+    <string name="kwh_received_label">kWh ontvangen</string>
     <string name="battery_car_label">Batterij (HV)</string>
     <string name="peak_power_label">Piekvermogen</string>
     <string name="average_power_label">Gemiddeld vermogen</string>

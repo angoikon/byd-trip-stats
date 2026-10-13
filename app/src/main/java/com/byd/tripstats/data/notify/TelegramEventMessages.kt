@@ -169,6 +169,12 @@ object TelegramEventMessages {
      * stopped — a tripped breaker, a public charger that gave up, or simply an unplug. Both are
      * facts about the session, and neither claims to know the reason.
      *
+     * [kwhAdded] is what the pack gained and [receivedKwh] is what the car measured arriving,
+     * which is the larger of the two. The card is costed on [kwhAdded], as it always has been:
+     * the received figure is a measurement rather than a meter reading, and on AC it is taken
+     * after the on-board charger. [receivedKwh] travels in the payload and is null for any
+     * session whose samples cannot account for the charge.
+     *
      * [ratePerKwh] follows the charging screen's own rule — the session's own price when it has
      * one, otherwise the global tariff, null when neither exists — so a session priced at zero
      * reads as free here exactly as it does there.
@@ -184,6 +190,7 @@ object TelegramEventMessages {
         socEnd: Double,
         socStart: Double,
         kwhAdded: Double?,
+        receivedKwh: Double?,
         durationMs: Long?,
         avgKw: Double,
         peakKw: Double,
@@ -229,12 +236,11 @@ object TelegramEventMessages {
         )
         if (power.isNotEmpty()) lines += power.joinToString(" · ")
 
-        if (kwhAdded != null && kwhAdded > 0.0 && ratePerKwh != null) {
-            val cost = kwhAdded * ratePerKwh
-            lines += if (cost <= 0.0) "Cost free" else "Cost $currencySymbol${fmt(cost, 2)}"
+        val chargeCost = if (kwhAdded != null && kwhAdded > 0.0 && ratePerKwh != null)
+            kwhAdded * ratePerKwh else null
+        chargeCost?.let {
+            lines += if (it <= 0.0) "Cost free" else "Cost $currencySymbol${fmt(it, 2)}"
         }
-
-        val chargeCost = if (kwhAdded != null && kwhAdded > 0.0 && ratePerKwh != null) kwhAdded * ratePerKwh else null
         return VehicleEvent(
             type = VehicleEvent.Type.CHARGING,
             // Numbered as Charging History numbers the session's card, for the same reason.
@@ -258,9 +264,13 @@ object TelegramEventMessages {
                 "origin" to origin.wireName,
                 "duration_s" to chargedForMs?.takeIf { it > 0 }?.div(1000),
                 // Named as the app names it. This is the energy that reached the pack, derived
-                // from the SoC delta, so it is smaller than what the charger billed: a consumer
-                // pricing a session from it will land under the meter.
+                // from the SoC delta, and it is what `cost` is calculated from.
                 "energy_added_kwh" to kwhAdded?.takeIf { it > 0.0 },
+                // What the car measured arriving, integrated from the power samples. Absent when
+                // the session recorded none, which is every reconstructed session and every car
+                // whose SDK never reports charging power. On AC it is read after the on-board
+                // charger, so it is not a wall-side figure — HOME_ASSISTANT.md says so plainly.
+                "energy_received_kwh" to receivedKwh?.takeIf { it > 0.0 },
                 "soc_start_pct" to socStart,
                 "soc_end_pct" to socEnd,
                 "soc_source" to if (socFromBms) "bms" else "panel",

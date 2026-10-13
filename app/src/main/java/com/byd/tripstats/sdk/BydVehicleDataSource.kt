@@ -607,8 +607,11 @@ data class VehicleTelemetrySnapshot(
         //      real gross rate and even follows aux draw (it dips when the AC compressor runs).
         //   3. chargingPower (net) as a last resort when enginePower shows no charge (e.g. car fully
         //      off → pack getter idle; off-state charging is reconstructed from SoC anyway).
-        // kwhAdded still comes from the SoC delta, so energy totals are unaffected regardless — only
-        // the live/recorded power curve and the MQTT charging_power sensor.
+        // kwhAdded still comes from the SoC delta, and so does every cost, but the recorded
+        // curve is no longer only a chart: ChargingEnergy integrates it into energyReceivedKwh.
+        // Only source 1 reads the power on its way in; sources 2 and 3 are pack-side or
+        // under-report, and a session sampled from them fails the check against the SoC delta
+        // and stores no received figure at all, which is the intent.
         val packChargeKw = if (chargingActive && parkedBev && packPowerKw < 0) -packPowerKw.toDouble() else 0.0
         val inferredChargingPower = when {
             chargingPower > 0.0 && !chargingPowerIsNet -> chargingPower  // gross getter — accurate, keep decimals

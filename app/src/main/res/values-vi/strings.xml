@@ -332,6 +332,7 @@
     <string name="soc_end_label">SoC cuối</string>
     <string name="soc_added_label">SoC đã thêm</string>
     <string name="kwh_added_label">kWh đã thêm</string>
+    <string name="kwh_received_label">kWh đã nhận</string>
     <string name="battery_car_label">Pin (HV)</string>
     <string name="peak_power_label">Công suất đỉnh</string>
     <string name="average_power_label">Công suất trung bình</string>

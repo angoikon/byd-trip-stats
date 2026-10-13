@@ -335,6 +335,7 @@
     <string name="soc_end_label">SoC slutt</string>
     <string name="soc_added_label">SoC tillagt</string>
     <string name="kwh_added_label">kWh tillagt</string>
+    <string name="kwh_received_label">kWh mottatt</string>
     <string name="battery_car_label">Batteri (HV)</string>
     <string name="peak_power_label">Toppeffekt</string>
     <string name="average_power_label">Gjennomsnittseffekt</string>
