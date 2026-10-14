@@ -230,6 +230,9 @@ class Dilink5Client {
     }
 
     @Volatile private var lastActiveMs = 0L  // last time driving or charging (for idle back-off)
+    // Last onSpeedChanged event (elapsedRealtime); 0 = none yet. The events carry the speedometer
+    // figure and lead the live speed — see di5PolledSpeedKmh.
+    @Volatile private var lastSpeedEventMs = 0L
 
     // Battery-aware cadence: 1s driving/DC-charge, 5s AC-charge or just-stopped, 30s parked/idle.
     private fun pollIntervalMs(ds: BydVehicleDataSource): Long {
@@ -277,9 +280,15 @@ class Dilink5Client {
         // the other (applyDaemonTelemetry ignores null fields).
         // Speed getter is now just a backstop — the speed listener (registerSpeedListener) is the
         // primary, instant source.
+        // The getter is ground speed, a few % under the speedometer figure the events carry, so it
+        // only takes the live speed when the events have gone quiet and it clearly disagrees
+        // (di5PolledSpeedKmh); otherwise it re-pushes what's shown, keeping the push fresh.
         val spd = reflGetDouble(speedDev, "getSpeedValue")?.takeIf { it in 0.0..400.0 }
         if (spd != null) {
-            ds.applyDaemonTelemetry(speedKmh = spd, gear = null, powerKw = null, rearRpm = null)
+            val lastEvent = lastSpeedEventMs
+            val sinceEvent = if (lastEvent == 0L) null else SystemClock.elapsedRealtime() - lastEvent
+            val kmh = di5PolledSpeedKmh(sinceEvent, ds.vehicleSnapshot.value.directSpeedKmh, spd)
+            ds.applyDaemonTelemetry(speedKmh = kmh, gear = null, powerKw = null, rearRpm = null)
         }
         // A stop clears the usable-kWh estimate from the power value now, not at the next usable-kWh
         // reading, which can be 30 s away.
@@ -464,6 +473,7 @@ class Dilink5Client {
             val l = object : AbsBYDAutoSpeedListener() {
                 override fun onSpeedChanged(speed: Double) {
                     VehicleCompatibilityProbe.recordTypedEvent("speed", "onSpeedChanged", speed)
+                    lastSpeedEventMs = SystemClock.elapsedRealtime()
                     ds.applyDaemonTelemetry(speedKmh = speed, gear = null, powerKw = null, rearRpm = null)
                 }
             }

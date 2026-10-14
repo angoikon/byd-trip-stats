@@ -111,7 +111,12 @@ fun PowerMetricsRow(
         initial = prefs.getCachedDashboardShowRemainingKwh()
     )
     val batteryMode = batteryReadoutMode(socSource, showRemainingKwh)
-    val batteryRemainingKwh = vehicleSnapshot?.powerBatteryRemainPowerEV ?: telemetry.batteryRemainPowerEV
+    val selectedCar by prefs.selectedCarConfig.collectAsState(initial = prefs.getCachedSelectedCarConfig())
+    val batteryRemainingKwh = remainingKwhForTile(
+        rawKwh = vehicleSnapshot?.powerBatteryRemainPowerEV ?: telemetry.batteryRemainPowerEV,
+        socPercent = telemetry.socPanel.takeIf { it > 0 }?.toDouble() ?: telemetry.soc,
+        car = selectedCar,
+    )
     val (batteryValue, batteryUnit) = batteryReadoutValueUnit(
         batteryMode, telemetry.socPanel, telemetry.soc, batteryRemainingKwh
     )
@@ -130,7 +135,6 @@ fun PowerMetricsRow(
 
     // PHEV: the tile keeps the EV projection as its headline figure, and the
     // subtitle carries the petrol + combined range instead of the generic hint.
-    val selectedCar by prefs.selectedCarConfig.collectAsState(initial = prefs.getCachedSelectedCarConfig())
     val fuelRangeKm = phevFuelRangeKm(telemetry, selectedCar)
     val rangeSubtitle = if (fuelRangeKm != null) {
         stringResource(

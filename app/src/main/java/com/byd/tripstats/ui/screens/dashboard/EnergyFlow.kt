@@ -114,8 +114,15 @@ fun EnergyFlowDiagram(
         initial = appPrefs.getCachedDashboardShowRemainingKwh()
     )
     val batteryMode = batteryReadoutMode(socSource, showRemainingKwh)
+    val selectedCarForBattery by appPrefs.selectedCarConfig
+        .collectAsState(initial = appPrefs.getCachedSelectedCarConfig())
     val (batteryValue, batteryUnit) = batteryReadoutValueUnit(
-        batteryMode, telemetry.socPanel, telemetry.soc, telemetry.batteryRemainPowerEV
+        batteryMode, telemetry.socPanel, telemetry.soc,
+        remainingKwhForTile(
+            rawKwh = telemetry.batteryRemainPowerEV,
+            socPercent = telemetry.socPanel.takeIf { it > 0 }?.toDouble() ?: telemetry.soc,
+            car = selectedCarForBattery,
+        ),
     )
     val toggleBatteryReadout: () -> Unit = {
         scope.launch { appPrefs.saveDashboardShowRemainingKwh(!showRemainingKwh) }

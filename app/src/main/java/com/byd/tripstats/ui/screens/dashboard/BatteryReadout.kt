@@ -28,6 +28,38 @@ fun batteryReadoutLabel(mode: BatteryReadoutMode): String = when (mode) {
 }
 
 /**
+ * The kWh the battery tile shows as remaining, from the car's remaining-EV-energy reading
+ * ([rawKwh], `powerBatteryRemainPowerEV`), or null for an em dash.
+ *
+ * A reading the pack can't hold is dropped: more than the whole battery (a Shark 6 reports a
+ * constant 128 on a 29.58 kWh pack), or, on a plug-in hybrid, the SoC percentage passed off as
+ * kWh — a known PHEV firmware bug (a Sealion 6 DM-i read 84.1 at 84 %, a Shark 6 95.5 at 95 %).
+ * No PHEV pack is near 100 kWh, so its kWh can't track its percentage; below 10 % SoC the two
+ * meet legitimately, so that check stops there. A BEV is only held to the pack size, which
+ * leaves every sane reading as it was.
+ *
+ * Where the reading is dropped and the car's EV reserve is measured (CarConfig
+ * .phevEvReserveSocPct), the tile shows the energy above that reserve — the same figure the
+ * range projection uses — instead of a dash.
+ */
+fun remainingKwhForTile(
+    rawKwh: Double?,
+    socPercent: Double,
+    car: com.byd.tripstats.data.config.CarConfig?,
+): Double? {
+    val pack = car?.batteryKwh
+    val plausible = rawKwh?.takeIf { it.isFinite() && it > 0.0 }
+        ?.takeIf { pack == null || it <= pack * 1.05 }
+        ?.takeIf { car?.isPhev != true || socPercent < 10.0 || kotlin.math.abs(it - socPercent) >= 5.0 }
+    if (plausible != null) return plausible
+    val reserve = car?.phevEvReserveSocPct
+    if (car?.isPhev == true && pack != null && reserve != null && socPercent > 0.0) {
+        return pack * ((socPercent - reserve) / 100.0).coerceAtLeast(0.0)
+    }
+    return null
+}
+
+/**
  * `(value, unit)` for the readout. [remainingKwh] is the BMS remaining-EV energy
  * (`powerBatteryRemainPowerEV`); an em dash is shown when it isn't reported — which is itself the
  * signal that the usable-kWh feed is absent on this hardware.
