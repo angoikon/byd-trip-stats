@@ -19,6 +19,10 @@ interface TripDao {
     @Query("SELECT * FROM trips WHERE isActive = 1 LIMIT 1")
     suspend fun getActiveTrip(): TripEntity?
 
+    /** Where the last finished trip ended, for anchoring the next one (see TripRepository.anchoredStartOdometer). */
+    @Query("SELECT endOdometer FROM trips WHERE isActive = 0 AND endOdometer IS NOT NULL ORDER BY startTime DESC LIMIT 1")
+    suspend fun getLastEndOdometer(): Double?
+
     @Query("SELECT * FROM trips WHERE id = :tripId")
     suspend fun getTripById(tripId: Long): TripEntity?
 

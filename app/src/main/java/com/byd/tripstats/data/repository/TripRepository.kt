@@ -1580,7 +1580,13 @@ class TripRepository private constructor(context: Context) {
             Log.w(TAG, "Trip start: journey counters stale (${journeyKmRaw}km implied >200km/h) — anchoring at current odometer")
         }
         val journeyKm = if (journeyCountersStale) 0.0 else journeyKmRaw
-        val startOdometer = (telemetry.odometer - journeyKm).coerceAtLeast(0.0)
+        // DiLink-5: not below where the last trip ended, when the start is the post-boot whole
+        // number (anchoredStartOdometer). Journey back-anchoring never applies there (no journey
+        // counter on DiLink-5), so it only ever adjusts the plain current reading.
+        val startOdometer = (telemetry.odometer - journeyKm).coerceAtLeast(0.0).let { raw ->
+            if (journeyKm > 0.0 || !DiLink5Platform.isDiLink5) raw
+            else anchoredStartOdometer(raw, runCatching { tripDao.getLastEndOdometer() }.getOrNull(), true)
+        }
         val backdateMs = if (journeyKm > 0.0) {
             journeyTimeMin
                 ?.takeIf { it.isFinite() && it > 0.0 }
@@ -1629,7 +1635,12 @@ class TripRepository private constructor(context: Context) {
         lastTripTotalDischarge     = telemetry.totalDischarge.takeIf { it.isFinite() && it >= 0.0 }
         tripMinSoc                 = telemetry.soc
 
-        currentSegment = openSegment(tripId, telemetry)
+        // Anchored above the reading (DiLink-5 post-boot whole number): the segment and the opening
+        // point start where the car really is, like the trip.
+        val anchoredOdometer = startOdometer.takeIf { journeyKm == 0.0 && it > telemetry.odometer }
+        currentSegment = openSegment(tripId, telemetry).let { seg ->
+            if (anchoredOdometer != null) seg.copy(startOdometer = anchoredOdometer) else seg
+        }
 
         // Synthetic anchor point at the back-calculated trip start. Carries current
         // telemetry values but odometer/timestamp reflect the real car-on moment so
@@ -1645,7 +1656,7 @@ class TripRepository private constructor(context: Context) {
 
         // Write the opening datapoint immediately so short trips and
         // early sparse packets are always captured from the first moment.
-        recordDataPoint(tripId, telemetry)
+        recordDataPoint(tripId, telemetry, overrideOdometer = anchoredOdometer)
         lastRecordedTelemetry = telemetry
         lastWriteTime = System.currentTimeMillis()
 
@@ -1656,7 +1667,9 @@ class TripRepository private constructor(context: Context) {
             appContext, TAG,
             "trip start id=$tripId manual=$isManual " +
                 "soc=${"%.1f".format(telemetry.soc)} panel=${telemetry.socPanel} " +
-                "odo=${"%.1f".format(startOdometer)} backdate=${clampedBackdateMs / 1000}s " +
+                "odo=${"%.1f".format(startOdometer)}" +
+                (anchoredOdometer?.let { " (read ${"%.1f".format(telemetry.odometer)}, anchored to the last trip's end)" } ?: "") +
+                " backdate=${clampedBackdateMs / 1000}s " +
                 "journey=$journeyKm backAnchor=$backAnchorToJourney reason=${startReason ?: "-"}"
         )
     }
@@ -2956,6 +2969,22 @@ class TripRepository private constructor(context: Context) {
          * within the next kilometre isn't movement. A real drive still opens its trip from speed
          * and gear, and the odometer counts again from its next step.
          */
+        /**
+         * The odometer a new trip starts from. The same DiLink-5 boot artefact as in
+         * [odometerShowsMovement]: a trip that opens before the decimal arrives starts on the whole
+         * number, below where the car really is, and counts that fraction as driven — a Shark 6
+         * parked at 10702.5 started its next trip at 10702.0 and recorded 5.20 km for a 4.71 km
+         * drive (GPS). The car can't be behind where it last parked, so on DiLink-5 a whole-number
+         * start that is up to a kilometre below the previous trip's end starts from that end
+         * instead. Anything else — DiLink-3, a decimal reading, no previous trip, a previous end
+         * outside that kilometre — keeps [startKm].
+         */
+        internal fun anchoredStartOdometer(startKm: Double, lastEndKm: Double?, isDiLink5: Boolean): Double {
+            if (!isDiLink5 || lastEndKm == null || startKm <= 0.0) return startKm
+            if (startKm != kotlin.math.floor(startKm)) return startKm
+            return if (lastEndKm > startKm && lastEndKm < startKm + 1.0) lastEndKm else startKm
+        }
+
         internal fun odometerShowsMovement(previousKm: Double, currentKm: Double, isDiLink5: Boolean): Boolean {
             if (previousKm <= 0.0 || currentKm <= previousKm + 0.01) return false
             if (isDiLink5 && previousKm == kotlin.math.floor(previousKm) && currentKm < previousKm + 1.0) return false
