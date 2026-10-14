@@ -15,6 +15,29 @@ private const val MAX_BUS_AMPS = 2000.0
 internal fun decodeCollectChannel(raw: Int, offset: Int, scale: Double): Double = (raw - offset) * scale
 
 /**
+ * An RPM read from the engine device's getters, decoded with the same per-car settings as the
+ * collectdata event ([CarConfig.motorRpmOffsetFront] etc.).
+ *
+ * The data source polls those getters alongside the decoded `onDriverMotorSpeed` events and takes
+ * them whenever the events have been quiet for 3 s — at start-up, before the events flow, and
+ * whenever the car goes quiet. On a Shark 6 they return the same encoding as the events (front
+ * 15000 / rear 30000 at rest), so until now those spells showed raw RPM, fired the "speed 0 while
+ * moving" diagnostic, and made the drivetrain look alive. With a car's offset and scale it is
+ * decoded the same way, a stopped motor reading just below its baseline counts as 0, and a value
+ * beyond 30 000 rpm is dropped. Without them — every other car — the raw value comes back exactly as
+ * it was, and so do [sentinels], which the caller handles itself.
+ */
+internal fun decodeEngineGetterRpm(raw: Int?, offset: Int, scale: Double, sentinels: Set<Int>): Int? {
+    if (raw == null || (offset == 0 && scale == 1.0) || raw in sentinels) return raw
+    val rpm = kotlin.math.round(decodeCollectChannel(raw, offset, scale)).toInt()
+    return when {
+        rpm < 0 -> 0
+        rpm > 30_000 -> null
+        else -> rpm
+    }
+}
+
+/**
  * HV current in amps (regen negative) from `onMotorMCUGeneratrixCurrent(front, rear)`, decoded
  * with the car's [CarConfig.hvCurrentOffset] / [CarConfig.hvCurrentScale]; null when nothing
  * usable came in.

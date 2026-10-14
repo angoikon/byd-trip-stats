@@ -106,6 +106,8 @@ private const val MAX_PLAUSIBLE_SPEED_KMH = 250.0
 // A single-poll BMS SoC step larger than this (percentage points) is treated as a glitch and
 // held once — far above any real per-second SoC change, far below the observed ~1.5 pt dips.
 private const val SOC_BMS_GLITCH_STEP = 1.0
+// CAN "signal unavailable" all-ones patterns an RPM getter can return (see the engine snapshot).
+private val BYD_RPM_SENTINEL_VALUES = setOf(8191, 16383, 32767, 65535)
 // Minimum GPS speed (km/h) treated as clear motion when bridging a wedged/zero speed getter.
 // Above typical standstill GPS jitter so a parked car still reads 0.
 private const val GPS_BRIDGE_MIN_KMH = 2.0
@@ -1009,6 +1011,22 @@ class BydVehicleDataSource(context: Context) {
 
     private val ctx = VehicleContextWrapper(appContext)
     private val preferencesManager by lazy { PreferencesManager(appContext) }
+
+    /**
+     * An RPM from any of the engine, motor or speed device getters, put through the selected car's
+     * collectdata RPM decode on DiLink-5 (decodeEngineGetterRpm). A Shark 6 reads 15000 / 30000 at
+     * rest there, and those getters stand in whenever the decoded events go quiet. Every other car
+     * — and DiLink-3 always — gets the raw value back unchanged.
+     */
+    private fun decodedGetterRpm(raw: Int?, front: Boolean): Int? {
+        val car = if (DiLink5Platform.isDiLink5) preferencesManager.getCachedSelectedCarConfig() else null
+        return decodeEngineGetterRpm(
+            raw,
+            offset = if (front) car?.motorRpmOffsetFront ?: 0 else car?.motorRpmOffsetRear ?: 0,
+            scale = if (front) car?.motorRpmScaleFront ?: 1.0 else car?.motorRpmScaleRear ?: 1.0,
+            sentinels = BYD_RPM_SENTINEL_VALUES,
+        )
+    }
     private val statCache: SharedPreferences by lazy {
         appContext.getSharedPreferences(VEHICLE_STATE_CACHE, Context.MODE_PRIVATE)
     }
@@ -3053,10 +3071,10 @@ class BydVehicleDataSource(context: Context) {
             // Use MotorDevice as an RPM source if Engine/Speed haven't populated it.
             // Only write a non-zero value — zero readings from this supplementary path
             // are spurious SDK poll artefacts and should not overwrite the main path's value.
-            val frontRaw = speedFrontSpecific ?: speedGeneric
+            val frontRaw = decodedGetterRpm(speedFrontSpecific ?: speedGeneric, front = true)
             val front = frontRaw?.takeIf { it > 0 }
             if (front != null && (_vehicleSnapshot.value.engineSpeedFront == null || _vehicleSnapshot.value.engineSpeedFront == 0)) {
-                val rear = speedRearSpecific?.takeIf { it > 0 }
+                val rear = decodedGetterRpm(speedRearSpecific, front = false)?.takeIf { it > 0 }
                     ?: if (speedRearSpecific == null) _vehicleSnapshot.value.engineSpeedRear else null
                 _vehicleSnapshot.value = _vehicleSnapshot.value.copy(
                     engineSpeedFront = front,
@@ -3745,18 +3763,19 @@ class BydVehicleDataSource(context: Context) {
             // Prefer dedicated axle getters first. Generic fallback (m22) is kept only
             // because on some AWD firmwares it represents a primary/active motor rather
             // than a clean "front axle" signal.
-            val engineSpeedFrontSpecificRaw = invokeIntGetter(device, *runtimeMethodNames("m20"))
-            val engineSpeedRearRaw          = invokeIntGetter(device, *runtimeMethodNames("m21"))
-            val engineSpeedGenericRaw       = invokeIntGetter(device, *runtimeMethodNames("m22"))
-            val engineSpeedFrontRaw = engineSpeedFrontSpecificRaw ?: engineSpeedGenericRaw
-            // Rule: if the car is moving and the getter returns 0, that is a spurious SDK
-            // poll result (the getter updates slower than the 50 ms poll interval).
-            // Preserve the last known value in that case. Only write 0 when the car is
-            // genuinely stopped (speed < 1 km/h), which also covers cold-boot / pre-drive.
             // 8191/16383/32767/65535 are CAN "signal unavailable" sentinel values (all-ones
             // patterns at various bit widths); treat them the same as 0 — write 0 when
             // stopped, preserve last known when moving.
             val BYD_RPM_SENTINELS = setOf(8191, 16383, 32767, 65535)
+            // Through the car's RPM decode (decodedGetterRpm) — raw on every car but the Shark 6.
+            val engineSpeedFrontSpecificRaw = invokeIntGetter(device, *runtimeMethodNames("m20"))
+            val engineSpeedRearRaw = decodedGetterRpm(invokeIntGetter(device, *runtimeMethodNames("m21")), front = false)
+            val engineSpeedGenericRaw       = invokeIntGetter(device, *runtimeMethodNames("m22"))
+            val engineSpeedFrontRaw = decodedGetterRpm(engineSpeedFrontSpecificRaw ?: engineSpeedGenericRaw, front = true)
+            // Rule: if the car is moving and the getter returns 0, that is a spurious SDK
+            // poll result (the getter updates slower than the 50 ms poll interval).
+            // Preserve the last known value in that case. Only write 0 when the car is
+            // genuinely stopped (speed < 1 km/h), which also covers cold-boot / pre-drive.
             val directSpeedKmh = _vehicleSnapshot.value.directSpeedKmh
             val prevFront = _vehicleSnapshot.value.engineSpeedFront ?: 0
             val engineSpeedFront = when {
@@ -4220,13 +4239,13 @@ class BydVehicleDataSource(context: Context) {
                 val enginePower = _vehicleSnapshot.value.enginePower
                 val frontSpecific = invokeIntGetter(device, *runtimeMethodNames("m20"))
                 val generic       = invokeIntGetter(device, *runtimeMethodNames("m22"))
-                val frontRaw      = frontSpecific ?: generic
+                val frontRaw      = decodedGetterRpm(frontSpecific ?: generic, front = true)
                 val front = frontRaw
                     ?.takeIf { it !in BYD_RPM_SENTINELS }
                     ?.let { if (it <= 5 && (enginePower == null || enginePower == 0)) 0 else it }
                 if (_vehicleSnapshot.value.engineSpeedFront == null || _vehicleSnapshot.value.engineSpeedFront == 0) {
                     if (front != null) {
-                        val rearSpecific = invokeIntGetter(device, *runtimeMethodNames("m21"))
+                        val rearSpecific = decodedGetterRpm(invokeIntGetter(device, *runtimeMethodNames("m21")), front = false)
                         val rear = rearSpecific
                             ?.takeIf { it !in BYD_RPM_SENTINELS }
                             ?.let { if (it <= 5 && (enginePower == null || enginePower == 0)) 0 else it }
@@ -7771,8 +7790,13 @@ class BydVehicleDataSource(context: Context) {
                 )
             }
             "Engine" -> {
-                val decodedRpm = kotlin.math.abs(rawNumber.toInt()).takeIf { it in 1..20000 } ?: return
                 val rpmIds = engineRpmFeatureIds
+                // Through the car's RPM decode first (decodedGetterRpm — raw on every car but the
+                // Shark 6, which reports 15000 / 30000 at rest), then as before.
+                val isRearRpm = rpmIds.size > 1 && featureId == rpmIds[1] &&
+                    !(rpmIds.isNotEmpty() && featureId == rpmIds[0])
+                val decodedRpm = decodedGetterRpm(rawNumber.toInt(), front = !isRearRpm)
+                    ?.let { kotlin.math.abs(it) }?.takeIf { it in 1..20000 } ?: return
                 when {
                     rpmIds.isNotEmpty() && featureId == rpmIds[0] -> {
                         _vehicleSnapshot.update { snap -> snap.copy(engineSpeedFront = decodedRpm) }

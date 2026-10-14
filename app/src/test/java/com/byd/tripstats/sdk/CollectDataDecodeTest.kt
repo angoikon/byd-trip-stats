@@ -85,6 +85,38 @@ class CollectDataDecodeTest {
         assertEquals(0.0, decodeCollectChannel(15000, shark.motorRpmOffsetFront, shark.motorRpmScaleFront), eps)
     }
 
+    // ── decodeEngineGetterRpm: the getters that stand in when the events are quiet ──
+
+    private val sentinels = setOf(8191, 16383, 32767, 65535)
+    private fun sharkFront(raw: Int?) = decodeEngineGetterRpm(raw, shark.motorRpmOffsetFront, shark.motorRpmScaleFront, sentinels)
+    private fun sharkRear(raw: Int?) = decodeEngineGetterRpm(raw, shark.motorRpmOffsetRear, shark.motorRpmScaleRear, sentinels)
+
+    @Test fun `a Shark at rest reads 0 from the getters, not 15000 and 30000`() {
+        // diag 2026-10-14 12:04 after a boot: rpmF=15000 rpmR=30000 while parked
+        assertEquals(0, sharkFront(15000))
+        assertEquals(1, sharkFront(14999))
+        assertEquals(0, sharkRear(30000))
+        assertEquals(0, sharkRear(29999))   // just below the baseline counts as stopped
+    }
+
+    @Test fun `a moving Shark reads the same rpm from the getters as from the events`() {
+        assertEquals(1024, sharkFront(13976))
+        assertEquals(842, sharkRear(30842))
+    }
+
+    @Test fun `getter sentinels and no reading pass through for the caller`() {
+        assertEquals(65535, sharkFront(65535))
+        assertEquals(8191, sharkRear(8191))
+        assertEquals(null, sharkFront(null))
+    }
+
+    @Test fun `every car without a decode gets the raw getter value back`() {
+        for (raw in listOf(0, 1, 850, 4321, 15000, 30000, 50535, 65535)) {
+            assertEquals(raw, decodeEngineGetterRpm(raw, sealion7.motorRpmOffsetFront, sealion7.motorRpmScaleFront, sentinels))
+            assertEquals(raw, decodeEngineGetterRpm(raw, 0, 1.0, sentinels))
+        }
+    }
+
     @Test fun `Sealion 7 rpm passes through unchanged`() {
         assertEquals(4321.0, decodeCollectChannel(4321, sealion7.motorRpmOffsetFront, sealion7.motorRpmScaleFront), eps)
     }

@@ -1994,9 +1994,10 @@ class TripRepository private constructor(context: Context) {
         // Both odometer readings must be real. The odometer falls back to 0.0 until the car
         // reports it, so "0 → 14355" as the car comes online is not movement — that jump opened
         // a 3-minute, 0 km trip every time a DiLink-5 head unit woke by itself (e.g. at night).
+        // Nor is the whole-number reading being replaced by the decimal one (see
+        // odometerShowsMovement).
         val movedByOdometer = previousTelemetry != null &&
-            previousTelemetry.odometer > 0.0 &&
-            t.odometer > previousTelemetry.odometer + 0.01
+            odometerShowsMovement(previousTelemetry.odometer, t.odometer, DiLink5Platform.isDiLink5)
         val effectiveSpeed = maxOf(t.speed, t.locationGpsSpeed ?: 0.0)
         val drivetrainAlive = t.engineSpeedFront > 0 ||
             t.engineSpeedRear > 0 ||
@@ -2943,6 +2944,23 @@ class TripRepository private constructor(context: Context) {
         /** Shortest in-trip gap that counts as parked-with-trip-open on this head unit. */
         fun offStateGapThresholdMs(isDiLink5: Boolean): Long =
             if (isDiLink5) DI5_OFFSTATE_GAP_THRESHOLD_MS else OFFSTATE_GAP_THRESHOLD_MS
+
+        /**
+         * Whether the odometer going from [previousKm] to [currentKm] is the car moving.
+         *
+         * A 0 is no reading (the odometer falls back to 0.0 until the car reports it). And on
+         * DiLink-5, right after the head unit boots, the car reports the odometer as a whole number
+         * first and the decimal a few seconds later: a Shark 6 that had parked at 10702.5 read
+         * 10702.0, then 10702.5, and that half kilometre opened a 0 km trip after the boot (trip 44,
+         * 2026-10-14; trip 40 started the same way). So on DiLink-5 a rise from a whole number to
+         * within the next kilometre isn't movement. A real drive still opens its trip from speed
+         * and gear, and the odometer counts again from its next step.
+         */
+        internal fun odometerShowsMovement(previousKm: Double, currentKm: Double, isDiLink5: Boolean): Boolean {
+            if (previousKm <= 0.0 || currentKm <= previousKm + 0.01) return false
+            if (isDiLink5 && previousKm == kotlin.math.floor(previousKm) && currentKm < previousKm + 1.0) return false
+            return true
+        }
 
         /**
          * Largest time gap between the end of the earlier trip and the start of the
