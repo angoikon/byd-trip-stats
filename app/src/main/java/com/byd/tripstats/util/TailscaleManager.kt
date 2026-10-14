@@ -12,6 +12,28 @@ import org.json.JSONObject
 import java.io.File
 
 /**
+ * Whether a Tailscale state file (`tailscaled.state`) was written by this app's own sign-ins: it has
+ * at least one profile, and every profile carries the hostname the app signs in with. Our `up`
+ * always passes `--hostname`, so a profile under any other name — "overdrive" on the Sealion 7 that
+ * shared the folder with Overdrive's Tailscale (2026-10-14) — is someone else's. So is a file this
+ * can't parse: the answer decides whether a file is deleted, and "not ours" is the safe side.
+ *
+ * The file is a JSON object of base64 values; each `profile-…` entry decodes to that profile's
+ * prefs, `Hostname` among them. It also holds the machine's private keys, so nothing here logs it.
+ */
+internal fun tailscaleStateIsOurs(stateJson: String, ourHostname: String): Boolean = runCatching {
+    val root = JSONObject(stateJson)
+    val names = root.keys().asSequence()
+        .filter { it.startsWith("profile-") }
+        .map { key ->
+            val prefs = String(java.util.Base64.getDecoder().decode(root.getString(key)), Charsets.UTF_8)
+            JSONObject(prefs).optString("Hostname")
+        }
+        .toList()
+    names.isNotEmpty() && names.all { it.equals(ourHostname, ignoreCase = true) }
+}.getOrDefault(false)
+
+/**
  * Puts the head unit on the user's Tailscale network, so the web companion and ADB are reachable
  * from anywhere rather than only from the home Wi-Fi.
  *
@@ -58,13 +80,28 @@ object TailscaleManager {
     private const val KEY_HTTPS = "https_serve"
 
     /**
+     * Our own folder and socket names. Until 2.18.0 they were Tailscale's defaults, `.tailscale` and
+     * `@tailscaled` — which Overdrive's Tailscale integration also uses, from the same uid-2000 shell
+     * in the same /data/local/tmp. On a Sealion 7 that had both (2026-10-14) our daemon loaded
+     * Overdrive's signed-in profile (hostname "overdrive", accept-routes on): Tailscale's server
+     * flagged the node as copied between devices, and every sign-in was refused, so no QR code ever
+     * appeared. And with the shared socket, our commands would have driven Overdrive's daemon
+     * whenever that one was running. Unique names keep the two apart; [migrateFromSharedDir] moves
+     * an existing install over once.
+     */
+    private const val DIR_NAME = ".tripstats-tailscale"
+    private const val LEGACY_DIR_NAME = ".tailscale"
+    private const val SOCKET = "@tripstats-tailscaled"
+    private const val KEY_DIR_MIGRATED = "dir_migrated_v1"
+
+    /**
      * Shell-owned, and the only directory the daemon and our shell channel can both write: in
      * /data/local/tmp, or in the shell's own data folder on a head unit whose shell can't write
      * there ([ShellStorage] — Shark 6).
      */
-    private fun dir(context: Context) = ShellStorage.dir(context) + "/.tailscale"
+    private fun dir(context: Context) = ShellStorage.dir(context) + "/" + DIR_NAME
+    private fun legacyDir(context: Context) = ShellStorage.dir(context) + "/" + LEGACY_DIR_NAME
     private fun bin(context: Context) = dir(context) + "/tsd"
-    private const val SOCKET = "@tailscaled"
     private fun logFile(context: Context) = dir(context) + "/log"
 
     /** Rotate the daemon's log above this much disk use, keeping its last [LOG_KEEP_KB] in `log.prev`. */
@@ -215,6 +252,7 @@ object TailscaleManager {
         if (!AdbPermissionManager.isSetupComplete(context)) {
             return@withContext publish(Status(State.NEEDS_ADB))
         }
+        migrateFromSharedDir(context)
         diag(context, "start: binary=${source.absolutePath} (${source.length()} bytes)")
         rotateLogIfLarge(context)
 
@@ -264,6 +302,63 @@ object TailscaleManager {
         publish(Status(State.ERROR, detail = "Daemon did not come up — see ${logFile(context)}"))
     }
 
+    /**
+     * Once per install, at the first start after the move to [DIR_NAME]: stop our daemon still
+     * running from the shared `.tailscale` folder, and sort out the state it left there.
+     *
+     * - **Ours** — Tailscale is switched on in this app, and [tailscaleStateIsOurs] (every profile
+     *   carries the hostname this app signs in with): copied across, so a connected car stays
+     *   connected as the same machine — then **removed** from the old folder. Left there, it would
+     *   be the same clash in reverse: Overdrive's Tailscale, installed later, starts in that folder,
+     *   loads the copy, and two daemons become one machine on the tailnet.
+     * - **Anything else** (the Sealion 7 above, Tailscale off in the app, unreadable): left exactly
+     *   where it is, and the new folder starts empty — the next sign-in is a clean one.
+     *
+     * Our own binary and logs are removed from the old folder either way. Not marked done while
+     * the channel can't be used, so a start without adb simply tries again next time.
+     */
+    private suspend fun migrateFromSharedDir(context: Context) {
+        if (prefs(context).getBoolean(KEY_DIR_MIGRATED, false)) return
+        val old = legacyDir(context)
+        val new = dir(context)
+        // Ours only, by path: another app's daemon there would have a different binary name. Its own
+        // command, single-quoted and bracketed — see killPattern.
+        if (sh(context, "pkill -f '$old/[t]sd'; echo DONE", timeoutMs = 10_000L)?.contains("DONE") != true) return
+        // Read without sh(), which writes the start of every output to diag.log: this file holds
+        // the machine's private keys. Only the verdict below is logged.
+        val oldState = AdbPermissionManager.runShellBatch(
+            context, listOf("cat $old/tailscaled.state 2>/dev/null"), perCommandTimeoutMs = 10_000L, hardTimeout = true,
+        ).firstOrNull()?.output ?: return
+        // Two pieces of evidence, both needed. The hostname alone is not enough: on the Sealion 7
+        // above, one of our refused sign-ins had still rewritten the hostname in Overdrive's profile
+        // to ours ("byd-auto"). Tailscale being on in this app — set only after a sign-in succeeded,
+        // which never happened there — is what says the login is really ours.
+        val ours = isEnabled(context) && oldState.isNotBlank() && tailscaleStateIsOurs(oldState, hostname(context))
+        val verdict = when {
+            oldState.isBlank() -> "none in the old folder"
+            !ours -> "not this app's sign-in — left in place, starting clean"
+            else -> {
+                val copied = sh(
+                    context,
+                    "if [ ! -f $new/tailscaled.state ]; then mkdir -p $new && cp -a $old/. $new/ && echo COPIED; " +
+                        "else echo KEPT-NEW; fi",
+                    timeoutMs = 30_000L,
+                )?.trim() ?: return
+                // The original goes only once the copy is in place. A failed copy keeps it and is
+                // not marked done, so the next start tries again.
+                if (copied != "COPIED" && copied != "KEPT-NEW") {
+                    diag(context, "dir: copying the state FAILED — will retry :: ${copied.take(120)}")
+                    return
+                }
+                sh(context, "rm -f $old/tailscaled.state", timeoutMs = 10_000L)
+                "this app's sign-in — $copied, removed from the old folder"
+            }
+        }
+        sh(context, "rm -f $old/tsd $old/tsd.new $old/up.log $old/log $old/log.prev", timeoutMs = 10_000L)
+        prefs(context).edit().putBoolean(KEY_DIR_MIGRATED, true).apply()
+        diag(context, "dir: moved to $new — state: $verdict")
+    }
+
     /** Signs in with [authKey] (and remembers it, so a later restart can re-register silently). */
     suspend fun connect(context: Context, authKey: String): Status = withContext(Dispatchers.IO) {
         val key = authKey.trim()
@@ -278,9 +373,12 @@ object TailscaleManager {
 
         // --accept-dns=false: in userspace mode it cannot set system DNS anyway, and accepting it
         // invites the tailnet-DNS-outage failure mode described in MD/TAILSCALE.md.
+        // --reset: any setting this command doesn't name goes back to its default. Without it, a
+        // setting left in the state by anything else (accept-routes, on the Sealion 7 that shared
+        // Overdrive's state) makes `up` refuse to run at all. We name everything we use.
         val out = sh(
             context,
-            "TS_BE_CLI=1 ${bin(context)} --socket=$SOCKET up --authkey='${key.replace("'", "")}' " +
+            "TS_BE_CLI=1 ${bin(context)} --socket=$SOCKET up --reset --authkey='${key.replace("'", "")}' " +
                 "--hostname=${hostname(context)} --accept-dns=false 2>&1; echo EXIT=$?",
             timeoutMs = 60_000L,
         ).orEmpty()
@@ -331,7 +429,8 @@ object TailscaleManager {
             "cd ${dir(context)} || exit 1; HOME=${dir(context)} TS_BE_CLI=1 setsid ${bin(context)} --socket=$SOCKET up " +
                 // stdin from /dev/null too: `up` waits for the sign-in, and an inherited input is
                 // enough for a shell to wait on it instead of returning straight away.
-                "--hostname=${hostname(context)} --accept-dns=false > ${dir(context)}/up.log 2>&1 < /dev/null &",
+                // --reset as in connect(): a leftover setting must not make `up` refuse.
+                "--reset --hostname=${hostname(context)} --accept-dns=false > ${dir(context)}/up.log 2>&1 < /dev/null &",
             timeoutMs = 15_000L,
         )
 
