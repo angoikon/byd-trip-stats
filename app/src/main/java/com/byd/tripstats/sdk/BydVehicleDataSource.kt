@@ -122,6 +122,18 @@ private const val DRIVE_MODE_UNKNOWN = 0
 internal fun isPlausibleTotalDischargeKwh(kwh: Double): Boolean =
     kwh.isFinite() && kwh > -1_000.0 && kwh < 1_000_000.0
 
+// The SoC the app reports as its BMS figure: the BMS reading, else the statistic SoC, else the
+// panel's. A statistic SoC of 0 is passed over: a Shark 6 reads 0 there, and whenever its BMS whole
+// number equalled the panel's (so toTelemetry set it aside as a copy of the panel) that 0 won,
+// putting 0 % into 63 % of its trip points and SoC 0 → 60 % into its trip reports. A battery really
+// at 0 shows 0 on the panel too, so the panel fallback still says so.
+internal fun pickSocEstimate(bmsSoc: Double?, statisticSocPct: Double?, panelSoc: Double?): Double = when {
+    bmsSoc != null -> bmsSoc
+    statisticSocPct != null && statisticSocPct > 0.0 && statisticSocPct <= 100.0 -> statisticSocPct
+    panelSoc != null -> panelSoc
+    else -> 0.0
+}
+
 // The bodywork power level as a carOn value, for cars that report no power state. SDK §6.1.9
 // `int getPowerLevel()`: 0x0 OFF / 0x1 ACC / 0x2 ON; the change listener also reports 3 = OK/READY.
 // ON/OK → 2; OFF and ACC (infotainment only, not drivable) → 0; anything else is a sentinel → null.
@@ -517,15 +529,7 @@ data class VehicleTelemetrySnapshot(
         // number. Prefer the derived decimal on DiLink-5; DiLink-3 keeps the direct BMS reading as before.
         val effectiveBmsSoc = if (DiLink5Platform.isDiLink5) (derivedBmsSoc ?: directBmsSoc)
                               else (directBmsSoc ?: derivedBmsSoc)
-        val socEstimate = when {
-            effectiveBmsSoc != null ->
-                effectiveBmsSoc
-            statisticSocBatteryPct != null && statisticSocBatteryPct in 0.0..100.0 ->
-                statisticSocBatteryPct
-            panelSoc != null ->
-                panelSoc
-            else -> 0.0
-        }
+        val socEstimate = pickSocEstimate(effectiveBmsSoc, statisticSocBatteryPct, panelSoc)
         val inferredPackVoltage = batteryTotalVoltage
             ?: run {
                 val cellV = statisticCellVoltageMin ?: statisticCellVoltageMax
