@@ -35,6 +35,19 @@ data class CarConfig(
      */
     val phevUsableBatteryKwh: Double? = null,
     /**
+     * PHEV only: the SoC (%) the car keeps in reserve for hybrid driving and never spends on
+     * electric range. When set, the EV energy left is the gross pack [batteryKwh] × (SoC − this) —
+     * measured from the car's own EV-range readings — instead of [phevUsableBatteryKwh] × SoC,
+     * which counts the reserve as drivable and reads high, more so as the battery runs down. Also
+     * keeps the lifetime average (whose distance includes engine-driven kilometres) out of the
+     * projection's starting rate, which then starts from [referenceConsumptionKwhPer100km].
+     *
+     * Applies to any PHEV once measured: fit `EV range ≈ k × (SoC − reserve)` over a few trips'
+     * points of car-reported EV range against panel SoC. Null keeps today's behaviour. The BMS's
+     * own remaining-EV-energy reading, where a car reports one, still takes precedence.
+     */
+    val phevEvReserveSocPct: Double? = null,
+    /**
      * Petrol tank capacity in litres (PHEV only). Used to estimate fuel range from
      * fuel % × tank ÷ learned L/100km when the car's own fuel-range reading is
      * unavailable. Null on BEVs and on PHEVs whose tank size isn't confirmed —
@@ -922,6 +935,10 @@ object CarCatalog {
         cdA = 1.45,                         // Cd ~0.42 × A ~3.45 m² — pickup estimate
         isPhev = true,
         phevUsableBatteryKwh = 26.0,        // usable EV portion — estimate (~88% of gross)
+        // Car's EV range = 1.106 km/% × (SoC − 25.4 %) over 1,746 points of three EV-mode trips
+        // (2026-10-13), checked at 100 % → 85 km, 95 % → 79 km, 42 % → 20 km. The car never spends
+        // the bottom ~25 % on electric range; its battery_remain_power_ev reads a constant 128.
+        phevEvReserveSocPct = 25.0,
         fuelTankLiters = 60.0,              // confirmed
         // UNCONFIRMED — inferred from a single ~35s idle/low-speed (creep, 8-12 km/h) compat-probe
         // capture, not a proper steady-state sample. onDriverMotorSpeed idled at a≈15000/b≈30000 and

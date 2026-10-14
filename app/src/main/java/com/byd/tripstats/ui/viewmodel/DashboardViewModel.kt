@@ -12,6 +12,7 @@ import com.byd.tripstats.data.analysis.RouteGroup
 import com.byd.tripstats.data.analysis.RouteGrouping
 import com.byd.tripstats.data.analysis.RouteTripInput
 import com.byd.tripstats.data.analysis.TripReport
+import com.byd.tripstats.data.config.CarConfig
 import com.byd.tripstats.data.local.entity.ChargingDataPointEntity
 import com.byd.tripstats.data.local.entity.ChargingSessionEntity
 import com.byd.tripstats.data.local.entity.TagEntity
@@ -811,20 +812,45 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
          * the firmware never reports it — we fall back to the SoC product. So the
          * change can only improve a PHEV numerator and can never regress one, and
          * it never touches BEVs.
+         *
+         * Next, a PHEV whose reserve has been measured ([evReserveSocPct], from
+         * CarConfig.phevEvReserveSocPct) uses gross [packKwh] × (SoC − reserve):
+         * the energy the car will actually spend on electric range. A Shark 6 holds
+         * ~25 % back, so at 43 % SoC the SoC product counted 11 kWh where the car
+         * had about 5 kWh to give — 54 km projected against the car's 19.
          */
         internal fun remainingEvEnergyWh(
             batteryKwh: Double,
             socPercent: Double,
             bmsRemainingEvKwh: Double?,
-            isPhev: Boolean
+            isPhev: Boolean,
+            packKwh: Double? = null,
+            evReserveSocPct: Double? = null,
         ): Double {
             if (isPhev && bmsRemainingEvKwh != null &&
                 bmsRemainingEvKwh > 0.0 && bmsRemainingEvKwh <= batteryKwh
             ) {
                 return bmsRemainingEvKwh * 1000.0
             }
+            if (isPhev && packKwh != null && evReserveSocPct != null) {
+                return (packKwh * 1000.0 * ((socPercent - evReserveSocPct) / 100.0)).coerceAtLeast(0.0)
+            }
             return (batteryKwh * 1000.0 * (socPercent / 100.0)).coerceAtLeast(0.0)
         }
+
+        /**
+         * The lifetime Wh/km the projection may start from, or null to start from the car's
+         * reference consumption instead.
+         *
+         * The lifetime figure is all battery energy over all trip distance. On a PHEV that
+         * distance includes the kilometres the engine drove, so it reads far below what EV driving
+         * costs: at the start of a Shark 6 trip it sat under the 196 Wh/km floor and projected
+         * 103 km against the car's 61. So a PHEV with a measured reserve (CarConfig
+         * .phevEvReserveSocPct — the same cars whose EV energy is modelled properly) ignores it.
+         * Every other car keeps it.
+         */
+        internal fun lifetimePriorWhPerKm(lifetimeWhPerKm: Double?, car: CarConfig?): Double? =
+            if (car?.isPhev == true && car.phevEvReserveSocPct != null) null else lifetimeWhPerKm
 
         // Tolerance when matching the cached curve's reach against the live distance.
         private const val CACHE_DISTANCE_EPSILON_KM = 0.05
@@ -1844,7 +1870,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     // charge-sustaining floor (see remainingEvEnergyWh). BEVs keep the
                     // SoC product unchanged.
                     val remainingEnergyWh = remainingEvEnergyWh(
-                        batteryKwh, effectiveSoc, telemetry.batteryRemainPowerEV, isPhev
+                        batteryKwh, effectiveSoc, telemetry.batteryRemainPowerEV, isPhev,
+                        packKwh = car?.batteryKwh, evReserveSocPct = car?.phevEvReserveSocPct,
                     )
                     // EV-only projection: models how your actual EV consumption affects electric range
                     // vs the BMS/WLTP EV estimate. We used to add the BMS fuel range for PHEVs, but the
@@ -1862,7 +1889,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     // average by STABILISATION_KM. This "demonstrated rate" is also the optimism-cap
                     // anchor, so the cap can never fight the shrink.
                     val smoothed = smoothedWhPerKm?.takeIf { it > 0.0 }
-                    val stablePrior = lifetimeWhPerKm.value ?: baselineWhPerKm
+                    val lifetimePrior = lifetimePriorWhPerKm(lifetimeWhPerKm.value, car)
+                    val stablePrior = lifetimePrior ?: baselineWhPerKm
                     val tripConfidence = (rateDistKm / STABILISATION_KM).coerceIn(0.0, 1.0)
                     val demonstratedRate: Double? = nonBaselineWhPerKm?.let {
                         tripConfidence * it + (1.0 - tripConfidence) * stablePrior
@@ -1882,11 +1910,11 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         demonstratedRate != null ->
                             demonstratedRate to when {
                                 tripConfidence >= 0.5         -> RangeModel.TRIP_AVERAGE
-                                lifetimeWhPerKm.value != null -> RangeModel.LIFETIME_AVERAGE
+                                lifetimePrior != null         -> RangeModel.LIFETIME_AVERAGE
                                 else                          -> RangeModel.BASELINE
                             }
-                        lifetimeWhPerKm.value != null ->
-                            lifetimeWhPerKm.value!! to RangeModel.LIFETIME_AVERAGE
+                        lifetimePrior != null ->
+                            lifetimePrior to RangeModel.LIFETIME_AVERAGE
                         else ->
                             baselineWhPerKm to RangeModel.BASELINE
                     }
@@ -2427,12 +2455,13 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     // SoC product, exactly as before — so this can only improve a PHEV rebuild,
                     // never regress one, and never touches BEVs.
                     val remainingWh = remainingEvEnergyWh(
-                        batteryKwh, pointSoc, dp.batteryRemainPowerEV, isPhevCar
+                        batteryKwh, pointSoc, dp.batteryRemainPowerEV, isPhevCar,
+                        packKwh = car?.batteryKwh, evReserveSocPct = car?.phevEvReserveSocPct,
                     )
                     // Same early-distance shrinkage toward the stable prior as the live path, so a
                     // rebuilt curve doesn't spike at trip start where ppTrip = energy ÷ tiny distance
                     // is numerically wild.
-                    val ppStablePrior = lifetimeWhPerKm.value ?: baselineWhPerKm
+                    val ppStablePrior = lifetimePriorWhPerKm(lifetimeWhPerKm.value, car) ?: baselineWhPerKm
                     val ppConfidence = (ppRateDistKm / STABILISATION_KM).coerceIn(0.0, 1.0)
                     val ppDemonstrated: Double? = ppTrip?.let {
                         ppConfidence * it + (1.0 - ppConfidence) * ppStablePrior
@@ -2489,7 +2518,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 setActiveRangeModel(when {
                     smoothedWhPerKm != null && smoothedWhPerKm!! > 0.0 -> RangeModel.LIVE_TRIP
                     restoredBinWhPerKm != null                          -> RangeModel.TRIP_AVERAGE
-                    lifetimeWhPerKm.value != null                       -> RangeModel.LIFETIME_AVERAGE
+                    lifetimePriorWhPerKm(lifetimeWhPerKm.value, car) != null -> RangeModel.LIFETIME_AVERAGE
                     else                                                -> RangeModel.BASELINE
                 })
                 lastTelemetryWasCarOn = carOnForLive(telemetry)

@@ -127,6 +127,13 @@ class CarCatalogTest {
         }
     }
 
+    @Test fun `an EV reserve is only declared by PHEVs, and is a plausible SoC`() {
+        CarCatalog.allCars.filter { it.phevEvReserveSocPct != null }.forEach { car ->
+            assertTrue("${car.id} declares an EV reserve but isn't a PHEV", car.isPhev)
+            assertTrue("${car.id} EV reserve out of range", car.phevEvReserveSocPct!! in 5.0..50.0)
+        }
+    }
+
     /** Every car offered in the picker must also be in allCars (fromId resolves against it). */
     @Test fun `grouped pickers only contain cars present in allCars`() {
         val all = CarCatalog.allCars.toSet()

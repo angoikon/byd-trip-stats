@@ -149,6 +149,74 @@ class DashboardViewModelProjectionTest {
         assertEquals(socProduct, energy, 0.0001)
     }
 
+    // ── EV reserve (CarConfig.phevEvReserveSocPct) — Shark 6 first ───────────────
+
+    private val shark = com.byd.tripstats.data.config.CarCatalog.BYD_SHARK_6_AWD
+
+    private fun sharkEnergyWh(soc: Double, bms: Double? = 128.0) = DashboardViewModel.remainingEvEnergyWh(
+        batteryKwh = shark.phevUsableBatteryKwh!!, socPercent = soc, bmsRemainingEvKwh = bms, isPhev = true,
+        packKwh = shark.batteryKwh, evReserveSocPct = shark.phevEvReserveSocPct,
+    )
+
+    @Test
+    fun `Shark counts only the energy above its reserve`() {
+        // Duncs 2026-10-14: car 19 km ⇒ SoC ≈ 42.6 % by the car's own 1.106 km/% × (SoC − 25.4 %).
+        // The old SoC product was 26 kWh × 42.6 % ≈ 11.1 kWh — 54 km projected.
+        assertEquals(29_580.0 * 0.176, sharkEnergyWh(42.6), 0.01)
+        // At ~260 Wh/km (trips 39/41) that is ≈ 20 km, against the car's 19.
+        assertEquals(20.0, sharkEnergyWh(42.6) / 260.0, 0.5)
+    }
+
+    @Test
+    fun `Shark matches its own EV range across the charge`() {
+        // (SoC %, car's EV range km) from trips 33/39/41 and the 13:37 / 15:52 screenshots
+        for ((soc, carKm) in listOf(100.0 to 85.0, 95.0 to 79.0, 79.0 to 62.0, 42.0 to 20.0)) {
+            assertEquals("SoC $soc", carKm, sharkEnergyWh(soc) / 267.0, 4.0)
+        }
+    }
+
+    @Test
+    fun `the reserve is never negative energy`() {
+        assertEquals(0.0, sharkEnergyWh(20.0), 0.0)
+    }
+
+    @Test
+    fun `a plausible BMS reading still wins over the reserve model`() {
+        assertEquals(3_000.0, sharkEnergyWh(42.6, bms = 3.0), 0.0001)
+    }
+
+    @Test
+    fun `without a reserve nothing changes`() {
+        // A PHEV that doesn't declare one keeps capacity × SoC, whatever pack size is passed.
+        assertEquals(
+            15.2 * 1000.0 * 0.19,
+            DashboardViewModel.remainingEvEnergyWh(15.2, 19.0, null, isPhev = true, packKwh = 18.3, evReserveSocPct = null),
+            0.0001,
+        )
+        // And a BEV ignores a reserve even if one were passed.
+        assertEquals(
+            82.5 * 1000.0 * 0.449,
+            DashboardViewModel.remainingEvEnergyWh(82.5, 44.9, null, isPhev = false, packKwh = 82.5, evReserveSocPct = 25.0),
+            0.0001,
+        )
+    }
+
+    @Test
+    fun `a PHEV with a measured reserve starts from its reference rate, not the lifetime average`() {
+        // Lifetime kWh ÷ all km is engine-diluted on a PHEV — it floored the Shark's start at 103 km.
+        assertEquals(null, DashboardViewModel.lifetimePriorWhPerKm(150.0, shark))
+    }
+
+    @Test
+    fun `every other car keeps the lifetime average`() {
+        val seal = com.byd.tripstats.data.config.CarCatalog.BYD_SEAL_EXCELLENCE
+        assertEquals(150.0, DashboardViewModel.lifetimePriorWhPerKm(150.0, seal)!!, 0.0)
+        assertEquals(150.0, DashboardViewModel.lifetimePriorWhPerKm(150.0, null)!!, 0.0)
+        // A PHEV without a measured reserve is unchanged too.
+        val phev = com.byd.tripstats.data.config.CarCatalog.allCars.first { it.isPhev && it.phevEvReserveSocPct == null }
+        assertEquals(150.0, DashboardViewModel.lifetimePriorWhPerKm(150.0, phev)!!, 0.0)
+    }
+
     // ── mergeProjectionCurve — cached live curve vs DB rebuild on reopen ─────────
 
     private fun pt(distanceKm: Double, projected: Double?) =
