@@ -47,6 +47,21 @@ class ImplausibleReconstructionTest {
     }
 
     @Test
+    fun `a zero baseline is rejected at a low SoC too`() {
+        // One of the 11 first-frame zeros: panel 16 %. 13.2 kWh over two hours passes both other
+        // rules (6.6 kW; gap 16 < 20), so only the zero-baseline rule catches it.
+        assertNotNull(check(13.2, 2 * hour, 0.0, 16))
+        assertNotNull(check(13.2, 2 * hour, 0.0, 2))
+    }
+
+    @Test
+    fun `a real near-empty battery is not mistaken for the zero`() {
+        // Panel at 0–1 % with the BMS a few tenths: a genuine bottom of the pack, then a charge.
+        assertNull(check(30.0, 4 * hour, 0.4, 1))
+        assertNull(check(30.0, 4 * hour, 0.6, 2))
+    }
+
+    @Test
     fun `without a saved panel only the power rule applies`() {
         assertNull(check(12.4, 2 * hour, 42.0, 0))
         assertNotNull(check(51.0, 1 * minute, 1.2, 0))

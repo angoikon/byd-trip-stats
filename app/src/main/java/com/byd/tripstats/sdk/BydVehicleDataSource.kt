@@ -124,6 +124,15 @@ private const val DRIVE_MODE_UNKNOWN = 0
 internal fun isPlausibleTotalDischargeKwh(kwh: Double): Boolean =
     kwh.isFinite() && kwh > -1_000.0 && kwh < 1_000_000.0
 
+// DiLink-5's usable (remaining) kWh. The first frame after the app restarts can carry exactly 0 —
+// the energy getter hasn't answered yet — while the panel still shows the real SoC: 11 times in
+// three weeks on a Sealion 7 (@luads, 2026-10-15), always the first frame after a restart, never
+// mid-stream, the next frame correct. Taken as a reading, it made the BMS SoC 0 (that's what
+// toTelemetry derives it from), went out over MQTT, and was saved as a charge-reconstruction
+// baseline: two phantom 51 kWh "charges". A car that is switched on is never at 0 kWh.
+internal fun isPlausibleDi5UsableKwh(kwh: Double): Boolean =
+    kwh.isFinite() && kwh > 0.0 && kwh <= 200.0
+
 // The SoC the app reports as its BMS figure: the BMS reading, else the statistic SoC, else the
 // panel's. A statistic SoC of 0 is passed over: a Shark 6 reads 0 there, and whenever its BMS whole
 // number equalled the panel's (so toTelemetry set it aside as a copy of the panel) that 0 won,
@@ -5690,7 +5699,9 @@ class BydVehicleDataSource(context: Context) {
         if (elecRangeKm != null && elecRangeKm in 0..2000) {
             snap = snap.copy(statisticElecDrivingRangeValue = elecRangeKm); changed = true
         }
-        if (usableKwh != null && usableKwh in 0.0..200.0) {
+        // Exactly 0 is the getter not having answered yet, not an empty battery — see
+        // isPlausibleDi5UsableKwh. The last good value (or none, in a fresh process) stands.
+        if (usableKwh != null && isPlausibleDi5UsableKwh(usableKwh)) {
             snap = snap.copy(powerBatteryRemainPowerEV = usableKwh); changed = true
         }
         if (changed) _vehicleSnapshot.value = snap

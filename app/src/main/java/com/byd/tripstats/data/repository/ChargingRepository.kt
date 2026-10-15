@@ -678,11 +678,21 @@ class ChargingRepository private constructor(context: Context) {
             if (hours > 0 && kwhAdded / hours > MAX_RECONSTRUCTED_CHARGE_KW) {
                 return "${"%.0f".format(kwhAdded / hours)} kW would be needed — not a charge"
             }
+            // A saved BMS of ~0 with the panel above it is the first-frame 0 (isPlausibleDi5UsableKwh),
+            // whatever the panel reads. The gap rule below misses it at a low SoC — 0 against a
+            // panel of 16 % was one of the 11 frames on the Sealion 7 — which is just when people
+            // plug in, and the power rule only trips within minutes of the saved state.
+            if (panelBefore >= 2 && bmsBefore < ZERO_BASELINE_MAX_PCT) {
+                return "the saved BMS reading is 0 while the panel read $panelBefore % — a bad reading, not a charge"
+            }
             if (panelBefore > 0 && kotlin.math.abs(bmsBefore - panelBefore) > MAX_BMS_PANEL_GAP_PCT) {
                 return "the saved BMS reading disagrees with the panel — a bad reading, not a charge"
             }
             return null
         }
+
+        /** A real near-empty battery reads a few tenths with the panel at 0–1 %; below this it's the 0. */
+        private const val ZERO_BASELINE_MAX_PCT = 0.5
 
         /** Above any charger the app counts (the same ceiling as DiLink-5's charge-power check). */
         private const val MAX_RECONSTRUCTED_CHARGE_KW = 400.0
