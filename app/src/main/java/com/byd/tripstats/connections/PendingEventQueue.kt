@@ -24,9 +24,35 @@ internal object PendingEventQueue {
     fun encode(queue: List<String>): String? =
         if (queue.isEmpty()) null else JSONArray(queue).toString()
 
-    /** Appends, then drops from the front — the oldest goes first — until it fits [max]. */
-    fun append(queue: MutableList<String>, payload: String, max: Int) {
+    /**
+     * Appends, then drops from the front — the oldest goes first — until it fits [max].
+     *
+     * @return what was dropped, oldest first, so the caller can say so: a summary evicted here is
+     * gone from every channel, and before this the queue gave no sign it had happened.
+     */
+    fun append(queue: MutableList<String>, payload: String, max: Int): List<String> {
         queue.add(payload)
-        while (queue.size > max) queue.removeAt(0)
+        val dropped = mutableListOf<String>()
+        while (queue.size > max) dropped += queue.removeAt(0)
+        return dropped
+    }
+
+    /**
+     * What one flush may send: the oldest queued event of each kind, plus every entry whose kind
+     * can't be read ([kindOf] returns null), which the flush discards.
+     *
+     * The event topics are retained, so the last message to land on a topic is the one a
+     * subscriber is left with. Sent all at once, an older `charge_session` that failed while a newer
+     * one succeeded would be sent again on a later flush — and land last, leaving the older session
+     * as the retained value. One per kind per flush keeps each topic in queue order: the next one
+     * goes only after the previous has been acknowledged and removed. The same rule as the Telegram
+     * outbox, and the cost is one flush per queued event of a kind, which the cap keeps small.
+     */
+    fun oldestOfEachKind(queue: List<String>, kindOf: (String) -> String?): List<String> {
+        val seen = HashSet<String>()
+        return queue.filter { entry ->
+            val kind = kindOf(entry)
+            kind == null || seen.add(kind)
+        }
     }
 }

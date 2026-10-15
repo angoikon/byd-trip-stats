@@ -479,6 +479,21 @@ class VehicleEventFactsTest {
     }
 
     @Test
+    fun `a trip says when its record was written, and nothing without a time`() {
+        val late = TelegramEventMessages.tripSummary(
+            1L, 20.0, 30 * 60_000L, 3.4, 17.0, 17.0, 80.0, 76.0, 40.0, null, 0.25, "€", false,
+            startTimeMs = 1_760_000_000_000L, endTimeMs = 1_760_001_800_000L, closedAtMs = 1_760_040_000_000L,
+        ).facts
+        assertEquals(1_760_040_000_000L, late["closed_at_ms"])
+        assertEquals("2025-10-09T20:00:00Z", late["closed_at"])
+        val none = TelegramEventMessages.tripSummary(
+            1L, 20.0, 30 * 60_000L, 3.4, 17.0, 17.0, 80.0, 76.0, 40.0, null, 0.25, "€", false,
+        ).facts
+        assertNull(none["closed_at_ms"])
+        assertNull(none["closed_at"])
+    }
+
+    @Test
     fun `only a charge that ended just now is news`() {
         // The push gate, as a value rather than a branch inside a class that needs a Context.
         // The other two are finalised at the next ignition, hours after the charge ended.

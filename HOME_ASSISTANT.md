@@ -17,10 +17,10 @@ BYD Trip Stats publishes telemetry via MQTT using **Home Assistant MQTT Discover
 
 | Topic | Sent when | Notable fields |
 | --- | --- | --- |
-| `byd-trip-stats/<name>/trip` | A trip is finalised | `trip_id`, `distance_km`, `energy_kwh`, `efficiency_kwh_per_100km`, `fleet_avg_kwh_per_100km`, `avg_speed_kmh`, `soc_start_pct`, `soc_end_pct`, `trip_score`, `cost`, `currency`, `live_close` |
+| `byd-trip-stats/<name>/trip` | A trip is finalised | `trip_id`, `distance_km`, `energy_kwh`, `efficiency_kwh_per_100km`, `fleet_avg_kwh_per_100km`, `avg_speed_kmh`, `soc_start_pct`, `soc_end_pct`, `trip_score`, `cost`, `currency`, `live_close`, `closed_at` |
 | `byd-trip-stats/<name>/charge_session` | A charging session is finalised | `session_id`, `origin`, `energy_added_kwh`, `avg_kw`, `peak_kw`, `rate_per_kwh`, `cost`, `currency`, `complete` |
 
-Both carry `started_at` / `ended_at` as ISO 8601 UTC and `started_at_ms` / `ended_at_ms` as epoch milliseconds, plus `soc_source` (`panel` or `bms`). A trip always carries `duration_s`; a charge carries it only when one was measured, which is explained below. `energy_added_kwh` is the energy that reached the pack, derived from the SoC delta, so it reads lower than what a charger bills.
+Both carry `started_at` / `ended_at` as ISO 8601 UTC and `started_at_ms` / `ended_at_ms` as epoch milliseconds, `closed_at` / `closed_at_ms` (when the app published the record — for a trip with `live_close: false`, usually hours after it ended), plus `soc_source` (`panel` or `bms`). A trip always carries `duration_s`; a charge carries it only when one was measured, which is explained below. `energy_added_kwh` is the energy that reached the pack, derived from the SoC delta, so it reads lower than what a charger bills.
 
 #### How a charging session was recorded
 
@@ -37,7 +37,7 @@ A `live` charge is the equivalent of a trip's `live_close: true`. Only `live` re
 Two things `recovered` does *not* promise:
 
 - **It is not necessarily over.** `recovered` means the app stopped watching, not that the charge stopped. If the app is revived more than 15 minutes after it was killed and the car is still charging, the interrupted row is closed and published, and a new `live` session opens for the same cable. `ended_at` is where the samples stop.
-- **It can be half of one charge.** A charge the app was killed through can reach you as two events with different `session_id`s: a `recovered` one for the stretch the app saw, and a `soc_estimate` one for the stretch after it died. They are disjoint in SoC and their energies sum to the charge, but a consumer counting charges or totalling cost per session will see two. Dedupe does not merge them, because they are genuinely different records.
+- **It can be half of one charge.** A charge the app was killed through can reach you as two events with different `session_id`s: a `recovered` one for the stretch the app saw, and a `soc_estimate` one for the stretch after it died. They are disjoint in SoC and their energies sum to the charge, but a consumer counting charges or totalling cost per session will see two. Dedupe does not merge them, because they are genuinely different records. This needs a charge that started while the car was still on: the app keeps saving the car's state while it is on, so the starting point for the estimate moves past the start of the charge, and the recovered session no longer covers the window the estimate would claim. A charge plugged in after the car was switched off can't split this way: the recovered session stops the estimate from being made at all.
 
 These topics are **retained**, so a subscriber that connects later sees only the most recent trip and the most recent charging session. To capture every event you have to be subscribed when it is published.
 

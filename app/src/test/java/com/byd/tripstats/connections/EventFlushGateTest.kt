@@ -120,4 +120,42 @@ class PendingEventQueueTest {
         for (i in 1..5) PendingEventQueue.append(queue, "e$i", max = 3)
         assertEquals(listOf("e3", "e4", "e5"), queue)
     }
+
+    @Test
+    fun `what the cap drops is reported, oldest first`() {
+        val queue = mutableListOf("e1", "e2", "e3")
+        assertEquals(emptyList<String>(), PendingEventQueue.append(mutableListOf("e1"), "e2", max = 3))
+        assertEquals(listOf("e1"), PendingEventQueue.append(queue, "e4", max = 3))
+        assertEquals(listOf("e2", "e3", "e4"), queue)
+    }
+
+    // ── One per kind per flush ──────────────────────────────────────────────────────────
+
+    private fun kindOf(entry: String): String? = entry.substringBefore(':', "").takeIf { it.isNotEmpty() }
+
+    @Test
+    fun `a flush sends only the oldest event of each kind`() {
+        // A trip, a recovered charge and a reconstructed charge, queued at one DiLink-5 cold start.
+        val queue = listOf("trip:1", "charge_session:2", "charge_session:3", "trip:4")
+        assertEquals(listOf("trip:1", "charge_session:2"), PendingEventQueue.oldestOfEachKind(queue, ::kindOf))
+    }
+
+    @Test
+    fun `the next of a kind goes only once the older one has left the queue`() {
+        // charge_session:2 was acknowledged and removed; 3 is now the oldest of its kind.
+        val queue = listOf("trip:1", "charge_session:3")
+        assertEquals(queue, PendingEventQueue.oldestOfEachKind(queue, ::kindOf))
+    }
+
+    @Test
+    fun `unreadable entries are all handed to the flush, which discards them`() {
+        val queue = listOf("garbage", "trip:1", "more garbage", "trip:2")
+        assertEquals(listOf("garbage", "trip:1", "more garbage"), PendingEventQueue.oldestOfEachKind(queue, ::kindOf))
+    }
+
+    @Test
+    fun `the envelope's kind is read from the stored JSON`() {
+        assertEquals("charge_session", MqttConnectionStore.eventKindOf("""{"kind":"charge_session","payload":{}}"""))
+        assertNull(MqttConnectionStore.eventKindOf("not json"))
+    }
 }

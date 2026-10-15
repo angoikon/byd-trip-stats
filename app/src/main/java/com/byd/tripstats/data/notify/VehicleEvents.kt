@@ -100,6 +100,7 @@ class VehicleEvents private constructor(private val context: Context) {
                 startTimeMs = trip.startTime,
                 endTimeMs = trip.endTime,
                 socFromBms = appPrefs.getCachedSocSource() == SocSource.BMS,
+                closedAtMs = System.currentTimeMillis(),
         )
 
         // The only place the channels disagree. The gate below is right for a push, which would

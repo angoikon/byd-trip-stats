@@ -127,13 +127,27 @@ object MqttConnectionStore {
      * wait on the network.
      */
     fun enqueueEvent(context: Context, payload: String) {
-        synchronized(eventLock) {
+        val dropped = synchronized(eventLock) {
             val prefs = prefs(context)
             val queue = PendingEventQueue.parse(prefs.getString(KEY_PENDING_EVENTS, null))
-            PendingEventQueue.append(queue, payload, MAX_PENDING_EVENTS)
+            val dropped = PendingEventQueue.append(queue, payload, MAX_PENDING_EVENTS)
             writeQueue(prefs, queue)
+            dropped
+        }
+        // A summary evicted here never reaches the broker, so it must at least leave a trace.
+        if (dropped.isNotEmpty()) {
+            val kinds = dropped.joinToString(", ") { eventKindOf(it) ?: "unreadable" }
+            com.byd.tripstats.util.DiagLog.event(
+                context, "MqttConnectionStore",
+                "MQTT event queue full ($MAX_PENDING_EVENTS): dropped the oldest — $kinds",
+            )
         }
     }
+
+    /** The kind of a queued envelope (`trip`, `charge_session`), or null when it can't be read. */
+    fun eventKindOf(envelope: String): String? = runCatching {
+        org.json.JSONObject(envelope).getString(MqttConnectionManager.KEY_EVENT_KIND)
+    }.getOrNull()
 
     /**
      * Everything still waiting, oldest first. Reading does not remove: an event leaves the queue

@@ -310,7 +310,12 @@ class MqttConnectionManager(context: Context) {
             }
         }
         try {
-            for (stored in MqttConnectionStore.readEvents(appContext)) {
+            // The oldest of each kind only — see oldestOfEachKind: sending a whole backlog at once
+            // could leave an older summary as a topic's retained value.
+            val batch = PendingEventQueue.oldestOfEachKind(
+                MqttConnectionStore.readEvents(appContext), MqttConnectionStore::eventKindOf,
+            )
+            for (stored in batch) {
                 outstanding.incrementAndGet()
                 val message = try {
                     val envelope = JSONObject(stored)
@@ -674,7 +679,7 @@ class MqttConnectionManager(context: Context) {
     companion object {
         private const val TAG = "MqttConnectionMgr"
         private const val ONLINE_REASSERT_INTERVAL_MS = 30_000L
-        private const val KEY_EVENT_KIND = "kind"
+        internal const val KEY_EVENT_KIND = "kind"
         private const val KEY_EVENT_PAYLOAD = "payload"
 
         /**

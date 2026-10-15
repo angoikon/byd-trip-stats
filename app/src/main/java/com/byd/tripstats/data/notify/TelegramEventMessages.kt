@@ -63,6 +63,7 @@ object TelegramEventMessages {
         startTimeMs: Long? = null,
         endTimeMs: Long? = null,
         socFromBms: Boolean = false,
+        closedAtMs: Long? = null,
         zone: ZoneId = ZoneId.systemDefault(),
     ): VehicleEvent {
         val distUnit = if (imperial) "mi" else "km"
@@ -136,6 +137,11 @@ object TelegramEventMessages {
                 "ended_at" to iso(endTimeMs),
                 "started_at_ms" to startTimeMs,
                 "ended_at_ms" to endTimeMs,
+                // When the app published this record, as on a charge: a trip closed at the next
+                // ignition (`live_close: false`, every trip on DiLink-5) is published hours after
+                // it ended.
+                "closed_at" to iso(closedAtMs),
+                "closed_at_ms" to closedAtMs,
                 "duration_s" to durationMs?.takeIf { it > 0 }?.div(1000),
                 "distance_km" to distanceKm,
                 "energy_kwh" to energyKwh,
