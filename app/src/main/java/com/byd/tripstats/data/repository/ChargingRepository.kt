@@ -517,6 +517,19 @@ class ChargingRepository private constructor(context: Context) {
             return
         }
 
+        implausibleReconstruction(
+            kwhAdded, elapsedSinceLastStateMs,
+            bmsBefore = lastSoc, panelBefore = previousShutdownState?.socPanel ?: 0,
+        )?.let { reason ->
+            com.byd.tripstats.util.DiagLog.event(
+                appContext, TAG,
+                "charge reconstruction skipped: BMS ${"%.1f".format(lastSoc)} → ${"%.1f".format(telemetry.soc)}% " +
+                    "panel ${previousShutdownState?.socPanel} → ${telemetry.socPanel}% " +
+                    "${"%.2f".format(kwhAdded)} kWh over ${elapsedSinceLastStateMs / 1000}s — $reason"
+            )
+            return
+        }
+
         // Duplicate guard
         val recent = sessionDao.getMostRecentSession()
         if (recent != null && recent.startTime >= lastTimestamp - OVERLAP_GUARD_MS) {
@@ -638,6 +651,42 @@ class ChargingRepository private constructor(context: Context) {
          */
         internal fun isBmsRestRebound(bmsRisePct: Double, panelBefore: Int, panelNow: Int): Boolean =
             panelBefore > 0 && panelNow > 0 && panelNow <= panelBefore && bmsRisePct < MAX_BMS_REST_REBOUND_PCT
+
+        /**
+         * Why a would-be reconstructed charge can't be one, or null when it may be.
+         *
+         * Two phantoms on a Sealion 7 (2026-10-10, 11:00 and 11:31) showed what slips past the
+         * other guards: 0–1 minute long, panel 63 % → 63 %, yet 51 kWh — the saved BMS reading
+         * was about 1 %, a bad reading taken while driving, and the 62-point "rise" from it was
+         * far too big for [isBmsRestRebound]. Either rule below stops that, independently:
+         * - the energy can't have arrived in the time since the state was saved — above
+         *   [MAX_RECONSTRUCTED_CHARGE_KW] (51 kWh in a minute is over 3,000 kW);
+         * - in the saved state, the BMS reading and the panel disagree by more than
+         *   [MAX_BMS_PANEL_GAP_PCT] points, so the baseline the delta comes from is broken.
+         *   Normally they sit within a few points of each other. Only the saved end is checked:
+         *   it was taken with the car running, so its panel is live, while the panel at wake can
+         *   still be stale — the reason [isBmsRestRebound] trusts a large rise with the panel
+         *   unchanged, which this must not overturn. Skipped where the saved panel is missing (0).
+         */
+        internal fun implausibleReconstruction(
+            kwhAdded: Double,
+            elapsedMs: Long,
+            bmsBefore: Double,
+            panelBefore: Int,
+        ): String? {
+            val hours = elapsedMs / 3_600_000.0
+            if (hours > 0 && kwhAdded / hours > MAX_RECONSTRUCTED_CHARGE_KW) {
+                return "${"%.0f".format(kwhAdded / hours)} kW would be needed — not a charge"
+            }
+            if (panelBefore > 0 && kotlin.math.abs(bmsBefore - panelBefore) > MAX_BMS_PANEL_GAP_PCT) {
+                return "the saved BMS reading disagrees with the panel — a bad reading, not a charge"
+            }
+            return null
+        }
+
+        /** Above any charger the app counts (the same ceiling as DiLink-5's charge-power check). */
+        private const val MAX_RECONSTRUCTED_CHARGE_KW = 400.0
+        private const val MAX_BMS_PANEL_GAP_PCT = 20.0
 
         private const val MAX_BMS_REST_REBOUND_PCT = 3.0
         private const val MIN_SOC_DELTA_PCT   = 1.0
