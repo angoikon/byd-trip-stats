@@ -17,7 +17,8 @@ import kotlinx.coroutines.sync.withLock
  * netpolicy `policy=9 (DIABLE_METERED)` — stock bit 1 (reject metered in background) **plus a
  * BYD-only bit 8** that rejects metered networks even in the foreground. Stock Android 11 has no
  * such bit, so "4G is up but this app has no internet" is invisible in any app's code: it lives
- * in the framework. Seen on a Sealion 7 (#26) and a Shark 6; absent on a Sealion 7 in Australia
+ * in the framework. Read out on a Shark 6 (#26, finch6), and the symptom reported on two Sealion 7s
+ * (#20, #26); absent on a Sealion 7 in Australia
  * (no policy row, rules=0, MQTT publishing over 4G) and one in Turkey — so it is regional or
  * firmware, not DiLink-5-wide.
  *
