@@ -205,19 +205,22 @@ object CarCatalog {
 
     // BYD Seagull GSi 380 — the Uruguay / Latin America trim. Specs from the car's own rating plate
     // (2024-12 build): 135 Ah × 288 V = 38.88 kWh Blade LFP (90S: 288 V / 3.2 V per cell),
-    // motor TZ180XSH rated 25 kW, GVW 1655 kg. Marketed as "38 kWh", 380 km NEDC.
+    // motor TZ180XSH, GVW 1655 kg; owner's manual: kerb 1245 kg. 380 km NEDC. The plate's
+    // "rated power 25 kW" is the continuous rating; the catalog lists peak power (55 kW, 135 Nm),
+    // like the other cars. Owner telemetry (~3.27 V × 90 ≈ 294 V) confirms 90S, not 120S.
     val BYD_SEAGULL_GSI_380 = CarConfig(
         id = "BYD_SEAGULL_GSI_380",
         displayName = "Seagull GSi 380",
         drivetrain = Drivetrain.FWD,
         batteryKwh = 38.88,         // rating plate: 135 Ah × 288 V
-        estimatedKerbMassKg = 1280.0, // estimate — mirrors the Atto 1 Premium (GVW 1655 kg on the plate)
+        estimatedKerbMassKg = 1245.0, // owner's manual (GVW 1655 kg, matches the plate)
         wltpKm = 300,               // converted from 380 km NEDC at ~0.78 (NEDC overstates real
                                     // EV range by ~20-25%) = ~296, rounded to match the Atto 1 Premium
-        referenceConsumptionKwhPer100km = 15.8, // mirrors the Atto 1 Premium (same body/pack energy)
+        referenceConsumptionKwhPer100km = 15.8, // mirrors the Atto 1 Premium (same body/pack energy);
+                                    // BYD Uruguay's 12.5 (8 km/kWh) is a lenient local-standard figure
         frontTyrePressureBar = 2.5, // owner-reported
         rearTyrePressureBar = 2.5,  // owner-reported
-        frontMotorRatedKw = 25,    // rating plate: rated power 25 kW
+        frontMotorRatedKw = 55,    // peak power; the plate's 25 kW is the continuous rating
         cellCount = 90,             // rating plate: 288 V nominal / 3.2 V LFP cell = 90S
         cdA = 0.653                 // same body as the Atto 1
     )
