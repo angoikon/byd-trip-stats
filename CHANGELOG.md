@@ -1,3 +1,12 @@
+## [2.18.1] - Unreleased
+
+> **What's new in a nutshell**
+>
+> The **Seagull GSi 380** is now in the car list, with the figures from the car's own rating plate: a 38.88 kWh battery (135 Ah at 288 V) and a 25 kW rated motor.
+
+### Added
+- **Seagull GSi 380 in the car list** — the Latin American Seagull (sold in Uruguay as the GSi 380) can now be picked as the car, under **BYD Seagull / Dolphin Surf / Atto 1**. Its figures come from the rating plate on the car: **135 Ah at 288 V, which is a 38.88 kWh Blade pack** (90 cells in series), and a **TZ180XSH motor rated 25 kW**, so it gets its own entry instead of borrowing the 45 kW Atto 1 / Dolphin Surf. Range projections, consumption and tyre-pressure warnings use its own figures; where BYD publishes none, they follow the Atto 1 Premium, which has the same pack energy and body.
+
 ## [2.18.0] - 2026-Oct-15
 
 > **What's new in a nutshell**

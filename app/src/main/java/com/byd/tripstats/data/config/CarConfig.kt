@@ -203,23 +203,22 @@ object CarCatalog {
         cdA = 0.653
     )
 
-    // BYD Seagull GSi 380 — the Uruguay / Latin America trim. Official sheet: 38 kWh Blade LFP,
-    // 55 kW FWD motor (135 Nm), 380 km NEDC. Its 55 kW motor sets it apart from the 45 kW
-    // Atto 1 / Dolphin Surf, and the pack is the 38.88 kWh (120S) one the Atto 1 Premium uses,
-    // marketed as "38 kWh" — so the pack-derived figures mirror BYD_SEAGULL_FLYING.
+    // BYD Seagull GSi 380 — the Uruguay / Latin America trim. Specs from the car's own rating plate
+    // (2024-12 build): 135 Ah × 288 V = 38.88 kWh Blade LFP (90S: 288 V / 3.2 V per cell),
+    // motor TZ180XSH rated 25 kW, GVW 1655 kg. Marketed as "38 kWh", 380 km NEDC.
     val BYD_SEAGULL_GSI_380 = CarConfig(
         id = "BYD_SEAGULL_GSI_380",
         displayName = "Seagull GSi 380",
         drivetrain = Drivetrain.FWD,
-        batteryKwh = 38.0,          // official sheet figure
-        estimatedKerbMassKg = 1280.0, // estimate — mirrors the Atto 1 Premium (same pack/body)
+        batteryKwh = 38.88,         // rating plate: 135 Ah × 288 V
+        estimatedKerbMassKg = 1280.0, // estimate — mirrors the Atto 1 Premium (GVW 1655 kg on the plate)
         wltpKm = 300,               // converted from 380 km NEDC at ~0.78 (NEDC overstates real
                                     // EV range by ~20-25%) = ~296, rounded to match the Atto 1 Premium
-        referenceConsumptionKwhPer100km = 15.8, // mirrors the Atto 1 Premium (same body/pack)
+        referenceConsumptionKwhPer100km = 15.8, // mirrors the Atto 1 Premium (same body/pack energy)
         frontTyrePressureBar = 2.5, // owner-reported
         rearTyrePressureBar = 2.5,  // owner-reported
-        frontMotorRatedKw = 55,    // official sheet
-        cellCount = 120,            // estimate: 38 kWh class pack = 120S LFP, as the Atto 1 Premium
+        frontMotorRatedKw = 25,    // rating plate: rated power 25 kW
+        cellCount = 90,             // rating plate: 288 V nominal / 3.2 V LFP cell = 90S
         cdA = 0.653                 // same body as the Atto 1
     )
 
