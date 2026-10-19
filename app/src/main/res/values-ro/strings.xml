@@ -698,9 +698,7 @@
     <string name="chart_above_wltp_cap">Valoare peste media WLTP — plafonat la autonomia nominală</string>
     <string name="chart_acquiring">se achiziționează telemetria · porniți la drum</string>
     <string name="chart_scanning">SCANARE…</string>
-    <string name="legend_live_trip">● Călătorie live</string>
-    <string name="legend_trip_average">● Media călătoriei</string>
-    <string name="legend_lifetime_avg">● Media totală</string>
+    <string name="legend_recent_driving">● Ultimii %1$s</string>
     <string name="legend_baseline">● Referință</string>
     <string name="chart_no_data">Nicio dată disponibilă</string>
     <string name="chart_insufficient_data">Date insuficiente</string>
@@ -708,6 +706,10 @@
     <string name="chart_weekly_consumption">Săptămâna aceasta</string>
     <string name="chart_monthly_consumption">Luna aceasta</string>
     <string name="chart_yearly_consumption">Anul acesta</string>
+    <string name="chart_custom_range">Personalizat…</string>
+    <string name="chart_total_per_day">Total %1$s · %2$s pe zi</string>
+    <string name="chart_total_per_week">Total %1$s · %2$s pe săptămână</string>
+    <string name="chart_total_per_month">Total %1$s · %2$s pe lună</string>
     <string name="chart_your_duration_avg">Media dvs. pe durată (%1$s %2$s)</string>
     <string name="chart_selected_car_avg">Media mașinii selectate (%1$s %2$s)</string>
     <string name="chart_close">Închide graficul</string>
@@ -947,6 +949,8 @@
     <string name="soc_panel_option">Panou</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">La PHEV-uri, SoC din BMS de obicei nu este raportat — folosiți Panou dacă BMS arată 0.\nBMS este mai precis (zecimal) decât Panoul (întreg). De asemenea, o divergență mai mare față de Panou e un bun indiciu că e timpul fie pentru o încărcare la 100%, fie pentru o calibrare a încărcării</string>
+    <string name="pref_range_window">Estimare autonomie</string>
+    <string name="range_window_desc">Autonomia estimată folosește consumul tău pe această distanță de condus recent, inclusiv călătoriile anterioare, așa că este gata imediat ce pornești mașina. Mai scurtă urmează drumul actual; mai lungă rămâne mai stabilă.</string>
     <string name="pref_cell_imbalance">Alertă dezechilibru celule</string>
     <string name="cell_imbalance_desc">Notifică-mă când dispersia tensiunii celulelor pachetului rămâne peste limită.</string>
     <string name="cell_imbalance_info">Dispersie = celula cea mai mare − celula cea mai mică. Un pachet sănătos rămâne sub ~20 mV; o dispersie persistent mare poate semnala o celulă slabă. Alertele sunt suprimate sub 5% și peste 95% SoC, unde o dispersie mare este normală.</string>
@@ -1075,10 +1079,11 @@
     <string name="pref_trip_recording_desc">Când se încheie o călătorie după oprirea mașinii și cât de scurtă poate fi o călătorie.</string>
     <string name="trip_recording_status">Oprire automată după %1$d min • minim %2$s</string>
     <string name="trip_recording_status_no_min">Oprire automată după %1$d min • fără minim</string>
-    <string name="pref_battery_title">Baterie</string>
-    <string name="pref_battery_desc">Ce citire a stării de încărcare se afișează și alerta de dezechilibru al celulelor.</string>
+    <string name="pref_battery_title">Baterie și estimare autonomie</string>
+    <string name="pref_battery_desc">Ce citire a stării de încărcare se afișează, pe cât din condusul recent se bazează estimarea autonomiei și alerta de dezechilibru al celulelor.</string>
     <string name="battery_status_alert_on">SoC: %1$s • alertă de dezechilibru activă</string>
     <string name="battery_status_alert_off">SoC: %1$s • alertă de dezechilibru dezactivată</string>
+    <string name="battery_status_range">estimare autonomie: ultimii %1$s</string>
     <string name="pref_costs_desc">Tariful dvs. de energie și moneda, folosite pentru a calcula costul călătoriilor și încărcărilor.</string>
     <string name="pref_goals_desc">Obiective de consum și distanță, și recordurile dvs. personale.</string>
     <string name="pro_cell_imbalance_info">Vă avertizează când diferența de tensiune dintre celulele bateriei rămâne peste limita dvs. — un semn timpuriu al unei celule slabe. Activați-o și setați limita din Preferințe → Baterie după deblocare.</string>
@@ -1310,7 +1315,7 @@
     <string name="speed_state_parked">Staționar</string>
     <string name="speed_state_driving">În mers</string>
     <string name="soc_subtitle_usable">Încărcare utilizabilă</string>
-    <string name="range_subtitle_projection">Proiecție dinamică</string>
+    <string name="range_subtitle_window">Ultimii %1$s</string>
     <string name="range_subtitle_phev">Combustibil %1$s · Total %2$s</string>
     <string name="stat_fuel_range">Combustibil</string>
     <string name="distance_subtitle_session">Această sesiune</string>

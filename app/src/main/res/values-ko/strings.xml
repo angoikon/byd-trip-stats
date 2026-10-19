@@ -646,9 +646,7 @@
     <string name="chart_above_wltp_cap">WLTP 평균 초과값 — 명목 주행 거리로 제한됨</string>
     <string name="chart_acquiring">텔레메트리 수집 중 · 주행 시 시작됨</string>
     <string name="chart_scanning">스캔 중…</string>
-    <string name="legend_live_trip">● 실시간 주행</string>
-    <string name="legend_trip_average">● 주행 평균</string>
-    <string name="legend_lifetime_avg">● 전체 평균</string>
+    <string name="legend_recent_driving">● 최근 %1$s</string>
     <string name="legend_baseline">● 기준값</string>
     <string name="chart_no_data">사용 가능한 데이터 없음</string>
     <string name="chart_insufficient_data">데이터 부족</string>
@@ -656,6 +654,10 @@
     <string name="chart_weekly_consumption">이번 주</string>
     <string name="chart_monthly_consumption">이번 달</string>
     <string name="chart_yearly_consumption">올해</string>
+    <string name="chart_custom_range">기간 지정…</string>
+    <string name="chart_total_per_day">합계 %1$s · 하루 %2$s</string>
+    <string name="chart_total_per_week">합계 %1$s · 주당 %2$s</string>
+    <string name="chart_total_per_month">합계 %1$s · 월 %2$s</string>
     <string name="chart_your_duration_avg">내 평균 (%1$s %2$s)</string>
     <string name="chart_selected_car_avg">선택 차량 평균 (%1$s %2$s)</string>
     <string name="chart_close">차트 닫기</string>
@@ -879,6 +881,8 @@
     <string name="soc_panel_option">계기판</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">PHEV에서는 BMS SoC가 보통 보고되지 않습니다 — BMS가 0을 표시하면 계기판을 사용하세요.\nBMS는 계기판(정수)보다 더 정확합니다(소수). 또한 계기판과의 차이가 크면 100% 충전 또는 충전 보정이 필요한 시기라는 좋은 신호입니다</string>
+    <string name="pref_range_window">주행 가능 거리 추정</string>
+    <string name="range_window_desc">예상 주행 가능 거리는 이전 주행을 포함한 최근 이 거리만큼의 소비 전력을 사용하므로 시동을 켜자마자 표시됩니다. 짧을수록 현재 도로를 따라가고, 길수록 더 안정적입니다.</string>
     <string name="pref_cell_imbalance">셀 불균형 알림</string>
     <string name="cell_imbalance_desc">셀 전압 분산이 한계를 초과하면 알림을 받습니다.</string>
     <string name="cell_imbalance_info">분산 = 최고 셀 − 최저 셀. 건강한 팩은 ~20mV 이하를 유지합니다. 지속적으로 높은 분산은 약한 셀의 신호일 수 있습니다. 넓은 분산이 정상인 SoC 5% 미만과 95% 초과에서는 경고가 표시되지 않습니다.</string>
@@ -995,10 +999,11 @@
     <string name="pref_trip_recording_desc">차량을 끈 뒤 주행이 끝나는 시점과 기록할 주행의 최소 거리.</string>
     <string name="trip_recording_status">%1$d분 후 자동 종료 • 최소 %2$s</string>
     <string name="trip_recording_status_no_min">%1$d분 후 자동 종료 • 최소 거리 없음</string>
-    <string name="pref_battery_title">배터리</string>
-    <string name="pref_battery_desc">표시할 충전 상태 값과 셀 불균형 알림.</string>
+    <string name="pref_battery_title">배터리 및 주행 가능 거리 추정</string>
+    <string name="pref_battery_desc">표시할 충전 상태 값, 주행 가능 거리 추정에 사용할 최근 주행 거리, 셀 불균형 알림.</string>
     <string name="battery_status_alert_on">SoC: %1$s • 불균형 알림 켜짐</string>
     <string name="battery_status_alert_off">SoC: %1$s • 불균형 알림 꺼짐</string>
+    <string name="battery_status_range">주행 가능 거리 추정: 최근 %1$s</string>
     <string name="pref_costs_desc">주행과 충전 비용 계산에 쓰이는 전기 요금과 통화.</string>
     <string name="pref_goals_desc">소비량 및 거리 목표와 개인 최고 기록.</string>
     <string name="pro_cell_imbalance_info">배터리 셀 전압 편차가 설정한 한도를 계속 넘으면 알려 줍니다 — 약한 셀의 초기 신호입니다. 잠금 해제 후 환경설정 → 배터리에서 켜고 한도를 설정하세요.</string>
@@ -1213,7 +1218,7 @@
     <string name="speed_state_parked">정지</string>
     <string name="speed_state_driving">주행 중</string>
     <string name="soc_subtitle_usable">사용 가능한 충전량</string>
-    <string name="range_subtitle_projection">동적 예측</string>
+    <string name="range_subtitle_window">최근 %1$s</string>
     <string name="range_subtitle_phev">연료 %1$s · 합계 %2$s</string>
     <string name="stat_fuel_range">연료</string>
     <string name="distance_subtitle_session">이 세션</string>

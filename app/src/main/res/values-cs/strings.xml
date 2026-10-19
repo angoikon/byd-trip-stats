@@ -698,9 +698,7 @@
     <string name="chart_above_wltp_cap">Hodnota nad průměrem WLTP — omezeno na tabulkový dojezd</string>
     <string name="chart_acquiring">získávání telemetrie · vyjeďte pro start</string>
     <string name="chart_scanning">SKENOVÁNÍ…</string>
-    <string name="legend_live_trip">● Živá jízda</string>
-    <string name="legend_trip_average">● Průměr jízdy</string>
-    <string name="legend_lifetime_avg">● Celoživotní průměr</string>
+    <string name="legend_recent_driving">● Posledních %1$s</string>
     <string name="legend_baseline">● Základna</string>
     <string name="chart_no_data">Žádná data k dispozici</string>
     <string name="chart_insufficient_data">Nedostatečná data</string>
@@ -708,6 +706,10 @@
     <string name="chart_weekly_consumption">Tento týden</string>
     <string name="chart_monthly_consumption">Tento měsíc</string>
     <string name="chart_yearly_consumption">Tento rok</string>
+    <string name="chart_custom_range">Vlastní…</string>
+    <string name="chart_total_per_day">Celkem %1$s · %2$s za den</string>
+    <string name="chart_total_per_week">Celkem %1$s · %2$s za týden</string>
+    <string name="chart_total_per_month">Celkem %1$s · %2$s za měsíc</string>
     <string name="chart_your_duration_avg">Váš průměr za období (%1$s %2$s)</string>
     <string name="chart_selected_car_avg">Průměr zvoleného vozu (%1$s %2$s)</string>
     <string name="chart_close">Zavřít graf</string>
@@ -947,6 +949,8 @@
     <string name="soc_panel_option">Panel</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">U PHEV se SoC z BMS obvykle nehlásí — použijte Panel, pokud BMS ukazuje 0.\nBMS je přesnější (desetinné číslo) než panel (celé číslo). Větší odchylka od panelu je navíc dobrým znamením, že je čas na 100% nabití nebo kalibraci nabíjení</string>
+    <string name="pref_range_window">Odhad dojezdu</string>
+    <string name="range_window_desc">Předpokládaný dojezd vychází z vaší spotřeby na této vzdálenosti nedávné jízdy, včetně předchozích jízd, takže je k dispozici hned po zapnutí. Kratší sleduje aktuální cestu, delší je stabilnější.</string>
     <string name="pref_cell_imbalance">Upozornění na nerovnováhu článků</string>
     <string name="cell_imbalance_desc">Upozornit, když rozptyl napětí článků paketu zůstává nad limitem.</string>
     <string name="cell_imbalance_info">Rozptyl = nejvyšší článek − nejnižší článek. Zdravý paket zůstává pod ~20 mV; trvale vysoký rozptyl může signalizovat slabý článek. Upozornění jsou potlačena pod 5% a nad 95% SoC, kde je velký rozptyl normální.</string>
@@ -1075,10 +1079,11 @@
     <string name="pref_trip_recording_desc">Kdy jízda skončí po vypnutí auta a jak krátká jízda může být.</string>
     <string name="trip_recording_status">Automatické ukončení po %1$d min • minimum %2$s</string>
     <string name="trip_recording_status_no_min">Automatické ukončení po %1$d min • bez minima</string>
-    <string name="pref_battery_title">Baterie</string>
-    <string name="pref_battery_desc">Který údaj o stavu nabití zobrazit a upozornění na nerovnováhu článků.</string>
+    <string name="pref_battery_title">Baterie a odhad dojezdu</string>
+    <string name="pref_battery_desc">Který údaj o stavu nabití zobrazit, z jak dlouhé nedávné jízdy vychází odhad dojezdu, a upozornění na nerovnováhu článků.</string>
     <string name="battery_status_alert_on">SoC: %1$s • upozornění na nerovnováhu zapnuto</string>
     <string name="battery_status_alert_off">SoC: %1$s • upozornění na nerovnováhu vypnuto</string>
+    <string name="battery_status_range">odhad dojezdu: posledních %1$s</string>
     <string name="pref_costs_desc">Váš tarif elektřiny a měna, podle kterých se oceňují jízdy a nabíjení.</string>
     <string name="pref_goals_desc">Cíle spotřeby a vzdálenosti a vaše osobní rekordy.</string>
     <string name="pro_cell_imbalance_info">Upozorní vás, když rozptyl napětí článků v baterii zůstává nad vaším limitem — včasná známka slabého článku. Po odemčení jej zapněte a nastavte limit v Předvolby → Baterie.</string>
@@ -1310,7 +1315,7 @@
     <string name="speed_state_parked">Stojící</string>
     <string name="speed_state_driving">Jízda</string>
     <string name="soc_subtitle_usable">Využitelná kapacita</string>
-    <string name="range_subtitle_projection">Dynamická projekce</string>
+    <string name="range_subtitle_window">Posledních %1$s</string>
     <string name="range_subtitle_phev">Palivo %1$s · Celkem %2$s</string>
     <string name="stat_fuel_range">Palivo</string>
     <string name="distance_subtitle_session">Tato relace</string>

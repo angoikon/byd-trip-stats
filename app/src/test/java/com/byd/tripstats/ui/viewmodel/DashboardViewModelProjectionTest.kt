@@ -202,19 +202,19 @@ class DashboardViewModelProjectionTest {
     }
 
     @Test
-    fun `a PHEV with a measured reserve starts from its reference rate, not the lifetime average`() {
-        // Lifetime kWh ÷ all km is engine-diluted on a PHEV — it floored the Shark's start at 103 km.
-        assertEquals(null, DashboardViewModel.lifetimePriorWhPerKm(150.0, shark))
+    fun `a PHEV with a measured reserve doesn't take its window from trip history`() {
+        // Trip kWh ÷ all km is engine-diluted on a PHEV — it floored the Shark's start at 103 km.
+        assertTrue(!DashboardViewModel.historyApplies(shark))
     }
 
     @Test
-    fun `every other car keeps the lifetime average`() {
+    fun `every other car takes its window from trip history`() {
         val seal = com.byd.tripstats.data.config.CarCatalog.BYD_SEAL_EXCELLENCE
-        assertEquals(150.0, DashboardViewModel.lifetimePriorWhPerKm(150.0, seal)!!, 0.0)
-        assertEquals(150.0, DashboardViewModel.lifetimePriorWhPerKm(150.0, null)!!, 0.0)
-        // A PHEV without a measured reserve is unchanged too.
+        assertTrue(DashboardViewModel.historyApplies(seal))
+        assertTrue(DashboardViewModel.historyApplies(null))
+        // A PHEV without a measured reserve too.
         val phev = com.byd.tripstats.data.config.CarCatalog.allCars.first { it.isPhev && it.phevEvReserveSocPct == null }
-        assertEquals(150.0, DashboardViewModel.lifetimePriorWhPerKm(150.0, phev)!!, 0.0)
+        assertTrue(DashboardViewModel.historyApplies(phev))
     }
 
     // ── mergeProjectionCurve — cached live curve vs DB rebuild on reopen ─────────
@@ -272,37 +272,119 @@ class DashboardViewModelProjectionTest {
         assertEquals(listOf(0.0, 1.0), merged.map { it.distanceKm })
     }
 
-    // ── rollingWhPerKmSeries — per-point rate replay that un-flattens the rebuild ─
+    // ── windowRate / buildDrivingHistory — the last N km, across trips ────────────
+
+    /** A trip's cumulative (km, Wh) series at [whPerKm], 100 m apart. */
+    private fun steadyTrip(fromKm: Double, toKm: Double, whPerKm: Double, startWh: Double = 0.0) =
+        (0..Math.round((toKm - fromKm) * 10).toInt()).map { i ->
+            val km = fromKm + i * 0.1
+            km to startWh + (km - fromKm) * whPerKm
+        }
+
+    private fun history(vararg tripsNewestFirst: Pair<Double, Double>) =
+        DashboardViewModel.buildDrivingHistory(
+            tripsNewestFirst.map { (km, whPerKm) -> DashboardViewModel.Companion.HistoryTrip(km, km * whPerKm) },
+            DashboardViewModel.MAX_WINDOW_KM
+        )
 
     @Test
-    fun `rolling series tracks a changing consumption rate instead of one average`() {
-        // First 5 km gentle (100 Wh/km), next 5 km thirsty (300 Wh/km). The whole-trip
-        // average is 200 Wh/km; the rolling series must instead climb toward the recent
-        // rate so a reconstructed projection built from it VARIES rather than flattening.
-        val samples = ArrayList<Pair<Double, Double>>()
-        var energy = 0.0
-        var d = 0.0
-        while (d < 5.0) { samples.add(d to energy); d += 0.1; energy += 0.1 * 100.0 }
-        while (d <= 10.0 + 1e-9) { samples.add(d to energy); energy += 0.1 * 300.0; d += 0.1 }
-
-        // Use a short window so the late-trip rate isn't diluted by the gentle start.
-        val series = DashboardViewModel.rollingWhPerKmSeries(samples, windowKm = 2.0, emaAlpha = 1.0)
-
-        val early = series[20]!!   // ~2 km in, fully within the gentle stretch
-        val late = series.last()!! // end of the thirsty stretch
-        assertEquals(100.0, early, 5.0)
-        assertTrue("rate must rise on the thirsty stretch ($early -> $late)", late > early + 100.0)
+    fun `at switch-on the window is the driving before the trip`() {
+        // Last trip 40 km at 150 Wh/km, the one before 100 km at 250. Nothing driven yet.
+        val h = history(40.0 to 150.0, 100.0 to 250.0)
+        val ten = DashboardViewModel.windowRate(emptyList(), h, 10.0)!!
+        assertEquals(150.0, ten.whPerKm, 1e-6)
+        assertEquals(10.0, ten.coveredKm, 1e-6)
+        // 100 km: all 40 of the last trip and 60 of the one before.
+        val hundred = DashboardViewModel.windowRate(emptyList(), h, 100.0)!!
+        assertEquals((40 * 150.0 + 60 * 250.0) / 100.0, hundred.whPerKm, 1e-6)
+        // 500 km reaches past the history: it averages what there is.
+        val fiveHundred = DashboardViewModel.windowRate(emptyList(), h, 500.0)!!
+        assertEquals(140.0, fiveHundred.coveredKm, 1e-6)
     }
 
     @Test
-    fun `rolling series is null until the first positive consumption is seen`() {
-        // Leading flat-energy samples (no discharge yet) have no rate; once energy
-        // starts accruing a rate appears and persists.
-        val samples = listOf(0.0 to 0.0, 0.5 to 0.0, 1.0 to 0.0, 1.5 to 75.0, 2.0 to 150.0)
-        val series = DashboardViewModel.rollingWhPerKmSeries(samples, windowKm = 10.0, emaAlpha = 1.0)
-        assertEquals(null, series[0])
-        assertEquals(null, series[2])           // still no consumption by 1.0 km
-        assertTrue(series.last() != null && series.last()!! > 0.0)
+    fun `the trip takes over the window as it is driven`() {
+        val h = history(100.0 to 150.0)
+        val trip = steadyTrip(0.0, 30.0, 250.0)
+        // 30 km into the trip, a 100 km window is 30 km of trip and 70 of history.
+        val w = DashboardViewModel.windowRate(trip, h, 100.0)!!
+        assertEquals((30 * 250.0 + 70 * 150.0) / 100.0, w.whPerKm, 1e-6)
+        // A 10 km window is the trip's own last 10 km.
+        assertEquals(250.0, DashboardViewModel.windowRate(trip, h, 10.0)!!.whPerKm, 1e-6)
+    }
+
+    @Test
+    fun `past the window length the trip's own last N km is all that counts`() {
+        // 5 km gentle, then 15 km thirsty: the last 10 km are all thirsty.
+        val gentle = steadyTrip(0.0, 5.0, 100.0)
+        val thirsty = steadyTrip(5.1, 20.0, 300.0, startWh = gentle.last().second + 0.1 * 300.0)
+        val w = DashboardViewModel.windowRate(gentle + thirsty, history(100.0 to 150.0), 10.0)!!
+        assertEquals(300.0, w.whPerKm, 1e-6)
+        assertEquals(10.0, w.coveredKm, 1e-6)
+    }
+
+    @Test
+    fun `no history and no driving yet has no window rate`() {
+        assertEquals(null, DashboardViewModel.windowRate(emptyList(), null, 100.0))
+        // Under MIN_WINDOW_DIST_KM, or before any energy is recorded, still nothing.
+        assertEquals(null, DashboardViewModel.windowRate(listOf(0.0 to 0.0, 0.1 to 20.0), null, 100.0))
+        assertEquals(null, DashboardViewModel.windowRate(listOf(0.0 to 0.0, 1.0 to 0.0), null, 100.0))
+    }
+
+    @Test
+    fun `history points give the last trip's real last kilometres`() {
+        // 20 km trip: the first 10 km cost 1 kWh, the last 10 km cost 3 kWh. Its average is
+        // 200 Wh/km, but at switch-on the last 10 km of driving ran at 300.
+        val points = (0..200).map { i ->
+            val km = 1000.0 + i * 0.1
+            val kwh = if (i <= 100) i * 0.01 else 1.0 + (i - 100) * 0.03
+            km to kwh
+        }
+        val h = DashboardViewModel.buildDrivingHistory(
+            listOf(DashboardViewModel.Companion.HistoryTrip(20.0, 4000.0, points)), DashboardViewModel.MAX_WINDOW_KM
+        )!!
+        assertEquals(3000.0, h.energyOverLastKm(10.0), 1.0)
+        // The trip's totals still hold at its boundary.
+        assertEquals(4000.0, h.energyOverLastKm(20.0), 1e-6)
+        // Without points, the same trip is spread evenly.
+        val flat = history(20.0 to 200.0)!!
+        assertEquals(2000.0, flat.energyOverLastKm(10.0), 1e-6)
+    }
+
+    @Test
+    fun `history stops once the longest window is covered`() {
+        val h = history(*Array(20) { 100.0 to 150.0 })!!
+        // 500 km is reached on the fifth trip; nothing beyond it is laid out.
+        assertEquals(500.0, h.totalKm, 1e-6)
+    }
+
+    @Test
+    fun `a fresh install starts on the catalog rate and earns its own`() {
+        // No history: the first few hundred metres are shrunk toward the baseline...
+        val early = DashboardViewModel.rangeRate(steadyTrip(0.0, 0.3, 900.0), null, 100.0, 180.0)
+        assertEquals(DashboardViewModel.RangeModel.BASELINE, early.model)
+        assertEquals(0.1 * 900.0 + 0.9 * 180.0, early.whPerKm, 1e-6)
+        // ...and by STABILISATION_KM it is the driving alone.
+        val settled = DashboardViewModel.rangeRate(steadyTrip(0.0, 5.0, 200.0), null, 100.0, 180.0)
+        assertEquals(DashboardViewModel.RangeModel.RECENT_DRIVING, settled.model)
+        assertEquals(200.0, settled.whPerKm, 1e-6)
+    }
+
+    @Test
+    fun `with history the projection is the driver's own from switch-on`() {
+        val r = DashboardViewModel.rangeRate(emptyList(), history(60.0 to 150.0), 100.0, 180.0)
+        assertEquals(DashboardViewModel.RangeModel.RECENT_DRIVING, r.model)
+        assertEquals(150.0, r.whPerKm, 1e-6)
+    }
+
+    @Test
+    fun `the optimism cap's reference is the longest window`() {
+        // A 10 km descent at 20 Wh/km after 400 km at 180: the 10 km window reads 20, but the
+        // cap is held to the 500 km figure, so the projection can't balloon.
+        val trip = steadyTrip(0.0, 10.0, 20.0)
+        val r = DashboardViewModel.rangeRate(trip, history(400.0 to 180.0), 10.0, 180.0)
+        assertEquals(20.0, r.whPerKm, 1e-6)
+        assertEquals((10 * 20.0 + 400 * 180.0) / 410.0, r.referenceWhPerKm, 1e-6)
     }
 
     // ── projectedEvRangeKm optimism cap — bounds the downhill balloon ────────────
@@ -351,36 +433,6 @@ class DashboardViewModelProjectionTest {
             isPhev = false
         )
         assertEquals(remainingWh / 60.0, projected, 0.0001)
-    }
-
-    // ── windowSlopeWhPerKm — noise-robust rate vs a two-endpoint difference ──────
-
-    @Test
-    fun `window slope returns the least-squares slope of a linear series`() {
-        val samples = (0..50).map { i -> (i * 0.1) to (i * 0.1 * 160.0) }  // 160 Wh/km
-        assertEquals(160.0, DashboardViewModel.windowSlopeWhPerKm(samples)!!, 1e-6)
-    }
-
-    @Test
-    fun `window slope shrugs off endpoint quantization a two-point estimate takes raw`() {
-        // A clean 160 Wh/km ramp, but the two endpoints carry opposite ±100 Wh quantization.
-        // A two-point (last − first) estimate takes the full ±200 Wh; the regression barely moves.
-        val clean = (0..50).map { i -> (i * 0.1) to (i * 0.1 * 160.0) }.toMutableList()
-        val n = clean.size
-        clean[0] = clean[0].first to (clean[0].second + 100.0)
-        clean[n - 1] = clean[n - 1].first to (clean[n - 1].second - 100.0)
-        val twoPoint = (clean.last().second - clean.first().second) /
-            (clean.last().first - clean.first().first)
-        val slope = DashboardViewModel.windowSlopeWhPerKm(clean)!!
-        assertTrue("two-point estimate is pulled well off 160 (was $twoPoint)", twoPoint < 150.0)
-        assertEquals(160.0, slope, 6.0)
-    }
-
-    @Test
-    fun `window slope is null for too few points, flat energy, or a negative slope`() {
-        assertEquals(null, DashboardViewModel.windowSlopeWhPerKm(listOf(1.0 to 100.0)))
-        assertEquals(null, DashboardViewModel.windowSlopeWhPerKm(listOf(0.0 to 50.0, 1.0 to 50.0)))
-        assertEquals(null, DashboardViewModel.windowSlopeWhPerKm(listOf(0.0 to 100.0, 1.0 to 0.0)))
     }
 
     // ---- PHEV ICE gating: the EV-only distance axis --------------------------------

@@ -701,9 +701,7 @@
     <string name="chart_above_wltp_cap">Værdi over WLTP-gennemsnit — begrænset til nominel rækkevidde</string>
     <string name="chart_acquiring">henter telemetri · kør for at begynde</string>
     <string name="chart_scanning">SCANNER…</string>
-    <string name="legend_live_trip">● Live tur</string>
-    <string name="legend_trip_average">● Turgennemsnit</string>
-    <string name="legend_lifetime_avg">● Levetidsgns.</string>
+    <string name="legend_recent_driving">● Seneste %1$s</string>
     <string name="legend_baseline">● Baseline</string>
     <string name="chart_no_data">Ingen data tilgængelig</string>
     <string name="chart_insufficient_data">Utilstrækkelige data</string>
@@ -711,6 +709,10 @@
     <string name="chart_weekly_consumption">Denne uge</string>
     <string name="chart_monthly_consumption">Denne måned</string>
     <string name="chart_yearly_consumption">Dette år</string>
+    <string name="chart_custom_range">Tilpasset…</string>
+    <string name="chart_total_per_day">I alt %1$s · %2$s pr. dag</string>
+    <string name="chart_total_per_week">I alt %1$s · %2$s pr. uge</string>
+    <string name="chart_total_per_month">I alt %1$s · %2$s pr. måned</string>
     <string name="chart_your_duration_avg">Dit varighedsgnemmesnit (%1$s %2$s)</string>
     <string name="chart_selected_car_avg">Valgt bilgennemsnit (%1$s %2$s)</string>
     <string name="chart_close">Luk grafik</string>
@@ -950,6 +952,8 @@
     <string name="soc_panel_option">Panel</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">På PHEV\'er rapporteres BMS SoC normalt ikke — brug Panel, hvis BMS viser 0.\nBMS er mere præcis (float) end Panel (heltal). Desuden er større divergens fra Panel en god indikation på, at det er tid til enten 100% opladning eller opladningskalibrering</string>
+    <string name="pref_range_window">Rækkeviddeestimat</string>
+    <string name="range_window_desc">Den forventede rækkevidde bruger dit forbrug over så meget af din seneste kørsel, tidligere ture medregnet, så den er klar, så snart du starter bilen. Kortere følger vejen, du kører på; længere er mere stabil.</string>
     <string name="pref_cell_imbalance">Celleimbalancealarm</string>
     <string name="cell_imbalance_desc">Underret mig, når pakkens cellespændingsspredning forbliver over grænsen.</string>
     <string name="cell_imbalance_info">Spredning = højeste celle − laveste celle. En sund pakke holder sig under ca. 20 mV; en vedvarende høj spredning kan markere en svag celle. Advarsler undertrykkes under 5% og over 95% SoC, hvor en bred spredning er normal.</string>
@@ -1078,10 +1082,11 @@
     <string name="pref_trip_recording_desc">Hvornår en tur slutter, efter bilen er slukket, og hvor kort en tur må være.</string>
     <string name="trip_recording_status">Auto-stop efter %1$d min • minimum %2$s</string>
     <string name="trip_recording_status_no_min">Auto-stop efter %1$d min • intet minimum</string>
-    <string name="pref_battery_title">Batteri</string>
-    <string name="pref_battery_desc">Hvilken aflæsning af opladningsniveauet der vises, og celleimbalancealarmen.</string>
+    <string name="pref_battery_title">Batteri og rækkeviddeestimat</string>
+    <string name="pref_battery_desc">Hvilken aflæsning af opladningsniveauet der vises, hvor meget af den seneste kørsel rækkeviddeestimatet bygger på, og celleimbalancealarmen.</string>
     <string name="battery_status_alert_on">SoC: %1$s • imbalancealarm til</string>
     <string name="battery_status_alert_off">SoC: %1$s • imbalancealarm fra</string>
+    <string name="battery_status_range">rækkeviddeestimat: seneste %1$s</string>
     <string name="pref_costs_desc">Din elektricitetstakst og valuta, som bruges til at prissætte ture og opladninger.</string>
     <string name="pref_goals_desc">Mål for forbrug og distance samt dine personlige rekorder.</string>
     <string name="pro_cell_imbalance_info">Advarer dig, når spredningen i batteriets cellespændinger forbliver over din grænse — et tidligt tegn på en svag celle. Slå den til og indstil grænsen under Præferencer → Batteri, når den er låst op.</string>
@@ -1314,7 +1319,7 @@
     <string name="speed_state_parked">Stationær</string>
     <string name="speed_state_driving">Kører</string>
     <string name="soc_subtitle_usable">Brugbar opladning</string>
-    <string name="range_subtitle_projection">Dynamisk projektion</string>
+    <string name="range_subtitle_window">Seneste %1$s</string>
     <string name="range_subtitle_phev">Brændstof %1$s · I alt %2$s</string>
     <string name="stat_fuel_range">Brændstof</string>
     <string name="distance_subtitle_session">Denne session</string>

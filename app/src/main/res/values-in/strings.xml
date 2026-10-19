@@ -698,9 +698,7 @@
     <string name="chart_above_wltp_cap">Nilai di atas rata-rata WLTP — dibatasi pada jangkauan terukur</string>
     <string name="chart_acquiring">memperoleh telemetri · berkendara untuk mulai</string>
     <string name="chart_scanning">MEMINDAI…</string>
-    <string name="legend_live_trip">● Perjalanan langsung</string>
-    <string name="legend_trip_average">● Rata-rata perjalanan</string>
-    <string name="legend_lifetime_avg">● Rata-rata seumur hidup</string>
+    <string name="legend_recent_driving">● %1$s terakhir</string>
     <string name="legend_baseline">● Dasar</string>
     <string name="chart_no_data">Tidak ada data tersedia</string>
     <string name="chart_insufficient_data">Data tidak cukup</string>
@@ -708,6 +706,10 @@
     <string name="chart_weekly_consumption">Minggu ini</string>
     <string name="chart_monthly_consumption">Bulan ini</string>
     <string name="chart_yearly_consumption">Tahun ini</string>
+    <string name="chart_custom_range">Kustom…</string>
+    <string name="chart_total_per_day">Total %1$s · %2$s per hari</string>
+    <string name="chart_total_per_week">Total %1$s · %2$s per minggu</string>
+    <string name="chart_total_per_month">Total %1$s · %2$s per bulan</string>
     <string name="chart_your_duration_avg">Rata-rata durasi Anda (%1$s %2$s)</string>
     <string name="chart_selected_car_avg">Rata-rata mobil terpilih (%1$s %2$s)</string>
     <string name="chart_close">Tutup grafik</string>
@@ -947,6 +949,8 @@
     <string name="soc_panel_option">Panel</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">Pada PHEV, SoC BMS biasanya tidak dilaporkan — gunakan Panel jika BMS menunjukkan 0.\nBMS lebih akurat (desimal) daripada Panel (bilangan bulat). Selain itu, perbedaan lebih besar dari Panel adalah indikasi bagus bahwa saatnya mengisi 100% atau kalibrasi pengisian</string>
+    <string name="pref_range_window">Perkiraan jarak tempuh</string>
+    <string name="range_window_desc">Jarak tempuh yang diproyeksikan memakai konsumsi Anda pada jarak berkendara terbaru sejauh ini, termasuk perjalanan sebelumnya, sehingga langsung siap saat mobil dinyalakan. Lebih pendek mengikuti jalan saat ini; lebih panjang lebih stabil.</string>
     <string name="pref_cell_imbalance">Peringatan ketidakseimbangan sel</string>
     <string name="cell_imbalance_desc">Beri tahu saya saat sebaran tegangan sel pak tetap di atas batas.</string>
     <string name="cell_imbalance_info">Sebaran = sel tertinggi − sel terendah. Pak yang sehat tetap di bawah ~20 mV; sebaran tinggi yang bertahan bisa menandai sel lemah. Peringatan ditekan di bawah 5% dan di atas 95% SoC, di mana sebaran lebar adalah normal.</string>
@@ -1075,10 +1079,11 @@
     <string name="pref_trip_recording_desc">Kapan perjalanan berakhir setelah mobil dimatikan, dan seberapa pendek sebuah perjalanan boleh.</string>
     <string name="trip_recording_status">Berhenti otomatis setelah %1$d mnt • minimum %2$s</string>
     <string name="trip_recording_status_no_min">Berhenti otomatis setelah %1$d mnt • tanpa minimum</string>
-    <string name="pref_battery_title">Baterai</string>
-    <string name="pref_battery_desc">Pembacaan status daya mana yang ditampilkan, dan peringatan ketidakseimbangan sel.</string>
+    <string name="pref_battery_title">Baterai dan perkiraan jarak tempuh</string>
+    <string name="pref_battery_desc">Pembacaan status daya mana yang ditampilkan, berapa banyak perjalanan terbaru yang dipakai perkiraan jarak tempuh, dan peringatan ketidakseimbangan sel.</string>
     <string name="battery_status_alert_on">SoC: %1$s • peringatan ketidakseimbangan nyala</string>
     <string name="battery_status_alert_off">SoC: %1$s • peringatan ketidakseimbangan mati</string>
+    <string name="battery_status_range">perkiraan jarak tempuh: %1$s terakhir</string>
     <string name="pref_costs_desc">Tarif listrik dan mata uang Anda, dipakai untuk menghitung biaya perjalanan dan pengisian.</string>
     <string name="pref_goals_desc">Target konsumsi dan jarak, serta rekor pribadi Anda.</string>
     <string name="pro_cell_imbalance_info">Memperingatkan Anda saat selisih tegangan sel baterai tetap di atas batas Anda — tanda awal sel yang lemah. Aktifkan dan atur batasnya di Preferensi → Baterai setelah dibuka.</string>
@@ -1310,7 +1315,7 @@
     <string name="speed_state_parked">Diam</string>
     <string name="speed_state_driving">Berkendara</string>
     <string name="soc_subtitle_usable">Daya yang dapat digunakan</string>
-    <string name="range_subtitle_projection">Proyeksi dinamis</string>
+    <string name="range_subtitle_window">%1$s terakhir</string>
     <string name="range_subtitle_phev">Bahan bakar %1$s · Total %2$s</string>
     <string name="stat_fuel_range">Bahan bakar</string>
     <string name="distance_subtitle_session">Sesi ini</string>

@@ -701,9 +701,7 @@
     <string name="chart_above_wltp_cap">WLTP平均以上の値 — 定格航続距離でキャップ</string>
     <string name="chart_acquiring">テレメトリー取得中 · 走行を開始</string>
     <string name="chart_scanning">スキャン中…</string>
-    <string name="legend_live_trip">● ライブ走行</string>
-    <string name="legend_trip_average">● トリップ平均</string>
-    <string name="legend_lifetime_avg">● 生涯平均</string>
+    <string name="legend_recent_driving">● 直近 %1$s</string>
     <string name="legend_baseline">● ベースライン</string>
     <string name="chart_no_data">データがありません</string>
     <string name="chart_insufficient_data">データ不足</string>
@@ -711,6 +709,10 @@
     <string name="chart_weekly_consumption">1週間で</string>
     <string name="chart_monthly_consumption">1ヶ月で</string>
     <string name="chart_yearly_consumption">1年で</string>
+    <string name="chart_custom_range">期間指定…</string>
+    <string name="chart_total_per_day">合計 %1$s · 1日あたり %2$s</string>
+    <string name="chart_total_per_week">合計 %1$s · 1週間あたり %2$s</string>
+    <string name="chart_total_per_month">合計 %1$s · 1か月あたり %2$s</string>
     <string name="chart_your_duration_avg">あなたの期間平均（%1$s %2$s）</string>
     <string name="chart_selected_car_avg">選択した車の平均（%1$s %2$s）</string>
     <string name="chart_close">チャートを閉じる</string>
@@ -950,6 +952,8 @@
     <string name="soc_panel_option">パネル</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">PHEVではBMS SoCが通常報告されません — BMSが0を示す場合はパネルを使用してください。\nBMSはパネル（整数）より正確です（小数）。また、パネルからの大きな乖離は、100%充電または充電キャリブレーションの時期を示す良い指標です</string>
+    <string name="pref_range_window">航続距離の推定</string>
+    <string name="range_window_desc">予測航続距離は、以前のトリップを含む直近のこの距離の走行の電費をもとに計算されるため、起動直後から表示されます。短いほど現在の道路に追従し、長いほど安定します。</string>
     <string name="pref_cell_imbalance">セル不均衡アラート</string>
     <string name="cell_imbalance_desc">パックのセル電圧ばらつきが上限を超えたときに通知します。</string>
     <string name="cell_imbalance_info">ばらつき = 最高セル − 最低セル。健全なパックは〜20mV以下に保たれます。持続的に高いばらつきは弱いセルの兆候となり得ます。アラートはSoC 5%以下および95%以上では抑制されます（この範囲では広いばらつきが正常です）。</string>
@@ -1078,10 +1082,11 @@
     <string name="pref_trip_recording_desc">車の電源を切った後にトリップを終了するタイミングと、記録するトリップの最短距離。</string>
     <string name="trip_recording_status">%1$d 分後に自動停止 • 最短 %2$s</string>
     <string name="trip_recording_status_no_min">%1$d 分後に自動停止 • 最短距離なし</string>
-    <string name="pref_battery_title">バッテリー</string>
-    <string name="pref_battery_desc">表示する充電状態の値と、セル不均衡アラート。</string>
+    <string name="pref_battery_title">バッテリーと航続距離の推定</string>
+    <string name="pref_battery_desc">表示する充電状態の値、航続距離の推定に使う直近の走行距離、セル不均衡アラート。</string>
     <string name="battery_status_alert_on">SoC：%1$s • 不均衡アラートオン</string>
     <string name="battery_status_alert_off">SoC：%1$s • 不均衡アラートオフ</string>
+    <string name="battery_status_range">航続距離の推定：直近 %1$s</string>
     <string name="pref_costs_desc">トリップと充電の料金計算に使う電気料金と通貨。</string>
     <string name="pref_goals_desc">消費量と距離の目標、そして自己ベスト。</string>
     <string name="pro_cell_imbalance_info">バッテリーのセル電圧の差が上限を超えたままになると警告します — 弱いセルの早期サインです。ロック解除後、設定 → バッテリーでオンにして上限を設定してください。</string>
@@ -1314,7 +1319,7 @@
     <string name="speed_state_parked">停止中</string>
     <string name="speed_state_driving">走行中</string>
     <string name="soc_subtitle_usable">使用可能な充電量</string>
-    <string name="range_subtitle_projection">動的予測</string>
+    <string name="range_subtitle_window">直近 %1$s</string>
     <string name="range_subtitle_phev">燃料 %1$s · 合計 %2$s</string>
     <string name="stat_fuel_range">燃料</string>
     <string name="distance_subtitle_session">このセッション</string>

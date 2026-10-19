@@ -70,9 +70,7 @@ fun DashboardScreen(
     val liveOffStateMs by viewModel.liveOffStateMs.collectAsState()
     val liveAccumulatedKwh by viewModel.liveAccumulatedKwh.collectAsState()
     val activeRangeModel by viewModel.activeRangeModel.collectAsState()
-    val weeklyEfficiency by viewModel.weeklyEfficiency.collectAsState()
-    val monthlyEfficiency by viewModel.monthlyEfficiency.collectAsState()
-    val yearlyEfficiency by viewModel.yearlyEfficiency.collectAsState()
+    val usageCharts by viewModel.usageCharts.collectAsState()
 
     val activity = LocalContext.current as androidx.activity.ComponentActivity
     val windowSizeClass = calculateWindowSizeClass(activity)
@@ -262,9 +260,8 @@ fun DashboardScreen(
                 isInTrip = isInTrip,
                 autoTripDetection = autoTripDetection,
                 tripDataPoints = tripDataPoints,
-                weeklyEfficiency = weeklyEfficiency,
-                monthlyEfficiency = monthlyEfficiency,
-                yearlyEfficiency = yearlyEfficiency,
+                usageCharts = usageCharts,
+                onCustomUsageRange = viewModel::setCustomUsageRange,
                 onStartTrip = { viewModel.startManualTrip() },
                 onEndTrip = { viewModel.endManualTrip() },
                 onToggleAutoDetection = { viewModel.toggleAutoTripDetection() },
@@ -457,9 +454,8 @@ fun DashboardContent(
     isInTrip: Boolean,
     autoTripDetection: Boolean,
     tripDataPoints: List<RangeDataPoint>,
-    weeklyEfficiency: List<DashboardViewModel.DailyEfficiency>,
-    monthlyEfficiency: List<DashboardViewModel.DailyEfficiency>,
-    yearlyEfficiency: List<DashboardViewModel.DailyEfficiency>,
+    usageCharts: DashboardViewModel.UsageCharts,
+    onCustomUsageRange: (DashboardViewModel.UsageRange) -> Unit,
     onStartTrip: () -> Unit,
     onEndTrip: () -> Unit,
     onToggleAutoDetection: () -> Unit,
@@ -531,9 +527,8 @@ fun DashboardContent(
                     color = MaterialTheme.colorScheme.primaryContainer
                 ) {
                     com.byd.tripstats.ui.components.ConsumptionChartExpanded(
-                        weeklyData = weeklyEfficiency,
-                        monthlyData = monthlyEfficiency,
-                        yearlyData = yearlyEfficiency,
+                        usage = usageCharts,
+                        onCustomRange = onCustomUsageRange,
                         onClose = onConsumptionClose,
                         modifier = Modifier.fillMaxSize().padding(12.dp)
                     )
@@ -568,9 +563,8 @@ fun DashboardContent(
                     liveSpeedKmh = vehicleSnapshot?.directSpeedKmh,
                     livePowerKw = vehicleSnapshot?.enginePower,
                     tripDataPoints = tripDataPoints,
-                    weeklyEfficiency = weeklyEfficiency,
-                    monthlyEfficiency = monthlyEfficiency,
-                    yearlyEfficiency = yearlyEfficiency,
+                    usageCharts = usageCharts,
+                    onCustomUsageRange = onCustomUsageRange,
                     sessionDistanceKm = sessionDistanceKm,
                     tripDistanceKm = tripDistanceKm,
                     distanceSinceChargeKm = distanceSinceChargeKm,
@@ -624,9 +618,8 @@ fun DashboardContent(
                         liveSpeedKmh = vehicleSnapshot?.directSpeedKmh,
                         livePowerKw = vehicleSnapshot?.enginePower,
                         tripDataPoints = tripDataPoints,
-                        weeklyEfficiency = weeklyEfficiency,
-                        monthlyEfficiency = monthlyEfficiency,
-                        yearlyEfficiency = yearlyEfficiency,
+                        usageCharts = usageCharts,
+                        onCustomUsageRange = onCustomUsageRange,
                         sessionDistanceKm = sessionDistanceKm,
                         tripDistanceKm = tripDistanceKm,
                         distanceSinceChargeKm = distanceSinceChargeKm,
@@ -705,9 +698,8 @@ fun DashboardContent(
                         liveSpeedKmh = vehicleSnapshot?.directSpeedKmh,
                         livePowerKw = vehicleSnapshot?.enginePower,
                         tripDataPoints = tripDataPoints,
-                        weeklyEfficiency = weeklyEfficiency,
-                        monthlyEfficiency = monthlyEfficiency,
-                        yearlyEfficiency = yearlyEfficiency,
+                        usageCharts = usageCharts,
+                        onCustomUsageRange = onCustomUsageRange,
                         sessionDistanceKm = sessionDistanceKm,
                         tripDistanceKm = tripDistanceKm,
                         distanceSinceChargeKm = distanceSinceChargeKm,

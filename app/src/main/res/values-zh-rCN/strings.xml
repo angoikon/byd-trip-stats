@@ -701,9 +701,7 @@
     <string name="chart_above_wltp_cap">数值超过 WLTP 均值 — 已限制在额定续航内</string>
     <string name="chart_acquiring">获取遥测数据中 · 开始驾驶</string>
     <string name="chart_scanning">扫描中…</string>
-    <string name="legend_live_trip">● 实时行程</string>
-    <string name="legend_trip_average">● 行程均值</string>
-    <string name="legend_lifetime_avg">● 全生命周期均值</string>
+    <string name="legend_recent_driving">● 最近 %1$s</string>
     <string name="legend_baseline">● 基准线</string>
     <string name="chart_no_data">暂无数据</string>
     <string name="chart_insufficient_data">数据不足</string>
@@ -711,6 +709,10 @@
     <string name="chart_weekly_consumption">本周</string>
     <string name="chart_monthly_consumption">本月</string>
     <string name="chart_yearly_consumption">本年</string>
+    <string name="chart_custom_range">自定义…</string>
+    <string name="chart_total_per_day">合计 %1$s · 每天 %2$s</string>
+    <string name="chart_total_per_week">合计 %1$s · 每周 %2$s</string>
+    <string name="chart_total_per_month">合计 %1$s · 每月 %2$s</string>
     <string name="chart_your_duration_avg">您的时长均值（%1$s %2$s）</string>
     <string name="chart_selected_car_avg">所选车型均值（%1$s %2$s）</string>
     <string name="chart_close">关闭图表</string>
@@ -950,6 +952,8 @@
     <string name="soc_panel_option">面板</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">PHEV 车型通常不上报 BMS SoC — 若 BMS 显示为 0，请使用面板值。\nBMS 比面板更准确（浮点数 vs 整数）。此外，与面板值差异较大时，通常提示需要进行 100% 充电或充电校准。</string>
+    <string name="pref_range_window">续航估算</string>
+    <string name="range_window_desc">预测续航使用您最近这段距离（含之前行程）的能耗，因此一启动即可显示。距离越短越贴合当前路况，越长越稳定。</string>
     <string name="pref_cell_imbalance">电芯不平衡提醒</string>
     <string name="cell_imbalance_desc">当电池组电芯电压差持续超过限制时通知我。</string>
     <string name="cell_imbalance_info">电压差 = 最高电芯 − 最低电芯。健康电池组应低于约 20 mV；持续偏高的电压差可能表明存在弱电芯。SoC 低于 5% 或高于 95% 时，较大的电压差属正常现象，提醒将被抑制。</string>
@@ -1078,10 +1082,11 @@
     <string name="pref_trip_recording_desc">车辆熄火后行程何时结束，以及行程最短可以多短。</string>
     <string name="trip_recording_status">%1$d 分钟后自动结束 • 最短 %2$s</string>
     <string name="trip_recording_status_no_min">%1$d 分钟后自动结束 • 无最短距离</string>
-    <string name="pref_battery_title">电池</string>
-    <string name="pref_battery_desc">显示哪种电量读数，以及电芯不平衡提醒。</string>
+    <string name="pref_battery_title">电池与续航估算</string>
+    <string name="pref_battery_desc">显示哪种电量读数、续航估算参考最近多少行驶距离，以及电芯不平衡提醒。</string>
     <string name="battery_status_alert_on">SoC：%1$s • 不平衡提醒：开启</string>
     <string name="battery_status_alert_off">SoC：%1$s • 不平衡提醒：关闭</string>
+    <string name="battery_status_range">续航估算：最近 %1$s</string>
     <string name="pref_costs_desc">您的电价和货币，用于计算行程和充电的费用。</string>
     <string name="pref_goals_desc">能耗和里程目标，以及您的个人最佳记录。</string>
     <string name="pro_cell_imbalance_info">当电池电芯电压差持续高于您设定的上限时提醒您 — 这是电芯变弱的早期迹象。解锁后在 偏好设置 → 电池 中开启并设置上限。</string>
@@ -1314,7 +1319,7 @@
     <string name="speed_state_parked">静止</string>
     <string name="speed_state_driving">行驶中</string>
     <string name="soc_subtitle_usable">可用电量</string>
-    <string name="range_subtitle_projection">动态预测</string>
+    <string name="range_subtitle_window">最近 %1$s</string>
     <string name="range_subtitle_phev">燃油 %1$s · 总计 %2$s</string>
     <string name="stat_fuel_range">燃油</string>
     <string name="distance_subtitle_session">本次记录</string>

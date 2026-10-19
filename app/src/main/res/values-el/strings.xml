@@ -646,9 +646,7 @@
     <string name="chart_above_wltp_cap">Τιμή πάνω από WLTP μέσο — περιορισμένο στην ονομαστική αυτονομία</string>
     <string name="chart_acquiring">απόκτηση τηλεμετρίας · οδηγήστε για εκκίνηση</string>
     <string name="chart_scanning">ΣΑΡΩΣΗ…</string>
-    <string name="legend_live_trip">● Ζωντανή διαδρομή</string>
-    <string name="legend_trip_average">● Μέσο διαδρομής</string>
-    <string name="legend_lifetime_avg">● Συνολικό μέσο</string>
+    <string name="legend_recent_driving">● Τελευταία %1$s</string>
     <string name="legend_baseline">● Βάση αναφοράς</string>
     <string name="chart_no_data">Δεν υπάρχουν διαθέσιμα δεδομένα</string>
     <string name="chart_insufficient_data">Ανεπαρκή δεδομένα</string>
@@ -656,6 +654,10 @@
     <string name="chart_weekly_consumption">Μέσα στην εβδομάδα</string>
     <string name="chart_monthly_consumption">Μέσα στον μήνα</string>
     <string name="chart_yearly_consumption">Μέσα στον χρόνο</string>
+    <string name="chart_custom_range">Προσαρμογή…</string>
+    <string name="chart_total_per_day">Σύνολο %1$s · %2$s ανά ημέρα</string>
+    <string name="chart_total_per_week">Σύνολο %1$s · %2$s ανά εβδομάδα</string>
+    <string name="chart_total_per_month">Σύνολο %1$s · %2$s ανά μήνα</string>
     <string name="chart_your_duration_avg">Το μέσο σας (%1$s %2$s)</string>
     <string name="chart_selected_car_avg">Μέσο επιλεγμένου αυτοκινήτου (%1$s %2$s)</string>
     <string name="chart_close">Κλείσιμο γραφήματος</string>
@@ -879,6 +881,8 @@
     <string name="soc_panel_option">Πίνακας</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">Σε PHEV, το BMS SoC συνήθως δεν αναφέρεται — χρησιμοποιήστε Πίνακας αν το BMS δείχνει 0.\nΤο BMS είναι πιο ακριβές (δεκαδικό) από τον Πίνακα (ακέραιος). Επίσης, μεγαλύτερη απόκλιση από τον Πίνακα είναι καλή ένδειξη ότι ήρθε η ώρα είτε για φόρτιση 100% είτε για βαθμονόμηση φόρτισης</string>
+    <string name="pref_range_window">Εκτίμηση αυτονομίας</string>
+    <string name="range_window_desc">Η προβλεπόμενη αυτονομία χρησιμοποιεί την κατανάλωσή σας σε αυτή την απόσταση της πιο πρόσφατης οδήγησης, μαζί με προηγούμενες διαδρομές, ώστε να είναι έτοιμη μόλις ενεργοποιήσετε το αυτοκίνητο. Μικρότερη ακολουθεί τον δρόμο που οδηγείτε· μεγαλύτερη μένει πιο σταθερή.</string>
     <string name="pref_cell_imbalance">Ειδοποίηση ανισορροπίας κελιών</string>
     <string name="cell_imbalance_desc">Να με ειδοποιεί όταν η διασπορά τάσης κελιών παραμένει πάνω από το όριο.</string>
     <string name="cell_imbalance_info">Διασπορά = υψηλότερο κελί − χαμηλότερο κελί. Υγιές πακέτο παραμένει κάτω από ~20 mV· επίμονα υψηλή διασπορά μπορεί να υποδεικνύει αδύναμο κελί. Οι ειδοποιήσεις καταστέλλονται κάτω από 5% και πάνω από 95% SoC, όπου η μεγάλη διασπορά είναι φυσιολογική.</string>
@@ -995,10 +999,11 @@
     <string name="pref_trip_recording_desc">Πότε τελειώνει μια διαδρομή αφού σβήσει το αυτοκίνητο, και πόσο σύντομη μπορεί να είναι.</string>
     <string name="trip_recording_status">Αυτόματη διακοπή μετά από %1$d λεπτά • ελάχιστο %2$s</string>
     <string name="trip_recording_status_no_min">Αυτόματη διακοπή μετά από %1$d λεπτά • χωρίς ελάχιστο</string>
-    <string name="pref_battery_title">Μπαταρία</string>
-    <string name="pref_battery_desc">Ποια ένδειξη στάθμης φόρτισης εμφανίζεται, και η ειδοποίηση ανισορροπίας κελιών.</string>
+    <string name="pref_battery_title">Μπαταρία και εκτίμηση αυτονομίας</string>
+    <string name="pref_battery_desc">Ποια ένδειξη στάθμης φόρτισης εμφανίζεται, σε πόση πρόσφατη οδήγηση βασίζεται η εκτίμηση αυτονομίας, και η ειδοποίηση ανισορροπίας κελιών.</string>
     <string name="battery_status_alert_on">SoC: %1$s • ειδοποίηση ανισορροπίας ενεργή</string>
     <string name="battery_status_alert_off">SoC: %1$s • ειδοποίηση ανισορροπίας ανενεργή</string>
+    <string name="battery_status_range">εκτίμηση αυτονομίας: τελευταία %1$s</string>
     <string name="pref_costs_desc">Το τιμολόγιο ρεύματος και το νόμισμα, με τα οποία κοστολογούνται διαδρομές και φορτίσεις.</string>
     <string name="pref_goals_desc">Στόχοι κατανάλωσης και απόστασης, και τα προσωπικά σας ρεκόρ.</string>
     <string name="pro_cell_imbalance_info">Σας ειδοποιεί όταν η διασπορά τάσης των κελιών της μπαταρίας παραμένει πάνω από το όριό σας — πρώιμη ένδειξη αδύναμου κελιού. Ενεργοποιήστε την και ορίστε το όριο στις Προτιμήσεις → Μπαταρία μόλις ξεκλειδωθεί.</string>
@@ -1213,7 +1218,7 @@
     <string name="speed_state_parked">Στάσιμο</string>
     <string name="speed_state_driving">Οδήγηση</string>
     <string name="soc_subtitle_usable">Χρησιμοποιήσιμη φόρτιση</string>
-    <string name="range_subtitle_projection">Δυναμική προβολή</string>
+    <string name="range_subtitle_window">Τελευταία %1$s</string>
     <string name="range_subtitle_phev">Καύσιμο %1$s · Σύνολο %2$s</string>
     <string name="stat_fuel_range">Καύσιμο</string>
     <string name="distance_subtitle_session">Αυτή η συνεδρία</string>

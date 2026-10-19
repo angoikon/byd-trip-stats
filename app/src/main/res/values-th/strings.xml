@@ -646,9 +646,7 @@
     <string name="chart_above_wltp_cap">ค่าเกินค่าเฉลี่ย WLTP — จำกัดที่ระยะทางที่กำหนด</string>
     <string name="chart_acquiring">กำลังรับเทเลเมทรี · ขับเพื่อเริ่ม</string>
     <string name="chart_scanning">กำลังสแกน…</string>
-    <string name="legend_live_trip">● การเดินทางแบบเรียลไทม์</string>
-    <string name="legend_trip_average">● ค่าเฉลี่ยการเดินทาง</string>
-    <string name="legend_lifetime_avg">● ค่าเฉลี่ยตลอดอายุการใช้งาน</string>
+    <string name="legend_recent_driving">● %1$s ล่าสุด</string>
     <string name="legend_baseline">● ค่าอ้างอิง</string>
     <string name="chart_no_data">ไม่มีข้อมูล</string>
     <string name="chart_insufficient_data">ข้อมูลไม่เพียงพอ</string>
@@ -656,6 +654,10 @@
     <string name="chart_weekly_consumption">สัปดาห์นี้</string>
     <string name="chart_monthly_consumption">เดือนนี้</string>
     <string name="chart_yearly_consumption">ปีนี้</string>
+    <string name="chart_custom_range">กำหนดเอง…</string>
+    <string name="chart_total_per_day">รวม %1$s · %2$s ต่อวัน</string>
+    <string name="chart_total_per_week">รวม %1$s · %2$s ต่อสัปดาห์</string>
+    <string name="chart_total_per_month">รวม %1$s · %2$s ต่อเดือน</string>
     <string name="chart_your_duration_avg">ค่าเฉลี่ยของคุณ (%1$s %2$s)</string>
     <string name="chart_selected_car_avg">ค่าเฉลี่ยรถที่เลือก (%1$s %2$s)</string>
     <string name="chart_close">ปิดกราฟ</string>
@@ -879,6 +881,8 @@
     <string name="soc_panel_option">แผงควบคุม</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">ใน PHEV BMS SoC มักไม่รายงาน — ใช้แผงควบคุมถ้า BMS แสดง 0\nBMS แม่นยำกว่า (ทศนิยม) แผงควบคุม (จำนวนเต็ม) นอกจากนี้ ความต่างจากแผงควบคุมที่มากขึ้นเป็นสัญญาณที่ดีว่าถึงเวลาชาร์จ 100% หรือปรับเทียบการชาร์จ</string>
+    <string name="pref_range_window">การประมาณระยะทางวิ่ง</string>
+    <string name="range_window_desc">ระยะทางวิ่งที่คาดการณ์ใช้อัตราสิ้นเปลืองของคุณในการขับขี่ล่าสุดตามระยะนี้ รวมทริปก่อนหน้า จึงพร้อมแสดงทันทีที่เปิดรถ ระยะสั้นตอบสนองตามถนนปัจจุบัน ระยะยาวจะนิ่งกว่า</string>
     <string name="pref_cell_imbalance">การแจ้งเตือนความไม่สมดุลเซลล์</string>
     <string name="cell_imbalance_desc">แจ้งเตือนเมื่อการกระจายแรงดันเซลล์อยู่เหนือขีดจำกัด</string>
     <string name="cell_imbalance_info">การกระจาย = เซลล์สูงสุด − เซลล์ต่ำสุด แพ็คสุขภาพดีอยู่ต่ำกว่า ~20 mV การกระจายที่สูงต่อเนื่องอาจบ่งชี้เซลล์ที่อ่อนแอ การแจ้งเตือนถูกระงับเมื่อ SoC ต่ำกว่า 5% และสูงกว่า 95% ซึ่งการกระจายกว้างเป็นเรื่องปกติ</string>
@@ -995,10 +999,11 @@
     <string name="pref_trip_recording_desc">เมื่อใดที่การเดินทางสิ้นสุดหลังดับรถ และการเดินทางสั้นได้แค่ไหน</string>
     <string name="trip_recording_status">หยุดอัตโนมัติหลัง %1$d นาที • ขั้นต่ำ %2$s</string>
     <string name="trip_recording_status_no_min">หยุดอัตโนมัติหลัง %1$d นาที • ไม่มีขั้นต่ำ</string>
-    <string name="pref_battery_title">แบตเตอรี่</string>
-    <string name="pref_battery_desc">ค่าสถานะการชาร์จที่จะแสดง และการแจ้งเตือนความไม่สมดุลเซลล์</string>
+    <string name="pref_battery_title">แบตเตอรี่และการประมาณระยะทางวิ่ง</string>
+    <string name="pref_battery_desc">ค่าสถานะการชาร์จที่จะแสดง ระยะการขับขี่ล่าสุดที่ใช้ประมาณระยะทางวิ่ง และการแจ้งเตือนความไม่สมดุลเซลล์</string>
     <string name="battery_status_alert_on">SoC: %1$s • แจ้งเตือนความไม่สมดุล: เปิด</string>
     <string name="battery_status_alert_off">SoC: %1$s • แจ้งเตือนความไม่สมดุล: ปิด</string>
+    <string name="battery_status_range">การประมาณระยะทางวิ่ง: %1$s ล่าสุด</string>
     <string name="pref_costs_desc">อัตราค่าไฟฟ้าและสกุลเงินของคุณ ใช้คำนวณค่าใช้จ่ายของการเดินทางและการชาร์จ</string>
     <string name="pref_goals_desc">เป้าหมายการใช้พลังงานและระยะทาง และสถิติส่วนตัวของคุณ</string>
     <string name="pro_cell_imbalance_info">เตือนคุณเมื่อความต่างของแรงดันเซลล์ในแบตเตอรี่สูงกว่าขีดจำกัดของคุณต่อเนื่อง — สัญญาณเริ่มต้นของเซลล์ที่อ่อนแอ เปิดใช้และตั้งขีดจำกัดได้ที่ การตั้งค่า → แบตเตอรี่ เมื่อปลดล็อกแล้ว</string>
@@ -1213,7 +1218,7 @@
     <string name="speed_state_parked">อยู่กับที่</string>
     <string name="speed_state_driving">กำลังขับ</string>
     <string name="soc_subtitle_usable">ประจุที่ใช้ได้</string>
-    <string name="range_subtitle_projection">การคาดการณ์แบบไดนามิก</string>
+    <string name="range_subtitle_window">%1$s ล่าสุด</string>
     <string name="range_subtitle_phev">เชื้อเพลิง %1$s · รวม %2$s</string>
     <string name="stat_fuel_range">เชื้อเพลิง</string>
     <string name="distance_subtitle_session">เซสชันนี้</string>

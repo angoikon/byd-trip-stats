@@ -646,9 +646,7 @@
     <string name="chart_above_wltp_cap">WLTP औसत से ऊपर — रेटेड रेंज पर सीमित</string>
     <string name="chart_acquiring">टेलीमेट्री प्राप्त हो रही है · शुरू करने के लिए ड्राइव करें</string>
     <string name="chart_scanning">स्कैन हो रहा है…</string>
-    <string name="legend_live_trip">● लाइव यात्रा</string>
-    <string name="legend_trip_average">● यात्रा औसत</string>
-    <string name="legend_lifetime_avg">● आजीवन औसत</string>
+    <string name="legend_recent_driving">● पिछले %1$s</string>
     <string name="legend_baseline">● बेसलाइन</string>
     <string name="chart_no_data">कोई डेटा नहीं</string>
     <string name="chart_insufficient_data">अपर्याप्त डेटा</string>
@@ -656,6 +654,10 @@
     <string name="chart_weekly_consumption">इस सप्ताह</string>
     <string name="chart_monthly_consumption">इस महीने</string>
     <string name="chart_yearly_consumption">इस साल</string>
+    <string name="chart_custom_range">कस्टम…</string>
+    <string name="chart_total_per_day">कुल %1$s · %2$s प्रति दिन</string>
+    <string name="chart_total_per_week">कुल %1$s · %2$s प्रति सप्ताह</string>
+    <string name="chart_total_per_month">कुल %1$s · %2$s प्रति माह</string>
     <string name="chart_your_duration_avg">आपका %1$s औसत (%2$s)</string>
     <string name="chart_selected_car_avg">चुनी कार औसत (%1$s %2$s)</string>
     <string name="chart_close">चार्ट बंद करें</string>
@@ -879,6 +881,8 @@
     <string name="soc_panel_option">पैनल</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">PHEV में BMS SoC अक्सर रिपोर्ट नहीं होता — अगर BMS 0 दिखाए तो पैनल उपयोग करें।\nBMS पैनल (पूर्णांक) से अधिक सटीक (दशमलव) है। साथ ही, पैनल से बड़ा अंतर एक अच्छा संकेत है कि 100% चार्ज या चार्जिंग कैलिब्रेशन का समय आ गया है</string>
+    <string name="pref_range_window">रेंज अनुमान</string>
+    <string name="range_window_desc">अनुमानित रेंज आपकी हाल की इतनी ड्राइविंग की खपत पर आधारित है, पिछली यात्राओं सहित, इसलिए यह कार चालू करते ही तैयार रहती है। छोटी दूरी मौजूदा सड़क के अनुसार बदलती है; लंबी दूरी अधिक स्थिर रहती है।</string>
     <string name="pref_cell_imbalance">सेल असंतुलन अलर्ट</string>
     <string name="cell_imbalance_desc">सेल वोल्टेज स्प्रेड सीमा से ऊपर होने पर अलर्ट करें।</string>
     <string name="cell_imbalance_info">स्प्रेड = अधिकतम सेल − न्यूनतम सेल। स्वस्थ पैक ~20 mV से नीचे रहते हैं; लगातार उच्च स्प्रेड कमज़ोर सेल का संकेत हो सकता है। 5% से नीचे और 95% SoC से ऊपर अलर्ट दबा दिए जाते हैं, जहाँ अधिक स्प्रेड सामान्य है।</string>
@@ -995,10 +999,11 @@
     <string name="pref_trip_recording_desc">कार बंद होने के बाद यात्रा कब समाप्त होती है, और यात्रा कितनी छोटी हो सकती है।</string>
     <string name="trip_recording_status">%1$d मिनट बाद ऑटो-स्टॉप • न्यूनतम %2$s</string>
     <string name="trip_recording_status_no_min">%1$d मिनट बाद ऑटो-स्टॉप • कोई न्यूनतम नहीं</string>
-    <string name="pref_battery_title">बैटरी</string>
-    <string name="pref_battery_desc">कौन-सी चार्ज स्थिति रीडिंग दिखानी है, और सेल असंतुलन अलर्ट।</string>
+    <string name="pref_battery_title">बैटरी और रेंज अनुमान</string>
+    <string name="pref_battery_desc">कौन-सी चार्ज स्थिति रीडिंग दिखानी है, रेंज अनुमान हाल की कितनी ड्राइविंग पर आधारित हो, और सेल असंतुलन अलर्ट।</string>
     <string name="battery_status_alert_on">SoC: %1$s • असंतुलन अलर्ट चालू</string>
     <string name="battery_status_alert_off">SoC: %1$s • असंतुलन अलर्ट बंद</string>
+    <string name="battery_status_range">रेंज अनुमान: पिछले %1$s</string>
     <string name="pref_costs_desc">आपका बिजली टैरिफ और मुद्रा, जिनसे यात्राओं और चार्जिंग की कीमत तय होती है।</string>
     <string name="pref_goals_desc">खपत और दूरी के लक्ष्य, और आपके व्यक्तिगत सर्वश्रेष्ठ।</string>
     <string name="pro_cell_imbalance_info">जब बैटरी के सेल वोल्टेज का अंतर आपकी सीमा से ऊपर बना रहता है तो आपको चेतावनी देता है — कमज़ोर सेल का शुरुआती संकेत। अनलॉक होने पर इसे प्राथमिकताएं → बैटरी के अंतर्गत चालू करें और सीमा सेट करें।</string>
@@ -1213,7 +1218,7 @@
     <string name="speed_state_parked">स्थिर</string>
     <string name="speed_state_driving">चल रहा है</string>
     <string name="soc_subtitle_usable">उपयोग योग्य चार्ज</string>
-    <string name="range_subtitle_projection">गतिशील प्रक्षेपण</string>
+    <string name="range_subtitle_window">पिछले %1$s</string>
     <string name="range_subtitle_phev">ईंधन %1$s · कुल %2$s</string>
     <string name="stat_fuel_range">ईंधन</string>
     <string name="distance_subtitle_session">यह सत्र</string>

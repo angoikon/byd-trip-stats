@@ -15,6 +15,7 @@ import com.byd.tripstats.data.preferences.UnitSystem
 import com.byd.tripstats.data.preferences.consumptionUnit
 import com.byd.tripstats.data.preferences.convertDistance
 import com.byd.tripstats.data.preferences.convertEfficiency
+import com.byd.tripstats.data.preferences.displayLabel
 import com.byd.tripstats.data.preferences.distanceUnit
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import com.byd.tripstats.util.LocaleHelper
@@ -63,6 +64,9 @@ internal fun AppPreferencesTab(
             )
             val socSource by preferencesManager.socSource.collectAsState(
                 initial = preferencesManager.getCachedSocSource()
+            )
+            val rangeWindow by preferencesManager.rangeWindow.collectAsState(
+                initial = preferencesManager.getCachedRangeWindow()
             )
             val cellImbalanceAlertEnabled by preferencesManager.cellImbalanceAlertEnabled.collectAsState(
                 initial = preferencesManager.getCachedCellImbalanceAlertEnabled()
@@ -134,7 +138,7 @@ internal fun AppPreferencesTab(
                         if (isPro && cellImbalanceAlertEnabled) R.string.battery_status_alert_on
                         else R.string.battery_status_alert_off,
                         socLabel
-                    )
+                    ) + " • " + stringResource(R.string.battery_status_range, rangeWindow.displayLabel(unitSystem))
                 ),
                 SettingsHubCard(
                     key = PreferencesPage.COSTS,

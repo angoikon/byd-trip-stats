@@ -4,6 +4,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,9 +36,11 @@ import com.byd.tripstats.R
 import com.byd.tripstats.data.model.VehicleTelemetry
 import com.byd.tripstats.data.preferences.PowerMetricId
 import com.byd.tripstats.data.preferences.PreferencesManager
+import com.byd.tripstats.data.preferences.RangeWindow
 import com.byd.tripstats.data.preferences.SocSource
 import com.byd.tripstats.data.preferences.convertDistance
 import com.byd.tripstats.data.preferences.convertSpeed
+import com.byd.tripstats.data.preferences.displayLabel
 import com.byd.tripstats.data.preferences.distanceUnit
 import com.byd.tripstats.data.preferences.speedUnit
 import com.byd.tripstats.sdk.VehicleTelemetrySnapshot
@@ -57,8 +60,10 @@ private val PowerTileHeight = 150.dp
 /**
  * The top power-metric row (Power / Speed / SoC / Range / Distance) rendered as
  * large tiles for the CARDS layout. Each tile has a static, thin accent stripe flush
- * to its left edge and a dynamic subtitle. The Range tile is clickable — it opens the
- * range-projection chart; the battery and Distance tiles toggle their readout on a tap.
+ * to its left edge and a dynamic subtitle. A tap on the Range tile steps the range estimate's
+ * window (10 → 100 → 500 km, the Settings → Preferences → Battery and range estimate choice) and
+ * a long press opens the range-projection chart; the battery and Distance tiles toggle their
+ * readout on a tap.
  */
 @Composable
 fun PowerMetricsRow(
@@ -71,7 +76,7 @@ fun PowerMetricsRow(
     socSource: SocSource,
     editMode: Boolean = false,
     compact: Boolean = false,
-    onRangeClick: () -> Unit,
+    onRangeLongClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -101,9 +106,25 @@ fun PowerMetricsRow(
     val speedSubtitle = if (parked) stringResource(R.string.speed_state_parked)
     else stringResource(R.string.speed_state_driving)
 
-    val rangeKm = tripDataPoints.lastOrNull()?.projectedRangeKm?.takeIf { it > 0 }
+    val projectedRangeKm = tripDataPoints.lastOrNull()?.projectedRangeKm?.takeIf { it > 0 }
+    val rangeKm = projectedRangeKm
         ?: telemetry.electricDrivingRangeKm.toDouble().takeIf { it > 0 }
         ?: 0.0
+
+    // Range tile: a tap steps the window the projection is taken over. The ViewModel projects
+    // again as soon as it changes, so the figure moves on the tap. In split-screen the tile has
+    // no subtitle, so a toast says which window is now in use.
+    val rangeWindow by prefs.rangeWindow.collectAsState(initial = prefs.getCachedRangeWindow())
+    val rangeEstimateTitle = stringResource(R.string.pref_range_window)
+    val cycleRangeWindow: () -> Unit = {
+        val next = RangeWindow.entries[(rangeWindow.ordinal + 1) % RangeWindow.entries.size]
+        scope.launch { prefs.saveRangeWindow(next) }
+        if (compact) {
+            android.widget.Toast.makeText(
+                context, "$rangeEstimateTitle: ${next.displayLabel(unitSystem)}", android.widget.Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
 
     // Battery tile: a tap toggles the view between the settings-chosen SoC and kWh remaining.
     // The Panel/BMS choice stays in Settings → Preferences; this never changes it.
@@ -142,8 +163,11 @@ fun PowerMetricsRow(
             "${unitSystem.convertDistance(fuelRangeKm.toDouble()).toInt()}",
             "${unitSystem.convertDistance(rangeKm + fuelRangeKm).toInt()}"
         )
+    } else if (projectedRangeKm != null) {
+        stringResource(R.string.range_subtitle_window, rangeWindow.displayLabel(unitSystem))
     } else {
-        stringResource(R.string.range_subtitle_projection)
+        // No projection yet: the tile is showing the car's own figure.
+        stringResource(R.string.chart_bms_estimate)
     }
 
     val tiles: Map<PowerMetricId, PowerTileData> = mapOf(
@@ -172,7 +196,8 @@ fun PowerMetricsRow(
             label = stringResource(R.string.stat_range),
             value = "${unitSystem.convertDistance(rangeKm).toInt()}", unit = distanceUnit,
             subtitle = rangeSubtitle,
-            accent = MaterialTheme.extendedColors.range, onClick = onRangeClick
+            accent = MaterialTheme.extendedColors.range, onClick = cycleRangeWindow,
+            onLongClick = onRangeLongClick
         ),
         PowerMetricId.DISTANCE to PowerTileData(
             label = stringResource(R.string.stat_distance),
@@ -211,7 +236,8 @@ fun PowerMetricsRow(
                 tiles[id]?.let { t ->
                     PowerMetricCard(
                         label = t.label, value = t.value, unit = t.unit, subtitle = t.subtitle,
-                        accent = t.accent, onClick = t.onClick, compact = true, valueOnly = true,
+                        accent = t.accent, onClick = t.onClick, onLongClick = t.onLongClick,
+                        compact = true, valueOnly = true,
                         modifier = Modifier.weight(1f).fillMaxHeight()
                     )
                 }
@@ -225,7 +251,8 @@ fun PowerMetricsRow(
                 tiles[id]?.let { t ->
                     PowerMetricCard(
                         label = t.label, value = t.value, unit = t.unit, subtitle = t.subtitle,
-                        accent = t.accent, onClick = t.onClick, modifier = Modifier.weight(1f)
+                        accent = t.accent, onClick = t.onClick, onLongClick = t.onLongClick,
+                        modifier = Modifier.weight(1f)
                     )
                 }
             }
@@ -240,6 +267,7 @@ private data class PowerTileData(
     val subtitle: String,
     val accent: Color,
     val onClick: (() -> Unit)?,
+    val onLongClick: (() -> Unit)? = null,
 )
 
 /**
@@ -340,6 +368,7 @@ private fun PowerEditRow(
     }
 }
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 private fun PowerMetricCard(
     label: String,
@@ -349,6 +378,7 @@ private fun PowerMetricCard(
     accent: Color,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
     compact: Boolean = false,
     valueOnly: Boolean = false,
 ) {
@@ -359,7 +389,13 @@ private fun PowerMetricCard(
     Card(
         modifier = modifier
             .fillMaxHeight()
-            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
+            .then(
+                when {
+                    onLongClick != null -> Modifier.combinedClickable(onClick = { onClick?.invoke() }, onLongClick = onLongClick)
+                    onClick != null -> Modifier.clickable { onClick() }
+                    else -> Modifier
+                }
+            ),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant

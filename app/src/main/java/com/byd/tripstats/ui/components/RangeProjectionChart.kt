@@ -30,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.tripstats.R
 import com.byd.tripstats.data.preferences.PreferencesManager
+import com.byd.tripstats.data.preferences.UnitSystem
+import com.byd.tripstats.data.preferences.displayLabel
 import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import kotlinx.serialization.Serializable
@@ -70,10 +72,11 @@ private fun interpolateBmsAt(
  * @param distanceKm             Cumulative km driven since trip start
  * @param soc                    Battery state-of-charge at this point (0..100)
  * @param electricDrivingRangeKm Car's BMS-reported remaining range (secondary reference line)
- * @param projectedRangeKm       Power-integrated realistic projection computed in ViewModel.
- *                               Null during the stabilisation window (first STABILISATION_KM).
- * @param isStabilised           False while the projection is still warming up — chart shows
- *                               a "Calibrating…" badge and falls back to BMS line.
+ * @param projectedRangeKm       Projection computed in the ViewModel from the consumption over
+ *                               the last RangeWindow.km of driving. Null when the remaining-energy
+ *                               read was unusable.
+ * @param isStabilised           False while the projection is still on the catalog rate (no
+ *                               driving history yet) — the chart says so and leans on the BMS line.
  */
 @Serializable
 data class RangeDataPoint(
@@ -91,10 +94,9 @@ data class RangeDataPoint(
  * Y-axis : Estimated remaining range (km)
  *
  * Two curves are drawn:
- *  • Projected range (colored, main) — computed in the ViewModel by integrating
- *    engine_power (kW) over time to get real Wh/km consumption, then:
+ *  • Projected range (colored, main) — computed in the ViewModel from the battery's
+ *    discharge over the last RangeWindow.km of driving (this trip and the ones before it):
  *    projectedKm = (BATTERY_KWH × 1000 × soc/100) / consumptionWhPerKm
- *    Shown only after the STABILISATION_KM warmup window; "Calibrating…" before that.
  *
  *  • BMS estimate (gray dashed, secondary) — the car's own electricDrivingRangeKm.
  *    Shown for reference only. With aggressive driving this is typically optimistic.
@@ -117,6 +119,7 @@ fun RangeProjectionChart(
     val context = LocalContext.current
     val prefs = remember { PreferencesManager(context.applicationContext) }
     val selectedCar by prefs.selectedCarConfig.collectAsState(initial = null)
+    val rangeWindow by prefs.rangeWindow.collectAsState(initial = prefs.getCachedRangeWindow())
 
     selectedCar?.let { car ->
         // ── Derived values ────────────────────────────────────────────────────────
@@ -152,12 +155,8 @@ fun RangeProjectionChart(
         val maxDistanceKm = points.lastOrNull()?.distanceKm?.coerceAtLeast(1.0) ?: 1.0
 
         // Include every point that has a non-null projectedRangeKm — both the
-        // stabilised ones (LIVE_TRIP / TRIP_AVERAGE) and the pre-stabilisation
-        // baseline-tier ones at the very start of a drive. The earlier filter
-        // (isStabilised only) was put in place when BASELINE-only could persist
-        // for an entire trip — that risk is gone now that bin distance counts
-        // every tick and TRIP_AVERAGE engages within ~0.2 km — so dropping
-        // the filter is safe and lets the orange line touch the origin instead
+        // RECENT_DRIVING ones and any catalog-rate (BASELINE) ones at the very start
+        // of a fresh install's first drive — so the line touches the origin instead
         // of starting at the first stabilised point.
         val projectedPoints: List<Pair<Double, Double>> = remember(points) {
             points.mapNotNull { p -> p.projectedRangeKm?.let { p.distanceKm to it } }
@@ -222,15 +221,15 @@ fun RangeProjectionChart(
         // ── Header ────────────────────────────────────────────────────────────────
         Column(modifier = modifier.fillMaxSize()) {
             val modelLabel = when (activeRangeModel) {
-                DashboardViewModel.RangeModel.LIVE_TRIP        -> stringResource(R.string.legend_live_trip)
-                DashboardViewModel.RangeModel.TRIP_AVERAGE  -> stringResource(R.string.legend_trip_average)
-                DashboardViewModel.RangeModel.LIFETIME_AVERAGE -> stringResource(R.string.legend_lifetime_avg)
-                DashboardViewModel.RangeModel.BASELINE         -> stringResource(R.string.legend_baseline)
+                DashboardViewModel.RangeModel.RECENT_DRIVING -> stringResource(
+                    R.string.legend_recent_driving,
+                    rangeWindow.displayLabel(if (useImperial) UnitSystem.IMPERIAL else UnitSystem.METRIC)
+                )
+                DashboardViewModel.RangeModel.BASELINE       -> stringResource(R.string.legend_baseline)
             }
             val modelColor = when (activeRangeModel) {
-                DashboardViewModel.RangeModel.LIVE_TRIP       -> RegenGreen
-                DashboardViewModel.RangeModel.TRIP_AVERAGE -> AccelerationOrange
-                else                                          -> MaterialTheme.colorScheme.onSurfaceVariant
+                DashboardViewModel.RangeModel.RECENT_DRIVING -> RegenGreen
+                DashboardViewModel.RangeModel.BASELINE       -> MaterialTheme.colorScheme.onSurfaceVariant
             }
 
             if (!compact) Row(

@@ -72,9 +72,8 @@ fun EnergyFlowDiagram(
     liveSpeedKmh: Double? = null,
     livePowerKw: Int? = null,
     tripDataPoints: List<RangeDataPoint>,
-    weeklyEfficiency: List<DashboardViewModel.DailyEfficiency>,
-    monthlyEfficiency: List<DashboardViewModel.DailyEfficiency>,
-    yearlyEfficiency: List<DashboardViewModel.DailyEfficiency>,
+    usageCharts: DashboardViewModel.UsageCharts,
+    onCustomUsageRange: (DashboardViewModel.UsageRange) -> Unit,
     sessionDistanceKm: Double = 0.0,
     tripDistanceKm: Double = 0.0,
     distanceSinceChargeKm: Double? = null,
@@ -165,9 +164,8 @@ fun EnergyFlowDiagram(
     ) {
         if (consumptionExpanded) {
             ConsumptionChartExpanded(
-                weeklyData  = weeklyEfficiency,
-                monthlyData = monthlyEfficiency,
-                yearlyData  = yearlyEfficiency,
+                usage         = usageCharts,
+                onCustomRange = onCustomUsageRange,
                 onClose     = onConsumptionClose,
                 modifier    = Modifier.fillMaxSize()
             )
@@ -286,7 +284,7 @@ fun EnergyFlowDiagram(
                             )
                             Spacer(Modifier.height(2.dp))
                             ConsumptionThumbnail(
-                                data = monthlyEfficiency,
+                                data = usageCharts.month,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .weight(1f)

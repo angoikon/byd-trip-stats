@@ -698,9 +698,7 @@
     <string name="chart_above_wltp_cap">Giá trị trên trung bình WLTP — giới hạn ở tầm hoạt động định mức</string>
     <string name="chart_acquiring">đang lấy đo từ xa · lái để bắt đầu</string>
     <string name="chart_scanning">ĐANG QUÉT…</string>
-    <string name="legend_live_trip">● Chuyến đi trực tiếp</string>
-    <string name="legend_trip_average">● Trung bình chuyến đi</string>
-    <string name="legend_lifetime_avg">● Trung bình trọn đời</string>
+    <string name="legend_recent_driving">● %1$s gần nhất</string>
     <string name="legend_baseline">● Cơ sở</string>
     <string name="chart_no_data">Không có dữ liệu</string>
     <string name="chart_insufficient_data">Dữ liệu không đủ</string>
@@ -708,6 +706,10 @@
     <string name="chart_weekly_consumption">Tuần này</string>
     <string name="chart_monthly_consumption">Tháng này</string>
     <string name="chart_yearly_consumption">Năm nay</string>
+    <string name="chart_custom_range">Tùy chọn…</string>
+    <string name="chart_total_per_day">Tổng %1$s · %2$s mỗi ngày</string>
+    <string name="chart_total_per_week">Tổng %1$s · %2$s mỗi tuần</string>
+    <string name="chart_total_per_month">Tổng %1$s · %2$s mỗi tháng</string>
     <string name="chart_your_duration_avg">Trung bình theo thời lượng của bạn (%1$s %2$s)</string>
     <string name="chart_selected_car_avg">Trung bình xe đã chọn (%1$s %2$s)</string>
     <string name="chart_close">Đóng biểu đồ</string>
@@ -947,6 +949,8 @@
     <string name="soc_panel_option">Bảng</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">Trên PHEV, SoC của BMS thường không được báo cáo — dùng Bảng nếu BMS hiển thị 0.\nBMS chính xác hơn (số thập phân) so với Bảng (số nguyên). Ngoài ra, chênh lệch lớn hơn so với Bảng là dấu hiệu tốt cho thấy đã đến lúc sạc 100% hoặc hiệu chuẩn sạc</string>
+    <string name="pref_range_window">Ước tính quãng đường</string>
+    <string name="range_window_desc">Quãng đường dự kiến dùng mức tiêu thụ của bạn trên đoạn lái gần đây này, kể cả các chuyến trước, nên có ngay khi bạn khởi động xe. Ngắn hơn bám theo con đường hiện tại; dài hơn ổn định hơn.</string>
     <string name="pref_cell_imbalance">Cảnh báo mất cân bằng cell</string>
     <string name="cell_imbalance_desc">Thông báo cho tôi khi chênh lệch điện áp cell của pin ở trên giới hạn.</string>
     <string name="cell_imbalance_info">Chênh lệch = cell cao nhất − cell thấp nhất. Pin khỏe giữ dưới ~20 mV; chênh lệch cao kéo dài có thể báo hiệu cell yếu. Cảnh báo bị chặn dưới 5% và trên 95% SoC, nơi chênh lệch lớn là bình thường.</string>
@@ -1075,10 +1079,11 @@
     <string name="pref_trip_recording_desc">Khi nào chuyến đi kết thúc sau khi tắt xe, và chuyến đi có thể ngắn đến mức nào.</string>
     <string name="trip_recording_status">Tự dừng sau %1$d phút • tối thiểu %2$s</string>
     <string name="trip_recording_status_no_min">Tự dừng sau %1$d phút • không tối thiểu</string>
-    <string name="pref_battery_title">Pin</string>
-    <string name="pref_battery_desc">Hiển thị giá trị trạng thái sạc nào, và cảnh báo mất cân bằng cell.</string>
+    <string name="pref_battery_title">Pin và ước tính quãng đường</string>
+    <string name="pref_battery_desc">Hiển thị giá trị trạng thái sạc nào, ước tính quãng đường dựa trên bao nhiêu quãng lái gần đây, và cảnh báo mất cân bằng cell.</string>
     <string name="battery_status_alert_on">SoC: %1$s • cảnh báo mất cân bằng: bật</string>
     <string name="battery_status_alert_off">SoC: %1$s • cảnh báo mất cân bằng: tắt</string>
+    <string name="battery_status_range">ước tính quãng đường: %1$s gần nhất</string>
     <string name="pref_costs_desc">Biểu giá điện và đơn vị tiền tệ của bạn, dùng để tính chi phí chuyến đi và lần sạc.</string>
     <string name="pref_goals_desc">Mục tiêu tiêu thụ và quãng đường, và kỷ lục cá nhân của bạn.</string>
     <string name="pro_cell_imbalance_info">Cảnh báo khi chênh lệch điện áp giữa các cell của pin vẫn cao hơn giới hạn của bạn — dấu hiệu sớm của một cell yếu. Bật và đặt giới hạn trong Tùy chọn → Pin sau khi mở khóa.</string>
@@ -1310,7 +1315,7 @@
     <string name="speed_state_parked">Đứng yên</string>
     <string name="speed_state_driving">Đang lái</string>
     <string name="soc_subtitle_usable">Điện tích khả dụng</string>
-    <string name="range_subtitle_projection">Dự báo động</string>
+    <string name="range_subtitle_window">%1$s gần nhất</string>
     <string name="range_subtitle_phev">Nhiên liệu %1$s · Tổng %2$s</string>
     <string name="stat_fuel_range">Nhiên liệu</string>
     <string name="distance_subtitle_session">Phiên này</string>

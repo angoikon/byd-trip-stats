@@ -701,9 +701,7 @@
     <string name="chart_above_wltp_cap">Värde över WLTP-medel — begränsad till märkt räckvidd</string>
     <string name="chart_acquiring">hämtar telemetri · kör för att börja</string>
     <string name="chart_scanning">SÖKER…</string>
-    <string name="legend_live_trip">● Liveresa</string>
-    <string name="legend_trip_average">● Resemedel</string>
-    <string name="legend_lifetime_avg">● Livstidsmedel</string>
+    <string name="legend_recent_driving">● Senaste %1$s</string>
     <string name="legend_baseline">● Basnivå</string>
     <string name="chart_no_data">Inga data tillgängliga</string>
     <string name="chart_insufficient_data">Otillräckliga data</string>
@@ -711,6 +709,10 @@
     <string name="chart_weekly_consumption">Denna vecka</string>
     <string name="chart_monthly_consumption">Denna månad</string>
     <string name="chart_yearly_consumption">Detta år</string>
+    <string name="chart_custom_range">Anpassad…</string>
+    <string name="chart_total_per_day">Totalt %1$s · %2$s per dag</string>
+    <string name="chart_total_per_week">Totalt %1$s · %2$s per vecka</string>
+    <string name="chart_total_per_month">Totalt %1$s · %2$s per månad</string>
     <string name="chart_your_duration_avg">Ditt varaktighetsmedel (%1$s %2$s)</string>
     <string name="chart_selected_car_avg">Vald bilmedel (%1$s %2$s)</string>
     <string name="chart_close">Stäng diagram</string>
@@ -950,6 +952,8 @@
     <string name="soc_panel_option">Panel</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">På PHEV rapporteras BMS SoC vanligtvis inte — använd Panel om BMS visar 0.\nBMS är mer exakt (float) än Panel (heltal). Dessutom är en större avvikelse från Panel en bra indikation på att det är dags för antingen 100% laddning eller laddningskalibrering</string>
+    <string name="pref_range_window">Räckviddsuppskattning</string>
+    <string name="range_window_desc">Beräknad räckvidd använder din förbrukning under så mycket av din senaste körning, tidigare resor inräknade, så den är klar direkt när du startar bilen. Kortare följer vägen du kör på; längre är stabilare.</string>
     <string name="pref_cell_imbalance">Cellimbalansvarning</string>
     <string name="cell_imbalance_desc">Meddela mig när paketets cellspänningsspridning förblir över gränsen.</string>
     <string name="cell_imbalance_info">Spridning = högsta cell − lägsta cell. Ett friskt paket håller sig under ca 20 mV; en varaktigt hög spridning kan flagga en svag cell. Varningar undertrycks under 5% och över 95% SoC, där en bred spridning är normal.</string>
@@ -1078,10 +1082,11 @@
     <string name="pref_trip_recording_desc">När en resa avslutas efter att bilen stängts av, och hur kort en resa får vara.</string>
     <string name="trip_recording_status">Autostopp efter %1$d min • minst %2$s</string>
     <string name="trip_recording_status_no_min">Autostopp efter %1$d min • inget minimum</string>
-    <string name="pref_battery_title">Batteri</string>
-    <string name="pref_battery_desc">Vilken laddnivåavläsning som visas, och cellimbalansvarningen.</string>
+    <string name="pref_battery_title">Batteri och räckviddsuppskattning</string>
+    <string name="pref_battery_desc">Vilken laddnivåavläsning som visas, hur mycket av den senaste körningen räckviddsuppskattningen bygger på, och cellimbalansvarningen.</string>
     <string name="battery_status_alert_on">SoC: %1$s • imbalansvarning på</string>
     <string name="battery_status_alert_off">SoC: %1$s • imbalansvarning av</string>
+    <string name="battery_status_range">räckviddsuppskattning: senaste %1$s</string>
     <string name="pref_costs_desc">Din eltaxa och valuta, som används för att prissätta resor och laddningar.</string>
     <string name="pref_goals_desc">Mål för förbrukning och sträcka, och dina personbästa.</string>
     <string name="pro_cell_imbalance_info">Varnar dig när spridningen i batteriets cellspänningar ligger kvar över din gräns — ett tidigt tecken på en svag cell. Slå på den och ställ in gränsen under Inställningar → Batteri när den är upplåst.</string>
@@ -1314,7 +1319,7 @@
     <string name="speed_state_parked">Stillastående</string>
     <string name="speed_state_driving">Kör</string>
     <string name="soc_subtitle_usable">Användbar laddning</string>
-    <string name="range_subtitle_projection">Dynamisk projektion</string>
+    <string name="range_subtitle_window">Senaste %1$s</string>
     <string name="range_subtitle_phev">Bränsle %1$s · Totalt %2$s</string>
     <string name="stat_fuel_range">Bränsle</string>
     <string name="distance_subtitle_session">Denna session</string>

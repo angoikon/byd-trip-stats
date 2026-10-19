@@ -646,9 +646,7 @@
     <string name="chart_above_wltp_cap">Wert über WLTP-Durchschnitt — auf Normreichweite begrenzt</string>
     <string name="chart_acquiring">Telemetrie wird erfasst · Fahren zum Starten</string>
     <string name="chart_scanning">SCANNEN…</string>
-    <string name="legend_live_trip">● Live-Fahrt</string>
-    <string name="legend_trip_average">● Fahrt-Ø</string>
-    <string name="legend_lifetime_avg">● Gesamt-Ø</string>
+    <string name="legend_recent_driving">● Letzte %1$s</string>
     <string name="legend_baseline">● Basis</string>
     <string name="chart_no_data">Keine Daten verfügbar</string>
     <string name="chart_insufficient_data">Unzureichende Daten</string>
@@ -656,6 +654,10 @@
     <string name="chart_weekly_consumption">Diese Woche</string>
     <string name="chart_monthly_consumption">Diesen Monat</string>
     <string name="chart_yearly_consumption">Dieses Jahr</string>
+    <string name="chart_custom_range">Zeitraum…</string>
+    <string name="chart_total_per_day">Gesamt %1$s · %2$s pro Tag</string>
+    <string name="chart_total_per_week">Gesamt %1$s · %2$s pro Woche</string>
+    <string name="chart_total_per_month">Gesamt %1$s · %2$s pro Monat</string>
     <string name="chart_your_duration_avg">Ihr Dauer-Ø (%1$s %2$s)</string>
     <string name="chart_selected_car_avg">Gewähltes Auto-Ø (%1$s %2$s)</string>
     <string name="chart_close">Diagramm schließen</string>
@@ -879,6 +881,8 @@
     <string name="soc_panel_option">Anzeige</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">Bei PHEVs wird der BMS-SoC üblicherweise nicht gemeldet — verwenden Sie Anzeige, wenn BMS 0 zeigt.\nBMS ist genauer (Dezimalwert) als die Anzeige (Ganzzahl). Außerdem ist eine größere Abweichung von der Anzeige ein guter Hinweis darauf, dass es Zeit für eine 100%-Ladung oder eine Ladekalibrierung ist</string>
+    <string name="pref_range_window">Reichweitenschätzung</string>
+    <string name="range_window_desc">Die prognostizierte Reichweite nutzt Ihren Verbrauch über diese Strecke Ihrer jüngsten Fahrten, frühere Fahrten eingeschlossen, und steht daher gleich beim Einschalten bereit. Kürzer folgt der aktuellen Strecke, länger bleibt stabiler.</string>
     <string name="pref_cell_imbalance">Zellungleichgewicht-Alarm</string>
     <string name="cell_imbalance_desc">Benachrichtigen, wenn die Zellspannungsstreuung über dem Limit bleibt.</string>
     <string name="cell_imbalance_info">Streuung = höchste Zelle − niedrigste Zelle. Ein gesundes Paket bleibt unter ~20 mV; eine dauerhaft hohe Streuung kann auf eine schwache Zelle hinweisen. Warnungen werden unter 5% und über 95% SoC unterdrückt, wo eine große Streuung normal ist.</string>
@@ -995,10 +999,11 @@
     <string name="pref_trip_recording_desc">Wann eine Fahrt nach dem Ausschalten des Autos endet und wie kurz eine Fahrt sein darf.</string>
     <string name="trip_recording_status">Auto-Stopp nach %1$d min • Minimum %2$s</string>
     <string name="trip_recording_status_no_min">Auto-Stopp nach %1$d min • kein Minimum</string>
-    <string name="pref_battery_title">Batterie</string>
-    <string name="pref_battery_desc">Welcher Ladestand-Wert angezeigt wird, und der Zellungleichgewicht-Alarm.</string>
+    <string name="pref_battery_title">Batterie und Reichweitenschätzung</string>
+    <string name="pref_battery_desc">Welcher Ladestand-Wert angezeigt wird, auf wie viel der jüngsten Fahrten die Reichweitenschätzung beruht, und der Zellungleichgewicht-Alarm.</string>
     <string name="battery_status_alert_on">SoC: %1$s • Ungleichgewicht-Alarm an</string>
     <string name="battery_status_alert_off">SoC: %1$s • Ungleichgewicht-Alarm aus</string>
+    <string name="battery_status_range">Reichweitenschätzung: letzte %1$s</string>
     <string name="pref_costs_desc">Ihr Stromtarif und Ihre Währung, mit denen Fahrten und Ladevorgänge bepreist werden.</string>
     <string name="pref_goals_desc">Ziele für Verbrauch und Strecke sowie Ihre Bestwerte.</string>
     <string name="pro_cell_imbalance_info">Warnt Sie, wenn die Spannungsspreizung der Zellen im Akku über Ihrem Grenzwert bleibt — ein frühes Zeichen für eine schwache Zelle. Nach dem Freischalten unter Einstellungen → Batterie einschalten und den Grenzwert festlegen.</string>
@@ -1213,7 +1218,7 @@
     <string name="speed_state_parked">Stillstand</string>
     <string name="speed_state_driving">Fahren</string>
     <string name="soc_subtitle_usable">Nutzbare Ladung</string>
-    <string name="range_subtitle_projection">Dynamische Projektion</string>
+    <string name="range_subtitle_window">Letzte %1$s</string>
     <string name="range_subtitle_phev">Kraftstoff %1$s · Gesamt %2$s</string>
     <string name="stat_fuel_range">Kraftstoff</string>
     <string name="distance_subtitle_session">Diese Sitzung</string>

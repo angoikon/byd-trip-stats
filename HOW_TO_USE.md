@@ -61,7 +61,7 @@ With **Dashboard icons & animations** enabled (Settings → Preferences → Appe
 - **Battery icon** — live SoC, animated while charging
 - **Drivetrain graphic** — tyre pressure overview
 - **Tyre badges** — green = healthy, orange/red = attention needed, grey = no data yet
-- **Consumption chart thumbnail** — tap to expand daily / monthly / yearly consumption
+- **Consumption chart thumbnail** — tap to expand consumption, distance and energy charts per day, week or month, for a fixed period or dates you pick
 
 With that preference turned **off**, these elements move into the top app bar (battery + consumption icons) and a dedicated **Tyres** card on the right-side stat panel — freeing the full height for the range projection chart and disabling animations to lower CPU load on older firmware.
 
@@ -72,7 +72,7 @@ The main chart compares:
 - **Dashed line** — the car's own BMS estimate
 - **Solid line** — BYD Trip Stats projection from your actual driving
 
-Before you move off, the chart shows a **SCANNING…** placeholder. Once you start driving, the projection leaves the catalog baseline within the first few hundred metres and keeps refining as the trip continues. A small badge shows which model tier is currently driving the projection — **Live trip**, **Trip average**, **Lifetime avg** or **Baseline**.
+The projection uses your consumption over your **last 10, 100 or 500 km** of driving (**Settings → Preferences → Battery and range estimate**, or tap the dashboard's **Range** tile to step through them; 100 km by default). That distance runs back across your earlier trips, so the projected range (above the chart, and on the **Range** tile) is there as soon as you switch on — it doesn't have to re-learn your driving each time. The chart itself shows a **SCANNING…** placeholder until you move off and it has a line to draw. Once a trip is longer than the window, it's that trip's own last 10 / 100 / 500 km. A small badge shows what the projection is based on — **Last 100 km** (or whichever you chose), or **Baseline** (the car's catalog consumption) on a fresh install until there's about 3 km of driving to go on.
 
 ### Right-side Stat Cards
 
@@ -94,7 +94,7 @@ Notes:
 - **Power** — live motor output or regen
 - **Speed**
 - **Battery (SoC)** — tap to switch between the state of charge and the energy left in kWh
-- **Range** — the projected range (the car's own estimate until a projection exists)
+- **Range** — the projected range, with the distance it is taken over underneath (*Last 100 km*); tap to step through 10 / 100 / 500 km, long-press to open the range chart. Until a projection exists it shows the car's own estimate (*BMS estimate*)
 - **Distance** — current engine-on segment distance; when a trip survives a brief stop the cumulative trip distance is shown alongside it. Tap to switch to the distance driven since your last charge
 
 On DiLink 3, speed, gear, power and front-motor RPM update up to 10 times a second once the one-time ADB authorisation is done.
@@ -133,6 +133,7 @@ You can:
 - filter by date range, distance, energy, duration, and efficiency
 - open trip details
 - long-press to select multiple trips for comparison or export
+- see the **Monthly Cost** card at the top: distance, energy and cost per month (tap *Show more* for earlier months and the cost-history chart)
 
 ### Trip Detail
 
@@ -226,13 +227,17 @@ A charge can show two energy figures. **kWh added** is what the battery ended up
 
 ## Consumption Charts
 
-Tap the small chart thumbnail on the dashboard to expand:
+Tap the small chart thumbnail on the dashboard to expand. The tabs along the top pick the period:
 
-- **Daily consumption**
-- **Monthly consumption**
-- **Yearly consumption**
+- **This week** — the last 7 days, day by day
+- **This month** — the last 30 days, day by day
+- **This year** — the last 12 months, month by month
+- **Custom…** — pick any start and end date. Up to a month is shown day by day, up to half a year week by week, and anything longer month by month. Tap the tab again to change the dates.
 
-The chart shows your selected-duration average alongside your selected car's reference consumption. Outlier points outside a plausible consumption range are filtered to keep the chart readable.
+The row under them picks what is plotted:
+
+- **Avg Consumption** — a line of your consumption per day / week / month, with your average for the period and your selected car's reference consumption. Outlier trips outside a plausible consumption range are left out to keep the line readable.
+- **Distance** and **Energy** — bars of how far you drove and how many kWh you used per day / week / month, with the period's total and the average per day / week / month. Every completed trip counts here, so the totals match what you drove.
 
 ---
 
@@ -298,7 +303,7 @@ no effect on local trip recording or the dashboard.
 | **Appearance** | Theme (System / Light / Dark / Neon *Pro*), dashboard layout (Classic / Cards *Pro*), dashboard icons & animations — off moves the icons into the top bar and lowers CPU use on older firmware |
 | **Language & units** | App language (overrides the head unit's for this app only), metric or imperial |
 | **Trip recording** | Engine-off trip timeout (default 3 minutes), ask before auto-stopping, minimum trip distance (shorter trips are discarded; 0 keeps every trip) |
-| **Battery** | SoC source (dashboard **Panel** percentage or the **BMS** reading), and the cell-imbalance alert *(Pro)* |
+| **Battery and range estimate** | SoC source (dashboard **Panel** percentage or the **BMS** reading), the **range estimate** window (last 10 / 100 / 500 km of driving), and the cell-imbalance alert *(Pro)* |
 | **Costs** | Electricity tariff (price per kWh and currency) |
 | **Goals & personal bests** | Opens the Goals screen |
 
@@ -552,7 +557,7 @@ The app uses a foreground telemetry service, wake lock, Wi-Fi lock, boot receive
 ## Tips
 
 - Re-check Autostart after every app update
-- The range projection starts from your own lifetime average and moves to this trip's data within the first few hundred metres — the model-tier badge tells you when it's running on the current trip (Trip average / Live trip) rather than your history (Lifetime avg) or the catalogue figure (Baseline)
+- The range estimate's window (tap the **Range** tile, or Settings → Preferences → Battery and range estimate) trades reaction for steadiness: **10 km** follows the road you're on (a motorway stretch shows within minutes), **500 km** barely moves within a drive and reflects the season you're driving in
 - Use the **SoC x-axis** mode in the charging Power + SoC chart for DC taper analysis
 - Use **Heatmaps** to spot correlations — e.g. speed vs consumption to find your car's efficiency sweet spot
 - Use the **Seasonal Analysis** view after your first winter to see the real cold-weather efficiency penalty

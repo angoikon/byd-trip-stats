@@ -16,13 +16,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.byd.tripstats.R
+import com.byd.tripstats.data.preferences.UnitSystem
+import com.byd.tripstats.data.preferences.convertDistance
+import com.byd.tripstats.data.preferences.distanceUnit
 import com.byd.tripstats.ui.theme.AccelerationOrange
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 
 @Composable
 internal fun MonthlyCostSummaryCard(
     months         : List<DashboardViewModel.MonthlyCost>,
-    currencySymbol : String
+    currencySymbol : String,
+    unitSystem     : UnitSystem
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     val shown = if (expanded) months else months.take(1)
@@ -97,6 +101,11 @@ internal fun MonthlyCostSummaryCard(
                 ) {
                     Text(month.label, style = MaterialTheme.typography.bodySmall)
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        Text(
+                            "${"%.0f".format(unitSystem.convertDistance(month.kmTotal))} ${unitSystem.distanceUnit}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                         Text(
                             "${"%.1f".format(month.kwhTotal)} kWh",
                             style = MaterialTheme.typography.bodySmall,

@@ -698,9 +698,7 @@
     <string name="chart_above_wltp_cap">ערך מעל ממוצע WLTP — מוגבל לטווח הנקוב</string>
     <string name="chart_acquiring">קולט טלמטריה · התחילו לנסוע</string>
     <string name="chart_scanning">סורק…</string>
-    <string name="legend_live_trip">● נסיעה חיה</string>
-    <string name="legend_trip_average">● ממוצע נסיעה</string>
-    <string name="legend_lifetime_avg">● ממוצע כולל</string>
+    <string name="legend_recent_driving">● %1$s אחרונים</string>
     <string name="legend_baseline">● קו בסיס</string>
     <string name="chart_no_data">אין נתונים זמינים</string>
     <string name="chart_insufficient_data">נתונים לא מספיקים</string>
@@ -708,6 +706,10 @@
     <string name="chart_weekly_consumption">השבוע</string>
     <string name="chart_monthly_consumption">החודש</string>
     <string name="chart_yearly_consumption">השנה</string>
+    <string name="chart_custom_range">מותאם…</string>
+    <string name="chart_total_per_day">סה״כ %1$s · %2$s ליום</string>
+    <string name="chart_total_per_week">סה״כ %1$s · %2$s לשבוע</string>
+    <string name="chart_total_per_month">סה״כ %1$s · %2$s לחודש</string>
     <string name="chart_your_duration_avg">הממוצע שלכם לתקופה (%1$s %2$s)</string>
     <string name="chart_selected_car_avg">ממוצע הרכב הנבחר (%1$s %2$s)</string>
     <string name="chart_close">סגור גרף</string>
@@ -947,6 +949,8 @@
     <string name="soc_panel_option">לוח</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">ברכבי PHEV, ה-SoC מה-BMS בדרך כלל אינו מדווח — השתמשו בלוח אם ה-BMS מציג 0.\nה-BMS מדויק יותר (עשרוני) מהלוח (שלם). כמו כן, סטייה גדולה יותר מהלוח היא סימן טוב שהגיע הזמן לטעינה מלאה ל-100% או לכיול טעינה</string>
+    <string name="pref_range_window">הערכת טווח</string>
+    <string name="range_window_desc">הטווח החזוי מבוסס על הצריכה שלך במרחק הזה של הנסיעות האחרונות, כולל נסיעות קודמות, כך שהוא מוכן מיד עם ההתנעה. קצר יותר עוקב אחר הדרך הנוכחית; ארוך יותר יציב יותר.</string>
     <string name="pref_cell_imbalance">התראת חוסר איזון תאים</string>
     <string name="cell_imbalance_desc">הודע לי כשפיזור מתח התאים של הסוללה נשאר מעל הגבול.</string>
     <string name="cell_imbalance_info">פיזור = התא הגבוה ביותר − התא הנמוך ביותר. סוללה בריאה נשארת מתחת ל-~20 mV; פיזור גבוה מתמשך עשוי להצביע על תא חלש. התראות מושתקות מתחת ל-5% ומעל ל-95% SoC, שבהם פיזור רחב הוא נורמלי.</string>
@@ -1075,10 +1079,11 @@
     <string name="pref_trip_recording_desc">מתי נסיעה מסתיימת אחרי כיבוי הרכב, וכמה קצרה נסיעה יכולה להיות.</string>
     <string name="trip_recording_status">עצירה אוטומטית אחרי %1$d דקות • מינימום %2$s</string>
     <string name="trip_recording_status_no_min">עצירה אוטומטית אחרי %1$d דקות • ללא מינימום</string>
-    <string name="pref_battery_title">סוללה</string>
-    <string name="pref_battery_desc">איזו קריאת מצב טעינה להציג, והתראת חוסר איזון תאים.</string>
+    <string name="pref_battery_title">סוללה והערכת טווח</string>
+    <string name="pref_battery_desc">איזו קריאת מצב טעינה להציג, על כמה נסיעה אחרונה מתבססת הערכת הטווח, והתראת חוסר איזון תאים.</string>
     <string name="battery_status_alert_on">SoC: %1$s • התראת חוסר איזון פעילה</string>
     <string name="battery_status_alert_off">SoC: %1$s • התראת חוסר איזון כבויה</string>
+    <string name="battery_status_range">הערכת טווח: %1$s אחרונים</string>
     <string name="pref_costs_desc">תעריף החשמל והמטבע שלכם, שלפיהם מתומחרות נסיעות וטעינות.</string>
     <string name="pref_goals_desc">יעדי צריכה ומרחק, והשיאים האישיים שלכם.</string>
     <string name="pro_cell_imbalance_info">מתריעה כשהפער בין מתחי התאים בסוללה נשאר מעל הגבול שלכם — סימן מוקדם לתא חלש. הפעילו אותה וקבעו את הגבול תחת העדפות ← סוללה לאחר השחרור.</string>
@@ -1310,7 +1315,7 @@
     <string name="speed_state_parked">נייח</string>
     <string name="speed_state_driving">בנסיעה</string>
     <string name="soc_subtitle_usable">טעינה זמינה</string>
-    <string name="range_subtitle_projection">תחזית דינמית</string>
+    <string name="range_subtitle_window">%1$s אחרונים</string>
     <string name="range_subtitle_phev">דלק %1$s · סה״כ %2$s</string>
     <string name="stat_fuel_range">דלק</string>
     <string name="distance_subtitle_session">מפגש זה</string>

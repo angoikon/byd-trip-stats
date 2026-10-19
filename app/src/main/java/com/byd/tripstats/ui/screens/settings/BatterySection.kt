@@ -15,15 +15,17 @@ import androidx.compose.ui.unit.dp
 import com.byd.tripstats.R
 import com.byd.tripstats.data.entitlement.EntitlementManager
 import com.byd.tripstats.data.preferences.PreferencesManager
+import com.byd.tripstats.data.preferences.RangeWindow
 import com.byd.tripstats.data.preferences.SocSource
+import com.byd.tripstats.data.preferences.displayLabel
 import com.byd.tripstats.sdk.DiLink5Platform
 import com.byd.tripstats.ui.components.BrandSwitch
 import com.byd.tripstats.ui.theme.BydElectricAzure
 import kotlinx.coroutines.launch
 
 /**
- * Preferences → Battery: which state-of-charge reading the app shows, and the cell-imbalance
- * alert.
+ * Preferences → Battery and range estimate: which state-of-charge reading the app shows, how much
+ * recent driving the projected range takes its consumption from, and the cell-imbalance alert.
  *
  * The alert used to live on the Pro tab, where it was the only actual setting among cards that
  * just describe Pro features. It is a battery setting, so it sits here now and is locked the way
@@ -38,6 +40,12 @@ internal fun BatterySection(
     val scope = rememberCoroutineScope()
     val socSource by preferencesManager.socSource.collectAsState(
         initial = preferencesManager.getCachedSocSource()
+    )
+    val rangeWindow by preferencesManager.rangeWindow.collectAsState(
+        initial = preferencesManager.getCachedRangeWindow()
+    )
+    val unitSystem by preferencesManager.unitSystem.collectAsState(
+        initial = preferencesManager.getCachedUnitSystem()
     )
     val isPro by EntitlementManager.isPro.collectAsState()
     val cellImbalanceAlertEnabled by preferencesManager.cellImbalanceAlertEnabled.collectAsState(
@@ -110,6 +118,50 @@ internal fun BatterySection(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+        }
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                stringResource(R.string.pref_range_window),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                stringResource(R.string.range_window_desc),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                RangeWindow.entries.forEach { window ->
+                    Button(
+                        onClick = { scope.launch { preferencesManager.saveRangeWindow(window) } },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (rangeWindow == window)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.surfaceVariant,
+                            contentColor = if (rangeWindow == window)
+                                MaterialTheme.colorScheme.onPrimary
+                            else
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    ) {
+                        Text(window.displayLabel(unitSystem), fontWeight = FontWeight.Bold)
+                    }
+                }
             }
         }
     }

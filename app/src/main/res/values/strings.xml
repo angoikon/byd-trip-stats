@@ -720,9 +720,7 @@
     <string name="chart_above_wltp_cap">Value above WLTP average — capped at rated range</string>
     <string name="chart_acquiring">acquiring telemetry · drive to begin</string>
     <string name="chart_scanning">SCANNING…</string>
-    <string name="legend_live_trip">● Live trip</string>
-    <string name="legend_trip_average">● Trip average</string>
-    <string name="legend_lifetime_avg">● Lifetime avg</string>
+    <string name="legend_recent_driving">● Last %1$s</string>
     <string name="legend_baseline">● Baseline</string>
     <string name="chart_no_data">No data available</string>
     <string name="chart_insufficient_data">Insufficient data</string>
@@ -730,6 +728,10 @@
     <string name="chart_weekly_consumption">This week</string>
     <string name="chart_monthly_consumption">This month</string>
     <string name="chart_yearly_consumption">This year</string>
+    <string name="chart_custom_range">Custom…</string>
+    <string name="chart_total_per_day">Total %1$s · %2$s per day</string>
+    <string name="chart_total_per_week">Total %1$s · %2$s per week</string>
+    <string name="chart_total_per_month">Total %1$s · %2$s per month</string>
     <string name="chart_your_duration_avg">Your duration avg (%1$s %2$s)</string>
     <string name="chart_selected_car_avg">Selected car avg (%1$s %2$s)</string>
     <string name="chart_close">Close chart</string>
@@ -972,6 +974,8 @@
     <string name="soc_panel_option">Panel</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">On PHEVs the BMS SoC is usually not reported — use Panel if BMS shows 0.\nBMS is more accurate (float) than Panel (integer). Also, larger divergence from Panel is a great indication that it is time for either 100% charge or charging calibration</string>
+    <string name="pref_range_window">Range estimate</string>
+    <string name="range_window_desc">Projected range uses your consumption over this much of your most recent driving, earlier trips included, so it is ready as soon as you switch on. Shorter follows the road you are on; longer stays steadier.</string>
     <string name="pref_cell_imbalance">Cell imbalance alert</string>
     <string name="cell_imbalance_desc">Notify me when the pack\'s cell voltage spread stays above the limit.</string>
     <string name="cell_imbalance_info">Spread = highest cell − lowest cell. A healthy pack stays under ~20 mV; a persistently high spread can flag a weak cell. Alerts are suppressed below 5% and above 95% SoC, where a wide spread is normal.</string>
@@ -1101,10 +1105,11 @@
     <string name="pref_trip_recording_desc">When a trip ends after the car is switched off, and how short a trip can be.</string>
     <string name="trip_recording_status">Auto-stop after %1$d min • minimum %2$s</string>
     <string name="trip_recording_status_no_min">Auto-stop after %1$d min • no minimum</string>
-    <string name="pref_battery_title">Battery</string>
-    <string name="pref_battery_desc">Which state-of-charge reading to show, and the cell-imbalance alert.</string>
+    <string name="pref_battery_title">Battery and range estimate</string>
+    <string name="pref_battery_desc">Which state-of-charge reading to show, how much recent driving the range estimate uses, and the cell-imbalance alert.</string>
     <string name="battery_status_alert_on">SoC: %1$s • imbalance alert on</string>
     <string name="battery_status_alert_off">SoC: %1$s • imbalance alert off</string>
+    <string name="battery_status_range">range estimate: last %1$s</string>
     <string name="pref_costs_desc">Your electricity tariff and currency, used to price trips and charges.</string>
     <string name="pref_goals_desc">Consumption and distance targets, and your personal bests.</string>
     <string name="pro_cell_imbalance_info">Warns you when the spread between the pack\'s cell voltages stays above your limit — an early sign of a weak cell. Switch it on and set the limit under Preferences → Battery once unlocked.</string>
@@ -1337,7 +1342,7 @@
     <string name="speed_state_parked">Stationary</string>
     <string name="speed_state_driving">Driving</string>
     <string name="soc_subtitle_usable">Usable charge</string>
-    <string name="range_subtitle_projection">Dynamic projection</string>
+    <string name="range_subtitle_window">Last %1$s</string>
     <string name="range_subtitle_phev">Fuel %1$s · Total %2$s</string>
     <string name="stat_fuel_range">Fuel</string>
     <string name="distance_subtitle_session">This session</string>

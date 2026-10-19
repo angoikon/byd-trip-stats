@@ -13,6 +13,7 @@ import com.byd.tripstats.data.preferences.DashboardLayout
 import com.byd.tripstats.data.preferences.OffStateMode
 import com.byd.tripstats.data.preferences.PowerMetricId
 import com.byd.tripstats.data.preferences.PreferencesManager
+import com.byd.tripstats.data.preferences.RangeWindow
 import com.byd.tripstats.data.preferences.SocSource
 import com.byd.tripstats.data.preferences.ThemeMode
 import com.byd.tripstats.data.preferences.UnitSystem
@@ -113,6 +114,7 @@ object SettingsBackup {
                 put("themeMode",                 pm.themeMode.first().name)
                 put("unitSystem",                pm.unitSystem.first().name)
                 put("socSource",                 pm.socSource.first().name)
+                put("rangeWindow",               pm.rangeWindow.first().name)
                 put("offStateMode",              pm.offStateMode.first().name)
                 put("dashboardAnimations",       pm.dashboardAnimationsEnabled.first())
                 put("dashboardLayout",           pm.dashboardLayout.first().name)
@@ -366,6 +368,7 @@ object SettingsBackup {
         p.enumOrNull<ThemeMode>("themeMode")?.let     { pm.saveThemeMode(it) }
         p.enumOrNull<UnitSystem>("unitSystem")?.let   { pm.saveUnitSystem(it) }
         p.enumOrNull<SocSource>("socSource")?.let     { pm.saveSocSource(it) }
+        p.enumOrNull<RangeWindow>("rangeWindow")?.let { pm.saveRangeWindow(it) }
         p.enumOrNull<OffStateMode>("offStateMode")?.let { pm.saveOffStateMode(it) }
         p.enumOrNull<DashboardLayout>("dashboardLayout")?.let { pm.saveDashboardLayout(it) }
 

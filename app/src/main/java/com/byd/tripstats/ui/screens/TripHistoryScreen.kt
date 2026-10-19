@@ -269,7 +269,8 @@ fun TripHistoryScreen(
                         // with the per-month numeric breakdown as the expandable detail.
                         MonthlyCostSummaryCard(
                             months         = monthlyCosts,
-                            currencySymbol = currencySymbol
+                            currencySymbol = currencySymbol,
+                            unitSystem     = unitSystem
                         )
                     }
                 }

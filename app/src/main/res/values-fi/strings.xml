@@ -701,9 +701,7 @@
     <string name="chart_above_wltp_cap">Arvo ylittää WLTP-keskiarvon — rajoitettu nimellikantamaan</string>
     <string name="chart_acquiring">hankitaan telemetriaa · aja aloittaaksesi</string>
     <string name="chart_scanning">SKANNATAAN…</string>
-    <string name="legend_live_trip">● Live-matka</string>
-    <string name="legend_trip_average">● Matkan keskiarvo</string>
-    <string name="legend_lifetime_avg">● Elinikäinen ka.</string>
+    <string name="legend_recent_driving">● Viimeiset %1$s</string>
     <string name="legend_baseline">● Perustaso</string>
     <string name="chart_no_data">Ei dataa saatavilla</string>
     <string name="chart_insufficient_data">Riittämätön data</string>
@@ -711,6 +709,10 @@
     <string name="chart_weekly_consumption">Tällä viikolla</string>
     <string name="chart_monthly_consumption">Tässä kuussa</string>
     <string name="chart_yearly_consumption">Tänä vuonna</string>
+    <string name="chart_custom_range">Mukautettu…</string>
+    <string name="chart_total_per_day">Yhteensä %1$s · %2$s päivässä</string>
+    <string name="chart_total_per_week">Yhteensä %1$s · %2$s viikossa</string>
+    <string name="chart_total_per_month">Yhteensä %1$s · %2$s kuukaudessa</string>
     <string name="chart_your_duration_avg">Oma keston ka. (%1$s %2$s)</string>
     <string name="chart_selected_car_avg">Valitun auton ka. (%1$s %2$s)</string>
     <string name="chart_close">Sulje kaavio</string>
@@ -950,6 +952,8 @@
     <string name="soc_panel_option">Paneeli</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">PHEV:ssä BMS:n SoC ei yleensä raportoidu — käytä Paneelia jos BMS näyttää 0.\nBMS on tarkempi (desimaaliluku) kuin Paneeli (kokonaisluku). Myös suurempi ero Paneeliin nähden on hyvä merkki siitä että on aika ladata 100%%:iin tai kalibroida lataus</string>
+    <string name="pref_range_window">Toimintamatka-arvio</string>
+    <string name="range_window_desc">Ennustettu toimintamatka perustuu kulutukseesi näin pitkältä viimeisimmältä ajomatkalta aiemmat matkat mukaan lukien, joten se on valmis heti käynnistettäessä. Lyhyempi seuraa nykyistä tietä, pidempi pysyy vakaampana.</string>
     <string name="pref_cell_imbalance">Kennon epätasapainohälytys</string>
     <string name="cell_imbalance_desc">Ilmoita minulle kun akun kennojännitteen hajonta pysyy rajan yläpuolella.</string>
     <string name="cell_imbalance_info">Hajonta = korkein kenno − matalin kenno. Terve akku pysyy alle ~20 mV:ssä; jatkuvasti korkea hajonta voi merkitä heikkoa kennoa. Hälytykset on estetty alle 5% ja yli 95% SoC:lla, missä laaja hajonta on normaalia.</string>
@@ -1078,10 +1082,11 @@
     <string name="pref_trip_recording_desc">Milloin matka päättyy auton sammuttamisen jälkeen, ja kuinka lyhyt matka saa olla.</string>
     <string name="trip_recording_status">Automaattinen lopetus %1$d min kuluttua • vähintään %2$s</string>
     <string name="trip_recording_status_no_min">Automaattinen lopetus %1$d min kuluttua • ei vähimmäispituutta</string>
-    <string name="pref_battery_title">Akku</string>
-    <string name="pref_battery_desc">Mikä varaustilan lukema näytetään, ja kennon epätasapainohälytys.</string>
+    <string name="pref_battery_title">Akku ja toimintamatka-arvio</string>
+    <string name="pref_battery_desc">Mikä varaustilan lukema näytetään, kuinka pitkään viimeaikaiseen ajoon toimintamatka-arvio perustuu, ja kennon epätasapainohälytys.</string>
     <string name="battery_status_alert_on">SoC: %1$s • epätasapainohälytys päällä</string>
     <string name="battery_status_alert_off">SoC: %1$s • epätasapainohälytys pois</string>
+    <string name="battery_status_range">toimintamatka-arvio: viimeiset %1$s</string>
     <string name="pref_costs_desc">Sähkötariffisi ja valuuttasi, joilla matkojen ja latausten hinta lasketaan.</string>
     <string name="pref_goals_desc">Kulutus- ja matkatavoitteet sekä omat ennätyksesi.</string>
     <string name="pro_cell_imbalance_info">Varoittaa, kun akun kennojännitteiden hajonta pysyy rajasi yläpuolella — varhainen merkki heikosta kennosta. Ota se käyttöön ja aseta raja kohdassa Asetukset → Akku, kun se on avattu.</string>
@@ -1314,7 +1319,7 @@
     <string name="speed_state_parked">Paikallaan</string>
     <string name="speed_state_driving">Ajaa</string>
     <string name="soc_subtitle_usable">Käytettävissä oleva varaus</string>
-    <string name="range_subtitle_projection">Dynaaminen ennuste</string>
+    <string name="range_subtitle_window">Viimeiset %1$s</string>
     <string name="range_subtitle_phev">Polttoaine %1$s · Yhteensä %2$s</string>
     <string name="stat_fuel_range">Polttoaine</string>
     <string name="distance_subtitle_session">Tämä istunto</string>

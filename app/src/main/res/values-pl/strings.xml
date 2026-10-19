@@ -698,9 +698,7 @@
     <string name="chart_above_wltp_cap">Wartość powyżej średniej WLTP — ograniczona do zasięgu katalogowego</string>
     <string name="chart_acquiring">pobieranie telemetrii · zacznij jechać</string>
     <string name="chart_scanning">SKANOWANIE…</string>
-    <string name="legend_live_trip">● Podróż na żywo</string>
-    <string name="legend_trip_average">● Średnia podróży</string>
-    <string name="legend_lifetime_avg">● Średnia całkowita</string>
+    <string name="legend_recent_driving">● Ostatnie %1$s</string>
     <string name="legend_baseline">● Odniesienie</string>
     <string name="chart_no_data">Brak dostępnych danych</string>
     <string name="chart_insufficient_data">Niewystarczające dane</string>
@@ -708,6 +706,10 @@
     <string name="chart_weekly_consumption">Ten tydzień</string>
     <string name="chart_monthly_consumption">Ten miesiąc</string>
     <string name="chart_yearly_consumption">Ten rok</string>
+    <string name="chart_custom_range">Własny…</string>
+    <string name="chart_total_per_day">Łącznie %1$s · %2$s dziennie</string>
+    <string name="chart_total_per_week">Łącznie %1$s · %2$s tygodniowo</string>
+    <string name="chart_total_per_month">Łącznie %1$s · %2$s miesięcznie</string>
     <string name="chart_your_duration_avg">Twoja średnia dla tego czasu (%1$s %2$s)</string>
     <string name="chart_selected_car_avg">Średnia wybranego auta (%1$s %2$s)</string>
     <string name="chart_close">Zamknij wykres</string>
@@ -947,6 +949,8 @@
     <string name="soc_panel_option">Panel</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">W PHEV SoC z BMS zwykle nie jest raportowany — użyj Panelu, jeśli BMS pokazuje 0.\nBMS jest dokładniejszy (ułamkowy) niż Panel (całkowity). Ponadto większa rozbieżność względem Panelu to dobry znak, że czas na ładowanie do 100% lub kalibrację ładowania</string>
+    <string name="pref_range_window">Szacowany zasięg</string>
+    <string name="range_window_desc">Prognozowany zasięg korzysta z Twojego zużycia na tym odcinku ostatniej jazdy, łącznie z wcześniejszymi podróżami, więc jest gotowy od razu po włączeniu. Krótszy podąża za bieżącą drogą; dłuższy jest stabilniejszy.</string>
     <string name="pref_cell_imbalance">Alert nierównowagi ogniw</string>
     <string name="cell_imbalance_desc">Powiadom mnie, gdy rozrzut napięć ogniw pakietu utrzymuje się powyżej limitu.</string>
     <string name="cell_imbalance_info">Rozrzut = najwyższe ogniwo − najniższe ogniwo. Zdrowy pakiet pozostaje poniżej ~20 mV; utrzymujący się wysoki rozrzut może wskazywać słabe ogniwo. Alerty są wyciszane poniżej 5% i powyżej 95% SoC, gdzie duży rozrzut jest normalny.</string>
@@ -1075,10 +1079,11 @@
     <string name="pref_trip_recording_desc">Kiedy podróż się kończy po wyłączeniu samochodu i jak krótka może być podróż.</string>
     <string name="trip_recording_status">Auto-stop po %1$d min • minimum %2$s</string>
     <string name="trip_recording_status_no_min">Auto-stop po %1$d min • bez minimum</string>
-    <string name="pref_battery_title">Bateria</string>
-    <string name="pref_battery_desc">Który odczyt stanu naładowania pokazywać oraz alert nierównowagi ogniw.</string>
+    <string name="pref_battery_title">Bateria i szacowany zasięg</string>
+    <string name="pref_battery_desc">Który odczyt stanu naładowania pokazywać, na jak długim odcinku ostatniej jazdy opiera się szacowany zasięg, oraz alert nierównowagi ogniw.</string>
     <string name="battery_status_alert_on">SoC: %1$s • alert nierównowagi włączony</string>
     <string name="battery_status_alert_off">SoC: %1$s • alert nierównowagi wyłączony</string>
+    <string name="battery_status_range">szacowany zasięg: ostatnie %1$s</string>
     <string name="pref_costs_desc">Twoja taryfa energii i waluta, według których wyceniane są podróże i ładowania.</string>
     <string name="pref_goals_desc">Cele zużycia i dystansu oraz Twoje rekordy osobiste.</string>
     <string name="pro_cell_imbalance_info">Ostrzega, gdy rozrzut napięć ogniw akumulatora utrzymuje się powyżej Twojego limitu — wczesny sygnał słabego ogniwa. Po odblokowaniu włącz go i ustaw limit w Preferencje → Bateria.</string>
@@ -1310,7 +1315,7 @@
     <string name="speed_state_parked">Nieruchomo</string>
     <string name="speed_state_driving">Jazda</string>
     <string name="soc_subtitle_usable">Użyteczny ładunek</string>
-    <string name="range_subtitle_projection">Projekcja dynamiczna</string>
+    <string name="range_subtitle_window">Ostatnie %1$s</string>
     <string name="range_subtitle_phev">Paliwo %1$s · Łącznie %2$s</string>
     <string name="stat_fuel_range">Paliwo</string>
     <string name="distance_subtitle_session">Ta sesja</string>

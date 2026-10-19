@@ -701,9 +701,7 @@
     <string name="chart_above_wltp_cap">Waarde boven WLTP-gemiddelde — beperkt tot nominaal bereik</string>
     <string name="chart_acquiring">telemetrie verwerven · rijd om te beginnen</string>
     <string name="chart_scanning">SCANNEN…</string>
-    <string name="legend_live_trip">● Live rit</string>
-    <string name="legend_trip_average">● Ritgemiddelde</string>
-    <string name="legend_lifetime_avg">● Levenslang gem.</string>
+    <string name="legend_recent_driving">● Laatste %1$s</string>
     <string name="legend_baseline">● Basislijn</string>
     <string name="chart_no_data">Geen gegevens beschikbaar</string>
     <string name="chart_insufficient_data">Onvoldoende gegevens</string>
@@ -711,6 +709,10 @@
     <string name="chart_weekly_consumption">Deze week</string>
     <string name="chart_monthly_consumption">Deze maand</string>
     <string name="chart_yearly_consumption">Dit jaar</string>
+    <string name="chart_custom_range">Aangepast…</string>
+    <string name="chart_total_per_day">Totaal %1$s · %2$s per dag</string>
+    <string name="chart_total_per_week">Totaal %1$s · %2$s per week</string>
+    <string name="chart_total_per_month">Totaal %1$s · %2$s per maand</string>
     <string name="chart_your_duration_avg">Jouw duurgemiddelde (%1$s %2$s)</string>
     <string name="chart_selected_car_avg">Geselecteerde autogemiddelde (%1$s %2$s)</string>
     <string name="chart_close">Grafiek sluiten</string>
@@ -950,6 +952,8 @@
     <string name="soc_panel_option">Paneel</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">Bij PHEV\'s wordt de BMS SoC gewoonlijk niet gerapporteerd — gebruik Paneel als BMS 0 toont.\nBMS is nauwkeuriger (float) dan Paneel (geheel getal). Ook is een grotere afwijking van Paneel een goede indicatie dat het tijd is voor een 100%-lading of laadkalibratie</string>
+    <string name="pref_range_window">Bereikschatting</string>
+    <string name="range_window_desc">Het verwachte bereik gebruikt je verbruik over deze afstand aan recente ritten, eerdere ritten inbegrepen, zodat het direct bij het inschakelen klaarstaat. Korter volgt de weg waarop je rijdt; langer blijft stabieler.</string>
     <string name="pref_cell_imbalance">Celonbalanswaarschuwing</string>
     <string name="cell_imbalance_desc">Meld mij wanneer het celspanningsverschil van het pakket boven de limiet blijft.</string>
     <string name="cell_imbalance_info">Verschil = hoogste cel − laagste cel. Een gezond pakket blijft onder ~20 mV; een aanhoudend hoog verschil kan wijzen op een zwakke cel. Waarschuwingen worden onderdrukt onder 5% en boven 95% SoC, waar een groot verschil normaal is.</string>
@@ -1078,10 +1082,11 @@
     <string name="pref_trip_recording_desc">Wanneer een rit eindigt nadat de auto is uitgeschakeld, en hoe kort een rit mag zijn.</string>
     <string name="trip_recording_status">Automatisch stoppen na %1$d min • minimaal %2$s</string>
     <string name="trip_recording_status_no_min">Automatisch stoppen na %1$d min • geen minimum</string>
-    <string name="pref_battery_title">Batterij</string>
-    <string name="pref_battery_desc">Welke laadtoestandwaarde wordt getoond, en de celonbalanswaarschuwing.</string>
+    <string name="pref_battery_title">Batterij en bereikschatting</string>
+    <string name="pref_battery_desc">Welke laadtoestandwaarde wordt getoond, op hoeveel recente ritten de bereikschatting is gebaseerd, en de celonbalanswaarschuwing.</string>
     <string name="battery_status_alert_on">SoC: %1$s • onbalanswaarschuwing aan</string>
     <string name="battery_status_alert_off">SoC: %1$s • onbalanswaarschuwing uit</string>
+    <string name="battery_status_range">bereikschatting: laatste %1$s</string>
     <string name="pref_costs_desc">Je elektriciteitstarief en valuta, waarmee ritten en laadbeurten worden geprijsd.</string>
     <string name="pref_goals_desc">Doelen voor verbruik en afstand, en je persoonlijke records.</string>
     <string name="pro_cell_imbalance_info">Waarschuwt je wanneer de spreiding in celspanning van het accupakket boven je limiet blijft — een vroeg teken van een zwakke cel. Zet het aan en stel de limiet in onder Voorkeuren → Batterij zodra het is ontgrendeld.</string>
@@ -1314,7 +1319,7 @@
     <string name="speed_state_parked">Stilstaand</string>
     <string name="speed_state_driving">Rijden</string>
     <string name="soc_subtitle_usable">Bruikbare lading</string>
-    <string name="range_subtitle_projection">Dynamische projectie</string>
+    <string name="range_subtitle_window">Laatste %1$s</string>
     <string name="range_subtitle_phev">Brandstof %1$s · Totaal %2$s</string>
     <string name="stat_fuel_range">Brandstof</string>
     <string name="distance_subtitle_session">Deze sessie</string>

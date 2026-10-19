@@ -646,9 +646,7 @@
     <string name="chart_above_wltp_cap">Valeur au-dessus de la moyenne WLTP — plafonnée à l\'autonomie nominale</string>
     <string name="chart_acquiring">acquisition de télémétrie · conduire pour démarrer</string>
     <string name="chart_scanning">ANALYSE…</string>
-    <string name="legend_live_trip">● Trajet en direct</string>
-    <string name="legend_trip_average">● Moy. du trajet</string>
-    <string name="legend_lifetime_avg">● Moy. globale</string>
+    <string name="legend_recent_driving">● Derniers %1$s</string>
     <string name="legend_baseline">● Référence</string>
     <string name="chart_no_data">Aucune donnée disponible</string>
     <string name="chart_insufficient_data">Données insuffisantes</string>
@@ -656,6 +654,10 @@
     <string name="chart_weekly_consumption">Cette semaine</string>
     <string name="chart_monthly_consumption">Ce mois</string>
     <string name="chart_yearly_consumption">Cette année</string>
+    <string name="chart_custom_range">Personnalisé…</string>
+    <string name="chart_total_per_day">Total %1$s · %2$s par jour</string>
+    <string name="chart_total_per_week">Total %1$s · %2$s par semaine</string>
+    <string name="chart_total_per_month">Total %1$s · %2$s par mois</string>
     <string name="chart_your_duration_avg">Votre moy. de durée (%1$s %2$s)</string>
     <string name="chart_selected_car_avg">Moy. voiture sélectionnée (%1$s %2$s)</string>
     <string name="chart_close">Fermer le graphique</string>
@@ -879,6 +881,8 @@
     <string name="soc_panel_option">Tableau de bord</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">Sur les PHEV, le SoC BMS n\'est généralement pas rapporté — utilisez Tableau de bord si BMS affiche 0.\nLe BMS est plus précis (décimal) que le Tableau de bord (entier). De plus, un écart important avec le Tableau de bord est un bon indicateur qu\'il est temps de faire une charge à 100 % ou une calibration de charge</string>
+    <string name="pref_range_window">Estimation de l\'autonomie</string>
+    <string name="range_window_desc">L\'autonomie projetée utilise votre consommation sur cette distance de conduite récente, trajets précédents compris, elle est donc prête dès le démarrage. Plus courte, elle suit la route actuelle ; plus longue, elle reste plus stable.</string>
     <string name="pref_cell_imbalance">Alerte déséquilibre cellulaire</string>
     <string name="cell_imbalance_desc">Me notifier quand la dispersion de tension des cellules reste au-dessus de la limite.</string>
     <string name="cell_imbalance_info">Dispersion = cellule la plus haute − cellule la plus basse. Un pack sain reste sous ~20 mV ; une dispersion durablement élevée peut signaler une cellule faible. Les alertes sont supprimées sous 5% et au-dessus de 95% de SoC, où une large dispersion est normale.</string>
@@ -995,10 +999,11 @@
     <string name="pref_trip_recording_desc">Quand un trajet se termine après l\'arrêt de la voiture, et la longueur minimale d\'un trajet.</string>
     <string name="trip_recording_status">Arrêt auto après %1$d min • minimum %2$s</string>
     <string name="trip_recording_status_no_min">Arrêt auto après %1$d min • pas de minimum</string>
-    <string name="pref_battery_title">Batterie</string>
-    <string name="pref_battery_desc">Quelle mesure de l\'état de charge afficher, et l\'alerte de déséquilibre cellulaire.</string>
+    <string name="pref_battery_title">Batterie et estimation de l\'autonomie</string>
+    <string name="pref_battery_desc">Quelle mesure de l\'état de charge afficher, sur quelle part de la conduite récente se fonde l\'estimation de l\'autonomie, et l\'alerte de déséquilibre cellulaire.</string>
     <string name="battery_status_alert_on">SoC : %1$s • alerte de déséquilibre activée</string>
     <string name="battery_status_alert_off">SoC : %1$s • alerte de déséquilibre désactivée</string>
+    <string name="battery_status_range">estimation de l\'autonomie : derniers %1$s</string>
     <string name="pref_costs_desc">Votre tarif d\'électricité et votre devise, utilisés pour chiffrer trajets et recharges.</string>
     <string name="pref_goals_desc">Objectifs de consommation et de distance, et vos records personnels.</string>
     <string name="pro_cell_imbalance_info">Vous avertit quand l\'écart de tension entre les cellules de la batterie reste au-dessus de votre limite — un signe précoce de cellule faible. Activez-la et réglez la limite sous Préférences → Batterie une fois débloqué.</string>
@@ -1213,7 +1218,7 @@
     <string name="speed_state_parked">À l\'arrêt</string>
     <string name="speed_state_driving">En conduite</string>
     <string name="soc_subtitle_usable">Charge utilisable</string>
-    <string name="range_subtitle_projection">Projection dynamique</string>
+    <string name="range_subtitle_window">Derniers %1$s</string>
     <string name="range_subtitle_phev">Carburant %1$s · Total %2$s</string>
     <string name="stat_fuel_range">Carburant</string>
     <string name="distance_subtitle_session">Cette session</string>

@@ -698,9 +698,7 @@
     <string name="chart_above_wltp_cap">Érték a WLTP-átlag felett — a névleges hatótávra korlátozva</string>
     <string name="chart_acquiring">telemetria beolvasása · induljon el a kezdéshez</string>
     <string name="chart_scanning">KERESÉS…</string>
-    <string name="legend_live_trip">● Élő út</string>
-    <string name="legend_trip_average">● Út átlaga</string>
-    <string name="legend_lifetime_avg">● Élettartam-átlag</string>
+    <string name="legend_recent_driving">● Utolsó %1$s</string>
     <string name="legend_baseline">● Alapvonal</string>
     <string name="chart_no_data">Nincs elérhető adat</string>
     <string name="chart_insufficient_data">Elégtelen adat</string>
@@ -708,6 +706,10 @@
     <string name="chart_weekly_consumption">Ez a hét</string>
     <string name="chart_monthly_consumption">Ez a hónap</string>
     <string name="chart_yearly_consumption">Ez az év</string>
+    <string name="chart_custom_range">Egyéni…</string>
+    <string name="chart_total_per_day">Összesen %1$s · %2$s naponta</string>
+    <string name="chart_total_per_week">Összesen %1$s · %2$s hetente</string>
+    <string name="chart_total_per_month">Összesen %1$s · %2$s havonta</string>
     <string name="chart_your_duration_avg">Saját időszaki átlaga (%1$s %2$s)</string>
     <string name="chart_selected_car_avg">Választott autó átlaga (%1$s %2$s)</string>
     <string name="chart_close">Grafikon bezárása</string>
@@ -947,6 +949,8 @@
     <string name="soc_panel_option">Panel</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">PHEV-eken a BMS SoC általában nem érkezik — használja a Panelt, ha a BMS 0-t mutat.\nA BMS pontosabb (tört érték), mint a panel (egész szám). Emellett a paneltől való nagyobb eltérés jó jele annak, hogy ideje 100%-os töltésnek vagy töltéskalibrációnak</string>
+    <string name="pref_range_window">Hatótáv-becslés</string>
+    <string name="range_window_desc">A becsült hatótáv a legutóbbi vezetés ekkora szakaszán mért fogyasztásodon alapul, a korábbi utakat is beleértve, így már bekapcsoláskor elérhető. A rövidebb a jelenlegi úthoz igazodik, a hosszabb stabilabb.</string>
     <string name="pref_cell_imbalance">Cella-kiegyensúlyozatlansági riasztás</string>
     <string name="cell_imbalance_desc">Értesítsen, ha a pakk cellafeszültség-szórása a határérték felett marad.</string>
     <string name="cell_imbalance_info">Szórás = legmagasabb cella − legalacsonyabb cella. Egészséges pakk ~20 mV alatt marad; a tartósan magas szórás gyenge cellát jelezhet. A riasztások 5% alatt és 95% SoC felett elnémulnak, ahol a nagy szórás normális.</string>
@@ -1075,10 +1079,11 @@
     <string name="pref_trip_recording_desc">Mikor ér véget egy út az autó kikapcsolása után, és milyen rövid lehet egy út.</string>
     <string name="trip_recording_status">Automatikus leállítás %1$d perc után • minimum %2$s</string>
     <string name="trip_recording_status_no_min">Automatikus leállítás %1$d perc után • nincs minimum</string>
-    <string name="pref_battery_title">Akku</string>
-    <string name="pref_battery_desc">Melyik töltöttségi érték jelenjen meg, és a cella-kiegyensúlyozatlansági riasztás.</string>
+    <string name="pref_battery_title">Akku és hatótáv-becslés</string>
+    <string name="pref_battery_desc">Melyik töltöttségi érték jelenjen meg, mennyi legutóbbi vezetésen alapuljon a hatótáv-becslés, és a cella-kiegyensúlyozatlansági riasztás.</string>
     <string name="battery_status_alert_on">SoC: %1$s • kiegyensúlyozatlansági riasztás be</string>
     <string name="battery_status_alert_off">SoC: %1$s • kiegyensúlyozatlansági riasztás ki</string>
+    <string name="battery_status_range">hatótáv-becslés: utolsó %1$s</string>
     <string name="pref_costs_desc">Az áramtarifa és a pénznem, amelyekkel az utak és töltések ára számolódik.</string>
     <string name="pref_goals_desc">Fogyasztási és távolsági célok, valamint az egyéni csúcsai.</string>
     <string name="pro_cell_imbalance_info">Figyelmeztet, ha az akkumulátor cellafeszültségeinek szórása tartósan a határérték felett marad — egy gyenge cella korai jele. Feloldás után kapcsolja be és állítsa be a határértéket a Beállítások → Akku alatt.</string>
@@ -1310,7 +1315,7 @@
     <string name="speed_state_parked">Álló</string>
     <string name="speed_state_driving">Vezetés</string>
     <string name="soc_subtitle_usable">Használható töltés</string>
-    <string name="range_subtitle_projection">Dinamikus előrejelzés</string>
+    <string name="range_subtitle_window">Utolsó %1$s</string>
     <string name="range_subtitle_phev">Üzemanyag %1$s · Összesen %2$s</string>
     <string name="stat_fuel_range">Üzemanyag</string>
     <string name="distance_subtitle_session">Ez a munkamenet</string>

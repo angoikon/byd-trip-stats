@@ -31,7 +31,7 @@ private val WIFI_KEEPALIVE_WHEN_OFF      = booleanPreferencesKey("wifi_keepalive
 private val OFF_STATE_MODE               = stringPreferencesKey("off_state_mode")
 private val ELECTRICITY_PRICE            = doublePreferencesKey("electricity_price_per_kwh")
 private val CURRENCY_SYMBOL              = stringPreferencesKey("currency_symbol")
-// ISO currency code → the symbol used in the tariff currency picker (PreferencesTab.currencyOptions).
+// ISO currency code → the symbol used in the tariff currency picker (CostsSection.currencyOptions).
 // Used only to pre-select a sensible default from the device locale on a fresh install.
 private val LOCALE_CURRENCY_SYMBOLS = mapOf(
     "EUR" to "€", "GBP" to "£", "USD" to "$", "AUD" to "A$",
@@ -48,6 +48,7 @@ private val DASHBOARD_HIDDEN_CARDS       = stringPreferencesKey("dashboard_hidde
 private val DASHBOARD_CHART_HIDDEN       = booleanPreferencesKey("dashboard_chart_hidden")
 private val DASHBOARD_POWER_ORDER        = stringPreferencesKey("dashboard_power_order")
 private val SOC_SOURCE                   = stringPreferencesKey("soc_source")
+private val RANGE_WINDOW                 = stringPreferencesKey("range_window")
 private val DASHBOARD_SHOW_REMAINING_KWH = booleanPreferencesKey("dashboard_show_remaining_kwh")
 private val DASHBOARD_SHOW_DISTANCE_SINCE_CHARGE = booleanPreferencesKey("dashboard_show_distance_since_charge")
 private val CAR_OFF_TIMEOUT_MINUTES      = intPreferencesKey("car_off_timeout_minutes")
@@ -411,6 +412,26 @@ class PreferencesManager(private val context: Context) {
     suspend fun saveSocSource(source: SocSource) {
         context.dataStore.edit { it[SOC_SOURCE] = source.name }
         cache.edit().putString("soc_source", source.name).apply()
+    }
+
+    // ── Range projection window ───────────────────────────────────────────────
+
+    val rangeWindow: Flow<RangeWindow> = context.dataStore.data
+        .map { prefs ->
+            prefs[RANGE_WINDOW]
+                ?.let { runCatching { RangeWindow.valueOf(it) }.getOrNull() }
+                ?: RangeWindow.DEFAULT
+        }
+        .onEach { cache.edit().putString("range_window", it.name).apply() }
+
+    fun getCachedRangeWindow(): RangeWindow =
+        cache.getString("range_window", null)
+            ?.let { runCatching { RangeWindow.valueOf(it) }.getOrNull() }
+            ?: RangeWindow.DEFAULT
+
+    suspend fun saveRangeWindow(window: RangeWindow) {
+        context.dataStore.edit { it[RANGE_WINDOW] = window.name }
+        cache.edit().putString("range_window", window.name).apply()
     }
 
     // ── Dashboard battery readout: show remaining kWh instead of SoC % ──────────

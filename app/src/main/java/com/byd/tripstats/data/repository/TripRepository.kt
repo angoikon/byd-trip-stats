@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.room.withTransaction
 import com.byd.tripstats.data.analysis.CostAttribution
 import com.byd.tripstats.data.local.BydStatsDatabase
+import com.byd.tripstats.data.local.dao.OdometerDischarge
 import com.byd.tripstats.data.local.dao.TripSohSummary
 import com.byd.tripstats.data.local.entity.LatLng
 import com.byd.tripstats.data.local.entity.TripDataPointEntity
@@ -2560,6 +2561,9 @@ class TripRepository private constructor(context: Context) {
 
     fun getDataPointsForTrip(tripId: Long): Flow<List<TripDataPointEntity>> =
         dataPointDao.getDataPointsForTrip(tripId)
+
+    suspend fun getOdometerDischargeForTrip(tripId: Long): List<OdometerDischarge> =
+        dataPointDao.getOdometerDischargeForTrip(tripId)
 
     fun getStatsForTrip(tripId: Long): Flow<TripStatsEntity?> =
         statsDao.getStatsForTripFlow(tripId)

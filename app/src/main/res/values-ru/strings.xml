@@ -698,9 +698,7 @@
     <string name="chart_above_wltp_cap">Значение выше среднего WLTP — ограничено паспортным запасом хода</string>
     <string name="chart_acquiring">получение телеметрии · начните движение</string>
     <string name="chart_scanning">СКАНИРОВАНИЕ…</string>
-    <string name="legend_live_trip">● Текущая поездка</string>
-    <string name="legend_trip_average">● Среднее поездки</string>
-    <string name="legend_lifetime_avg">● Среднее за всё время</string>
+    <string name="legend_recent_driving">● Последние %1$s</string>
     <string name="legend_baseline">● База</string>
     <string name="chart_no_data">Нет данных</string>
     <string name="chart_insufficient_data">Недостаточно данных</string>
@@ -708,6 +706,10 @@
     <string name="chart_weekly_consumption">Эта неделя</string>
     <string name="chart_monthly_consumption">Этот месяц</string>
     <string name="chart_yearly_consumption">Этот год</string>
+    <string name="chart_custom_range">Период…</string>
+    <string name="chart_total_per_day">Всего %1$s · %2$s в день</string>
+    <string name="chart_total_per_week">Всего %1$s · %2$s в неделю</string>
+    <string name="chart_total_per_month">Всего %1$s · %2$s в месяц</string>
     <string name="chart_your_duration_avg">Ваше среднее за период (%1$s %2$s)</string>
     <string name="chart_selected_car_avg">Среднее выбранного авто (%1$s %2$s)</string>
     <string name="chart_close">Закрыть график</string>
@@ -947,6 +949,8 @@
     <string name="soc_panel_option">Панель</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">На PHEV SoC от BMS обычно не передаётся — используйте Панель, если BMS показывает 0.\nBMS точнее (дробное значение), чем панель (целое). Кроме того, большое расхождение с панелью — верный признак, что пора зарядить до 100% или откалибровать зарядку</string>
+    <string name="pref_range_window">Оценка запаса хода</string>
+    <string name="range_window_desc">Прогноз запаса хода использует ваш расход на этом отрезке недавних поездок, включая предыдущие, поэтому он готов сразу после включения. Короткий отрезок следует за текущей дорогой, длинный — стабильнее.</string>
     <string name="pref_cell_imbalance">Оповещение о дисбалансе ячеек</string>
     <string name="cell_imbalance_desc">Уведомлять, когда разброс напряжений ячеек пакета держится выше лимита.</string>
     <string name="cell_imbalance_info">Разброс = максимальная ячейка − минимальная ячейка. Здоровый пакет держится ниже ~20 мВ; устойчиво высокий разброс может указывать на слабую ячейку. Оповещения подавляются ниже 5% и выше 95% SoC, где большой разброс — норма.</string>
@@ -1075,10 +1079,11 @@
     <string name="pref_trip_recording_desc">Когда поездка завершается после выключения автомобиля и какой короткой она может быть.</string>
     <string name="trip_recording_status">Автостоп через %1$d мин • минимум %2$s</string>
     <string name="trip_recording_status_no_min">Автостоп через %1$d мин • без минимума</string>
-    <string name="pref_battery_title">Батарея</string>
-    <string name="pref_battery_desc">Какое значение уровня заряда показывать, и оповещение о дисбалансе ячеек.</string>
+    <string name="pref_battery_title">Батарея и оценка запаса хода</string>
+    <string name="pref_battery_desc">Какое значение уровня заряда показывать, на каком отрезке недавних поездок основана оценка запаса хода, и оповещение о дисбалансе ячеек.</string>
     <string name="battery_status_alert_on">SoC: %1$s • оповещение о дисбалансе вкл.</string>
     <string name="battery_status_alert_off">SoC: %1$s • оповещение о дисбалансе выкл.</string>
+    <string name="battery_status_range">оценка запаса хода: последние %1$s</string>
     <string name="pref_costs_desc">Ваш тариф на электроэнергию и валюта, по которым рассчитывается стоимость поездок и зарядок.</string>
     <string name="pref_goals_desc">Цели по расходу и пробегу, а также ваши личные рекорды.</string>
     <string name="pro_cell_imbalance_info">Предупреждает, когда разброс напряжений ячеек батареи остаётся выше вашего порога — ранний признак слабой ячейки. После разблокировки включите его и задайте порог в Параметры → Батарея.</string>
@@ -1310,7 +1315,7 @@
     <string name="speed_state_parked">Стоит</string>
     <string name="speed_state_driving">Движение</string>
     <string name="soc_subtitle_usable">Доступный заряд</string>
-    <string name="range_subtitle_projection">Динамический прогноз</string>
+    <string name="range_subtitle_window">Последние %1$s</string>
     <string name="range_subtitle_phev">Топливо %1$s · Всего %2$s</string>
     <string name="stat_fuel_range">Топливо</string>
     <string name="distance_subtitle_session">Эта сессия</string>

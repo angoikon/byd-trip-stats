@@ -701,9 +701,7 @@
     <string name="chart_above_wltp_cap">WLTP ortalamasının üzerinde değer — nominal menzilde sınırlandırıldı</string>
     <string name="chart_acquiring">telemetri alınıyor · başlamak için sürün</string>
     <string name="chart_scanning">TARANYOR…</string>
-    <string name="legend_live_trip">● Canlı seyahat</string>
-    <string name="legend_trip_average">● Seyahat ortalaması</string>
-    <string name="legend_lifetime_avg">● Ömür boyu ort.</string>
+    <string name="legend_recent_driving">● Son %1$s</string>
     <string name="legend_baseline">● Temel çizgi</string>
     <string name="chart_no_data">Veri mevcut değil</string>
     <string name="chart_insufficient_data">Yetersiz veri</string>
@@ -711,6 +709,10 @@
     <string name="chart_weekly_consumption">Bu hafta</string>
     <string name="chart_monthly_consumption">Bu ay</string>
     <string name="chart_yearly_consumption">Bu yıl</string>
+    <string name="chart_custom_range">Özel…</string>
+    <string name="chart_total_per_day">Toplam %1$s · günlük %2$s</string>
+    <string name="chart_total_per_week">Toplam %1$s · haftalık %2$s</string>
+    <string name="chart_total_per_month">Toplam %1$s · aylık %2$s</string>
     <string name="chart_your_duration_avg">Süre ortalamanız (%1$s %2$s)</string>
     <string name="chart_selected_car_avg">Seçilen araç ort. (%1$s %2$s)</string>
     <string name="chart_close">Grafiği kapat</string>
@@ -950,6 +952,8 @@
     <string name="soc_panel_option">Panel</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">PHEV\'lerde BMS SoC genellikle raporlanmaz — BMS 0 gösteriyorsa Panel\'i kullanın.\nBMS, Panel\'den daha doğrudur (kayan nokta vs tam sayı). Ayrıca Panel\'den büyük sapma, %%100 şarj veya şarj kalibrasyonu zamanı geldiğinin iyi bir göstergesidir</string>
+    <string name="pref_range_window">Menzil tahmini</string>
+    <string name="range_window_desc">Tahmini menzil, önceki yolculuklar dahil son sürüşünüzün bu kadarlık kısmındaki tüketiminizi kullanır; bu yüzden aracı açar açmaz hazırdır. Daha kısa olan mevcut yolu izler, daha uzun olan daha kararlıdır.</string>
     <string name="pref_cell_imbalance">Hücre dengesizlik uyarısı</string>
     <string name="cell_imbalance_desc">Paketteki hücre voltaj farkı sınırın üzerinde kaldığında beni bildir.</string>
     <string name="cell_imbalance_info">Fark = en yüksek hücre − en düşük hücre. Sağlıklı bir paket ~20 mV\'ın altında kalır; kalıcı olarak yüksek fark zayıf bir hücreye işaret edebilir. Geniş farkın normal olduğu %5\'in altındaki ve %95\'in üzerindeki SoC değerlerinde uyarılar bastırılır.</string>
@@ -1078,10 +1082,11 @@
     <string name="pref_trip_recording_desc">Araç kapatıldıktan sonra seyahatin ne zaman biteceği ve bir seyahatin ne kadar kısa olabileceği.</string>
     <string name="trip_recording_status">%1$d dk sonra otomatik durdur • en az %2$s</string>
     <string name="trip_recording_status_no_min">%1$d dk sonra otomatik durdur • minimum yok</string>
-    <string name="pref_battery_title">Pil</string>
-    <string name="pref_battery_desc">Hangi şarj durumu okumasının gösterileceği ve hücre dengesizlik uyarısı.</string>
+    <string name="pref_battery_title">Pil ve menzil tahmini</string>
+    <string name="pref_battery_desc">Hangi şarj durumu okumasının gösterileceği, menzil tahmininin son sürüşün ne kadarına dayanacağı ve hücre dengesizlik uyarısı.</string>
     <string name="battery_status_alert_on">SoC: %1$s • dengesizlik uyarısı açık</string>
     <string name="battery_status_alert_off">SoC: %1$s • dengesizlik uyarısı kapalı</string>
+    <string name="battery_status_range">menzil tahmini: son %1$s</string>
     <string name="pref_costs_desc">Seyahat ve şarj maliyetini hesaplamak için kullanılan elektrik tarifeniz ve para biriminiz.</string>
     <string name="pref_goals_desc">Tüketim ve mesafe hedefleri ile kişisel rekorlarınız.</string>
     <string name="pro_cell_imbalance_info">Batarya hücre gerilimleri arasındaki fark sınırınızın üzerinde kaldığında sizi uyarır — zayıf bir hücrenin erken işareti. Kilidi açıldıktan sonra Tercihler → Pil altından açın ve sınırı ayarlayın.</string>
@@ -1314,7 +1319,7 @@
     <string name="speed_state_parked">Duruyor</string>
     <string name="speed_state_driving">Sürüyor</string>
     <string name="soc_subtitle_usable">Kullanılabilir şarj</string>
-    <string name="range_subtitle_projection">Dinamik tahmin</string>
+    <string name="range_subtitle_window">Son %1$s</string>
     <string name="range_subtitle_phev">Yakıt %1$s · Toplam %2$s</string>
     <string name="stat_fuel_range">Yakıt</string>
     <string name="distance_subtitle_session">Bu oturum</string>

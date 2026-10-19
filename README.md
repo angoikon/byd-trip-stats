@@ -85,9 +85,9 @@ No Electro setup, MQTT broker, or topic configuration is required for normal ope
 - Environmentals card with ambient temperature and PM2.5 in/out readings where available
 
 **Range Projection Engine**
-- Consumption model (Wh/km) fed from the BMS total-discharge counter — the same source as the live consumption readout — computed over a rolling 5 km window, with engine-power integration as a fallback
-- EMA smoothing with a 3 km stabilisation window for the live-trip tier
-- Four-tier model: live trip → this trip's average → your lifetime average → catalogue baseline. The trip-average tier engages within ~0.2 km of starting to drive, and before that the projection starts from your own long-run consumption rather than a brochure figure
+- Consumption model (Wh/km) fed from the BMS total-discharge counter — the same source as the live consumption readout — with engine-power integration as a fallback
+- Consumption over your **last 10, 100 or 500 km** of driving (Settings → Preferences → Battery and range estimate, or a tap on the dashboard's Range tile; 100 km by default). The window runs back across trips, so the projection is your own from the moment you switch on, not re-learned every drive
+- Catalogue baseline only until a fresh install has ~3 km of driving to go on
 - PHEVs: kilometres driven on petrol don't dilute the EV rate, and the dashboard shows the petrol and combined range next to the EV projection
 - WLTP upper bound prevents implausible projections during low-speed urban starts
 - Compared continuously against BMS estimate with signed delta display

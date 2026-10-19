@@ -701,9 +701,7 @@
     <string name="chart_above_wltp_cap">Valore superiore alla media WLTP — limitato all\'autonomia omologata</string>
     <string name="chart_acquiring">acquisizione telemetria · guida per iniziare</string>
     <string name="chart_scanning">SCANSIONE…</string>
-    <string name="legend_live_trip">● Viaggio live</string>
-    <string name="legend_trip_average">● Media viaggio</string>
-    <string name="legend_lifetime_avg">● Media storica</string>
+    <string name="legend_recent_driving">● Ultimi %1$s</string>
     <string name="legend_baseline">● Linea base</string>
     <string name="chart_no_data">Nessun dato disponibile</string>
     <string name="chart_insufficient_data">Dati insufficienti</string>
@@ -711,6 +709,10 @@
     <string name="chart_weekly_consumption">Questa settimana</string>
     <string name="chart_monthly_consumption">Questo mese</string>
     <string name="chart_yearly_consumption">Quest\'anno</string>
+    <string name="chart_custom_range">Personalizzato…</string>
+    <string name="chart_total_per_day">Totale %1$s · %2$s al giorno</string>
+    <string name="chart_total_per_week">Totale %1$s · %2$s a settimana</string>
+    <string name="chart_total_per_month">Totale %1$s · %2$s al mese</string>
     <string name="chart_your_duration_avg">La tua media di durata (%1$s %2$s)</string>
     <string name="chart_selected_car_avg">Media auto selezionata (%1$s %2$s)</string>
     <string name="chart_close">Chiudi grafico</string>
@@ -950,6 +952,8 @@
     <string name="soc_panel_option">Pannello</string>
     <string name="soc_bms_option">BMS</string>
     <string name="soc_source_info">Sui PHEV il SoC del BMS di solito non viene riportato — usa Pannello se BMS mostra 0.\nIl BMS è più preciso (decimale) rispetto al Pannello (intero). Inoltre, una maggiore divergenza dal Pannello è un ottimo segnale che è ora di una carica al 100%% o di una calibrazione della ricarica</string>
+    <string name="pref_range_window">Stima dell\'autonomia</string>
+    <string name="range_window_desc">L\'autonomia prevista usa il tuo consumo su questa distanza di guida recente, viaggi precedenti inclusi, quindi è pronta appena accendi l\'auto. Più breve segue la strada attuale; più lunga resta più stabile.</string>
     <string name="pref_cell_imbalance">Avviso squilibrio celle</string>
     <string name="cell_imbalance_desc">Avvisami quando la dispersione di tensione delle celle del pacco supera il limite.</string>
     <string name="cell_imbalance_info">Dispersione = cella più alta − cella più bassa. Un pacco sano rimane sotto ~20 mV; una dispersione persistentemente alta può segnalare una cella debole. Gli avvisi sono soppressi sotto il 5% e sopra il 95% di SoC, dove una dispersione ampia è normale.</string>
@@ -1078,10 +1082,11 @@
     <string name="pref_trip_recording_desc">Quando un viaggio termina dopo lo spegnimento dell\'auto, e quanto può essere breve un viaggio.</string>
     <string name="trip_recording_status">Arresto auto dopo %1$d min • minimo %2$s</string>
     <string name="trip_recording_status_no_min">Arresto auto dopo %1$d min • nessun minimo</string>
-    <string name="pref_battery_title">Batteria</string>
-    <string name="pref_battery_desc">Quale lettura dello stato di carica mostrare, e l\'avviso di squilibrio celle.</string>
+    <string name="pref_battery_title">Batteria e stima dell\'autonomia</string>
+    <string name="pref_battery_desc">Quale lettura dello stato di carica mostrare, quanta guida recente usa la stima dell\'autonomia, e l\'avviso di squilibrio celle.</string>
     <string name="battery_status_alert_on">SoC: %1$s • avviso squilibrio attivo</string>
     <string name="battery_status_alert_off">SoC: %1$s • avviso squilibrio disattivato</string>
+    <string name="battery_status_range">stima dell\'autonomia: ultimi %1$s</string>
     <string name="pref_costs_desc">La tua tariffa elettrica e valuta, usate per calcolare il costo di viaggi e ricariche.</string>
     <string name="pref_goals_desc">Obiettivi di consumo e distanza, e i tuoi record personali.</string>
     <string name="pro_cell_imbalance_info">Ti avvisa quando la differenza di tensione tra le celle della batteria resta sopra il tuo limite — un segnale precoce di una cella debole. Attivalo e imposta il limite in Preferenze → Batteria una volta sbloccato.</string>
@@ -1314,7 +1319,7 @@
     <string name="speed_state_parked">Fermo</string>
     <string name="speed_state_driving">In marcia</string>
     <string name="soc_subtitle_usable">Carica utilizzabile</string>
-    <string name="range_subtitle_projection">Proiezione dinamica</string>
+    <string name="range_subtitle_window">Ultimi %1$s</string>
     <string name="range_subtitle_phev">Carburante %1$s · Totale %2$s</string>
     <string name="stat_fuel_range">Carburante</string>
     <string name="distance_subtitle_session">Questa sessione</string>

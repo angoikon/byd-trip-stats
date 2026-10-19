@@ -61,9 +61,9 @@ import kotlin.math.roundToInt
  * The Pro-only CARDS dashboard: a large power-metric row, a customisable middle
  * section, and the trip-tracking bar. The range-projection chart is pinned in the
  * centre of the middle section spanning both rows, flanked by two cards on each side
- * per row. Tapping the chart (or the Range power tile) opens the full-size chart. The
- * chart is modular too — hide it and the cards reclaim the full width; it is then only
- * reachable via the Range tile.
+ * per row. Tapping the chart (or long-pressing the Range power tile — a tap there steps the
+ * range estimate's window) opens the full-size chart. The chart is modular too — hide it and
+ * the cards reclaim the full width; it is then only reachable via the Range tile's long press.
  */
 @Composable
 fun CardsDashboard(
@@ -150,7 +150,7 @@ fun CardsDashboard(
                     distanceSinceChargeKm = distanceSinceChargeKm,
                     socSource = socSource,
                     compact = true,
-                    onRangeClick = { showChart = true },
+                    onRangeLongClick = { showChart = true },
                     modifier = Modifier.fillMaxWidth()
                 )
                 if (!persistedChartHidden) {
@@ -225,7 +225,7 @@ fun CardsDashboard(
             distanceSinceChargeKm = distanceSinceChargeKm,
             socSource = socSource,
             editMode = editMode,
-            onRangeClick = { showChart = true },
+            onRangeLongClick = { showChart = true },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -395,7 +395,7 @@ private fun ChartTile(
         ) {
             Column(modifier = Modifier.fillMaxSize().padding(if (compact) 6.dp else 12.dp)) {
                 // In split-screen the title + all chart chrome are dropped so the plot
-                // gets the full height; the full view (tap Range) keeps everything.
+                // gets the full height; the full view (long-press Range) keeps everything.
                 if (!compact) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
