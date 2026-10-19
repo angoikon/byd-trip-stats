@@ -20,6 +20,9 @@ data class VehicleTelemetry(
         // Speed getter wedged at 0 while GPS shows motion — surfaces the "restart the car
         // after a mid-session update" hint on the dashboard. Not persisted/transmitted state.
         @SerialName("speed_getter_wedged") val speedGetterWedged: Boolean = false,
+        // The car reported no speed of its own, so `speed` is the GPS reading (toTelemetry's
+        // fallback). DiLink-5 won't open a trip on that alone (TripRepository.startSpeedKmh).
+        @SerialName("speed_from_gps") val speedFromGps: Boolean = false,
         @SerialName("total_discharge") val totalDischarge: Double,
         /** BYD PHM average consumption rate (kWh/100km). Null if the statistic device hasn't reported it. */
         @SerialName("total_elec_con_phm") val totalElecConPHM: Double? = null,

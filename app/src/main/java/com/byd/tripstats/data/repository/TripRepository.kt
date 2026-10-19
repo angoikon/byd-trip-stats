@@ -2026,12 +2026,16 @@ class TripRepository private constructor(context: Context) {
                     "rpmF=${t.engineSpeedFront} rpmR=${t.engineSpeedRear} odoMoved=$movedByOdometer"
             }
         }
-        // Fallbacks: unambiguous movement even if carOn/gear not yet populated
-        if (effectiveSpeed > 5.0) {
-            return "speed=${"%.1f".format(effectiveSpeed)} gps=${t.locationGpsSpeed}"
+        // Fallbacks: unambiguous movement even if carOn/gear not yet populated. On DiLink-5 the
+        // speed is the car's own; GPS alone doesn't count there (startSpeedKmh), and a drive the
+        // car's speed misses shows on the odometer below within ~100 m.
+        val startSpeed = startSpeedKmh(t.speed, t.locationGpsSpeed, t.speedFromGps, DiLink5Platform.isDiLink5)
+        if (startSpeed > 5.0) {
+            return "speed=${"%.1f".format(startSpeed)} gps=${t.locationGpsSpeed}"
         }
         if (movedByOdometer) {
-            return "odometer ${"%.1f".format(previousTelemetry?.odometer)}→${"%.1f".format(t.odometer)}"
+            return "odometer ${"%.1f".format(previousTelemetry?.odometer)}→${"%.1f".format(t.odometer)} " +
+                "gps=${t.locationGpsSpeed}"
         }
         if (drivetrainAlive && t.gear in DRIVE_GEARS) {
             return "drivetrain gear=${t.gear} power=${t.enginePower} " +
@@ -2973,6 +2977,12 @@ class TripRepository private constructor(context: Context) {
          * within the next kilometre isn't movement. A real drive still opens its trip from speed
          * and gear, and the odometer counts again from its next step.
          */
+        internal fun odometerShowsMovement(previousKm: Double, currentKm: Double, isDiLink5: Boolean): Boolean {
+            if (previousKm <= 0.0 || currentKm <= previousKm + 0.01) return false
+            if (isDiLink5 && previousKm == kotlin.math.floor(previousKm) && currentKm < previousKm + 1.0) return false
+            return true
+        }
+
         /**
          * The odometer a new trip starts from. The same DiLink-5 boot artefact as in
          * [odometerShowsMovement]: a trip that opens before the decimal arrives starts on the whole
@@ -2989,11 +2999,25 @@ class TripRepository private constructor(context: Context) {
             return if (lastEndKm > startKm && lastEndKm < startKm + 1.0) lastEndKm else startKm
         }
 
-        internal fun odometerShowsMovement(previousKm: Double, currentKm: Double, isDiLink5: Boolean): Boolean {
-            if (previousKm <= 0.0 || currentKm <= previousKm + 0.01) return false
-            if (isDiLink5 && previousKm == kotlin.math.floor(previousKm) && currentKm < previousKm + 1.0) return false
-            return true
-        }
+        /**
+         * The speed that opens a trip by itself (autoStartReason's speed fallback).
+         *
+         * On DiLink-5 it is the car's own speed only. While the car reads none, `speed` is the GPS
+         * reading ([speedFromGps]), and a head unit parked under a roof gets fresh fixes that wander
+         * at up to 26 km/h: on a Shark 6 (2026-10-17/18) that opened 15 trips at one parking spot,
+         * its odometer never moving, and the same GPS speed held each open for minutes to hours.
+         * A real DiLink-5 drive shows on the car's own speed, or on the odometer within ~100 m
+         * ([odometerShowsMovement]), so GPS alone isn't needed there.
+         *
+         * DiLink-3 keeps the higher of the two: when its getters wedge, speed and odometer both
+         * read 0 and GPS is the only sign of a drive.
+         */
+        internal fun startSpeedKmh(speed: Double, gpsSpeed: Double?, speedFromGps: Boolean, isDiLink5: Boolean): Double =
+            if (isDiLink5) {
+                if (speedFromGps) 0.0 else speed
+            } else {
+                maxOf(speed, gpsSpeed ?: 0.0)
+            }
 
         /**
          * Largest time gap between the end of the earlier trip and the start of the

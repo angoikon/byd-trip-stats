@@ -636,6 +636,7 @@ data class VehicleTelemetrySnapshot(
             odometer = odometerValue,
             enginePower = enginePower ?: 0,
             speedGetterWedged = speedGetterWedged,
+            speedFromGps = directSpeedKmh <= 0.1 && effectiveSpeed > 0.0,
             totalDischarge = statisticTotalElecConValue ?: 0.0,
             totalElecConPHM = statisticTotalElecConPHMValue,
             battery12vVoltage = battery12vVoltage ?: 0.0,
