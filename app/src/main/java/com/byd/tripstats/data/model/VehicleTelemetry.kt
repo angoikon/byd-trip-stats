@@ -9,6 +9,10 @@ import kotlinx.serialization.json.Json
 
 private val telemetryJsonEncoder = Json { encodeDefaults = true }
 
+// @Immutable: every field is a val and probeValues is never modified after construction. Without
+// it the Map makes Compose treat the class as unstable, so nothing taking a VehicleTelemetry could
+// skip when the dashboard recomposes.
+@androidx.compose.runtime.Immutable
 @Serializable
 data class VehicleTelemetry(
         // ── Required on all supported models ──────────────────────────────────────

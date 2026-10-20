@@ -61,6 +61,7 @@ private const val KEY_CHARGER_SIGNALS_UNRELIABLE = "charger_signals_unreliable"
 // v8: remap statistic thermal feature IDs to BYD's raw-40 encoding:
 //     0x44700010=low, 0x44700020=high, 0x44700038=avg.
 private const val STAT_CACHE_VERSION = 8
+private const val STAT_CACHE_SAVE_INTERVAL_MS = 30_000L
 private const val DIRECT_CHARGING_POWER_TIMEOUT_MS = 4_000L
 // DiLink-5 polls charge power (Dilink5Client.pollIntervalMs, 5 s on AC) where DiLink-3 has it
 // pushed, so its window spans a missed poll: one stray reading mid-charge would otherwise close the
@@ -293,6 +294,10 @@ private enum class InstrumentTyrePressureEncoding {
     LEGACY
 }
 
+// @Immutable: every field is a val and probeValues is replaced, never modified. Without it the Map
+// makes Compose treat the class as unstable, so nothing taking a snapshot could skip when the
+// dashboard recomposes.
+@androidx.compose.runtime.Immutable
 data class VehicleTelemetrySnapshot(
     val isChargingActive: Boolean = false,
     val chargingPower: Double = 0.0,
@@ -2300,6 +2305,8 @@ class BydVehicleDataSource(context: Context) {
     }
 
     fun stop() {
+        // The cache is saved at most every 30 s; keep the newest values for the next start.
+        runCatching { persistStatisticState(_vehicleSnapshot.value, force = true) }
         RuntimeExtensionBridge.onDataSourceStopped()
         daemonClient.stop()
         stopDilink5Client()
@@ -6508,7 +6515,25 @@ class BydVehicleDataSource(context: Context) {
         Log.i(TAG, "🔌 restored stat cache v$STAT_CACHE_VERSION: cellTMin=${_statisticCellTempMin.value} cellTAvg=${_statisticCellTempAvg.value}")
     }
 
-    private fun persistStatisticState(snapshot: VehicleTelemetrySnapshot) {
+    // The cache only fills the dashboard after a restart until live values arrive, yet it was saved
+    // on every snapshot publish — about 10 a second even parked, each one rewriting the whole file.
+    // Now at most every STAT_CACHE_SAVE_INTERVAL_MS, at once when a confirmed drive/regen mode
+    // changes (a stale one would regress the UI at start), and from stop().
+    @Volatile private var lastStatCacheSaveMs = 0L
+    @Volatile private var lastSavedDriveMode = 0
+    @Volatile private var lastSavedRegenMode = 0
+
+    private fun persistStatisticState(snapshot: VehicleTelemetrySnapshot, force: Boolean = false) {
+        val now = SystemClock.elapsedRealtime()
+        val driveMode = snapshot.driveMode.takeIf { it in 1..6 && hasConfirmedDriveMode } ?: 0
+        val regenMode = snapshot.regenMode.takeIf { it in 1..2 && hasConfirmedRegenMode } ?: 0
+        val modeChanged = (driveMode != 0 && driveMode != lastSavedDriveMode) ||
+            (regenMode != 0 && regenMode != lastSavedRegenMode)
+        if (!force && !modeChanged && now - lastStatCacheSaveMs < STAT_CACHE_SAVE_INTERVAL_MS) return
+        lastStatCacheSaveMs = now
+        if (driveMode != 0) lastSavedDriveMode = driveMode
+        if (regenMode != 0) lastSavedRegenMode = regenMode
+
         val editor = statCache.edit()
         editor.putInt("stat_cache_version", STAT_CACHE_VERSION)
         var changed = false
@@ -6594,6 +6619,9 @@ class BydVehicleDataSource(context: Context) {
     }
 
     private fun logPrimaryTelemetrySummaryIfChanged(snapshot: VehicleTelemetrySnapshot) {
+        // Log-only, and release builds strip Log — but not the six String.format calls building
+        // the message, which ran on every snapshot publish.
+        if (!BuildConfig.DEBUG) return
         val socPanel = snapshot.statisticElecPercentageValue
             ?: snapshot.instrumentBatteryPercent
             ?: snapshot.statisticSocBatteryPct

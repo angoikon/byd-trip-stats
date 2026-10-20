@@ -284,6 +284,18 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     val allTrips: StateFlow<List<TripEntity>> = tripRepository.getAllTrips()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    /**
+     * [allTrips] without the trip in progress, emitted only when a completed trip changes — one
+     * closes, is merged, edited or deleted. The trip in progress rewrites its row every second and
+     * Room re-runs the whole trips query on each write, so whatever is built from [allTrips] was
+     * rebuilt every second of a drive. Filtered and compared off the main thread.
+     */
+    private val completedTrips: StateFlow<List<TripEntity>> = allTrips
+        .map { trips -> trips.filter { !it.isActive } }
+        .distinctUntilChanged()
+        .flowOn(Dispatchers.Default)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     // ── Cost attribution & distance-between-charges ────────────────────────────
 
     /**
@@ -314,13 +326,14 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
      * view (a tap toggles it with the session distance). Live odometer minus the charge's anchor
      * ([CostAttribution.lastChargeOdometer]), so a charge in progress reads about 0. Null when
      * there is no charge yet, no odometer reading (0 while the car wakes), or the delta is
-     * negative (odometer glitch / reset).
+     * negative (odometer glitch / reset). The anchor's trip fallback only reads ended trips, so
+     * [completedTrips] gives the same anchor as [allTrips].
      */
     val distanceSinceLastChargeKm: StateFlow<Double?> =
         combine(
-            combine(allChargingSessions, allTrips) { sessions, trips ->
+            combine(allChargingSessions, completedTrips) { sessions, trips ->
                 CostAttribution.lastChargeOdometer(sessions, trips)
-            }.distinctUntilChanged(),
+            }.distinctUntilChanged().flowOn(Dispatchers.Default),
             displayTelemetry.map { it?.odometer }.distinctUntilChanged()
         ) { anchor, odometer ->
             if (anchor == null || odometer == null || odometer <= 0.0) null
@@ -338,7 +351,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     // active trip's own updates. Eagerly so the telemetry loop can read .value synchronously
     // (same reasoning as selectedCarConfig); null with no completed trips yet.
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
-    private val drivingHistory: StateFlow<DrivingHistory?> = allTrips
+    private val drivingHistory: StateFlow<DrivingHistory?> = completedTrips
         .map { trips -> recentCompletedTrips(trips) }
         .distinctUntilChanged()
         .mapLatest { trips -> loadDrivingHistory(trips) }
@@ -512,10 +525,11 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     /**
      * Past 7 days and past 30 days day by day, the past 12 calendar months month by month, and the
-     * custom range if one was picked.
+     * custom range if one was picked. Built from [completedTrips] (the buckets skip the trip in
+     * progress anyway), off the main thread.
      */
     val usageCharts: StateFlow<UsageCharts> =
-        combine(allTrips, _customUsageRange) { trips, range ->
+        combine(completedTrips, _customUsageRange) { trips, range ->
             val today = Calendar.getInstance().apply {
                 set(Calendar.HOUR_OF_DAY, 0)
                 set(Calendar.MINUTE, 0)
@@ -542,7 +556,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 } ?: emptyList(),
                 customRange = range,
             )
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UsageCharts())
+        }.flowOn(Dispatchers.Default)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UsageCharts())
 
     // ── Per-trip display metrics ──────────────────────────────────────────────
 
