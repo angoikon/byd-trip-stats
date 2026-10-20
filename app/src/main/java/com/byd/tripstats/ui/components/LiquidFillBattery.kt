@@ -26,7 +26,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.tripstats.ui.theme.*
+import kotlinx.coroutines.delay
 import kotlin.math.sin
+
+private const val WAVE_PERIOD_MS = 6_000L
+private const val WAVE_FPS = 18
+private const val WAVE_FRAME_MS = 1_000L / WAVE_FPS
+private const val WAVE_STEP_DEG = 360f * WAVE_FRAME_MS / WAVE_PERIOD_MS
 
 /**
  * Liquid-Fill Battery - Premium animated battery indicator
@@ -77,21 +83,20 @@ fun LiquidFillBattery(
     // Only glow and bolt pulse are charging-specific.
     val shouldAnimateWave = animationsEnabled && isResumed
 
-    // Wave offset: 0 → 360, loops while resumed with animations enabled
+    // Wave offset: 0 → 360 every WAVE_PERIOD_MS, loops while resumed with animations enabled.
+    // Stepped at WAVE_FPS instead of every display frame — a 3.3° step on a 6 s loop still reads as
+    // smooth — and read only inside the Canvas below, so a step redraws that canvas alone rather
+    // than recomposing the battery.
     val waveOffsetAnim = remember { Animatable(0f) }
     LaunchedEffect(shouldAnimateWave) {
         if (shouldAnimateWave) {
-            waveOffsetAnim.animateTo(
-                targetValue    = 360f,
-                animationSpec  = infiniteRepeatable(
-                    animation  = tween(durationMillis = 6000, easing = LinearEasing),
-                    repeatMode = RepeatMode.Restart
-                )
-            )
+            while (true) {
+                delay(WAVE_FRAME_MS)
+                waveOffsetAnim.snapTo((waveOffsetAnim.value + WAVE_STEP_DEG) % 360f)
+            }
         }
         // Coroutine cancelled when isResumed = false — animation freezes in place
     }
-    val waveOffset = waveOffsetAnim.value
 
     // Charging glow: 0.3 ↔ 0.8, loops while charging AND RESUMED
     val glowAnim = remember { Animatable(0f) }
@@ -109,7 +114,6 @@ fun LiquidFillBattery(
             glowAnim.snapTo(0f)
         }
     }
-    val glowAlpha = glowAnim.value
 
     // Bolt pulse: 0.85 ↔ 1.15, loops while charging AND RESUMED
     val boltAnim = remember { Animatable(1f) }
@@ -127,18 +131,19 @@ fun LiquidFillBattery(
             boltAnim.snapTo(1f)
         }
     }
-    val boltScale = boltAnim.value
-    
+
     Box(
         modifier = modifier
             .width(width)
             .height(height),
         contentAlignment = Alignment.Center
     ) {
-        // Battery visualization
+        // Battery visualization — its own layer, so a wave step re-records this canvas alone,
+        // not the card around it.
         Canvas(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize().graphicsLayer()
         ) {
+            val waveOffset = waveOffsetAnim.value
             val canvasWidth = size.width
             val canvasHeight = size.height
             
@@ -259,7 +264,7 @@ fun LiquidFillBattery(
             // Charging glow effect
             if (isCharging) {
                 drawRoundRect(
-                    color = BydElectricBlue.copy(alpha = glowAlpha),
+                    color = BydElectricBlue.copy(alpha = glowAnim.value),
                     topLeft = Offset(bodyLeft - 8f, bodyTop - 8f),
                     size = Size(batteryBodyWidth + 16f, batteryBodyHeight + 16f),
                     cornerRadius = CornerRadius(24f, 24f),
@@ -276,7 +281,10 @@ fun LiquidFillBattery(
                 tint = BydElectricBlue,
                 modifier = Modifier
                     .size(28.dp)
-                    .graphicsLayer(scaleX = boltScale, scaleY = boltScale)
+                    .graphicsLayer {
+                        scaleX = boltAnim.value
+                        scaleY = boltAnim.value
+                    }
             )
         }
     }

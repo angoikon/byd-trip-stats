@@ -5544,37 +5544,44 @@ class BydVehicleDataSource(context: Context) {
         frontRpm: Int? = null, rearRpm: Int? = null,
     ) {
         val now = SystemClock.elapsedRealtime()
-        var changed = false
-        if (speedKmh != null && speedKmh in 0.0..MAX_PLAUSIBLE_SPEED_KMH) {
+        val speed = speedKmh?.takeIf { it in 0.0..MAX_PLAUSIBLE_SPEED_KMH }
+        if (speed != null) {
             lastSpeedPushElapsedMs = now
             lastDaemonSpeedPushElapsedMs = now
-            if (speedKmh > 0.1) lastPositiveSpeedElapsedMs = now
-            _vehicleSnapshot.value = _vehicleSnapshot.value.copy(directSpeedKmh = speedKmh)
-            changed = true
+            if (speed > 0.1) lastPositiveSpeedElapsedMs = now
         }
+        val kwInt = powerKw?.takeIf { kotlin.math.abs(it) <= 500.0 }?.let { Math.round(it).toInt() }
+        if (kwInt != null) lastPowerPushElapsedMs = now
+        if (frontRpm != null || rearRpm != null) lastRpmPushElapsedMs = now
+        var changed = false
         if (gear != null && gear.isNotEmpty()) {
             daemonGearKnown = true
             if (_gear.value != gear) { _gear.value = gear; changed = true }
         }
-        if (powerKw != null && kotlin.math.abs(powerKw) <= 500.0) {
-            lastPowerPushElapsedMs = now
-            val kwInt = Math.round(powerKw).toInt()
-            if (_vehicleSnapshot.value.enginePower != kwInt) {
-                _vehicleSnapshot.value = _vehicleSnapshot.value.copy(enginePower = kwInt)
-                changed = true
-            }
-        }
-        if (frontRpm != null || rearRpm != null) {
-            lastRpmPushElapsedMs = now
-            val snap = _vehicleSnapshot.value
+        // One copy for all four fields, and none when the push repeats what the snapshot holds —
+        // pushes arrive up to 10 times a second.
+        _vehicleSnapshot.update { snap ->
+            val newSpeed = speed ?: snap.directSpeedKmh
+            val newPower = kwInt ?: snap.enginePower
             val newFront = frontRpm ?: snap.engineSpeedFront
             val newRear = rearRpm ?: snap.engineSpeedRear
-            if (newFront != snap.engineSpeedFront || newRear != snap.engineSpeedRear) {
-                _vehicleSnapshot.value = snap.copy(engineSpeedFront = newFront, engineSpeedRear = newRear)
+            if (newSpeed == snap.directSpeedKmh && newPower == snap.enginePower &&
+                newFront == snap.engineSpeedFront && newRear == snap.engineSpeedRear
+            ) {
+                snap
+            } else {
                 changed = true
+                snap.copy(
+                    directSpeedKmh = newSpeed, enginePower = newPower,
+                    engineSpeedFront = newFront, engineSpeedRear = newRear,
+                )
             }
         }
-        if (changed) {
+        // A pushed speed publishes even when unchanged, as before. publishSnapshotNow also ages the
+        // time-based fields (charging-power freshness, isChargingActive), and DiLink-5's poll
+        // re-pushes the shown speed every tick; nothing shows another publish would refresh them in
+        // time there. The dashboard's own throttle (displayVehicleSnapshot) keeps the UI cost down.
+        if (changed || speed != null) {
             publishSnapshot()
             if (now - lastDaemonDiagMs > 5_000L) {
                 lastDaemonDiagMs = now

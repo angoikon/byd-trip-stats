@@ -149,7 +149,12 @@ fun EnergyFlowDiagram(
             }
         }
     }
-    val flowOffset = if (dashboardIconsEnabled && hasActiveEnergyFlow) flowOffsetAnim.value else 0f
+    // Read only from inside EnergyFlowCanvas's draw, through this lambda. Read here in the body,
+    // every 50 ms tick recomposed this whole card — range chart included — instead of redrawing
+    // just the arrows.
+    val flowOffset: () -> Float = {
+        if (dashboardIconsEnabled && hasActiveEnergyFlow) flowOffsetAnim.value else 0f
+    }
 
     val awdBitmap: ImageBitmap? = if (dashboardIconsEnabled) {
         ImageBitmap.imageResource(id = R.drawable.awd)
@@ -185,7 +190,7 @@ fun EnergyFlowDiagram(
                             power = power,
                             isRegenerating = isRegenerating,
                             isCharging = isCharging,
-                            flowOffset = { flowOffset },
+                            flowOffset = flowOffset,
                             animationsEnabled = true
                         )
 
@@ -398,7 +403,8 @@ fun EnergyFlowCanvas(
 ) {
     val idleColor = MaterialTheme.colorScheme.onSurfaceVariant
 
-    Canvas(modifier = Modifier.fillMaxSize()) {
+    // Its own layer, so each animation tick re-records these arrows alone, not the whole card.
+    Canvas(modifier = Modifier.fillMaxSize().graphicsLayer()) {
         val topY = size.height * 0.3f + 30f
         val batteryY = topY
         val motorX = size.width * 0.5f

@@ -49,6 +49,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
@@ -61,6 +62,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -179,8 +181,12 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         mock ?: live
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
+    // Throttled for the dashboard only: it recomposes on every emission, and the telemetry daemon
+    // alone publishes up to 10 snapshots a second. A lone change (a gear shift, a speed step) still
+    // goes out at once; only a burst inside DISPLAY_SNAPSHOT_MIN_INTERVAL_MS collapses to its
+    // newest value, which is never dropped.
     val displayVehicleSnapshot: StateFlow<VehicleTelemetrySnapshot?> = combine(
-        vehicleSnapshot,
+        vehicleSnapshot.throttleLatest(DISPLAY_SNAPSHOT_MIN_INTERVAL_MS),
         _mockVehicleSnapshot
     ) { live, mock ->
         mock ?: live
@@ -636,6 +642,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     enum class RangeModel { RECENT_DRIVING, BASELINE }
 
     companion object {
+        // displayVehicleSnapshot emits at most this often (5 Hz) — still instant to the eye.
+        const val DISPLAY_SNAPSHOT_MIN_INTERVAL_MS = 200L
         // BATTERY_CAPACITY_KWH and BASELINE_WH_PER_KM are no longer hardcoded here —
         // both are derived from selectedCarConfig at runtime so all car models are correct.
         // Fallback values (used only when selectedCarConfig is not yet loaded):
@@ -3431,3 +3439,14 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             points.count { it.timestamp < cutoff }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
 }
+
+/**
+ * Emits a value at once, then nothing for [periodMs]; whatever arrived meanwhile collapses to its
+ * newest value, which goes out when the period ends. Unlike debounce it never stalls a continuous
+ * stream, and unlike sample a lone change isn't held back to the next tick.
+ */
+private fun <T> Flow<T>.throttleLatest(periodMs: Long): Flow<T> =
+    conflate().transform { value ->
+        emit(value)
+        delay(periodMs)
+    }
