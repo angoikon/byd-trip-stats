@@ -1219,6 +1219,7 @@
     <string name="speed_state_driving">กำลังขับ</string>
     <string name="soc_subtitle_usable">ประจุที่ใช้ได้</string>
     <string name="range_subtitle_window">%1$s ล่าสุด</string>
+    <string name="range_window_dialog_note">มีผลตั้งแต่ตอนนี้ — ส่วนที่กราฟระยะทางวิ่งวาดไว้แล้วจะคงเดิม</string>
     <string name="range_subtitle_phev">เชื้อเพลิง %1$s · รวม %2$s</string>
     <string name="stat_fuel_range">เชื้อเพลิง</string>
     <string name="distance_subtitle_session">เซสชันนี้</string>

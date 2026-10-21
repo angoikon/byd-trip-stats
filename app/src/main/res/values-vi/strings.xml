@@ -1316,6 +1316,7 @@
     <string name="speed_state_driving">Đang lái</string>
     <string name="soc_subtitle_usable">Điện tích khả dụng</string>
     <string name="range_subtitle_window">%1$s gần nhất</string>
+    <string name="range_window_dialog_note">Áp dụng từ bây giờ — phần biểu đồ quãng đường đã vẽ vẫn giữ nguyên.</string>
     <string name="range_subtitle_phev">Nhiên liệu %1$s · Tổng %2$s</string>
     <string name="stat_fuel_range">Nhiên liệu</string>
     <string name="distance_subtitle_session">Phiên này</string>

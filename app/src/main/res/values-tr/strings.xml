@@ -1320,6 +1320,7 @@
     <string name="speed_state_driving">Sürüyor</string>
     <string name="soc_subtitle_usable">Kullanılabilir şarj</string>
     <string name="range_subtitle_window">Son %1$s</string>
+    <string name="range_window_dialog_note">Şu andan itibaren geçerlidir — menzil grafiğinin zaten çizdiği kısım olduğu gibi kalır.</string>
     <string name="range_subtitle_phev">Yakıt %1$s · Toplam %2$s</string>
     <string name="stat_fuel_range">Yakıt</string>
     <string name="distance_subtitle_session">Bu oturum</string>

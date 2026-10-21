@@ -1343,6 +1343,7 @@
     <string name="speed_state_driving">Driving</string>
     <string name="soc_subtitle_usable">Usable charge</string>
     <string name="range_subtitle_window">Last %1$s</string>
+    <string name="range_window_dialog_note">Applies from now on — what the range chart has already drawn stays as it was.</string>
     <string name="range_subtitle_phev">Fuel %1$s · Total %2$s</string>
     <string name="stat_fuel_range">Fuel</string>
     <string name="distance_subtitle_session">This session</string>

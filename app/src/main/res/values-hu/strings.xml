@@ -1316,6 +1316,7 @@
     <string name="speed_state_driving">Vezetés</string>
     <string name="soc_subtitle_usable">Használható töltés</string>
     <string name="range_subtitle_window">Utolsó %1$s</string>
+    <string name="range_window_dialog_note">Mostantól érvényes — amit a hatótáv-diagram már megrajzolt, az változatlan marad.</string>
     <string name="range_subtitle_phev">Üzemanyag %1$s · Összesen %2$s</string>
     <string name="stat_fuel_range">Üzemanyag</string>
     <string name="distance_subtitle_session">Ez a munkamenet</string>

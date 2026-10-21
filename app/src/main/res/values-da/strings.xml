@@ -1320,6 +1320,7 @@
     <string name="speed_state_driving">Kører</string>
     <string name="soc_subtitle_usable">Brugbar opladning</string>
     <string name="range_subtitle_window">Seneste %1$s</string>
+    <string name="range_window_dialog_note">Gælder fra nu af — det, rækkeviddegrafen allerede har tegnet, forbliver uændret.</string>
     <string name="range_subtitle_phev">Brændstof %1$s · I alt %2$s</string>
     <string name="stat_fuel_range">Brændstof</string>
     <string name="distance_subtitle_session">Denne session</string>

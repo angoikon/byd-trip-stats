@@ -1316,6 +1316,7 @@
     <string name="speed_state_driving">Berkendara</string>
     <string name="soc_subtitle_usable">Daya yang dapat digunakan</string>
     <string name="range_subtitle_window">%1$s terakhir</string>
+    <string name="range_window_dialog_note">Berlaku mulai sekarang — bagian grafik jarak tempuh yang sudah tergambar tetap seperti semula.</string>
     <string name="range_subtitle_phev">Bahan bakar %1$s · Total %2$s</string>
     <string name="stat_fuel_range">Bahan bakar</string>
     <string name="distance_subtitle_session">Sesi ini</string>

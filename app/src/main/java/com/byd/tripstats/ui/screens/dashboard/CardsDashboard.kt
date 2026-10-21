@@ -61,8 +61,8 @@ import kotlin.math.roundToInt
  * The Pro-only CARDS dashboard: a large power-metric row, a customisable middle
  * section, and the trip-tracking bar. The range-projection chart is pinned in the
  * centre of the middle section spanning both rows, flanked by two cards on each side
- * per row. Tapping the chart (or long-pressing the Range power tile — a tap there steps the
- * range estimate's window) opens the full-size chart. The chart is modular too — hide it and
+ * per row. Tapping the chart (or long-pressing the Range power tile — a tap there opens the
+ * range estimate's window choice) opens the full-size chart. The chart is modular too — hide it and
  * the cards reclaim the full width; it is then only reachable via the Range tile's long press.
  */
 @Composable

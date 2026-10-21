@@ -1219,6 +1219,7 @@
     <string name="speed_state_driving">Οδήγηση</string>
     <string name="soc_subtitle_usable">Χρησιμοποιήσιμη φόρτιση</string>
     <string name="range_subtitle_window">Τελευταία %1$s</string>
+    <string name="range_window_dialog_note">Ισχύει από εδώ και πέρα — ό,τι έχει ήδη σχεδιάσει το γράφημα αυτονομίας μένει ως έχει.</string>
     <string name="range_subtitle_phev">Καύσιμο %1$s · Σύνολο %2$s</string>
     <string name="stat_fuel_range">Καύσιμο</string>
     <string name="distance_subtitle_session">Αυτή η συνεδρία</string>

@@ -1320,6 +1320,7 @@
     <string name="speed_state_driving">Ajaa</string>
     <string name="soc_subtitle_usable">Käytettävissä oleva varaus</string>
     <string name="range_subtitle_window">Viimeiset %1$s</string>
+    <string name="range_window_dialog_note">Koskee tästä eteenpäin — toimintamatkakaavion jo piirtämä osa pysyy ennallaan.</string>
     <string name="range_subtitle_phev">Polttoaine %1$s · Yhteensä %2$s</string>
     <string name="stat_fuel_range">Polttoaine</string>
     <string name="distance_subtitle_session">Tämä istunto</string>

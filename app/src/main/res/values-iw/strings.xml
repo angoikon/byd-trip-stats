@@ -1316,6 +1316,7 @@
     <string name="speed_state_driving">בנסיעה</string>
     <string name="soc_subtitle_usable">טעינה זמינה</string>
     <string name="range_subtitle_window">%1$s אחרונים</string>
+    <string name="range_window_dialog_note">חל מעכשיו והלאה — מה שגרף הטווח כבר שרטט נשאר כפי שהיה.</string>
     <string name="range_subtitle_phev">דלק %1$s · סה״כ %2$s</string>
     <string name="stat_fuel_range">דלק</string>
     <string name="distance_subtitle_session">מפגש זה</string>

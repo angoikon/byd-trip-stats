@@ -1316,6 +1316,7 @@
     <string name="speed_state_driving">Jízda</string>
     <string name="soc_subtitle_usable">Využitelná kapacita</string>
     <string name="range_subtitle_window">Posledních %1$s</string>
+    <string name="range_window_dialog_note">Platí od této chvíle — co graf dojezdu už vykreslil, zůstane beze změny.</string>
     <string name="range_subtitle_phev">Palivo %1$s · Celkem %2$s</string>
     <string name="stat_fuel_range">Palivo</string>
     <string name="distance_subtitle_session">Tato relace</string>

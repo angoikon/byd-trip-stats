@@ -8,10 +8,13 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +41,7 @@ import com.byd.tripstats.data.preferences.PowerMetricId
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.data.preferences.RangeWindow
 import com.byd.tripstats.data.preferences.SocSource
+import com.byd.tripstats.data.preferences.UnitSystem
 import com.byd.tripstats.data.preferences.convertDistance
 import com.byd.tripstats.data.preferences.convertSpeed
 import com.byd.tripstats.data.preferences.displayLabel
@@ -60,10 +64,10 @@ private val PowerTileHeight = 150.dp
 /**
  * The top power-metric row (Power / Speed / SoC / Range / Distance) rendered as
  * large tiles for the CARDS layout. Each tile has a static, thin accent stripe flush
- * to its left edge and a dynamic subtitle. A tap on the Range tile steps the range estimate's
- * window (10 → 100 → 500 km, the Settings → Preferences → Battery and range estimate choice) and
- * a long press opens the range-projection chart; the battery and Distance tiles toggle their
- * readout on a tap.
+ * to its left edge and a dynamic subtitle. A tap on the Range tile opens the choice of the range
+ * estimate's window (10 / 100 / 500 km, the Settings → Preferences → Battery and range estimate
+ * setting) and a long press opens the range-projection chart; the battery and Distance tiles
+ * toggle their readout on a tap.
  */
 @Composable
 fun PowerMetricsRow(
@@ -111,20 +115,10 @@ fun PowerMetricsRow(
         ?: telemetry.electricDrivingRangeKm.toDouble().takeIf { it > 0 }
         ?: 0.0
 
-    // Range tile: a tap steps the window the projection is taken over. The ViewModel projects
-    // again as soon as it changes, so the figure moves on the tap. In split-screen the tile has
-    // no subtitle, so a toast says which window is now in use.
+    // Range tile: a tap opens the choice of window the projection is taken over — a dialog, so a
+    // stray tap while driving can't change it. The ViewModel projects again as soon as it changes.
     val rangeWindow by prefs.rangeWindow.collectAsState(initial = prefs.getCachedRangeWindow())
-    val rangeEstimateTitle = stringResource(R.string.pref_range_window)
-    val cycleRangeWindow: () -> Unit = {
-        val next = RangeWindow.entries[(rangeWindow.ordinal + 1) % RangeWindow.entries.size]
-        scope.launch { prefs.saveRangeWindow(next) }
-        if (compact) {
-            android.widget.Toast.makeText(
-                context, "$rangeEstimateTitle: ${next.displayLabel(unitSystem)}", android.widget.Toast.LENGTH_SHORT
-            ).show()
-        }
-    }
+    var showRangeWindowDialog by remember { mutableStateOf(false) }
 
     // Battery tile: a tap toggles the view between the settings-chosen SoC and kWh remaining.
     // The Panel/BMS choice stays in Settings → Preferences; this never changes it.
@@ -196,7 +190,7 @@ fun PowerMetricsRow(
             label = stringResource(R.string.stat_range),
             value = "${unitSystem.convertDistance(rangeKm).toInt()}", unit = distanceUnit,
             subtitle = rangeSubtitle,
-            accent = MaterialTheme.extendedColors.range, onClick = cycleRangeWindow,
+            accent = MaterialTheme.extendedColors.range, onClick = { showRangeWindowDialog = true },
             onLongClick = onRangeLongClick
         ),
         PowerMetricId.DISTANCE to PowerTileData(
@@ -258,6 +252,66 @@ fun PowerMetricsRow(
             }
         }
     }
+
+    if (showRangeWindowDialog) {
+        RangeWindowDialog(
+            current = rangeWindow,
+            unitSystem = unitSystem,
+            onPick = { window ->
+                showRangeWindowDialog = false
+                scope.launch { prefs.saveRangeWindow(window) }
+            },
+            onDismiss = { showRangeWindowDialog = false }
+        )
+    }
+}
+
+/**
+ * The Range tile's window choice, laid out like the dashboard's tyre-pressure unit dialog: one
+ * radio row per window, picked on the tap, Cancel or a tap outside to leave it as it is.
+ */
+@Composable
+private fun RangeWindowDialog(
+    current: RangeWindow,
+    unitSystem: UnitSystem,
+    onPick: (RangeWindow) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        title = { Text(stringResource(R.string.pref_range_window)) },
+        text = {
+            Column {
+                Text(
+                    text = stringResource(R.string.range_window_dialog_note),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                RangeWindow.entries.forEach { window ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onPick(window) }
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(selected = window == current, onClick = { onPick(window) })
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.range_subtitle_window, window.displayLabel(unitSystem)),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+        }
+    )
 }
 
 private data class PowerTileData(

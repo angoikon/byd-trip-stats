@@ -1219,6 +1219,7 @@
     <string name="speed_state_driving">चल रहा है</string>
     <string name="soc_subtitle_usable">उपयोग योग्य चार्ज</string>
     <string name="range_subtitle_window">पिछले %1$s</string>
+    <string name="range_window_dialog_note">अभी से लागू होता है — रेंज चार्ट ने जो पहले ही बना दिया है, वह वैसा ही रहता है।</string>
     <string name="range_subtitle_phev">ईंधन %1$s · कुल %2$s</string>
     <string name="stat_fuel_range">ईंधन</string>
     <string name="distance_subtitle_session">यह सत्र</string>

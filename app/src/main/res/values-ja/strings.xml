@@ -1320,6 +1320,7 @@
     <string name="speed_state_driving">走行中</string>
     <string name="soc_subtitle_usable">使用可能な充電量</string>
     <string name="range_subtitle_window">直近 %1$s</string>
+    <string name="range_window_dialog_note">今後から適用されます。航続距離グラフにすでに描かれた部分はそのままです。</string>
     <string name="range_subtitle_phev">燃料 %1$s · 合計 %2$s</string>
     <string name="stat_fuel_range">燃料</string>
     <string name="distance_subtitle_session">このセッション</string>

@@ -1316,6 +1316,7 @@
     <string name="speed_state_driving">Jazda</string>
     <string name="soc_subtitle_usable">Użyteczny ładunek</string>
     <string name="range_subtitle_window">Ostatnie %1$s</string>
+    <string name="range_window_dialog_note">Obowiązuje od teraz — to, co wykres zasięgu już narysował, pozostaje bez zmian.</string>
     <string name="range_subtitle_phev">Paliwo %1$s · Łącznie %2$s</string>
     <string name="stat_fuel_range">Paliwo</string>
     <string name="distance_subtitle_session">Ta sesja</string>

@@ -1320,6 +1320,7 @@
     <string name="speed_state_driving">Kör</string>
     <string name="soc_subtitle_usable">Användbar laddning</string>
     <string name="range_subtitle_window">Senaste %1$s</string>
+    <string name="range_window_dialog_note">Gäller från och med nu — det räckviddsdiagrammet redan har ritat förblir oförändrat.</string>
     <string name="range_subtitle_phev">Bränsle %1$s · Totalt %2$s</string>
     <string name="stat_fuel_range">Bränsle</string>
     <string name="distance_subtitle_session">Denna session</string>

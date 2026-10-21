@@ -1219,6 +1219,7 @@
     <string name="speed_state_driving">En conduite</string>
     <string name="soc_subtitle_usable">Charge utilisable</string>
     <string name="range_subtitle_window">Derniers %1$s</string>
+    <string name="range_window_dialog_note">S\'applique dès maintenant — ce que le graphique d\'autonomie a déjà tracé reste inchangé.</string>
     <string name="range_subtitle_phev">Carburant %1$s · Total %2$s</string>
     <string name="stat_fuel_range">Carburant</string>
     <string name="distance_subtitle_session">Cette session</string>

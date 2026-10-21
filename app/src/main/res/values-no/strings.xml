@@ -1320,6 +1320,7 @@
     <string name="speed_state_driving">Kjører</string>
     <string name="soc_subtitle_usable">Brukbar lading</string>
     <string name="range_subtitle_window">Siste %1$s</string>
+    <string name="range_window_dialog_note">Gjelder fra nå av — det rekkeviddegrafen allerede har tegnet, forblir uendret.</string>
     <string name="range_subtitle_phev">Drivstoff %1$s · Totalt %2$s</string>
     <string name="stat_fuel_range">Drivstoff</string>
     <string name="distance_subtitle_session">Denne sesjonen</string>

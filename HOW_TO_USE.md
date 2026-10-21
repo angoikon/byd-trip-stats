@@ -72,7 +72,7 @@ The main chart compares:
 - **Dashed line** — the car's own BMS estimate
 - **Solid line** — BYD Trip Stats projection from your actual driving
 
-The projection uses your consumption over your **last 10, 100 or 500 km** of driving (**Settings → Preferences → Battery and range estimate**, or tap the dashboard's **Range** tile to step through them; 100 km by default). That distance runs back across your earlier trips, so the projected range (above the chart, and on the **Range** tile) is there as soon as you switch on — it doesn't have to re-learn your driving each time. The chart itself shows a **SCANNING…** placeholder until you move off and it has a line to draw. Once a trip is longer than the window, it's that trip's own last 10 / 100 / 500 km. A small badge shows what the projection is based on — **Last 100 km** (or whichever you chose), or **Baseline** (the car's catalog consumption) on a fresh install until there's about 3 km of driving to go on.
+The projection uses your consumption over your **last 10, 100 or 500 km** of driving (**Settings → Preferences → Battery and range estimate**, or tap the dashboard's **Range** tile to choose; 100 km by default). That distance runs back across your earlier trips, so the projected range (above the chart, and on the **Range** tile) is there as soon as you switch on — it doesn't have to re-learn your driving each time. The chart itself shows a **SCANNING…** placeholder until you move off and it has a line to draw. Once a trip is longer than the window, it's that trip's own last 10 / 100 / 500 km. A small badge shows what the projection is based on — **Last 100 km** (or whichever you chose), or **Baseline** (the car's catalog consumption) on a fresh install until there's about 3 km of driving to go on.
 
 ### Right-side Stat Cards
 
@@ -94,7 +94,7 @@ Notes:
 - **Power** — live motor output or regen
 - **Speed**
 - **Battery (SoC)** — tap to switch between the state of charge and the energy left in kWh
-- **Range** — the projected range, with the distance it is taken over underneath (*Last 100 km*); tap to step through 10 / 100 / 500 km, long-press to open the range chart. Until a projection exists it shows the car's own estimate (*BMS estimate*)
+- **Range** — the projected range, with the distance it is taken over underneath (*Last 100 km*); tap to choose 10 / 100 / 500 km, long-press to open the range chart. Until a projection exists it shows the car's own estimate (*BMS estimate*)
 - **Distance** — current engine-on segment distance; when a trip survives a brief stop the cumulative trip distance is shown alongside it. Tap to switch to the distance driven since your last charge
 
 On DiLink 3, speed, gear, power and front-motor RPM update up to 10 times a second once the one-time ADB authorisation is done.

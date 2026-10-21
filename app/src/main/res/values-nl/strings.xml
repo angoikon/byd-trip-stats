@@ -1320,6 +1320,7 @@
     <string name="speed_state_driving">Rijden</string>
     <string name="soc_subtitle_usable">Bruikbare lading</string>
     <string name="range_subtitle_window">Laatste %1$s</string>
+    <string name="range_window_dialog_note">Geldt vanaf nu — wat de bereikgrafiek al heeft getekend, blijft ongewijzigd.</string>
     <string name="range_subtitle_phev">Brandstof %1$s · Totaal %2$s</string>
     <string name="stat_fuel_range">Brandstof</string>
     <string name="distance_subtitle_session">Deze sessie</string>

@@ -1219,6 +1219,7 @@
     <string name="speed_state_driving">Fahren</string>
     <string name="soc_subtitle_usable">Nutzbare Ladung</string>
     <string name="range_subtitle_window">Letzte %1$s</string>
+    <string name="range_window_dialog_note">Gilt ab jetzt — was das Reichweitendiagramm bereits gezeichnet hat, bleibt unverändert.</string>
     <string name="range_subtitle_phev">Kraftstoff %1$s · Gesamt %2$s</string>
     <string name="stat_fuel_range">Kraftstoff</string>
     <string name="distance_subtitle_session">Diese Sitzung</string>

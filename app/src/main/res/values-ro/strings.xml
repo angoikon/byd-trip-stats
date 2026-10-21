@@ -1316,6 +1316,7 @@
     <string name="speed_state_driving">În mers</string>
     <string name="soc_subtitle_usable">Încărcare utilizabilă</string>
     <string name="range_subtitle_window">Ultimii %1$s</string>
+    <string name="range_window_dialog_note">Se aplică de acum înainte — ce a desenat deja graficul de autonomie rămâne neschimbat.</string>
     <string name="range_subtitle_phev">Combustibil %1$s · Total %2$s</string>
     <string name="stat_fuel_range">Combustibil</string>
     <string name="distance_subtitle_session">Această sesiune</string>

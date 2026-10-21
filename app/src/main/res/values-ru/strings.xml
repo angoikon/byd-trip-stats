@@ -1316,6 +1316,7 @@
     <string name="speed_state_driving">Движение</string>
     <string name="soc_subtitle_usable">Доступный заряд</string>
     <string name="range_subtitle_window">Последние %1$s</string>
+    <string name="range_window_dialog_note">Действует с этого момента — уже построенная часть графика запаса хода не меняется.</string>
     <string name="range_subtitle_phev">Топливо %1$s · Всего %2$s</string>
     <string name="stat_fuel_range">Топливо</string>
     <string name="distance_subtitle_session">Эта сессия</string>

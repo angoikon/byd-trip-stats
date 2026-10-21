@@ -1219,6 +1219,7 @@
     <string name="speed_state_driving">주행 중</string>
     <string name="soc_subtitle_usable">사용 가능한 충전량</string>
     <string name="range_subtitle_window">최근 %1$s</string>
+    <string name="range_window_dialog_note">지금부터 적용됩니다. 주행 가능 거리 그래프에 이미 그려진 부분은 그대로 유지됩니다.</string>
     <string name="range_subtitle_phev">연료 %1$s · 합계 %2$s</string>
     <string name="stat_fuel_range">연료</string>
     <string name="distance_subtitle_session">이 세션</string>

@@ -1320,6 +1320,7 @@
     <string name="speed_state_driving">行駛中</string>
     <string name="soc_subtitle_usable">可用電量</string>
     <string name="range_subtitle_window">最近 %1$s</string>
+    <string name="range_window_dialog_note">從現在起生效——續航圖表已繪製的部分保持不變。</string>
     <string name="range_subtitle_phev">燃油 %1$s · 總計 %2$s</string>
     <string name="stat_fuel_range">燃油</string>
     <string name="distance_subtitle_session">本次紀錄</string>
