@@ -1349,6 +1349,10 @@
     <string name="distance_subtitle_session">This session</string>
     <string name="odometer_subtitle_lifetime">Lifetime distance</string>
     <string name="discharge_subtitle_lifetime">Lifetime energy out</string>
+    <string name="lifetime_avg_label">Lifetime average</string>
+    <string name="trips_avg_since_label">Your recorded trips, since %1$s</string>
+    <string name="car_avg_label">Car\'s own average</string>
+    <string name="discharge_info_body">This is the car\'s own counter of the energy it has taken from the high-voltage battery since it was new, minus what regenerative braking put back. Energy from charging doesn\'t count.\n\nIt counts everything, not only driving: climate run while parked or from the BYD app, heating or cooling the battery, keeping the 12 V battery charged, standby. That\'s why the lifetime average reads higher than a driving-only consumption.\n\nYour recorded trips count only the energy used while a trip was being recorded, so they are the figure to compare with a driving consumption, such as the one the BYD app shows.</string>
     <string name="tyre_subtitle_pressure">°C · %1$s pressure</string>
     <!-- DiLink-5 vehicle-data-access consent (hidden-API opt-in) -->
     <string name="d5_consent_title">Allow vehicle data access?</string>

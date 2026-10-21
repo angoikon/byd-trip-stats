@@ -1322,6 +1322,10 @@
     <string name="distance_subtitle_session">Această sesiune</string>
     <string name="odometer_subtitle_lifetime">Distanță totală</string>
     <string name="discharge_subtitle_lifetime">Energie totală debitată</string>
+    <string name="lifetime_avg_label">Media pe toată durata</string>
+    <string name="trips_avg_since_label">Călătoriile tale înregistrate, din %1$s</string>
+    <string name="car_avg_label">Media proprie a mașinii</string>
+    <string name="discharge_info_body">Acesta este contorul propriu al mașinii: energia luată din bateria de înaltă tensiune de când era nouă, minus ce a returnat frânarea regenerativă. Energia de la încărcare nu se numără.\n\nNumără totul, nu doar condusul: climatizarea pornită cu mașina parcată sau din aplicația BYD, încălzirea sau răcirea bateriei, încărcarea bateriei de 12 V și standby-ul. De aceea media pe toată durata iese mai mare decât un consum doar de condus.\n\nCălătoriile tale înregistrate numără doar energia folosită cât timp o călătorie era înregistrată, așa că pe ele le compari cu un consum de condus, ca cel afișat de aplicația BYD.</string>
     <string name="tyre_subtitle_pressure">°C · %1$s presiune</string>
     <string name="d5_consent_title">Permiteți accesul la datele vehiculului?</string>
     <string name="d5_consent_body">Pentru a citi date în timp real de la această mașină (baterie, autonomie, viteză, anvelope…), BYD Trip Stats trebuie să relaxeze o setare de sistem a unității centrale (restricția hidden-API), limitată la bibliotecile de vehicule BYD.\n\nAceasta este o setare la nivelul întregului dispozitiv. Se resetează la repornire, iar aplicația o reaplică doar când este nevoie. Puteți modifica acest lucru mai târziu în Setări.\n\nFără ea, aplicația funcționează, dar nu afișează date despre vehicul.\n\nAplicația menține și ADB activat permanent, iar această parte nu este opțională. Mașina dezactivează ADB la fiecare oprire; aplicația îl reactivează la pornire, deoarece doar așa poate începe singură înregistrarea atunci când porniți mașina.</string>

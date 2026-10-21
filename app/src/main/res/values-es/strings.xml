@@ -1326,6 +1326,10 @@
     <string name="distance_subtitle_session">Esta sesión</string>
     <string name="odometer_subtitle_lifetime">Distancia total</string>
     <string name="discharge_subtitle_lifetime">Energía total entregada</string>
+    <string name="lifetime_avg_label">Media de por vida</string>
+    <string name="trips_avg_since_label">Tus viajes registrados, desde %1$s</string>
+    <string name="car_avg_label">Media propia del coche</string>
+    <string name="discharge_info_body">Es el contador del propio coche de la energía que ha tomado de la batería de alta tensión desde nuevo, menos lo que ha devuelto la frenada regenerativa. La energía de la carga no cuenta.\n\nLo cuenta todo, no solo la conducción: climatización con el coche aparcado o desde la app de BYD, calentar o enfriar la batería, mantener cargada la batería de 12 V y el modo de espera. Por eso la media de por vida sale más alta que un consumo solo de conducción.\n\nTus viajes registrados solo cuentan la energía usada mientras se registraba un viaje, así que son la cifra que comparar con un consumo de conducción, como el que muestra la app de BYD.</string>
     <string name="tyre_subtitle_pressure">°C · %1$s presión</string>
     <string name="d5_consent_title">¿Permitir el acceso a los datos del vehículo?</string>
     <string name="d5_consent_body">Para leer datos en vivo de este coche (batería, autonomía, velocidad, neumáticos…), BYD Trip Stats necesita relajar un ajuste del sistema en la unidad central (la restricción de hidden-API), limitado a las bibliotecas de vehículos de BYD.\n\nEs un ajuste de todo el dispositivo. Se restablece al reiniciar y la app solo lo vuelve a aplicar cuando es necesario. Puedes cambiar esto más tarde en Ajustes.\n\nSin él, la app funciona pero no muestra datos del vehículo.\n\nLa app también mantiene ADB activado en todo momento, y esta parte no es opcional. El coche desactiva ADB cada vez que se apaga; la app lo vuelve a activar al arrancar, porque es lo que le permite empezar a registrar por sí sola cuando arrancas el coche.</string>

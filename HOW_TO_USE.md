@@ -83,7 +83,7 @@ Typical cards include:
 - **HV / 12V**
 - **Front / Rear Motors** (RPM + power split)
 - **Odometer**
-- **Total Discharge**
+- **Total Discharge** — the car's lifetime counter of energy taken from the battery; tap it to see what it counts, the lifetime average it gives, and your recorded trips' average beside it
 
 Notes:
 - `Estimated SoH` is derived from telemetry unless a direct in-car SoH source is confirmed

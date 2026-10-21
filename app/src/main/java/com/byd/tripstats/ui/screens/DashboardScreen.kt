@@ -100,6 +100,8 @@ fun DashboardScreen(
     val scope = rememberCoroutineScope()
     var showCarSelectionDialog by remember { mutableStateOf(false) }
     var showBattery12vDialog by remember { mutableStateOf(false) }
+    var showLifetimeEnergyDialog by remember { mutableStateOf(false) }
+    val recordedTripsAverage by viewModel.recordedTripsAverage.collectAsState()
     var consumptionExpanded by remember { mutableStateOf(false) }
     var showTyreUnitDialog by remember { mutableStateOf(false) }
     val tyrePrefs: SharedPreferences = remember { context.getSharedPreferences("tyre_unit_prefs", 0) }
@@ -267,6 +269,7 @@ fun DashboardScreen(
                 onToggleAutoDetection = { viewModel.toggleAutoTripDetection() },
                 onNavigateToBatteryDegradation = onNavigateToBatteryDegradation,
                 onShowBattery12vHistory = { showBattery12vDialog = true },
+                onShowLifetimeEnergy = { showLifetimeEnergyDialog = true },
                 consumptionExpanded = consumptionExpanded,
                 onConsumptionExpand = { consumptionExpanded = true },
                 onConsumptionClose = { consumptionExpanded = false },
@@ -309,6 +312,13 @@ fun DashboardScreen(
                 vehicleSnapshot = vehicleSnapshot,
                 socSource = socSource,
                 onDismiss = { showBattery12vDialog = false }
+            )
+        }
+        if (showLifetimeEnergyDialog) {
+            LifetimeEnergyDialog(
+                telemetry = currentTelemetry,
+                recordedTrips = recordedTripsAverage,
+                onDismiss = { showLifetimeEnergyDialog = false }
             )
         }
     }
@@ -461,6 +471,7 @@ fun DashboardContent(
     onToggleAutoDetection: () -> Unit,
     onNavigateToBatteryDegradation: () -> Unit = {},
     onShowBattery12vHistory: () -> Unit = {},
+    onShowLifetimeEnergy: () -> Unit = {},
     consumptionExpanded: Boolean = false,
     onConsumptionExpand: () -> Unit = {},
     onConsumptionClose: () -> Unit = {},
@@ -511,6 +522,7 @@ fun DashboardContent(
             unitSystem = unitSystem,
             onNavigateToBatteryDegradation = onNavigateToBatteryDegradation,
             onShowBattery12vHistory = onShowBattery12vHistory,
+            onShowLifetimeEnergy = onShowLifetimeEnergy,
             onShowTyreDialog = onShowTyreDialog,
             modifier = styledModifier
         )
@@ -553,6 +565,7 @@ fun DashboardContent(
                     modifier  = Modifier.fillMaxWidth(),
                     onNavigateToBatteryDegradation = onNavigateToBatteryDegradation,
                     onShowBattery12vHistory = onShowBattery12vHistory,
+                    onShowLifetimeEnergy = onShowLifetimeEnergy,
                     tyreUnit = tyreUnit,
                     onShowTyreDialog = onShowTyreDialog,
                     dashboardIconsEnabled = dashboardIconsEnabled
@@ -672,6 +685,7 @@ fun DashboardContent(
                         fillHeight = true,
                         onNavigateToBatteryDegradation = onNavigateToBatteryDegradation,
                         onShowBattery12vHistory = onShowBattery12vHistory,
+                        onShowLifetimeEnergy = onShowLifetimeEnergy,
                         tyreUnit = tyreUnit,
                         onShowTyreDialog = onShowTyreDialog,
                         dashboardIconsEnabled = dashboardIconsEnabled
@@ -752,6 +766,7 @@ fun DashboardContent(
                         fillHeight = true,
                         onNavigateToBatteryDegradation = onNavigateToBatteryDegradation,
                         onShowBattery12vHistory = onShowBattery12vHistory,
+                        onShowLifetimeEnergy = onShowLifetimeEnergy,
                         tyreUnit = tyreUnit,
                         onShowTyreDialog = onShowTyreDialog,
                         dashboardIconsEnabled = dashboardIconsEnabled

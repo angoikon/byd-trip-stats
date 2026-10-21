@@ -1326,6 +1326,10 @@
     <string name="distance_subtitle_session">このセッション</string>
     <string name="odometer_subtitle_lifetime">総走行距離</string>
     <string name="discharge_subtitle_lifetime">総放電エネルギー</string>
+    <string name="lifetime_avg_label">生涯平均</string>
+    <string name="trips_avg_since_label">記録した走行（%1$s 以降）</string>
+    <string name="car_avg_label">車両の平均</string>
+    <string name="discharge_info_body">これは車両自身のカウンターで、新車時から高電圧バッテリーから取り出したエネルギーから、回生ブレーキで戻った分を差し引いたものです。充電によるエネルギーは含まれません。\n\n走行だけでなくすべてを数えます。駐車中やBYDアプリから使ったエアコン、バッテリーの加熱・冷却、12 Vバッテリーの充電、待機などです。そのため生涯平均は走行だけの電費より高くなります。\n\n記録した走行は、走行を記録している間に使ったエネルギーだけを数えます。BYDアプリが表示するような走行の電費と比べるのは、こちらです。</string>
     <string name="tyre_subtitle_pressure">°C · %1$s 圧力</string>
     <string name="d5_consent_title">車両データへのアクセスを許可しますか？</string>
     <string name="d5_consent_body">この車のライブデータ（バッテリー、走行可能距離、速度、タイヤ…）を読み取るため、BYD Trip Stats はヘッドユニットの1つのシステム設定（hidden-API 制限）を緩和する必要があります。対象は BYD の車両ライブラリに限定されます。\n\nこれは端末全体の設定です。再起動でリセットされ、アプリは必要なときのみ再適用します。後で設定から変更できます。\n\nこれがないとアプリは動作しますが車両データは表示されません。\n\nまた、アプリは ADB を常に有効に保ちます。これは任意ではありません。車はシャットダウンのたびに ADB を無効にし、アプリは起動時にそれを再び有効にします。これにより、車を始動したときにアプリが自動で記録を開始できます。</string>

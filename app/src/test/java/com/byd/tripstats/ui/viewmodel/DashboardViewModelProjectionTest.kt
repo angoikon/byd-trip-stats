@@ -387,6 +387,72 @@ class DashboardViewModelProjectionTest {
         assertEquals((10 * 20.0 + 400 * 180.0) / 410.0, r.referenceWhPerKm, 1e-6)
     }
 
+    // ── windowStepWh — the window series keeps regen on BEVs ───────────────────────
+
+    /**
+     * A stop-and-go net-counter trace, 100 m apart: every odd step uses 45 Wh, every even one
+     * regenerates 15 Wh more than it uses — 150 Wh/km net — built into the window series the way
+     * the live loop does.
+     */
+    private fun stopAndGoSeries(km: Double, isPhev: Boolean): List<Pair<Double, Double>> {
+        val series = arrayListOf(0.0 to 0.0)
+        var raw = 0.0
+        var cumulative = 0.0
+        val steps = Math.round(km * 10).toInt()
+        for (i in 1..steps) {
+            val previousRaw = raw
+            raw += if (i % 2 == 1) 45.0 else -15.0
+            cumulative += DashboardViewModel.windowStepWh(raw - previousRaw, 0.1, isPhev)
+            series += (i * 0.1) to cumulative
+        }
+        return series
+    }
+
+    @Test
+    fun `a BEV window reads the same net consumption as the trip, regen included`() {
+        // The trip's own figure (end − start of the net counter) is 150 Wh/km; the window must
+        // agree. Clamping each step at 0 read 225 — the regen thrown away.
+        val w = DashboardViewModel.windowRate(stopAndGoSeries(20.0, isPhev = false), null, 10.0)!!
+        assertEquals(150.0, w.whPerKm, 1e-6)
+    }
+
+    @Test
+    fun `a PHEV window still floors each step at zero`() {
+        // A PHEV's counter also steps back while the engine charges the pack, which isn't
+        // electric driving, so its steps stay ≥ 0.
+        val w = DashboardViewModel.windowRate(stopAndGoSeries(20.0, isPhev = true), null, 10.0)!!
+        assertEquals(225.0, w.whPerKm, 1e-6)
+    }
+
+    @Test
+    fun `a window step is bounded both ways and a broken read counts nothing`() {
+        // A 5 kWh counter rebase inside 100 m is clipped to 150 Wh, either sign; a real step isn't.
+        assertEquals(150.0, DashboardViewModel.windowStepWh(5_000.0, 0.1, isPhev = false), 1e-9)
+        assertEquals(-150.0, DashboardViewModel.windowStepWh(-5_000.0, 0.1, isPhev = false), 1e-9)
+        assertEquals(-20.0, DashboardViewModel.windowStepWh(-20.0, 0.1, isPhev = false), 1e-9)
+        assertEquals(0.0, DashboardViewModel.windowStepWh(-20.0, 0.1, isPhev = true), 1e-9)
+        assertEquals(0.0, DashboardViewModel.windowStepWh(Double.NaN, 0.1, isPhev = false), 1e-9)
+    }
+
+    @Test
+    fun `history point detail keeps the regen in a trip's last kilometres`() {
+        // 20 km trip: the first 10 km at 200 Wh/km, the last 10 km stop-and-go at 100 Wh/km net
+        // (+30 / −10 Wh per 100 m). 3 kWh in all. The last 10 km used 1 kWh, not the 1.29 kWh a
+        // regen-less shape gave it.
+        var kwh = 0.0
+        val points = (0..200).map { i ->
+            if (i in 1..100) kwh += 0.02
+            else if (i > 100) kwh += if (i % 2 == 1) 0.03 else -0.01
+            (1000.0 + i * 0.1) to kwh
+        }
+        val h = DashboardViewModel.buildDrivingHistory(
+            listOf(DashboardViewModel.Companion.HistoryTrip(20.0, kwh * 1000.0, points)),
+            DashboardViewModel.MAX_WINDOW_KM
+        )!!
+        assertEquals(3000.0, h.energyOverLastKm(20.0), 1e-6)
+        assertEquals(1000.0, h.energyOverLastKm(10.0), 15.0)
+    }
+
     // ── projectedEvRangeKm optimism cap — bounds the downhill balloon ────────────
 
     @Test

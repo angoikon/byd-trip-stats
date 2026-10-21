@@ -1326,6 +1326,10 @@
     <string name="distance_subtitle_session">Esta sessão</string>
     <string name="odometer_subtitle_lifetime">Distância total</string>
     <string name="discharge_subtitle_lifetime">Energia total fornecida</string>
+    <string name="lifetime_avg_label">Média de toda a vida</string>
+    <string name="trips_avg_since_label">Suas viagens registradas, desde %1$s</string>
+    <string name="car_avg_label">Média do próprio carro</string>
+    <string name="discharge_info_body">Este é o contador do próprio carro: a energia retirada da bateria de alta tensão desde novo, menos o que a frenagem regenerativa devolveu. A energia do carregamento não conta.\n\nEle conta tudo, não só a direção: o ar-condicionado com o carro estacionado ou pelo app da BYD, o aquecimento ou resfriamento da bateria, a carga da bateria de 12 V e o modo de espera. Por isso a média de toda a vida fica acima de um consumo só de direção.\n\nSuas viagens registradas contam só a energia usada enquanto uma viagem estava sendo registrada, então são elas que você compara com um consumo de direção, como o que o app da BYD mostra.</string>
     <string name="tyre_subtitle_pressure">°C · %1$s pressão</string>
     <string name="d5_consent_title">Permitir acesso aos dados do veículo?</string>
     <string name="d5_consent_body">Para ler dados ao vivo deste carro (bateria, autonomia, velocidade, pneus…), o BYD Trip Stats precisa afrouxar uma configuração de sistema da unidade central (a restrição hidden-API), limitada às bibliotecas de veículos da BYD.\n\nEssa é uma configuração de todo o dispositivo. Ela é redefinida ao reiniciar e o app só a reaplica quando necessário. Você pode alterar isso depois em Configurações.\n\nSem ela, o app funciona mas não mostra dados do veículo.\n\nO app também mantém o ADB sempre ativado, e essa parte não é opcional. O carro desativa o ADB toda vez que é desligado; o app o reativa ao iniciar, porque é isso que permite que ele comece a registrar sozinho quando você liga o carro.</string>

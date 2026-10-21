@@ -1326,6 +1326,10 @@
     <string name="distance_subtitle_session">Denna session</string>
     <string name="odometer_subtitle_lifetime">Total sträcka</string>
     <string name="discharge_subtitle_lifetime">Total uttagen energi</string>
+    <string name="lifetime_avg_label">Genomsnitt under livstiden</string>
+    <string name="trips_avg_since_label">Dina registrerade resor, sedan %1$s</string>
+    <string name="car_avg_label">Bilens eget genomsnitt</string>
+    <string name="discharge_info_body">Det här är bilens egen räknare för energin den har tagit från högspänningsbatteriet sedan den var ny, minus det som regenerativ bromsning har gett tillbaka. Energi från laddning räknas inte.\n\nDen räknar allt, inte bara körning: klimat som körts när bilen stått parkerad eller från BYD-appen, uppvärmning eller kylning av batteriet, laddning av 12 V-batteriet och standby. Därför blir genomsnittet under livstiden högre än en förbrukning för enbart körning.\n\nDina registrerade resor räknar bara energin som gick åt medan en resa registrerades, så det är dem du jämför med en körförbrukning, som den BYD-appen visar.</string>
     <string name="tyre_subtitle_pressure">°C · %1$s tryck</string>
     <string name="d5_consent_title">Tillåt åtkomst till fordonsdata?</string>
     <string name="d5_consent_body">För att läsa realtidsdata från den här bilen (batteri, räckvidd, hastighet, däck…) behöver BYD Trip Stats mjuka upp en systeminställning på huvudenheten (hidden-API-begränsningen), begränsad till BYD:s fordonsbibliotek.\n\nDetta är en enhetsomfattande inställning. Den återställs vid omstart och appen tillämpar den igen endast vid behov. Du kan ändra detta senare i Inställningar.\n\nUtan den fungerar appen men visar ingen fordonsdata.\n\nAppen håller också ADB påslaget hela tiden, och den här delen är inte valfri. Bilen stänger av ADB varje gång den stängs av; appen slår på det igen när den startar, eftersom det är det som gör att den kan börja registrera av sig själv när du startar bilen.</string>

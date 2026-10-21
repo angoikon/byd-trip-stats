@@ -1225,6 +1225,10 @@
     <string name="distance_subtitle_session">이 세션</string>
     <string name="odometer_subtitle_lifetime">총 주행 거리</string>
     <string name="discharge_subtitle_lifetime">총 방전 에너지</string>
+    <string name="lifetime_avg_label">전체 기간 평균</string>
+    <string name="trips_avg_since_label">기록된 주행 (%1$s부터)</string>
+    <string name="car_avg_label">차량 자체 평균</string>
+    <string name="discharge_info_body">차량 자체의 카운터로, 신차 이후 고전압 배터리에서 꺼낸 에너지에서 회생 제동으로 되돌린 양을 뺀 값입니다. 충전으로 들어온 에너지는 포함되지 않습니다.\n\n주행만이 아니라 모든 것을 셉니다. 주차 중이나 BYD 앱으로 켠 공조, 배터리 가열·냉각, 12 V 배터리 충전, 대기 전력 등입니다. 그래서 전체 기간 평균은 주행만의 전비보다 높게 나옵니다.\n\n기록된 주행은 주행을 기록하는 동안 사용한 에너지만 셉니다. BYD 앱이 보여주는 것 같은 주행 전비와 비교할 값은 이쪽입니다.</string>
     <string name="tyre_subtitle_pressure">°C · %1$s 압력</string>
     <string name="d5_consent_title">차량 데이터 접근을 허용하시겠습니까?</string>
     <string name="d5_consent_body">이 차량의 실시간 데이터(배터리, 주행 가능 거리, 속도, 타이어…)를 읽으려면 BYD Trip Stats가 헤드 유닛의 시스템 설정 하나(hidden-API 제한)를 완화해야 하며, 이는 BYD 차량 라이브러리로 한정됩니다.\n\n이는 기기 전체 설정입니다. 재부팅 시 초기화되며 앱은 필요할 때만 다시 적용합니다. 나중에 설정에서 변경할 수 있습니다.\n\n이 설정이 없으면 앱은 실행되지만 차량 데이터는 표시되지 않습니다.\n\n앱은 또한 ADB를 항상 켜 둡니다. 이 부분은 선택 사항이 아닙니다. 차량은 종료될 때마다 ADB를 끄고, 앱은 시작할 때 다시 켭니다. 그래야 차량에 시동을 걸 때 앱이 스스로 기록을 시작할 수 있습니다.</string>

@@ -1326,6 +1326,10 @@
     <string name="distance_subtitle_session">Deze sessie</string>
     <string name="odometer_subtitle_lifetime">Totale afstand</string>
     <string name="discharge_subtitle_lifetime">Totale afgegeven energie</string>
+    <string name="lifetime_avg_label">Gemiddelde over de levensduur</string>
+    <string name="trips_avg_since_label">Uw vastgelegde ritten, sinds %1$s</string>
+    <string name="car_avg_label">Eigen gemiddelde van de auto</string>
+    <string name="discharge_info_body">Dit is de eigen teller van de auto: de energie die sinds nieuw uit de hoogspanningsaccu is gehaald, min wat regeneratief remmen heeft teruggegeven. Energie van het laden telt niet mee.\n\nHij telt alles, niet alleen rijden: klimaatregeling tijdens parkeren of vanuit de BYD-app, het verwarmen of koelen van de accu, het bijladen van de 12V-accu en stand-by. Daarom ligt het gemiddelde over de levensduur hoger dan een verbruik van alleen rijden.\n\nUw vastgelegde ritten tellen alleen de energie die werd gebruikt terwijl een rit werd vastgelegd, dus die vergelijkt u met een rijverbruik, zoals dat van de BYD-app.</string>
     <string name="tyre_subtitle_pressure">°C · %1$s druk</string>
     <string name="d5_consent_title">Toegang tot voertuiggegevens toestaan?</string>
     <string name="d5_consent_body">Om live gegevens van deze auto te lezen (accu, actieradius, snelheid, banden…), moet BYD Trip Stats één systeeminstelling op de hoofdunit versoepelen (de hidden-API-beperking), beperkt tot de BYD-voertuigbibliotheken.\n\nDit is een apparaatbrede instelling. Ze wordt hersteld na een herstart en de app past ze alleen opnieuw toe wanneer nodig. Je kunt dit later wijzigen in Instellingen.\n\nZonder deze werkt de app wel, maar toont ze geen voertuiggegevens.\n\nDe app houdt ook ADB altijd ingeschakeld, en dit deel is niet optioneel. De auto schakelt ADB uit telkens wanneer hij afsluit; de app schakelt het bij het opstarten weer in, want daardoor kan de app zelf beginnen met registreren wanneer je de auto start.</string>

@@ -86,11 +86,13 @@ fun DashboardStatCard(
     interactive: Boolean = true,
     onNavigateToBatteryDegradation: () -> Unit = {},
     onShowBattery12vHistory: () -> Unit = {},
+    onShowLifetimeEnergy: () -> Unit = {},
     onShowTyreDialog: () -> Unit = {},
 ) {
     // In edit mode the tile is dragged/toggled, so its own tap targets are disabled.
     val batteryClick = onNavigateToBatteryDegradation.takeIf { interactive }
     val hvClick = onShowBattery12vHistory.takeIf { interactive }
+    val dischargeClick = onShowLifetimeEnergy.takeIf { interactive }
     val tyreClick = if (interactive) onShowTyreDialog else {{}}
     val context = LocalContext.current
     val prefs = remember { PreferencesManager(context.applicationContext) }
@@ -314,7 +316,8 @@ fun DashboardStatCard(
             },
             icon = Icons.Filled.ElectricalServices,
             color = AccelerationOrange,
-            modifier = modifier
+            modifier = modifier,
+            onClick = dischargeClick
         )
     }
 }

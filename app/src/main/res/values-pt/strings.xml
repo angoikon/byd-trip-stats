@@ -1326,6 +1326,10 @@
     <string name="distance_subtitle_session">Esta sessão</string>
     <string name="odometer_subtitle_lifetime">Distância total</string>
     <string name="discharge_subtitle_lifetime">Energia total fornecida</string>
+    <string name="lifetime_avg_label">Média de toda a vida</string>
+    <string name="trips_avg_since_label">As suas viagens registadas, desde %1$s</string>
+    <string name="car_avg_label">Média do próprio carro</string>
+    <string name="discharge_info_body">Este é o contador do próprio carro: a energia retirada da bateria de alta tensão desde novo, menos o que a travagem regenerativa devolveu. A energia do carregamento não conta.\n\nConta tudo, não só a condução: a climatização com o carro estacionado ou pela app da BYD, o aquecimento ou arrefecimento da bateria, a carga da bateria de 12 V e o modo de espera. Por isso a média de toda a vida fica acima de um consumo só de condução.\n\nAs suas viagens registadas contam só a energia usada enquanto uma viagem estava a ser registada, por isso são elas que se comparam com um consumo de condução, como o que a app da BYD mostra.</string>
     <string name="tyre_subtitle_pressure">°C · %1$s pressão</string>
     <string name="d5_consent_title">Permitir acesso aos dados do veículo?</string>
     <string name="d5_consent_body">Para ler dados em tempo real deste carro (bateria, autonomia, velocidade, pneus…), o BYD Trip Stats precisa de flexibilizar uma definição de sistema da unidade central (a restrição hidden-API), limitada às bibliotecas de veículos da BYD.\n\nEsta é uma definição de todo o dispositivo. É reposta ao reiniciar e a aplicação só a volta a aplicar quando necessário. Pode alterar isto mais tarde nas Definições.\n\nSem ela, a aplicação funciona mas não mostra dados do veículo.\n\nA aplicação também mantém o ADB sempre ativo, e esta parte não é opcional. O carro desativa o ADB sempre que se desliga; a aplicação volta a ativá-lo ao iniciar, porque é isso que lhe permite começar a registar sozinha quando liga o carro.</string>

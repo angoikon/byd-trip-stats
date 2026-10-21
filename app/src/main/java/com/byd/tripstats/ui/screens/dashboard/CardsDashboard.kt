@@ -89,6 +89,7 @@ fun CardsDashboard(
     unitSystem: UnitSystem,
     onNavigateToBatteryDegradation: () -> Unit,
     onShowBattery12vHistory: () -> Unit,
+    onShowLifetimeEnergy: () -> Unit,
     onShowTyreDialog: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -181,6 +182,7 @@ fun CardsDashboard(
                                 tyreUnit = tyreUnit,
                                 onNavigateToBatteryDegradation = onNavigateToBatteryDegradation,
                                 onShowBattery12vHistory = onShowBattery12vHistory,
+                                onShowLifetimeEnergy = onShowLifetimeEnergy,
                                 onShowTyreDialog = onShowTyreDialog,
                                 modifier = Modifier.weight(1f).fillMaxHeight()
                             )
@@ -277,6 +279,7 @@ fun CardsDashboard(
                         tyreUnit = tyreUnit,
                         onNavigateToBatteryDegradation = onNavigateToBatteryDegradation,
                         onShowBattery12vHistory = onShowBattery12vHistory,
+                        onShowLifetimeEnergy = onShowLifetimeEnergy,
                         onShowTyreDialog = onShowTyreDialog,
                         chart = { m -> chartContent(m, false) {} }
                     )
@@ -291,6 +294,7 @@ fun CardsDashboard(
                         tyreUnit = tyreUnit,
                         onNavigateToBatteryDegradation = onNavigateToBatteryDegradation,
                         onShowBattery12vHistory = onShowBattery12vHistory,
+                        onShowLifetimeEnergy = onShowLifetimeEnergy,
                         onShowTyreDialog = onShowTyreDialog
                     )
                 }
@@ -461,6 +465,7 @@ private fun SideGrid(
     tyreUnit: TyrePressureUnit,
     onNavigateToBatteryDegradation: () -> Unit,
     onShowBattery12vHistory: () -> Unit,
+    onShowLifetimeEnergy: () -> Unit,
     onShowTyreDialog: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -478,6 +483,7 @@ private fun SideGrid(
                         tyreUnit = tyreUnit,
                         onNavigateToBatteryDegradation = onNavigateToBatteryDegradation,
                         onShowBattery12vHistory = onShowBattery12vHistory,
+                        onShowLifetimeEnergy = onShowLifetimeEnergy,
                         onShowTyreDialog = onShowTyreDialog,
                         modifier = Modifier.weight(1f).fillMaxHeight()
                     )
@@ -497,6 +503,7 @@ private fun SplitViewGrid(
     tyreUnit: TyrePressureUnit,
     onNavigateToBatteryDegradation: () -> Unit,
     onShowBattery12vHistory: () -> Unit,
+    onShowLifetimeEnergy: () -> Unit,
     onShowTyreDialog: () -> Unit,
     chart: @Composable (Modifier) -> Unit,
 ) {
@@ -512,6 +519,7 @@ private fun SplitViewGrid(
             tyreUnit = tyreUnit,
             onNavigateToBatteryDegradation = onNavigateToBatteryDegradation,
             onShowBattery12vHistory = onShowBattery12vHistory,
+            onShowLifetimeEnergy = onShowLifetimeEnergy,
             onShowTyreDialog = onShowTyreDialog,
             modifier = Modifier.weight(1f).fillMaxHeight()
         )
@@ -523,6 +531,7 @@ private fun SplitViewGrid(
             tyreUnit = tyreUnit,
             onNavigateToBatteryDegradation = onNavigateToBatteryDegradation,
             onShowBattery12vHistory = onShowBattery12vHistory,
+            onShowLifetimeEnergy = onShowLifetimeEnergy,
             onShowTyreDialog = onShowTyreDialog,
             modifier = Modifier.weight(1f).fillMaxHeight()
         )
@@ -538,6 +547,7 @@ private fun ModularCardGrid(
     tyreUnit: TyrePressureUnit,
     onNavigateToBatteryDegradation: () -> Unit,
     onShowBattery12vHistory: () -> Unit,
+    onShowLifetimeEnergy: () -> Unit,
     onShowTyreDialog: () -> Unit,
 ) {
     if (visible.isEmpty()) {
@@ -566,6 +576,7 @@ private fun ModularCardGrid(
                     tyreUnit = tyreUnit,
                     onNavigateToBatteryDegradation = onNavigateToBatteryDegradation,
                     onShowBattery12vHistory = onShowBattery12vHistory,
+                    onShowLifetimeEnergy = onShowLifetimeEnergy,
                     onShowTyreDialog = onShowTyreDialog,
                     modifier = Modifier.weight(1f).fillMaxHeight()
                 )

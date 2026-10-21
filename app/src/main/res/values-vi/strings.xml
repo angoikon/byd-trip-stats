@@ -1322,6 +1322,10 @@
     <string name="distance_subtitle_session">Phiên này</string>
     <string name="odometer_subtitle_lifetime">Tổng quãng đường</string>
     <string name="discharge_subtitle_lifetime">Tổng năng lượng xả</string>
+    <string name="lifetime_avg_label">Trung bình trọn đời</string>
+    <string name="trips_avg_since_label">Các chuyến đi đã ghi của bạn, từ %1$s</string>
+    <string name="car_avg_label">Trung bình của chính xe</string>
+    <string name="discharge_info_body">Đây là bộ đếm của chính chiếc xe: năng lượng đã lấy từ pin cao áp kể từ khi xe còn mới, trừ đi phần phanh tái sinh trả lại. Năng lượng từ việc sạc không được tính.\n\nNó tính mọi thứ, không chỉ việc lái: điều hòa bật khi đỗ hoặc từ ứng dụng BYD, làm ấm hay làm mát pin, sạc pin 12 V và chế độ chờ. Vì vậy mức trung bình trọn đời cao hơn mức tiêu thụ chỉ của việc lái.\n\nCác chuyến đi đã ghi chỉ tính năng lượng dùng trong lúc một chuyến đang được ghi, nên đó là con số để so sánh với mức tiêu thụ khi lái, như con số ứng dụng BYD hiển thị.</string>
     <string name="tyre_subtitle_pressure">°C · %1$s áp suất</string>
     <string name="d5_consent_title">Cho phép truy cập dữ liệu xe?</string>
     <string name="d5_consent_body">Để đọc dữ liệu trực tiếp từ xe này (pin, quãng đường, tốc độ, lốp…), BYD Trip Stats cần nới lỏng một cài đặt hệ thống trên đầu máy (giới hạn hidden-API), chỉ giới hạn ở các thư viện xe của BYD.\n\nĐây là cài đặt trên toàn thiết bị. Nó sẽ đặt lại khi khởi động lại và ứng dụng chỉ áp dụng lại khi cần. Bạn có thể thay đổi điều này sau trong Cài đặt.\n\nNếu không có, ứng dụng vẫn chạy nhưng không hiển thị dữ liệu xe.\n\nỨng dụng cũng luôn giữ ADB ở trạng thái bật, và phần này không phải là tùy chọn. Xe tắt ADB mỗi lần tắt nguồn; ứng dụng bật lại khi khởi động, vì đó là điều giúp ứng dụng tự bắt đầu ghi khi bạn khởi động xe.</string>

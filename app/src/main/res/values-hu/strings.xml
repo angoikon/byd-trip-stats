@@ -1322,6 +1322,10 @@
     <string name="distance_subtitle_session">Ez a munkamenet</string>
     <string name="odometer_subtitle_lifetime">Teljes távolság</string>
     <string name="discharge_subtitle_lifetime">Teljes leadott energia</string>
+    <string name="lifetime_avg_label">Élettartam-átlag</string>
+    <string name="trips_avg_since_label">Rögzített útjaid, ekkortól: %1$s</string>
+    <string name="car_avg_label">Az autó saját átlaga</string>
+    <string name="discharge_info_body">Ez az autó saját számlálója: az újkora óta a nagyfeszültségű akkumulátorból kivett energia, levonva azt, amit a regeneratív fékezés visszatöltött. A töltésből származó energia nem számít bele.\n\nMindent beleszámol, nem csak a vezetést: parkolás közben vagy a BYD alkalmazásból indított klímát, az akkumulátor fűtését vagy hűtését, a 12 V-os akkumulátor töltését és a készenlétet. Ezért magasabb az élettartam-átlag a csak vezetésre vonatkozó fogyasztásnál.\n\nA rögzített útjaid csak az út rögzítése közben felhasznált energiát számolják, ezért ezekkel érdemes összevetni egy vezetési fogyasztást, például amit a BYD alkalmazás mutat.</string>
     <string name="tyre_subtitle_pressure">°C · %1$s nyomás</string>
     <string name="d5_consent_title">Engedélyezi a járműadatokhoz való hozzáférést?</string>
     <string name="d5_consent_body">Az autó élő adatainak olvasásához (akkumulátor, hatótáv, sebesség, gumiabroncsok…) a BYD Trip Statsnak lazítania kell a fejegység egy rendszerbeállításán (a hidden-API-korlátozáson), a BYD járműkönyvtárakra korlátozva.\n\nEz eszközszintű beállítás. Újraindításkor visszaáll, és az alkalmazás csak szükség esetén alkalmazza újra. Ezt később a Beállításokban módosíthatja.\n\nNélküle az alkalmazás fut, de nem jelenít meg járműadatokat.\n\nAz alkalmazás az ADB-t is folyamatosan bekapcsolva tartja, és ez a rész nem választható. Az autó minden leállításkor kikapcsolja az ADB-t; az alkalmazás induláskor visszakapcsolja, mert ez teszi lehetővé, hogy magától elkezdje a rögzítést, amikor elindítja az autót.</string>

@@ -1326,6 +1326,10 @@
     <string name="distance_subtitle_session">Tämä istunto</string>
     <string name="odometer_subtitle_lifetime">Kokonaismatka</string>
     <string name="discharge_subtitle_lifetime">Kokonaisenergia ulos</string>
+    <string name="lifetime_avg_label">Elinikäinen keskiarvo</string>
+    <string name="trips_avg_since_label">Tallennetut matkasi, alkaen %1$s</string>
+    <string name="car_avg_label">Auton oma keskiarvo</string>
+    <string name="discharge_info_body">Tämä on auton oma laskuri energiasta, jonka se on ottanut korkeajänniteakusta uudesta lähtien, vähennettynä sillä, minkä regeneratiivinen jarrutus on palauttanut. Latauksesta tulevaa energiaa ei lasketa mukaan.\n\nSe laskee kaiken, ei vain ajoa: pysäköitynä tai BYD-sovelluksesta käytetyn ilmastoinnin, akun lämmityksen tai jäähdytyksen, 12 V:n akun lataamisen ja valmiustilan. Siksi elinikäinen keskiarvo on korkeampi kuin pelkän ajon kulutus.\n\nTallennetut matkasi laskevat vain energian, joka kului matkan tallennuksen aikana, joten niitä verrataan ajon kulutukseen, kuten BYD-sovelluksen näyttämään.</string>
     <string name="tyre_subtitle_pressure">°C · %1$s paine</string>
     <string name="d5_consent_title">Sallitaanko ajoneuvon tietojen käyttö?</string>
     <string name="d5_consent_body">Lukeakseen tämän auton reaaliaikaisia tietoja (akku, toimintamatka, nopeus, renkaat…) BYD Trip Stats -sovelluksen on löysättävä yhtä pääyksikön järjestelmäasetusta (hidden-API-rajoitusta), rajattuna BYD:n ajoneuvokirjastoihin.\n\nTämä on koko laitteen laajuinen asetus. Se palautuu uudelleenkäynnistyksessä, ja sovellus ottaa sen uudelleen käyttöön vain tarvittaessa. Voit muuttaa tätä myöhemmin Asetuksista.\n\nIlman sitä sovellus toimii, mutta ei näytä ajoneuvon tietoja.\n\nSovellus pitää myös ADB:n jatkuvasti päällä, eikä tämä osa ole valinnainen. Auto kytkee ADB:n pois aina sammuessaan; sovellus kytkee sen takaisin päälle käynnistyessään, koska juuri sen ansiosta sovellus voi aloittaa tallennuksen itsestään, kun käynnistät auton.</string>

@@ -1322,6 +1322,10 @@
     <string name="distance_subtitle_session">Sesi ini</string>
     <string name="odometer_subtitle_lifetime">Jarak total</string>
     <string name="discharge_subtitle_lifetime">Total energi keluar</string>
+    <string name="lifetime_avg_label">Rata-rata seumur pakai</string>
+    <string name="trips_avg_since_label">Perjalanan Anda yang tercatat, sejak %1$s</string>
+    <string name="car_avg_label">Rata-rata mobil sendiri</string>
+    <string name="discharge_info_body">Ini adalah penghitung milik mobil sendiri: energi yang diambil dari baterai tegangan tinggi sejak baru, dikurangi yang dikembalikan oleh pengereman regeneratif. Energi dari pengisian daya tidak dihitung.\n\nIni menghitung semuanya, bukan hanya berkendara: AC yang dinyalakan saat parkir atau dari aplikasi BYD, pemanasan atau pendinginan baterai, pengisian baterai 12 V, dan mode siaga. Karena itu rata-rata seumur pakai lebih tinggi daripada konsumsi berkendara saja.\n\nPerjalanan Anda yang tercatat hanya menghitung energi yang dipakai saat perjalanan sedang dicatat, jadi itulah angka untuk dibandingkan dengan konsumsi berkendara, seperti yang ditampilkan aplikasi BYD.</string>
     <string name="tyre_subtitle_pressure">°C · %1$s tekanan</string>
     <string name="d5_consent_title">Izinkan akses data kendaraan?</string>
     <string name="d5_consent_body">Untuk membaca data langsung dari mobil ini (baterai, jangkauan, kecepatan, ban…), BYD Trip Stats perlu melonggarkan satu pengaturan sistem pada unit kepala (pembatasan hidden-API), terbatas pada pustaka kendaraan BYD.\n\nIni adalah pengaturan seluruh perangkat. Pengaturan ini akan disetel ulang saat mulai ulang dan aplikasi menerapkannya kembali hanya bila diperlukan. Anda dapat mengubahnya nanti di Pengaturan.\n\nTanpanya, aplikasi berjalan tetapi tidak menampilkan data kendaraan.\n\nAplikasi juga menjaga ADB tetap aktif setiap saat, dan bagian ini tidak opsional. Mobil mematikan ADB setiap kali dimatikan; aplikasi menyalakannya kembali saat dimulai, karena itulah yang memungkinkan aplikasi mulai merekam dengan sendirinya saat Anda menyalakan mobil.</string>

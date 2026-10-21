@@ -1326,6 +1326,10 @@
     <string name="distance_subtitle_session">本次紀錄</string>
     <string name="odometer_subtitle_lifetime">總里程</string>
     <string name="discharge_subtitle_lifetime">總輸出電量</string>
+    <string name="lifetime_avg_label">終身平均</string>
+    <string name="trips_avg_since_label">您記錄的行程（自 %1$s 起）</string>
+    <string name="car_avg_label">車輛自身平均</string>
+    <string name="discharge_info_body">這是車輛自身的計數器：自新車起從高壓電池取出的能量，減去動能回收煞車送回的部分。充電的能量不計入。\n\n它計入一切，而不只是行駛：停車時或透過 BYD 應用程式開啟的空調、電池加熱或冷卻、為 12 V 電池補電以及待機。因此終身平均會高於僅行駛的能耗。\n\n您記錄的行程只計入記錄行程期間消耗的能量，所以應拿它們與行駛能耗比較，例如 BYD 應用程式顯示的數值。</string>
     <string name="tyre_subtitle_pressure">°C · %1$s 胎壓</string>
     <string name="d5_consent_title">允許存取車輛資料？</string>
     <string name="d5_consent_body">為讀取本車的即時資料（電池、續航、車速、輪胎…），BYD Trip Stats 需要放寬主機的一項系統設定（hidden-API 限制），僅限於 BYD 車輛程式庫。\n\n這是裝置層級的設定。重新開機後會重設，應用程式僅在需要時重新套用。你可以稍後在「設定」中變更。\n\n沒有它，應用程式仍可執行，但不會顯示車輛資料。\n\n此外，應用程式會始終保持 ADB 開啟，這一項不可選。車輛每次關機都會關閉 ADB；應用程式啟動時會將其重新開啟，因為這正是車輛啟動時應用程式能自動開始記錄的前提。</string>

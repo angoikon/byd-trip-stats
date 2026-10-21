@@ -1322,6 +1322,10 @@
     <string name="distance_subtitle_session">Tato relace</string>
     <string name="odometer_subtitle_lifetime">Celková vzdálenost</string>
     <string name="discharge_subtitle_lifetime">Celková vydaná energie</string>
+    <string name="lifetime_avg_label">Celoživotní průměr</string>
+    <string name="trips_avg_since_label">Vaše zaznamenané jízdy, od %1$s</string>
+    <string name="car_avg_label">Vlastní průměr vozu</string>
+    <string name="discharge_info_body">Toto je vlastní počítadlo vozu: energie odebraná z vysokonapěťové baterie od nového vozu, minus to, co vrátila rekuperace. Energie z nabíjení se nepočítá.\n\nZapočítává vše, nejen jízdu: klimatizaci zapnutou při parkování nebo z aplikace BYD, ohřev či chlazení baterie, dobíjení 12V baterie a pohotovostní režim. Proto celoživotní průměr vychází výš než spotřeba samotné jízdy.\n\nVaše zaznamenané jízdy počítají jen energii spotřebovanou během zaznamenané jízdy, takže s nimi srovnávejte spotřebu za jízdy, například tu, kterou ukazuje aplikace BYD.</string>
     <string name="tyre_subtitle_pressure">°C · %1$s tlak</string>
     <string name="d5_consent_title">Povolit přístup k datům vozidla?</string>
     <string name="d5_consent_body">Aby aplikace BYD Trip Stats mohla číst živá data z tohoto vozidla (baterie, dojezd, rychlost, pneumatiky…), musí uvolnit jedno systémové nastavení hlavní jednotky (omezení hidden-API), omezené na knihovny vozidel BYD.\n\nJde o nastavení platné pro celé zařízení. Po restartu se vrátí a aplikace jej znovu použije jen v případě potřeby. Toto lze později změnit v Nastavení.\n\nBez něj aplikace běží, ale nezobrazuje žádná data vozidla.\n\nAplikace také udržuje ADB trvale zapnuté a tato část není volitelná. Vozidlo ADB při každém vypnutí vypne; aplikace jej při spuštění znovu zapne, protože právě díky tomu může sama začít nahrávat, když vozidlo nastartujete.</string>

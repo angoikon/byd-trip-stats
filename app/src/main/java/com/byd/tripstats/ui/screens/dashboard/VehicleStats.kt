@@ -42,6 +42,7 @@ fun VehicleStats(
     fillHeight: Boolean = false,
     onNavigateToBatteryDegradation: () -> Unit = {},
     onShowBattery12vHistory: () -> Unit = {},
+    onShowLifetimeEnergy: () -> Unit = {},
     tyreUnit: TyrePressureUnit = TyrePressureUnit.BAR,
     onShowTyreDialog: () -> Unit = {},
     dashboardIconsEnabled: Boolean = true
@@ -287,7 +288,8 @@ fun VehicleStats(
             icon     = Icons.Filled.ElectricalServices,
             color    = AccelerationOrange,
             compact  = fillHeight,
-            modifier = smallCardMod
+            modifier = smallCardMod,
+            onClick  = onShowLifetimeEnergy
         )
     }
 }

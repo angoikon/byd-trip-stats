@@ -1326,6 +1326,10 @@
     <string name="distance_subtitle_session">Questa sessione</string>
     <string name="odometer_subtitle_lifetime">Distanza totale</string>
     <string name="discharge_subtitle_lifetime">Energia totale erogata</string>
+    <string name="lifetime_avg_label">Media complessiva</string>
+    <string name="trips_avg_since_label">I tuoi viaggi registrati, dal %1$s</string>
+    <string name="car_avg_label">Media propria dell\'auto</string>
+    <string name="discharge_info_body">È il contatore dell\'auto stessa: l\'energia prelevata dalla batteria ad alta tensione da quando è nuova, meno quella restituita dalla frenata rigenerativa. L\'energia della ricarica non viene contata.\n\nConta tutto, non solo la guida: il clima acceso da fermi o dall\'app BYD, il riscaldamento o il raffreddamento della batteria, la ricarica della batteria da 12 V e lo standby. Per questo la media complessiva risulta più alta di un consumo di sola guida.\n\nI tuoi viaggi registrati contano solo l\'energia usata mentre un viaggio veniva registrato, quindi sono il dato da confrontare con un consumo di guida, come quello mostrato dall\'app BYD.</string>
     <string name="tyre_subtitle_pressure">°C · %1$s pressione</string>
     <string name="d5_consent_title">Consentire l\'accesso ai dati del veicolo?</string>
     <string name="d5_consent_body">Per leggere i dati in tempo reale di questa auto (batteria, autonomia, velocità, pneumatici…), BYD Trip Stats deve allentare un\'impostazione di sistema dell\'unità centrale (la restrizione hidden-API), limitata alle librerie veicolo di BYD.\n\nÈ un\'impostazione a livello di dispositivo. Si ripristina al riavvio e l\'app la riapplica solo quando serve. Puoi modificarla in seguito nelle Impostazioni.\n\nSenza di essa l\'app funziona ma non mostra dati del veicolo.\n\nL\'app mantiene inoltre ADB sempre attivo, e questa parte non è facoltativa. L\'auto disattiva ADB a ogni spegnimento; l\'app lo riattiva all\'avvio, perché è ciò che le permette di iniziare a registrare da sola quando accendi l\'auto.</string>
