@@ -62,6 +62,12 @@ private const val KEY_CHARGER_SIGNALS_UNRELIABLE = "charger_signals_unreliable"
 //     0x44700010=low, 0x44700020=high, 0x44700038=avg.
 private const val STAT_CACHE_VERSION = 8
 private const val STAT_CACHE_SAVE_INTERVAL_MS = 30_000L
+// The getters extractRawEventNumber tries on a BYD event value, in order of preference.
+private val RAW_EVENT_GETTER_NAMES = listOf(
+    "value", "getValue",
+    "intValue", "getIntValue", "getInt",
+    "doubleValue", "getDoubleValue", "getDouble",
+)
 private const val DIRECT_CHARGING_POWER_TIMEOUT_MS = 4_000L
 // DiLink-5 polls charge power (Dilink5Client.pollIntervalMs, 5 s on AC) where DiLink-3 has it
 // pushed, so its window spans a missed poll: one stray reading mid-charge would otherwise close the
@@ -6523,16 +6529,23 @@ class BydVehicleDataSource(context: Context) {
     @Volatile private var lastSavedDriveMode = 0
     @Volatile private var lastSavedRegenMode = 0
 
+    private fun confirmedDriveMode(mode: Int): Int = mode.takeIf { it in 1..6 && hasConfirmedDriveMode } ?: 0
+    private fun confirmedRegenMode(mode: Int): Int = mode.takeIf { it in 1..2 && hasConfirmedRegenMode } ?: 0
+
+    /** 30 s since the last save, or a confirmed drive/regen mode the cache doesn't hold yet. */
+    private fun statCacheSaveDue(driveMode: Int, regenMode: Int): Boolean {
+        val drive = confirmedDriveMode(driveMode)
+        val regen = confirmedRegenMode(regenMode)
+        return (drive != 0 && drive != lastSavedDriveMode) ||
+            (regen != 0 && regen != lastSavedRegenMode) ||
+            SystemClock.elapsedRealtime() - lastStatCacheSaveMs >= STAT_CACHE_SAVE_INTERVAL_MS
+    }
+
     private fun persistStatisticState(snapshot: VehicleTelemetrySnapshot, force: Boolean = false) {
-        val now = SystemClock.elapsedRealtime()
-        val driveMode = snapshot.driveMode.takeIf { it in 1..6 && hasConfirmedDriveMode } ?: 0
-        val regenMode = snapshot.regenMode.takeIf { it in 1..2 && hasConfirmedRegenMode } ?: 0
-        val modeChanged = (driveMode != 0 && driveMode != lastSavedDriveMode) ||
-            (regenMode != 0 && regenMode != lastSavedRegenMode)
-        if (!force && !modeChanged && now - lastStatCacheSaveMs < STAT_CACHE_SAVE_INTERVAL_MS) return
-        lastStatCacheSaveMs = now
-        if (driveMode != 0) lastSavedDriveMode = driveMode
-        if (regenMode != 0) lastSavedRegenMode = regenMode
+        if (!force && !statCacheSaveDue(snapshot.driveMode, snapshot.regenMode)) return
+        lastStatCacheSaveMs = SystemClock.elapsedRealtime()
+        confirmedDriveMode(snapshot.driveMode).takeIf { it != 0 }?.let { lastSavedDriveMode = it }
+        confirmedRegenMode(snapshot.regenMode).takeIf { it != 0 }?.let { lastSavedRegenMode = it }
 
         val editor = statCache.edit()
         editor.putInt("stat_cache_version", STAT_CACHE_VERSION)
@@ -6576,6 +6589,9 @@ class BydVehicleDataSource(context: Context) {
     }
 
     private fun persistStatisticFlows() {
+        // Checked before building the snapshot: this runs on every battery-statistics event, and
+        // the cache is saved at most every 30 s.
+        if (!statCacheSaveDue(_driveMode.value, _regenMode.value)) return
         val snapshot = VehicleTelemetrySnapshot(
             statisticCellVoltageMin = _statisticCellVoltageMin.value,
             statisticCellVoltageMax = _statisticCellVoltageMax.value,
@@ -7699,35 +7715,39 @@ class BydVehicleDataSource(context: Context) {
     /**
      * Raw event wrappers can expose the useful payload through several numeric accessors.
      */
+    // Per event class, which of RAW_EVENT_GETTER_NAMES it has, in that order — looked up once. Looking
+    // each name up on every event threw NoSuchMethodException for each name the class lacks, every
+    // time, on the main thread at ~100 events a second while driving.
+    private val rawEventGetters =
+        java.util.concurrent.ConcurrentHashMap<Class<*>, List<java.lang.reflect.Method>>()
+
     private fun extractRawEventNumber(raw: Any): Number? {
-        for (getter in listOf("value", "getValue")) {
-            try {
-                val m = raw.javaClass.getMethod(getter)
-                val v = m.invoke(raw)
-                if (v is Number) return v
-            } catch (_: NoSuchMethodException) {
-            } catch (_: Exception) {
+        val getters = rawEventGetters.getOrPut(raw.javaClass) {
+            RAW_EVENT_GETTER_NAMES.mapNotNull { name ->
+                try { raw.javaClass.getMethod(name) } catch (_: Exception) { null }
             }
         }
-        for (getter in listOf("intValue", "getIntValue", "getInt")) {
+        for (m in getters) {
             try {
-                val m = raw.javaClass.getMethod(getter)
                 val v = m.invoke(raw)
                 if (v is Number) return v
-            } catch (_: NoSuchMethodException) {
-            } catch (_: Exception) {
-            }
-        }
-        for (getter in listOf("doubleValue", "getDoubleValue", "getDouble")) {
-            try {
-                val m = raw.javaClass.getMethod(getter)
-                val v = m.invoke(raw)
-                if (v is Number) return v
-            } catch (_: NoSuchMethodException) {
             } catch (_: Exception) {
             }
         }
         return null
+    }
+
+    // Same for getEventType on the single-argument onDataChanged event (Optional: absent is cached too).
+    private val eventTypeGetters =
+        java.util.concurrent.ConcurrentHashMap<Class<*>, java.util.Optional<java.lang.reflect.Method>>()
+
+    private fun eventTypeOf(event: Any): Int? {
+        val getter = eventTypeGetters.getOrPut(event.javaClass) {
+            java.util.Optional.ofNullable(runCatching {
+                event.javaClass.getDeclaredMethod("getEventType").also { it.isAccessible = true }
+            }.getOrNull())
+        }
+        return getter.orElse(null)?.let { m -> runCatching { m.invoke(event) }.getOrNull() as? Int }
     }
 
     /**
@@ -8286,16 +8306,7 @@ class BydVehicleDataSource(context: Context) {
                             val fid = arg0 as? Int
                             if (fid != null && arg1 != null) {
                                 val ev = arg1
-                                val structKey = "CLASS:$fid"
-                                if (!seenFeatureIds.containsKey(structKey)) {
-                                    seenFeatureIds[structKey] = ""
-                                }
-                                val dump = dumpObjectFields(ev)
                                 val rawNumber = extractRawEventNumber(ev)
-                                val candidate = describeRawValueHint(fid, rawNumber)
-                                val tempLikeCandidate = if (label == "Statistic") {
-                                    describeRawValueFallbackHint(fid, rawNumber)
-                                } else null
                                 // Apply arriving values to the public snapshot.
                                 if (rawNumber != null) dispatchStatisticFeatureEvent(fid, rawNumber)
                                 if (rawNumber != null && label != "Statistic") {
@@ -8304,6 +8315,20 @@ class BydVehicleDataSource(context: Context) {
                                         Log.i(TAG, "🛞 rawFeature Tyre raw=$rawNumber")
                                     }
                                 }
+                                // Everything below only feeds the verbose logs, which
+                                // ENABLE_VERBOSE_RAW_EVENT_LOGS compiles out. It used to run on every
+                                // event — on the main thread, ~100 a second while driving — reflecting
+                                // the whole event object and calling every method on it.
+                                if (!ENABLE_VERBOSE_RAW_EVENT_LOGS) return@newProxyInstance null
+                                val structKey = "CLASS:$fid"
+                                if (!seenFeatureIds.containsKey(structKey)) {
+                                    seenFeatureIds[structKey] = ""
+                                }
+                                val dump = dumpObjectFields(ev)
+                                val candidate = describeRawValueHint(fid, rawNumber)
+                                val tempLikeCandidate = if (label == "Statistic") {
+                                    describeRawValueFallbackHint(fid, rawNumber)
+                                } else null
                                 val valueKey = "VAL:$fid"
                                 val lastLogTime = lastFeatureLogTimes[valueKey] ?: 0L
                                 val now = android.os.SystemClock.elapsedRealtime()
@@ -8355,26 +8380,25 @@ class BydVehicleDataSource(context: Context) {
                                 }
                             } else if (arg0 != null && arg0 !is Int) {
                                 // onDataChanged(BYDAutoEvent snapshot) — no featureId arg
+                                // Extract the event subtype when present.
+                                val eventFeatureId = eventTypeOf(arg0) ?: 0
+                                val rawNumber = extractRawEventNumber(arg0)
+                                if (eventFeatureId != 0 && rawNumber != null) {
+                                    dispatchStatisticFeatureEvent(eventFeatureId, rawNumber)
+                                    if (label != "Statistic") dispatchDynamicRawFeatureEvent(label, eventFeatureId, rawNumber)
+                                }
+                                // As above: the rest only feeds the compiled-out verbose logs.
+                                if (!ENABLE_VERBOSE_RAW_EVENT_LOGS) return@newProxyInstance null
                                 val snapKey = "SNAP:${arg0.javaClass.simpleName}"
                                 if (!seenFeatureIds.containsKey(snapKey)) {
                                     seenFeatureIds[snapKey] = ""
                                 }
-                                // Extract the event subtype when present.
-                                val eventType = runCatching {
-                                    arg0.javaClass.getDeclaredMethod("getEventType").also { it.isAccessible = true }.invoke(arg0)
-                                }.getOrNull()
-                                val eventFeatureId = (eventType as? Int) ?: 0
                                 val subTypeKey = if (eventFeatureId != 0) {
                                     "SNAP_VAL:$eventFeatureId"
                                 } else {
                                     "SNAP_VAL:${arg0.javaClass.simpleName}"
                                 }
                                 val dump = dumpObjectFields(arg0)
-                                val rawNumber = extractRawEventNumber(arg0)
-                                if (eventFeatureId != 0 && rawNumber != null) {
-                                    dispatchStatisticFeatureEvent(eventFeatureId, rawNumber)
-                                    if (label != "Statistic") dispatchDynamicRawFeatureEvent(label, eventFeatureId, rawNumber)
-                                }
                                 val candidate = describeRawValueHint(eventFeatureId, rawNumber)
                                 val tempLikeCandidate = if (label == "Statistic") {
                                     describeRawValueFallbackHint(eventFeatureId, rawNumber)
