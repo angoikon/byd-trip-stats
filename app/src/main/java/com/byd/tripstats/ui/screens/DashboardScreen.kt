@@ -120,6 +120,13 @@ fun DashboardScreen(
         )
     }
 
+    // Remembered so the trip bar can skip a rebuild when nothing it shows changed: written inline
+    // in the call below they were new objects on every live update (up to 5 a second), and a new
+    // callback counts as a changed input.
+    val onStartTrip: () -> Unit = remember(viewModel) { { viewModel.startManualTrip() } }
+    val onEndTrip: () -> Unit = remember(viewModel) { { viewModel.endManualTrip() } }
+    val onToggleAutoDetection: () -> Unit = remember(viewModel) { { viewModel.toggleAutoTripDetection() } }
+
     Box(modifier = Modifier.fillMaxSize()) {
     Scaffold(
         topBar = {
@@ -264,9 +271,9 @@ fun DashboardScreen(
                 tripDataPoints = tripDataPoints,
                 usageCharts = usageCharts,
                 onCustomUsageRange = viewModel::setCustomUsageRange,
-                onStartTrip = { viewModel.startManualTrip() },
-                onEndTrip = { viewModel.endManualTrip() },
-                onToggleAutoDetection = { viewModel.toggleAutoTripDetection() },
+                onStartTrip = onStartTrip,
+                onEndTrip = onEndTrip,
+                onToggleAutoDetection = onToggleAutoDetection,
                 onNavigateToBatteryDegradation = onNavigateToBatteryDegradation,
                 onShowBattery12vHistory = { showBattery12vDialog = true },
                 onShowLifetimeEnergy = { showLifetimeEnergyDialog = true },

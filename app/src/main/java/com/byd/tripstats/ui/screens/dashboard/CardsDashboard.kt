@@ -119,6 +119,10 @@ fun CardsDashboard(
 
     var showChart by remember { mutableStateOf(false) }
 
+    // What the chart tile shows, in forms Compose can compare (see RangePoints).
+    val chartPoints = remember(tripDataPoints) { RangePoints(tripDataPoints) }
+    val chartLiveSoc = if (socSource == SocSource.PANEL) telemetry.socPanel.toDouble() else telemetry.soc
+
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
     // Narrow windows (split-screen) shrink all text proportionally so nothing wraps or
     // clips; full-landscape width keeps the font scale at 1 (fonts unchanged). Only
@@ -156,10 +160,10 @@ fun CardsDashboard(
                 )
                 if (!persistedChartHidden) {
                     ChartTile(
-                        telemetry = telemetry,
-                        tripDataPoints = tripDataPoints,
+                        points = chartPoints,
                         activeRangeModel = activeRangeModel,
-                        socSource = socSource,
+                        liveSoc = chartLiveSoc,
+                        liveElectricRangeKm = telemetry.electricDrivingRangeKm,
                         unitSystem = unitSystem,
                         editMode = false,
                         hidden = false,
@@ -234,10 +238,10 @@ fun CardsDashboard(
         Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
             val chartContent: @Composable (Modifier, Boolean, () -> Unit) -> Unit = { m, editing, onToggle ->
                 ChartTile(
-                    telemetry = telemetry,
-                    tripDataPoints = tripDataPoints,
+                    points = chartPoints,
                     activeRangeModel = activeRangeModel,
-                    socSource = socSource,
+                    liveSoc = chartLiveSoc,
+                    liveElectricRangeKm = telemetry.electricDrivingRangeKm,
                     unitSystem = unitSystem,
                     editMode = editing,
                     hidden = workingChartHidden,
@@ -362,13 +366,21 @@ fun CardsDashboard(
     }
 }
 
+/**
+ * The trip's chart points in a holder Compose can compare — it can't compare a List — so
+ * [ChartTile] skips the dashboard's live updates (up to 5 a second) unless the points or the live
+ * readings it shows changed. Built with remember(list), so the same points keep the same holder.
+ */
+@Immutable
+private class RangePoints(val list: List<RangeDataPoint>)
+
 /** Small pinned chart tile; tap to open the full-size chart. Hideable in edit mode. */
 @Composable
 private fun ChartTile(
-    telemetry: VehicleTelemetry,
-    tripDataPoints: List<RangeDataPoint>,
+    points: RangePoints,
     activeRangeModel: DashboardViewModel.RangeModel,
-    socSource: SocSource,
+    liveSoc: Double,
+    liveElectricRangeKm: Int,
     unitSystem: UnitSystem,
     editMode: Boolean,
     hidden: Boolean,
@@ -418,10 +430,10 @@ private fun ChartTile(
                     Spacer(Modifier.height(6.dp))
                 }
                 RangeProjectionChart(
-                    dataPoints = tripDataPoints,
+                    dataPoints = points.list,
                     activeRangeModel = activeRangeModel,
-                    liveSoc = if (socSource == SocSource.PANEL) telemetry.socPanel.toDouble() else telemetry.soc,
-                    liveElectricRangeKm = telemetry.electricDrivingRangeKm,
+                    liveSoc = liveSoc,
+                    liveElectricRangeKm = liveElectricRangeKm,
                     useImperial = unitSystem.isImperial,
                     compact = compact,
                     modifier = Modifier.fillMaxWidth().weight(1f)

@@ -135,8 +135,10 @@ fun PowerMetricsRow(
     val (batteryValue, batteryUnit) = batteryReadoutValueUnit(
         batteryMode, telemetry.socPanel, telemetry.soc, batteryRemainingKwh
     )
-    val toggleBatteryReadout: () -> Unit = {
-        scope.launch { prefs.saveDashboardShowRemainingKwh(!showRemainingKwh) }
+    // Remembered (keyed on the flag it flips) so the tile can skip a rebuild while its value is
+    // unchanged; written inline it was a new object on every live update, which counts as a change.
+    val toggleBatteryReadout: () -> Unit = remember(showRemainingKwh) {
+        { scope.launch { prefs.saveDashboardShowRemainingKwh(!showRemainingKwh) } }
     }
 
     // Distance tile: a tap toggles the view between this session's distance and the distance
@@ -144,8 +146,8 @@ fun PowerMetricsRow(
     val showDistanceSinceCharge by prefs.dashboardShowDistanceSinceCharge.collectAsState(
         initial = prefs.getCachedDashboardShowDistanceSinceCharge()
     )
-    val toggleDistanceReadout: () -> Unit = {
-        scope.launch { prefs.saveDashboardShowDistanceSinceCharge(!showDistanceSinceCharge) }
+    val toggleDistanceReadout: () -> Unit = remember(showDistanceSinceCharge) {
+        { scope.launch { prefs.saveDashboardShowDistanceSinceCharge(!showDistanceSinceCharge) } }
     }
 
     // PHEV: the tile keeps the EV projection as its headline figure, and the
