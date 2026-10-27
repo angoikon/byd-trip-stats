@@ -69,6 +69,12 @@ object MqttConnectionStore {
         )
     }
 
+    /**
+     * Writes the settings the user owns. [MqttConnectionConfig.lastStatus] and
+     * [MqttConnectionConfig.lastPublishAtMs] are deliberately not among them: they belong to the
+     * publisher, and the settings screen saves a config it read when the screen was opened, which
+     * on a long drive is minutes of publishing old.
+     */
     fun save(context: Context, config: MqttConnectionConfig) {
         val prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit()
@@ -82,20 +88,22 @@ object MqttConnectionStore {
             .putBoolean(KEY_USE_TLS, config.useTls)
             .putBoolean(KEY_USE_WEBSOCKET, config.useWebSocket)
             .putString(KEY_WEBSOCKET_PATH, config.webSocketPath.trim().ifBlank { "/mqtt" })
-            .putString(KEY_LAST_STATUS, config.lastStatus)
-            .putLong(KEY_LAST_PUBLISH_AT_MS, config.lastPublishAtMs)
             .apply()
     }
 
+    /**
+     * Writes the publisher's own two fields and nothing else. This runs on the IO thread once a
+     * second while the car is on, so reading the whole config and saving it back put every setting
+     * in the way of a broker edit: a save from the settings screen landing between that read and
+     * that write was silently restored to the value it replaced.
+     *
+     * A [publishedAtMs] of zero leaves the stored time alone, so a failed publish does not reset
+     * the interval the next tick measures against.
+     */
     fun updateStatus(context: Context, status: String, publishedAtMs: Long = 0L) {
-        val current = load(context)
-        save(
-            context,
-            current.copy(
-                lastStatus = status,
-                lastPublishAtMs = publishedAtMs.takeIf { it > 0L } ?: current.lastPublishAtMs
-            )
-        )
+        val edit = prefs(context).edit().putString(KEY_LAST_STATUS, status)
+        if (publishedAtMs > 0L) edit.putLong(KEY_LAST_PUBLISH_AT_MS, publishedAtMs)
+        edit.apply()
     }
 
     /**

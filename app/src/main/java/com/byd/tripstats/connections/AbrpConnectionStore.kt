@@ -36,31 +36,35 @@ object AbrpConnectionStore {
         )
     }
 
+    /**
+     * Writes the settings the user owns. [AbrpConnectionConfig.lastStatus] and
+     * [AbrpConnectionConfig.lastUploadAtMs] are deliberately not among them: they belong to the
+     * uploader, and the settings screen saves a config it read when the screen was opened.
+     */
     fun save(
         context: Context,
         config: AbrpConnectionConfig
     ) {
-        val prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit()
+        prefs(context).edit()
             .putBoolean(KEY_ENABLED, config.enabled)
             .putString(KEY_USER_TOKEN, config.userToken.trim())
             .putString(KEY_API_KEY, config.apiKey.trim().ifBlank { DEFAULT_PUBLIC_API_KEY })
             .putInt(KEY_UPLOAD_INTERVAL, config.uploadIntervalSeconds.coerceIn(5, 120))
-            .putString(KEY_LAST_STATUS, config.lastStatus)
-            .putLong(KEY_LAST_UPLOAD_AT_MS, config.lastUploadAtMs)
             .apply()
     }
 
+    /**
+     * Writes the uploader's own two fields and nothing else, so an upload finishing between the
+     * settings screen's read and its save cannot restore the token it replaced.
+     */
     fun updateStatus(context: Context, status: String, uploadedAtMs: Long = 0L) {
-        val current = load(context)
-        save(
-            context,
-            current.copy(
-                lastStatus = status,
-                lastUploadAtMs = uploadedAtMs.takeIf { it > 0L } ?: current.lastUploadAtMs
-            )
-        )
+        val edit = prefs(context).edit().putString(KEY_LAST_STATUS, status)
+        if (uploadedAtMs > 0L) edit.putLong(KEY_LAST_UPLOAD_AT_MS, uploadedAtMs)
+        edit.apply()
     }
+
+    private fun prefs(context: Context) =
+        context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     fun maskToken(token: String): String = when {
         token.isBlank() -> ""
