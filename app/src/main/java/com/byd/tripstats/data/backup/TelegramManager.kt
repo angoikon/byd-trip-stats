@@ -54,6 +54,8 @@ class TelegramManager private constructor(private val context: Context) {
         private const val KEY_BOT_NAME = "bot_name"
         private const val KEY_BOT_ID   = "bot_id"
         private const val KEY_LAST_AUTO_BACKUP = "last_auto_backup"
+        private const val KEY_OVERSIZE_DB_BYTES      = "auto_backup_oversize_db_bytes"
+        private const val KEY_OVERSIZE_ARCHIVE_BYTES = "auto_backup_oversize_archive_bytes"
         private const val KEY_SCHEDULE = "backup_schedule"
         private const val KEY_AUTO_ENABLED  = "auto_backup_enabled"
         private const val KEY_WIFI_ONLY     = "auto_backup_wifi_only"
@@ -314,8 +316,12 @@ class TelegramManager private constructor(private val context: Context) {
      * Sends [file] to the configured Telegram chat as a document.
      * Uses chunked multipart/form-data so large files don't need to be fully
      * buffered — Telegram supports up to 50 MB per document.
+     *
+     * Failures never throw: they land in [state] as [TelegramState.Error].
+     *
+     * @return true only when Telegram accepted the file.
      */
-    suspend fun sendFile(file: File, caption: String = "") = withContext(Dispatchers.IO) {
+    suspend fun sendFile(file: File, caption: String = ""): Boolean = withContext(Dispatchers.IO) {
         try {
             val cfg = _config.value ?: throw Exception("Telegram not configured.")
             val size = file.length()
@@ -326,7 +332,7 @@ class TelegramManager private constructor(private val context: Context) {
                     "Consider trimming the database (delete old trips) or using local backups instead."
                 Log.w(TAG, msg)
                 _state.value = TelegramState.Error(msg)
-                return@withContext
+                return@withContext false
             }
             _state.value = TelegramState.InProgress("Sending to Telegram…")
 
@@ -398,14 +404,17 @@ class TelegramManager private constructor(private val context: Context) {
                 }
                 _state.value = TelegramState.Success("Sent to Telegram ✓\n${file.name}")
                 Log.i(TAG, "Telegram send success: ${file.name}")
+                true
             } else {
                 val desc = json.optString("description", "Unknown error")
                 _state.value = TelegramState.Error("Telegram rejected the file: $desc")
+                false
             }
 
         } catch (e: Exception) {
             Log.e(TAG, "Send failed", e)
             _state.value = TelegramState.Error("Send failed: ${e.message}")
+            false
         }
     }
 
@@ -791,6 +800,31 @@ class TelegramManager private constructor(private val context: Context) {
     /** Called by TelegramBackupWorker after a successful run to persist the timestamp. */
     fun recordAutoBackup(timestamp: String) {
         prefs.edit().putString(KEY_LAST_AUTO_BACKUP, timestamp).apply()
+    }
+
+    /**
+     * The last scheduled backup that came out over [TELEGRAM_MAX_FILE_SIZE_BYTES], as
+     * (database bytes, archive bytes); null when there is none, or one has fitted since.
+     * TelegramBackupWorker scales it to today's database instead of compressing again.
+     */
+    fun lastOversizedAutoBackup(): Pair<Long, Long>? {
+        val dbBytes = prefs.getLong(KEY_OVERSIZE_DB_BYTES, 0L)
+        val archiveBytes = prefs.getLong(KEY_OVERSIZE_ARCHIVE_BYTES, 0L)
+        return if (dbBytes > 0L && archiveBytes > 0L) dbBytes to archiveBytes else null
+    }
+
+    fun recordOversizedAutoBackup(dbBytes: Long, archiveBytes: Long) {
+        prefs.edit()
+            .putLong(KEY_OVERSIZE_DB_BYTES, dbBytes)
+            .putLong(KEY_OVERSIZE_ARCHIVE_BYTES, archiveBytes)
+            .apply()
+    }
+
+    fun clearOversizedAutoBackup() {
+        prefs.edit()
+            .remove(KEY_OVERSIZE_DB_BYTES)
+            .remove(KEY_OVERSIZE_ARCHIVE_BYTES)
+            .apply()
     }
 
     fun resetState() {

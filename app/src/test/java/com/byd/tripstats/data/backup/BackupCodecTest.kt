@@ -40,6 +40,20 @@ class BackupCodecTest {
     }
 
     @Test
+    fun `stopped compression ends between chunks`() {
+        // Three chunks' worth, so a stop after the first leaves work undone.
+        val db = temp.newFile("big.db").apply { writeBytes(ByteArray(3 * 64 * 1024) { (it % 7).toByte() }) }
+        val gz = temp.newFile("backup.db.gz")
+        var asked = 0
+        try {
+            BackupCodec.compress(db, gz) { ++asked > 1 }
+            fail("compression should have stopped")
+        } catch (e: java.util.concurrent.CancellationException) {
+            assertEquals("asked before the first chunk and stopped before the second", 2, asked)
+        }
+    }
+
+    @Test
     fun `plain backup passes through unchanged`() {
         val db = fakeDb()
         val out = temp.newFile("restored.db")

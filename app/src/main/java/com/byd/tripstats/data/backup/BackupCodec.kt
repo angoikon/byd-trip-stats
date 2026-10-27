@@ -4,6 +4,7 @@ import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
+import java.util.concurrent.CancellationException
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
@@ -28,10 +29,27 @@ object BackupCodec {
         name.endsWith(PLAIN_EXTENSION, ignoreCase = true) ||
             name.endsWith(COMPRESSED_EXTENSION, ignoreCase = true)
 
-    /** Gzips [source] into [dest], replacing it. Default level: 9 is ~2x the CPU for ~3% smaller. */
-    fun compress(source: File, dest: File) {
-        GZIPOutputStream(FileOutputStream(dest), 64 * 1024).use { gz ->
-            source.inputStream().use { it.copyTo(gz, 64 * 1024) }
+    private const val BUFFER_BYTES = 64 * 1024
+
+    /**
+     * Gzips [source] into [dest], replacing it. Default level: 9 is ~2x the CPU for ~3% smaller.
+     *
+     * [isStopped] is asked between chunks; once it answers true the copy ends with a
+     * [CancellationException] and [dest] is left partial for the caller to delete. A whole
+     * database is ~25 s of a full core on the head unit, which a scheduled backup that Android
+     * has stopped would otherwise spend on an archive nobody sends.
+     */
+    fun compress(source: File, dest: File, isStopped: () -> Boolean = { false }) {
+        GZIPOutputStream(FileOutputStream(dest), BUFFER_BYTES).use { gz ->
+            source.inputStream().use { input ->
+                val buffer = ByteArray(BUFFER_BYTES)
+                while (true) {
+                    if (isStopped()) throw CancellationException("Compressing ${source.name} was stopped")
+                    val read = input.read(buffer)
+                    if (read < 0) break
+                    gz.write(buffer, 0, read)
+                }
+            }
         }
     }
 
