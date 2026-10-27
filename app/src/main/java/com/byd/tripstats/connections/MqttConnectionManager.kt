@@ -74,7 +74,7 @@ class MqttConnectionManager(context: Context) {
             30_000L
         }
         val now = System.currentTimeMillis()
-        val lastPublished = MqttConnectionStore.load(appContext).lastPublishAtMs
+        val lastPublished = config.lastPublishAtMs
         if (lastPublished > 0L && now - lastPublished < intervalMs) return
         if (!inFlight.compareAndSet(false, true)) return
 
