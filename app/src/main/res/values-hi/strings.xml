@@ -92,6 +92,7 @@
     <string name="stat_avg_abbr">औसत</string>
     <string name="stat_energy">ऊर्जा</string>
     <string name="stat_consumption_abbr">खपत</string>
+    <string name="stat_consumption">खपत</string>
     <string name="stat_battery">बैटरी</string>
     <string name="stat_environment">पर्यावरण</string>
     <string name="stat_hv_12v">HV / 12V</string>

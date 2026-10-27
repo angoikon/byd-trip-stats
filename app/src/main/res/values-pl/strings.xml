@@ -102,6 +102,7 @@
     <string name="stat_avg_abbr">ŚRED.</string>
     <string name="stat_energy">ENERGIA</string>
     <string name="stat_consumption_abbr">ZUŻ.</string>
+    <string name="stat_consumption">Zużycie</string>
     <string name="stat_battery">Bateria</string>
     <string name="stat_environment">Otoczenie</string>
     <string name="stat_hv_12v">HV / 12V</string>

@@ -105,6 +105,7 @@
     <string name="stat_avg_abbr">GEM.</string>
     <string name="stat_energy">ENERGIE</string>
     <string name="stat_consumption_abbr">VERBR.</string>
+    <string name="stat_consumption">Verbruik</string>
     <string name="stat_battery">Batterij</string>
     <string name="stat_environment">Omgeving</string>
     <string name="stat_hv_12v">HV / 12V</string>

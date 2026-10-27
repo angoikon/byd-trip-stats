@@ -105,6 +105,7 @@
     <string name="stat_avg_abbr">均值</string>
     <string name="stat_energy">能量</string>
     <string name="stat_consumption_abbr">能耗</string>
+    <string name="stat_consumption">能耗</string>
     <string name="stat_battery">电池</string>
     <string name="stat_environment">环境</string>
     <string name="stat_hv_12v">高压 / 12V</string>

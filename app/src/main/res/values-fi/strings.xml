@@ -105,6 +105,7 @@
     <string name="stat_avg_abbr">KA.</string>
     <string name="stat_energy">ENERGIA</string>
     <string name="stat_consumption_abbr">KUL.</string>
+    <string name="stat_consumption">Kulutus</string>
     <string name="stat_battery">Akku</string>
     <string name="stat_environment">Ympäristö</string>
     <string name="stat_hv_12v">HV / 12V</string>

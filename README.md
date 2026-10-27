@@ -82,11 +82,12 @@ No Electro setup, MQTT broker, or topic configuration is required for normal ope
 - Battery SoH, cell voltage range, thermal min/max delta
 - HV and 12V bus voltage, tyre pressures per wheel (bar / PSI / kPa) and tyre temperatures (×4) where the car exposes them
 - Gear state, speed, engine power, regen detection
+- Instant consumption (kWh/100 km) on a tap of the dashboard's Power readout: motor power over speed, plus the climate / 12 V load learned per trip from the battery's counter
 - Environmentals card with ambient temperature and PM2.5 in/out readings where available
 
 **Range Projection Engine**
 - Consumption model (Wh/km) fed from the BMS total-discharge counter — the same source as the live consumption readout — with engine-power integration as a fallback
-- Consumption over your **last 10, 100 or 500 km** of driving (Settings → Preferences → Battery and range estimate, or a tap on the dashboard's Range tile; 100 km by default). The window runs back across trips, so the projection is your own from the moment you switch on, not re-learned every drive
+- Consumption over your **last 10, 100 or 500 km** of driving (Settings → Preferences → Battery and range estimate, or a tap on the dashboard's Range readout; 100 km by default). The window runs back across trips, so the projection is your own from the moment you switch on, not re-learned every drive
 - Catalogue baseline only until a fresh install has ~3 km of driving to go on
 - PHEVs: kilometres driven on petrol don't dilute the EV rate, and the dashboard shows the petrol and combined range next to the EV projection
 - WLTP upper bound prevents implausible projections during low-speed urban starts

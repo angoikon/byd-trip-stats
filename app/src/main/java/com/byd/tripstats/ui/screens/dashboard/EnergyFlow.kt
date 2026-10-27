@@ -30,6 +30,7 @@ import com.byd.tripstats.R
 import com.byd.tripstats.data.model.VehicleTelemetry
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.data.preferences.SocSource
+import com.byd.tripstats.data.preferences.consumptionUnit
 import com.byd.tripstats.data.preferences.convertDistance
 import com.byd.tripstats.data.preferences.convertSpeed
 import com.byd.tripstats.data.preferences.distanceUnit
@@ -77,6 +78,7 @@ fun EnergyFlowDiagram(
     sessionDistanceKm: Double = 0.0,
     tripDistanceKm: Double = 0.0,
     distanceSinceChargeKm: Double? = null,
+    instantConsumptionKwhPer100km: Double? = null,
     consumptionExpanded: Boolean = false,
     onConsumptionExpand: () -> Unit = {},
     onConsumptionClose: () -> Unit = {},
@@ -135,6 +137,20 @@ fun EnergyFlowDiagram(
     val toggleDistanceReadout: () -> Unit = {
         scope.launch { appPrefs.saveDashboardShowDistanceSinceCharge(!showDistanceSinceCharge) }
     }
+
+    // Power readout: a tap toggles between the motor power and the instant consumption (the same
+    // view flag as the CARDS layout's Power tile).
+    val showInstantConsumption by appPrefs.dashboardShowInstantConsumption.collectAsState(
+        initial = appPrefs.getCachedDashboardShowInstantConsumption()
+    )
+    val togglePowerReadout: () -> Unit = {
+        scope.launch { appPrefs.saveDashboardShowInstantConsumption(!showInstantConsumption) }
+    }
+
+    // Range readout: a tap opens the choice of the range estimate's window, as on the CARDS
+    // layout's Range tile (whose long press opens the chart this layout already shows).
+    val rangeWindow by appPrefs.rangeWindow.collectAsState(initial = appPrefs.getCachedRangeWindow())
+    var showRangeWindowDialog by remember { mutableStateOf(false) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
     val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
@@ -324,14 +340,19 @@ fun EnergyFlowDiagram(
                         power.roundToInt().toString()
                     }
                     PowerMetric(
-                        label = stringResource(R.string.tab_power),
-                        value = powerDisplay,
-                        unit = "kW",
+                        label = stringResource(
+                            if (showInstantConsumption) R.string.stat_consumption else R.string.tab_power
+                        ),
+                        value = if (showInstantConsumption) {
+                            formatInstantConsumption(instantConsumptionKwhPer100km, unitSystem)
+                        } else powerDisplay,
+                        unit = if (showInstantConsumption) unitSystem.consumptionUnit else "kW",
                         color = when {
                             isRegenerating -> RegenGreen
                             power > 0 -> AccelerationOrange
                             else -> MaterialTheme.colorScheme.onSurfaceVariant
-                        }
+                        },
+                        onClick = togglePowerReadout
                     )
                     PowerMetric(
                         label = stringResource(R.string.stat_speed),
@@ -355,7 +376,8 @@ fun EnergyFlowDiagram(
                             formatDistanceValue(unitSystem.convertDistance(km))
                         },
                         unit = distanceUnit,
-                        color = MaterialTheme.extendedColors.range
+                        color = MaterialTheme.extendedColors.range,
+                        onClick = { showRangeWindowDialog = true }
                     )
                     // PHEV: petrol range as its own metric next to the EV range.
                     val selectedCarForFuel by appPrefs.selectedCarConfig
@@ -390,6 +412,18 @@ fun EnergyFlowDiagram(
                 }
             }
         }
+    }
+
+    if (showRangeWindowDialog) {
+        RangeWindowDialog(
+            current = rangeWindow,
+            unitSystem = unitSystem,
+            onPick = { window ->
+                showRangeWindowDialog = false
+                scope.launch { appPrefs.saveRangeWindow(window) }
+            },
+            onDismiss = { showRangeWindowDialog = false }
+        )
     }
 }
 

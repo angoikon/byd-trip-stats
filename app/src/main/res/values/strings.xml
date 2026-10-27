@@ -105,6 +105,7 @@
     <string name="stat_avg_abbr">AVG</string>
     <string name="stat_energy">ENERGY</string>
     <string name="stat_consumption_abbr">CONS.</string>
+    <string name="stat_consumption">Consumption</string>
     <string name="stat_battery">Battery</string>
     <string name="stat_environment">Environment</string>
     <string name="stat_hv_12v">HV / 12V</string>

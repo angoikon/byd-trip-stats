@@ -51,6 +51,7 @@ private val SOC_SOURCE                   = stringPreferencesKey("soc_source")
 private val RANGE_WINDOW                 = stringPreferencesKey("range_window")
 private val DASHBOARD_SHOW_REMAINING_KWH = booleanPreferencesKey("dashboard_show_remaining_kwh")
 private val DASHBOARD_SHOW_DISTANCE_SINCE_CHARGE = booleanPreferencesKey("dashboard_show_distance_since_charge")
+private val DASHBOARD_SHOW_INSTANT_CONSUMPTION = booleanPreferencesKey("dashboard_show_instant_consumption")
 private val CAR_OFF_TIMEOUT_MINUTES      = intPreferencesKey("car_off_timeout_minutes")
 private val CONFIRM_BEFORE_AUTO_STOP     = booleanPreferencesKey("confirm_before_auto_stop")
 private val MIN_TRIP_DISTANCE_KM         = doublePreferencesKey("min_trip_distance_km")
@@ -467,6 +468,22 @@ class PreferencesManager(private val context: Context) {
     suspend fun saveDashboardShowDistanceSinceCharge(show: Boolean) {
         context.dataStore.edit { it[DASHBOARD_SHOW_DISTANCE_SINCE_CHARGE] = show }
         cache.edit().putBoolean("dashboard_show_distance_since_charge", show).apply()
+    }
+
+    // ── Dashboard power readout: instant consumption ──────────────────────────
+    // Dashboard-only view flag on the Power tile, like [dashboardShowRemainingKwh] on the SoC
+    // tile. When true the tile shows the instant consumption (kWh/100 km) instead of the motor
+    // power in kW; tapping the tile toggles it. Nothing recorded depends on it.
+    val dashboardShowInstantConsumption: Flow<Boolean> = context.dataStore.data
+        .map { it[DASHBOARD_SHOW_INSTANT_CONSUMPTION] ?: false }
+        .onEach { cache.edit().putBoolean("dashboard_show_instant_consumption", it).apply() }
+
+    fun getCachedDashboardShowInstantConsumption(): Boolean =
+        cache.getBoolean("dashboard_show_instant_consumption", false)
+
+    suspend fun saveDashboardShowInstantConsumption(show: Boolean) {
+        context.dataStore.edit { it[DASHBOARD_SHOW_INSTANT_CONSUMPTION] = show }
+        cache.edit().putBoolean("dashboard_show_instant_consumption", show).apply()
     }
 
     // ── Engine-off timeout (trip auto-end) ────────────────────────────────────

@@ -8,6 +8,7 @@ import com.byd.tripstats.adb.AdbPermissionManager
 import com.byd.tripstats.data.local.BydStatsDatabase
 import com.byd.tripstats.data.local.dao.TripSohSummary
 import com.byd.tripstats.data.analysis.CostAttribution
+import com.byd.tripstats.data.analysis.InstantConsumptionEstimator
 import com.byd.tripstats.data.analysis.RouteGroup
 import com.byd.tripstats.data.analysis.RouteGrouping
 import com.byd.tripstats.data.analysis.RouteTripInput
@@ -191,6 +192,23 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     ) { live, mock ->
         mock ?: live
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    // Instant consumption for the dashboard's Power tile (see InstantConsumptionEstimator), from
+    // the same power and speed the tile shows. Fed only while the dashboard is open — that includes
+    // the app sitting in the background after Home, as collectAsState keeps collecting until the
+    // activity closes; the extra load it learns starts over with each trip (see init).
+    private val instantConsumption = InstantConsumptionEstimator()
+
+    val instantConsumptionKwhPer100km: StateFlow<Double?> =
+        combine(displayVehicleSnapshot, displayTelemetry) { snapshot, telemetry ->
+            if (telemetry == null) return@combine null
+            instantConsumption.update(
+                timeMs = android.os.SystemClock.elapsedRealtime(),
+                motorKw = (snapshot?.enginePower ?: telemetry.enginePower).toDouble(),
+                speedKmh = snapshot?.directSpeedKmh?.takeIf { it > 0.1 } ?: telemetry.speed,
+                totalDischargeKwh = telemetry.totalDischarge
+            )
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     // Eagerly kept alive — drives the trip state machine in init{}.
     val isInTrip: StateFlow<Boolean> = tripRepository.isInTrip
@@ -1755,6 +1773,11 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 val telemetry = currentTelemetry.value ?: return@collect
                 reprojectLatestPoint(telemetry, withReadings = false)
             }
+        }
+
+        // A new trip (or the end of one) starts the instant consumption's extra-load learning over.
+        viewModelScope.launch {
+            currentTripId.collect { instantConsumption.resetExtraLoad() }
         }
 
         viewModelScope.launch {

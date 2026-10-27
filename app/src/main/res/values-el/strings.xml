@@ -92,6 +92,7 @@
     <string name="stat_avg_abbr">ΜΕΣH TAX.</string>
     <string name="stat_energy">ΕΝΕΡΓΕΙΑ</string>
     <string name="stat_consumption_abbr">ΚΑΤΑΝΑΛΩΣΗ</string>
+    <string name="stat_consumption">Κατανάλωση</string>
     <string name="stat_battery">Μπαταρία</string>
     <string name="stat_environment">Περιβάλλον</string>
     <string name="stat_hv_12v">HV / 12V</string>

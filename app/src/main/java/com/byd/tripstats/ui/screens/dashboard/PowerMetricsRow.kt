@@ -42,7 +42,9 @@ import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.data.preferences.RangeWindow
 import com.byd.tripstats.data.preferences.SocSource
 import com.byd.tripstats.data.preferences.UnitSystem
+import com.byd.tripstats.data.preferences.consumptionUnit
 import com.byd.tripstats.data.preferences.convertDistance
+import com.byd.tripstats.data.preferences.convertEfficiency
 import com.byd.tripstats.data.preferences.convertSpeed
 import com.byd.tripstats.data.preferences.displayLabel
 import com.byd.tripstats.data.preferences.distanceUnit
@@ -66,8 +68,9 @@ private val PowerTileHeight = 150.dp
  * large tiles for the CARDS layout. Each tile has a static, thin accent stripe flush
  * to its left edge and a dynamic subtitle. A tap on the Range tile opens the choice of the range
  * estimate's window (10 / 100 / 500 km, the Settings → Preferences → Battery and range estimate
- * setting) and a long press opens the range-projection chart; the battery and Distance tiles
- * toggle their readout on a tap.
+ * setting) and a long press opens the range-projection chart; the Power, battery and Distance
+ * tiles toggle their readout on a tap — the Power tile between the motor power and the instant
+ * consumption (InstantConsumptionEstimator).
  */
 @Composable
 fun PowerMetricsRow(
@@ -77,6 +80,7 @@ fun PowerMetricsRow(
     sessionDistanceKm: Double,
     tripDistanceKm: Double,
     distanceSinceChargeKm: Double? = null,
+    instantConsumptionKwhPer100km: Double? = null,
     socSource: SocSource,
     editMode: Boolean = false,
     compact: Boolean = false,
@@ -101,6 +105,7 @@ fun PowerMetricsRow(
     val parked = displaySpeedKmh < 0.5
 
     val powerDisplay = if (isCharging) String.format("%.1f", power) else power.roundToInt().toString()
+    // The subtitle is the car's state, which holds for both of the tile's views.
     val powerSubtitle = when {
         isCharging || (power < 0.0 && parked) -> stringResource(R.string.power_state_charging)
         power < 0.0 -> stringResource(R.string.power_state_decelerating)
@@ -114,6 +119,15 @@ fun PowerMetricsRow(
     val rangeKm = projectedRangeKm
         ?: telemetry.electricDrivingRangeKm.toDouble().takeIf { it > 0 }
         ?: 0.0
+
+    // Power tile: a tap toggles the view between the motor power and the instant consumption —
+    // the same kind of view flag as the battery tile's.
+    val showInstantConsumption by prefs.dashboardShowInstantConsumption.collectAsState(
+        initial = prefs.getCachedDashboardShowInstantConsumption()
+    )
+    val togglePowerReadout: () -> Unit = remember(showInstantConsumption) {
+        { scope.launch { prefs.saveDashboardShowInstantConsumption(!showInstantConsumption) } }
+    }
 
     // Range tile: a tap opens the choice of window the projection is taken over — a dialog, so a
     // stray tap while driving can't change it. The ViewModel projects again as soon as it changes.
@@ -168,14 +182,17 @@ fun PowerMetricsRow(
 
     val tiles: Map<PowerMetricId, PowerTileData> = mapOf(
         PowerMetricId.POWER to PowerTileData(
-            label = stringResource(R.string.tab_power),
-            value = powerDisplay, unit = "kW", subtitle = powerSubtitle,
+            label = stringResource(if (showInstantConsumption) R.string.stat_consumption else R.string.tab_power),
+            value = if (showInstantConsumption) formatInstantConsumption(instantConsumptionKwhPer100km, unitSystem)
+            else powerDisplay,
+            unit = if (showInstantConsumption) unitSystem.consumptionUnit else "kW",
+            subtitle = powerSubtitle,
             accent = when {
                 telemetry.isRegenerating -> RegenGreen
                 power > 0 -> AccelerationOrange
                 else -> MaterialTheme.colorScheme.onSurfaceVariant
             },
-            onClick = null
+            onClick = togglePowerReadout
         ),
         PowerMetricId.SPEED to PowerTileData(
             label = stringResource(R.string.stat_speed),
@@ -269,11 +286,22 @@ fun PowerMetricsRow(
 }
 
 /**
- * The Range tile's window choice, laid out like the dashboard's tyre-pressure unit dialog: one
- * radio row per window, picked on the tap, Cancel or a tap outside to leave it as it is.
+ * The instant consumption as the Power readout shows it, in the user's units: an em dash below
+ * the estimator's minimum speed (as the kWh view does without data), ≥ 100 without a decimal so
+ * it stays short in the tile.
+ */
+internal fun formatInstantConsumption(kwhPer100km: Double?, unitSystem: UnitSystem): String {
+    val v = kwhPer100km?.let { unitSystem.convertEfficiency(it) } ?: return "—"
+    return (if (kotlin.math.abs(v) >= 100.0) "%.0f" else "%.1f").format(v)
+}
+
+/**
+ * The Range readout's window choice (the CARDS tile and the CLASSIC metric), laid out like the
+ * dashboard's tyre-pressure unit dialog: one radio row per window, picked on the tap, Cancel or a
+ * tap outside to leave it as it is.
  */
 @Composable
-private fun RangeWindowDialog(
+internal fun RangeWindowDialog(
     current: RangeWindow,
     unitSystem: UnitSystem,
     onPick: (RangeWindow) -> Unit,
@@ -554,6 +582,8 @@ private fun PowerMetricCard(
                                 text = unit,
                                 fontSize = 16.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                softWrap = false,
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
                         }

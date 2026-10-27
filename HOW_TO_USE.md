@@ -91,17 +91,17 @@ Notes:
 
 ### Bottom Metrics
 
-- **Power** — live motor output or regen
+- **Power** — live motor output or regen. Tap to switch it to your **instant consumption** (*Consumption*, in kWh/100 km) and back: shown above 10 km/h, negative while regenerating, a dash when stopped
 - **Speed**
 - **Battery (SoC)** — tap to switch between the state of charge and the energy left in kWh
-- **Range** — the projected range, with the distance it is taken over underneath (*Last 100 km*); tap to choose 10 / 100 / 500 km, long-press to open the range chart. Until a projection exists it shows the car's own estimate (*BMS estimate*)
+- **Range** — the projected range; tap to choose the distance it is taken over (10 / 100 / 500 km). On the Cards layout the tile names that distance underneath (*Last 100 km*), or *BMS estimate* while it shows the car's own figure before a projection exists, and a long press opens the range chart
 - **Distance** — current engine-on segment distance; when a trip survives a brief stop the cumulative trip distance is shown alongside it. Tap to switch to the distance driven since your last charge
 
 On DiLink 3, speed, gear, power and front-motor RPM update up to 10 times a second once the one-time ADB authorisation is done.
 
 ### Cards layout (Pro)
 
-**Settings → Preferences → Appearance → Dashboard Layout** switches to **Cards**: big tiles instead of the central chart. Tap the pencil to drag tiles into a new order or hide the ones you don't need, and tap the Range tile for the projection chart full-size.
+**Settings → Preferences → Appearance → Dashboard Layout** switches to **Cards**: big tiles instead of the central chart. Tap the pencil to drag tiles into a new order or hide the ones you don't need, and long-press the Range tile for the projection chart full-size.
 
 ---
 

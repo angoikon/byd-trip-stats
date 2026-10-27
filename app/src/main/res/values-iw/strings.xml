@@ -102,6 +102,7 @@
     <string name="stat_avg_abbr">ממוצע</string>
     <string name="stat_energy">אנרגיה</string>
     <string name="stat_consumption_abbr">צריכה</string>
+    <string name="stat_consumption">צריכה</string>
     <string name="stat_battery">סוללה</string>
     <string name="stat_environment">סביבה</string>
     <string name="stat_hv_12v">HV / 12V</string>

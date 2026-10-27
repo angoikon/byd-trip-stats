@@ -105,6 +105,7 @@
     <string name="stat_avg_abbr">GNS.</string>
     <string name="stat_energy">ENERGI</string>
     <string name="stat_consumption_abbr">FORB.</string>
+    <string name="stat_consumption">Forbrug</string>
     <string name="stat_battery">Batteri</string>
     <string name="stat_environment">Omgivelser</string>
     <string name="stat_hv_12v">HV / 12V</string>

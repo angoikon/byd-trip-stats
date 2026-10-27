@@ -66,6 +66,7 @@ fun DashboardScreen(
     val liveOdometerDistanceKm by viewModel.liveOdometerDistanceKm.collectAsState()
     val liveSegmentDistanceKm by viewModel.liveSegmentDistanceKm.collectAsState()
     val distanceSinceLastChargeKm by viewModel.distanceSinceLastChargeKm.collectAsState()
+    val instantConsumptionKwhPer100km by viewModel.instantConsumptionKwhPer100km.collectAsState()
     val liveSessionStartMs by viewModel.liveSessionStartMs.collectAsState()
     val liveOffStateMs by viewModel.liveOffStateMs.collectAsState()
     val liveAccumulatedKwh by viewModel.liveAccumulatedKwh.collectAsState()
@@ -289,6 +290,7 @@ fun DashboardScreen(
                 sessionDistanceKm = liveSegmentDistanceKm,
                 tripDistanceKm = liveDistanceKm,
                 distanceSinceChargeKm = distanceSinceLastChargeKm,
+                instantConsumptionKwhPer100km = instantConsumptionKwhPer100km,
                 liveOdometerDistanceKm = liveOdometerDistanceKm,
                 liveSessionStartMs = liveSessionStartMs,
                 liveOffStateMs = liveOffStateMs,
@@ -491,6 +493,7 @@ fun DashboardContent(
     sessionDistanceKm: Double = 0.0,
     tripDistanceKm: Double = 0.0,
     distanceSinceChargeKm: Double? = null,
+    instantConsumptionKwhPer100km: Double? = null,
     liveOdometerDistanceKm: Double = 0.0,
     liveSessionStartMs: Long? = null,
     liveOffStateMs: Long = 0L,
@@ -516,6 +519,7 @@ fun DashboardContent(
             sessionDistanceKm = sessionDistanceKm,
             tripDistanceKm = tripDistanceKm,
             distanceSinceChargeKm = distanceSinceChargeKm,
+            instantConsumptionKwhPer100km = instantConsumptionKwhPer100km,
             tyreUnit = tyreUnit,
             isInTrip = isInTrip,
             autoTripDetection = autoTripDetection,
@@ -588,6 +592,7 @@ fun DashboardContent(
                     sessionDistanceKm = sessionDistanceKm,
                     tripDistanceKm = tripDistanceKm,
                     distanceSinceChargeKm = distanceSinceChargeKm,
+                    instantConsumptionKwhPer100km = instantConsumptionKwhPer100km,
                     consumptionExpanded = consumptionExpanded,
                     onConsumptionExpand = onConsumptionExpand,
                     onConsumptionClose = onConsumptionClose,
@@ -643,6 +648,7 @@ fun DashboardContent(
                         sessionDistanceKm = sessionDistanceKm,
                         tripDistanceKm = tripDistanceKm,
                         distanceSinceChargeKm = distanceSinceChargeKm,
+                        instantConsumptionKwhPer100km = instantConsumptionKwhPer100km,
                         consumptionExpanded = consumptionExpanded,
                         onConsumptionExpand = onConsumptionExpand,
                         onConsumptionClose = onConsumptionClose,
@@ -724,6 +730,7 @@ fun DashboardContent(
                         sessionDistanceKm = sessionDistanceKm,
                         tripDistanceKm = tripDistanceKm,
                         distanceSinceChargeKm = distanceSinceChargeKm,
+                        instantConsumptionKwhPer100km = instantConsumptionKwhPer100km,
                         consumptionExpanded = consumptionExpanded,
                         onConsumptionExpand = onConsumptionExpand,
                         onConsumptionClose = onConsumptionClose,

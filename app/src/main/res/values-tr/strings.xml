@@ -105,6 +105,7 @@
     <string name="stat_avg_abbr">ORT</string>
     <string name="stat_energy">ENERJİ</string>
     <string name="stat_consumption_abbr">TÜK.</string>
+    <string name="stat_consumption">Tüketim</string>
     <string name="stat_battery">Pil</string>
     <string name="stat_environment">Çevre</string>
     <string name="stat_hv_12v">YV / 12V</string>

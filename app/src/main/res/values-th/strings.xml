@@ -92,6 +92,7 @@
     <string name="stat_avg_abbr">เฉลี่ย</string>
     <string name="stat_energy">พลังงาน</string>
     <string name="stat_consumption_abbr">การใช้</string>
+    <string name="stat_consumption">การใช้พลังงาน</string>
     <string name="stat_battery">แบตเตอรี่</string>
     <string name="stat_environment">สิ่งแวดล้อม</string>
     <string name="stat_hv_12v">HV / 12V</string>
