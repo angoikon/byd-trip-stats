@@ -287,12 +287,12 @@ fun PowerMetricsRow(
 
 /**
  * The instant consumption as the Power readout shows it, in the user's units: an em dash below
- * the estimator's minimum speed (as the kWh view does without data), ≥ 100 without a decimal so
- * it stays short in the tile.
+ * the estimator's minimum speed (as the kWh view does without data), in whole numbers — the motor
+ * power comes in whole kW (2 kWh/100 km at 50 km/h), so a decimal only flickered.
  */
 internal fun formatInstantConsumption(kwhPer100km: Double?, unitSystem: UnitSystem): String {
     val v = kwhPer100km?.let { unitSystem.convertEfficiency(it) } ?: return "—"
-    return (if (kotlin.math.abs(v) >= 100.0) "%.0f" else "%.1f").format(v)
+    return v.roundToInt().toString()
 }
 
 /**
@@ -517,11 +517,14 @@ private fun PowerMetricCard(
                             style = glowStyle
                         )
                         Spacer(Modifier.width(2.dp))
+                        // Two lines, so a long unit breaks after its slash (kWh/ over 100km)
+                        // instead of losing the half that doesn't fit.
                         Text(
                             text = unit,
                             fontSize = 11.sp,
+                            lineHeight = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1
+                            maxLines = 2
                         )
                     }
                 } else if (compact) {
