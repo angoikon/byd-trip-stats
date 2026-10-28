@@ -100,13 +100,9 @@ class AbrpConnectionManager(context: Context) {
         val payload = buildPayload(telemetry, carConfig)
         val ok = upload(payload, configOverride)
         val status = if (ok) "ABRP test upload ok" else "ABRP test upload failed"
-        AbrpConnectionStore.save(
-            appContext,
-            configOverride.copy(
-                lastStatus = status,
-                lastUploadAtMs = if (ok) System.currentTimeMillis() else 0L
-            )
-        )
+        // save() writes only the settings; the result goes through updateStatus, as on every upload.
+        AbrpConnectionStore.save(appContext, configOverride)
+        AbrpConnectionStore.updateStatus(appContext, status, if (ok) System.currentTimeMillis() else 0L)
         return ok to status
     }
 
