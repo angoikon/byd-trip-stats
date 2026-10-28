@@ -80,7 +80,12 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                 ).forEach { (mode, label) ->
                     Button(
                         onClick = {
-                            scope.launch { preferencesManager.saveOffStateMode(mode) }
+                            scope.launch {
+                                preferencesManager.saveOffStateMode(mode)
+                                // The Wi-Fi keepalive runs only in Always On, so the daemon's
+                                // flag follows the mode too.
+                                WifiKeepalive.sync(context)
+                            }
                             // Reconcile background scheduling to the new mode immediately.
                             // saveOffStateMode only persists the pref; without this, the
                             // keepalive chain is (re)armed only on the next ACC_OFF, so
@@ -134,10 +139,13 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                     }
                 }
             }
+            // The modes that pause the Wi-Fi keepalive say so — only where that switch exists (DiLink-3).
+            val keepaliveNote = if (DiLink5Platform.isDiLink5) ""
+                else " " + stringResource(R.string.bg_wifi_keepalive_paused_note)
             listOf(
                 OffStateMode.ENABLED    to stringResource(R.string.bg_always_on_desc),
-                OffStateMode.DISABLED   to stringResource(R.string.bg_minimal_desc),
-                OffStateMode.DEEP_SLEEP to stringResource(R.string.bg_deep_sleep_desc),
+                OffStateMode.DISABLED   to stringResource(R.string.bg_minimal_desc) + keepaliveNote,
+                OffStateMode.DEEP_SLEEP to stringResource(R.string.bg_deep_sleep_desc) + keepaliveNote,
             ).forEach { (mode, description) ->
                 Text(
                     description,
@@ -176,7 +184,10 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
 
             // Wi-Fi keepalive while the car is off (DiLink-3, privileged daemon). Keeps the head unit
             // reachable on the LAN after the car is switched off by re-enabling Wi-Fi when the MCU cuts it.
+            // Always On only (WifiKeepalive.isActive): elsewhere the switch greys out but keeps its
+            // state, which applies again once the user picks Always On.
             if (!DiLink5Platform.isDiLink5) {
+                val pausedByMode = offStateMode != OffStateMode.ENABLED
                 HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -194,8 +205,11 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                         )
                         Text(
                             stringResource(
-                                if (adbSetupOk) R.string.wifi_keepalive_desc
-                                else R.string.requires_adb_setup_hint
+                                when {
+                                    !adbSetupOk  -> R.string.requires_adb_setup_hint
+                                    pausedByMode -> R.string.wifi_keepalive_needs_always_on
+                                    else         -> R.string.wifi_keepalive_desc
+                                }
                             ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -204,11 +218,11 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                     Spacer(Modifier.width(12.dp))
                     BrandSwitch(
                         checked = wifiKeepalive,
-                        enabled = adbSetupOk,
+                        enabled = adbSetupOk && !pausedByMode,
                         onCheckedChange = { enabled ->
                             scope.launch {
                                 preferencesManager.saveWifiKeepaliveWhenOff(enabled)
-                                WifiKeepalive.apply(context, enabled)
+                                WifiKeepalive.sync(context)
                             }
                         },
                     )

@@ -3,7 +3,9 @@ package com.byd.tripstats.util
 import android.content.Context
 import android.os.SystemClock
 import com.byd.tripstats.adb.AdbPermissionManager
+import com.byd.tripstats.data.preferences.OffStateMode
 import com.byd.tripstats.data.preferences.PreferencesManager
+import kotlinx.coroutines.flow.first
 
 /**
  * Bridges the "keep Wi-Fi alive when car is off" preference to the privileged UID-2000 telemetry
@@ -17,6 +19,12 @@ import com.byd.tripstats.data.preferences.PreferencesManager
  *
  * Writing needs the shell channel, so this is a no-op when the privileged setup isn't complete —
  * which is fine: without it there is no daemon to read the flag anyway.
+ *
+ * Only Always On runs it, whatever the toggle says ([isActive]). The daemon's drain guard reads the
+ * 12V/SoC that only the service feeds ([pushGuard]), and Minimal and Deep Sleep stop the service
+ * after switch-off while the daemon lives on — so there it kept turning Wi-Fi back on all night with
+ * a stale guard, which the daemon reads as "unknown, don't block". The toggle itself is kept, and
+ * applies again once the user picks Always On.
  */
 object WifiKeepalive {
 
@@ -39,12 +47,22 @@ object WifiKeepalive {
     private const val GUARD_PUSH_INTERVAL_MS = 300_000L   // 5 min
     @Volatile private var lastGuardPushMs = 0L
 
+    /** Whether the daemon should keep Wi-Fi up: the toggle is on and the off-state mode is Always On. */
+    fun isActive(toggleOn: Boolean, mode: OffStateMode): Boolean =
+        toggleOn && mode == OffStateMode.ENABLED
+
     /**
-     * Push the current toggle state to the daemon. Enable → write the flag; disable → remove it.
-     * Safe to call repeatedly (idempotent) — call it on every toggle change and once on app start
-     * so a reinstall/boot re-syncs the persisted preference.
+     * Push the saved settings to the daemon: the toggle and the off-state mode, see [isActive].
+     * Safe to call repeatedly (idempotent) — call it whenever either changes and once on app start
+     * so a reinstall/boot re-syncs the persisted preferences.
      */
-    suspend fun apply(context: Context, enabled: Boolean) {
+    suspend fun sync(context: Context) {
+        val prefs = PreferencesManager(context)
+        apply(context, isActive(prefs.wifiKeepaliveWhenOff.first(), prefs.offStateMode.first()))
+    }
+
+    /** Enable → write the flag; disable → remove it. */
+    private suspend fun apply(context: Context, enabled: Boolean) {
         if (!AdbPermissionManager.isSetupComplete(context)) return
         // chmod 644 so the daemon (also uid 2000) can always read it, whatever umask wrote it.
         val cmd = if (enabled) {
@@ -62,11 +80,12 @@ object WifiKeepalive {
      * them fine, writes them to a file the daemon polls. This is transport, not a second reading.
      *
      * Called from the telemetry loop; throttled to [GUARD_PUSH_INTERVAL_MS] and a no-op unless the
-     * toggle is on and the privileged setup is complete. Null (unknown) values are written blank —
-     * the daemon treats a blank/absent value as "unknown, don't block".
+     * keepalive is [isActive] and the privileged setup is complete. Null (unknown) values are
+     * written blank — the daemon treats a blank/absent value as "unknown, don't block".
      */
     suspend fun pushGuard(context: Context, v12: Double?, soc: Double?) {
-        if (!PreferencesManager(context).getCachedWifiKeepaliveWhenOff()) return
+        val prefs = PreferencesManager(context)
+        if (!isActive(prefs.getCachedWifiKeepaliveWhenOff(), prefs.getCachedOffStateMode())) return
         val now = SystemClock.elapsedRealtime()
         if (lastGuardPushMs != 0L && now - lastGuardPushMs < GUARD_PUSH_INTERVAL_MS) return
         if (!AdbPermissionManager.isSetupComplete(context)) return

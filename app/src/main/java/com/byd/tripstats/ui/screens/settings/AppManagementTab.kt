@@ -13,6 +13,7 @@ import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.sdk.DiLink5Platform
 import com.byd.tripstats.sdk.VehicleCompatibilityProbe
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
+import com.byd.tripstats.util.WifiKeepalive
 import kotlinx.coroutines.CoroutineScope
 
 /**
@@ -84,7 +85,7 @@ internal fun AppManagementTab(
                     if (Di5MobileDataGate.isUnblocked(context)) {
                         add(stringResource(R.string.d5_mobile_data_on_status))
                     }
-                } else if (wifiKeepalive) {
+                } else if (WifiKeepalive.isActive(wifiKeepalive, offStateMode)) {
                     add(stringResource(R.string.wifi_keepalive_on_status))
                 }
             }.joinToString(" • ")
