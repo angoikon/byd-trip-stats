@@ -4,7 +4,7 @@ import android.content.Context
 import android.os.SystemClock
 import android.util.Log
 import com.byd.tripstats.data.model.VehicleTelemetry
-import com.byd.tripstats.data.preferences.PreferencesManager
+import com.byd.tripstats.data.config.CarConfig
 import com.hivemq.client.mqtt.MqttClient
 import com.hivemq.client.mqtt.datatypes.MqttQos
 import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient
@@ -33,7 +33,7 @@ class MqttConnectionManager(context: Context) {
     @Volatile private var lastEndpoint: String = ""
     @Volatile private var currentDeviceId: String = ""
     // Which broker + device id we have already reconciled discovery against, so the common
-    // case costs a string compare rather than rebuilding all 49 payloads on every publish tick.
+    // case costs a string compare rather than rebuilding the whole set on every publish tick.
     @Volatile private var discoveryCheckedFor: String = ""
     @Volatile private var forceDiscoveryRepublish: Boolean = false
     @Volatile private var lastDiscoveryReconcileMs: Long = 0L
@@ -64,6 +64,7 @@ class MqttConnectionManager(context: Context) {
 
     fun onTelemetry(
         telemetry: VehicleTelemetry,
+        carConfig: CarConfig?,
         scope: CoroutineScope
     ) {
         val config = MqttConnectionStore.load(appContext)
@@ -80,7 +81,7 @@ class MqttConnectionManager(context: Context) {
 
         scope.launch(Dispatchers.IO) {
             try {
-                val ok = publish(buildPayload(telemetry), config)
+                val ok = publish(buildPayload(telemetry, carConfig), config, isPhevCar(carConfig))
                 val status = if (ok) "MQTT publish ok" else "MQTT publish failed"
                 if (ok) {
                     MqttConnectionStore.updateStatus(appContext, status, now)
@@ -93,12 +94,12 @@ class MqttConnectionManager(context: Context) {
         }
     }
 
-    fun testPublish(telemetry: VehicleTelemetry): Pair<Boolean, String> {
+    fun testPublish(telemetry: VehicleTelemetry, carConfig: CarConfig?): Pair<Boolean, String> {
         val config = MqttConnectionStore.load(appContext)
         if (!config.enabled || config.brokerUrl.isBlank()) {
             return false to "MQTT is not configured"
         }
-        val ok = publish(buildPayload(telemetry), config)
+        val ok = publish(buildPayload(telemetry, carConfig), config, isPhevCar(carConfig))
         val status = if (ok) "MQTT test publish ok" else "MQTT test publish failed"
         if (ok) {
             MqttConnectionStore.updateStatus(appContext, status, System.currentTimeMillis())
@@ -126,7 +127,7 @@ class MqttConnectionManager(context: Context) {
         }
     }
 
-    private fun ensureConnected(config: MqttConnectionConfig): Boolean {
+    private fun ensureConnected(config: MqttConnectionConfig, isPhev: Boolean): Boolean {
         val resolvedId = resolveDeviceId(config)
         val endpoint = "${config.brokerUrl.trim()}:${config.brokerPort}"
         val avTopic = "byd-trip-stats/$resolvedId/availability"
@@ -139,7 +140,7 @@ class MqttConnectionManager(context: Context) {
                 // scope has no handler, so anything thrown here would take the service down with it
                 // — on DiLink-5 that is a relaunch loop. Nothing in there should throw; this is a
                 // net, not a plan.
-                runCatching { ensureDiscoveryPublished(config, resolvedId, avTopic, stTopic, endpoint) }
+                runCatching { ensureDiscoveryPublished(config, resolvedId, avTopic, stTopic, endpoint, isPhev) }
                     .onFailure { Log.w(TAG, "Discovery check failed on the live connection", it) }
                 return true
             }
@@ -220,7 +221,7 @@ class MqttConnectionManager(context: Context) {
             if (ok) {
                 try {
                     // Discovery first (retained) so HA knows entities before seeing them go online
-                    ensureDiscoveryPublished(config, resolvedId, avTopic, stTopic, endpoint)
+                    ensureDiscoveryPublished(config, resolvedId, avTopic, stTopic, endpoint, isPhev)
                     // Then mark available — state arrives right after from publish()
                     publishRetained(avTopic, "online")
                     lastOnlineAssertMs = System.currentTimeMillis()
@@ -233,8 +234,8 @@ class MqttConnectionManager(context: Context) {
         }
     }
 
-    private fun publish(payload: JSONObject, config: MqttConnectionConfig): Boolean {
-        if (!ensureConnected(config)) return false
+    private fun publish(payload: JSONObject, config: MqttConnectionConfig, isPhev: Boolean): Boolean {
+        if (!ensureConnected(config, isPhev)) return false
         val activeClient = client ?: return false
         val latch = CountDownLatch(1)
         var ok = false
@@ -401,8 +402,8 @@ class MqttConnectionManager(context: Context) {
     /**
      * Sends the discovery set only when the broker does not already have this exact one.
      *
-     * Home Assistant reads the retained configs on its own subscribe, so restating all 49 after a
-     * dropped connection costs ~19.6 KB and tells nobody anything new. The fingerprint is persisted
+     * Home Assistant reads the retained configs on its own subscribe, so restating all of them
+     * after a dropped connection costs around 19.6 KB and tells nobody anything new. The fingerprint is persisted
      * rather than held in a field because on DiLink-5 the app process is killed and restarted
      * several times a day: a gate that lives only in memory is discarded with the process that
      * owns it, and every restart pays for the whole set again.
@@ -412,20 +413,22 @@ class MqttConnectionManager(context: Context) {
         resolvedId: String,
         avTopic: String,
         stTopic: String,
-        endpoint: String
+        endpoint: String,
+        isPhev: Boolean
     ) {
         // The broker belongs in the key as much as the device id does: pointing the app at a new
         // broker leaves the old one's retained set behind and the new one with nothing.
         val scope = "$endpoint|$resolvedId"
+        val checkKey = discoveryCheckKey(scope, isPhev)
         val now = System.currentTimeMillis()
-        if (scope == discoveryCheckedFor &&
+        if (checkKey == discoveryCheckedFor &&
             !forceDiscoveryRepublish &&
             now - lastDiscoveryReconcileMs < DISCOVERY_REFRESH_INTERVAL_MS
         ) {
             return
         }
 
-        val messages = buildDiscoveryMessages(config, resolvedId, avTopic, stTopic)
+        val messages = buildDiscoveryMessages(config, resolvedId, avTopic, stTopic, isPhev)
         val fingerprint = fingerprintOf(scope, messages)
         val publishedAt = MqttConnectionStore.loadDiscoveryPublishedAt(appContext)
         val stale = discoveryIsStale(now, publishedAt)
@@ -443,7 +446,7 @@ class MqttConnectionManager(context: Context) {
             // the countdown on every check and never reach the refresh at all.
             lastDiscoveryReconcileMs = publishedAt
         }
-        discoveryCheckedFor = scope
+        discoveryCheckedFor = checkKey
         forceDiscoveryRepublish = false
     }
 
@@ -482,7 +485,8 @@ class MqttConnectionManager(context: Context) {
         config: MqttConnectionConfig,
         resolvedId: String,
         avTopic: String,
-        stTopic: String
+        stTopic: String,
+        isPhev: Boolean
     ): List<Pair<String, String>> {
         val messages = mutableListOf<Pair<String, String>>()
         val displayName = config.friendlyName.trim().ifBlank { "BYD Trip Stats" }
@@ -549,6 +553,7 @@ class MqttConnectionManager(context: Context) {
         )
 
         for ((id, name, unit, deviceClass, stateClass, valueTemplate) in allSensors) {
+            if (!advertisesSensor(id, isPhev)) continue
 
             val discovery = JSONObject()
                 .put("name", "$name")
@@ -591,6 +596,9 @@ class MqttConnectionManager(context: Context) {
             val topic = "homeassistant/binary_sensor/$resolvedId/$id/config"
             messages += topic to discovery.toString().replace("\\/", "/")
         }
+        // Sent after the set that replaces them, so a burst cut short by a dropped connection
+        // leaves the broker with the old entities rather than with none.
+        messages += retiredFuelTopics(resolvedId, isPhev)
         return messages
     }
 
@@ -604,7 +612,8 @@ class MqttConnectionManager(context: Context) {
         }
     }
 
-    private fun buildPayload(telemetry: VehicleTelemetry): JSONObject {
+    private fun buildPayload(telemetry: VehicleTelemetry, carConfig: CarConfig?): JSONObject {
+        val isPhev = isPhevCar(carConfig)
         val payload = JSONObject()
         payload.put("current_datetime", Instant.now().toString())
         payload.put("soc", telemetry.soc)
@@ -625,17 +634,18 @@ class MqttConnectionManager(context: Context) {
         payload.put("car_on", telemetry.isCarOn)
         payload.put("car_locked", telemetry.carLocked > 0)
         payload.put("any_door_opened", telemetry.anyDoorOpened > 0)
-        payload.put("fuel_percentage", telemetry.fuelPercentage)
-        payload.put("fuel_driving_range_km", telemetry.fuelDrivingRangeKm)
+        if (isPhev) {
+            payload.put("fuel_percentage", telemetry.fuelPercentage)
+            payload.put("fuel_driving_range_km", telemetry.fuelDrivingRangeKm)
+        }
         payload.put("drive_mode", telemetry.driveModeName)
         payload.put("regen_mode", telemetry.regenModeName)
-        // PHEV only. Gated on the car, not on energyMode != 0: the DiLink-3 poll stores
-        // getEnergyMode for every car and a BEV Seal reports 1 (=EV), which would publish a
-        // meaningless "EV" on every BEV.
-        val isPhevCar = PreferencesManager(appContext).getCachedSelectedCarConfig()?.isPhev == true
+        // PHEV only, on the same rule as the fuel gauges above. Gated on the car, not on
+        // energyMode != 0: the DiLink-3 poll stores getEnergyMode for every car and a BEV Seal
+        // reports 1 (=EV), which would publish a meaningless "EV" on every BEV.
         payload.put(
             "energy_mode",
-            if (isPhevCar && telemetry.energyMode != 0) energyModeLabel(telemetry.energyMode) else "—"
+            if (isPhev && telemetry.energyMode != 0) energyModeLabel(telemetry.energyMode) else "—"
         )
         var gpsUpdated = false
         telemetry.locationLatitude.takeIf { it != 0.0 }?.let { lastKnownLat = it; gpsUpdated = true }
@@ -720,6 +730,58 @@ class MqttConnectionManager(context: Context) {
         }
         private const val DISCOVERY_REFRESH_INTERVAL_MS = 24L * 60 * 60 * 1000
         private const val HA_STATUS_TOPIC = "homeassistant/status"
+
+        /**
+         * The two entities only a car with a tank can fill.
+         *
+         * On a BEV there is nothing to read. The SDK's getters answer with their sentinels,
+         * 0xFF for the percentage and 0x7FE for the range, BydVehicleDataSource filters both to
+         * null, and `toTelemetry` substitutes 0, so the published value is a flat 0 for ever and
+         * Home Assistant draws an empty tank. That is why this is a gate and not a plausibility
+         * check: 0 is also what a PHEV reports when it really is out of fuel, so no value read
+         * from the field can tell the two cars apart.
+         */
+        val FUEL_SENSOR_IDS = listOf("fuel_percentage", "fuel_driving_range_km")
+
+        /**
+         * Whether this car burns anything. A car that has not been chosen yet reads as a BEV,
+         * because advertising a tank that turns out not to exist is the harder of the two
+         * mistakes to undo: the entity has to be deleted from the broker afterwards.
+         */
+        fun isPhevCar(car: CarConfig?): Boolean = car?.isPhev == true
+
+        /**
+         * The in-memory "already reconciled" key.
+         *
+         * It has to carry everything that decides what the set contains, and the broker scope
+         * alone does not: choosing a different car in Settings changes the set without changing
+         * the broker or the device id, and the manager outlives that change because the service
+         * only restarts its telemetry loop. Without the flag in here, switching a PHEV to a BEV
+         * leaves the two fuel entities advertised, and unfed, until the daily refresh.
+         *
+         * Deliberately not the string the fingerprint is scoped to. That one names where a set
+         * was published, and widening it would move every existing PHEV's digest and cost them a
+         * republish of its whole set for something that has not changed.
+         */
+        fun discoveryCheckKey(scope: String, isPhev: Boolean): String =
+            "$scope|" + if (isPhev) "phev" else "bev"
+
+        /** Whether [id] belongs in the discovery set for this car. */
+        fun advertisesSensor(id: String, isPhev: Boolean): Boolean = isPhev || id !in FUEL_SENSOR_IDS
+
+        /**
+         * The deletions that have to ride along with a BEV's discovery set.
+         *
+         * An install that advertised the fuel gauges before this change left its configs retained
+         * on the broker, and dropping them from the set does not remove them: Home Assistant would
+         * keep both entities for ever, reading "Unknown" because nothing publishes the fields any
+         * more. An empty retained payload is how MQTT deletes a retained message, and sending one
+         * to a topic that was never published is a no-op, so a fresh install pays two small
+         * messages once rather than needing to know its own history.
+         */
+        fun retiredFuelTopics(resolvedId: String, isPhev: Boolean): List<Pair<String, String>> =
+            if (isPhev) emptyList()
+            else FUEL_SENSOR_IDS.map { "homeassistant/sensor/$resolvedId/$it/config" to "" }
 
         /**
          * Whether the stored set is old enough to be worth restating.
