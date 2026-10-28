@@ -727,8 +727,11 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         // Per-sample energy-delta bound (Wh per km travelled, either sign on a BEV) when building
         // the window's cumulative-energy series from per-sample deltas. Clips the kWh-scale steps
         // a mid-trip discharge-anchor rebase or a power↔BMS source switch would otherwise inject
-        // into the window, and amortises idle drain (AC at a red light) instead of dumping it on
-        // one 100 m sample — without touching real driving or regen, which never approach it.
+        // into the window — without touching real driving or regen, which never approach it. It
+        // also caps standing energy: what the car uses while it stands lands on the first sample
+        // after it moves off, so a stop adds at most this × 100 m (150 Wh). A red light with the
+        // climate on passes; a long stop's drain, which has no distance to be a rate over, mostly
+        // doesn't (see WindowStepper).
         const val MAX_SAMPLE_WH_PER_KM      = 1500.0
 
         /**
@@ -749,6 +752,43 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             if (!stepWh.isFinite()) return 0.0
             val bound = MAX_SAMPLE_WH_PER_KM * stepKm
             return stepWh.coerceIn(if (isPhev) 0.0 else -bound, bound)
+        }
+
+        /**
+         * The live window's booking rule replayed over stored points, so the restore rebuild and
+         * the trip history count the energy the live series did. Live, a sample is taken each time
+         * the car has moved [SAMPLE_INTERVAL_KM] and [windowStepWh] bounds the energy used since the
+         * one before; energy used while the car stands waits for the next sample and is bounded with
+         * it. Bounding each stored pair on its own (they are 10 s apart while the car stands) never
+         * clipped, so a stop the live window had capped came back in full after a reopen and in the
+         * next drive's history: on a Sealion 7 loaded for 1.9 h with the climate on (2026-10-25,
+         * reported by luads), 1.3 kWh — 13 kWh/100 km on the 10 km window.
+         */
+        internal class WindowStepper(private val isPhev: Boolean) {
+            /** Energy fed in since the last booked step, not in the window yet. */
+            var pendingWh = 0.0
+                private set
+            private var pendingKm = 0.0
+            private var pendingAxisKm = 0.0
+
+            /**
+             * One pair of stored points: [stepWh] used over [stepKm] of odometer, [axisKm] of it on
+             * the window's axis (EV-only on a PHEV). Returns the energy booked into the window at
+             * this pair, 0 until the odometer has moved on since the last booking.
+             */
+            fun add(stepWh: Double, stepKm: Double, axisKm: Double = stepKm): Double {
+                if (stepWh.isFinite()) pendingWh += stepWh
+                if (stepKm > 0.0) pendingKm += stepKm
+                if (axisKm > 0.0) pendingAxisKm += axisKm
+                // The stored odometer moves in 0.1 km counts read through a Float, which can land
+                // under 0.1 (10000.1f − 10000.0f = 0.0996), so half a sample is one count.
+                if (pendingKm < SAMPLE_INTERVAL_KM / 2) return 0.0
+                val booked = windowStepWh(pendingWh, maxOf(pendingAxisKm, SAMPLE_INTERVAL_KM), isPhev)
+                pendingWh = 0.0
+                pendingKm = 0.0
+                pendingAxisKm = 0.0
+                return booked
+            }
         }
 
         // Driving the window must hold before its rate is trusted outright; below this it is
@@ -1034,7 +1074,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
          * shape from them — where along it the discharge counter moved — scaled to the trip's own
          * distance and energy. So a 10 km window at switch-on is the real last 10 km rather than
          * the last trip's average, and every trip boundary still agrees with the trip totals the
-         * rest of the app shows.
+         * rest of the app shows — less, on a trip with points, a long stop's drain that the live
+         * window never booked either (see WindowStepper).
          */
         internal fun buildDrivingHistory(tripsNewestFirst: List<HistoryTrip>, maxKm: Double): DrivingHistory? {
             val km = arrayListOf(0.0)
@@ -1051,41 +1092,55 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             for (trip in tripsNewestFirst) {
                 if (baseKm >= maxKm) break
                 if (!(trip.distanceKm > 0.0) || !(trip.energyWh > 0.0)) continue   // NaN-safe
-                trip.points?.let { pointShape(it) }?.forEach { (kmShare, energyShare) ->
-                    add(baseKm + kmShare * trip.distanceKm, baseWh + energyShare * trip.energyWh)
+                val shape = trip.points?.let { pointShape(it) }
+                // Less what its window never booked (a long stop's drain past the bound), so the
+                // trip reads here as it did to the live window while it was driven.
+                val tripWh = shape?.let { trip.energyWh - it.unbookedWh }?.takeIf { it > 0.0 } ?: trip.energyWh
+                shape?.shares?.forEach { (kmShare, energyShare) ->
+                    add(baseKm + kmShare * trip.distanceKm, baseWh + energyShare * tripWh)
                 }
                 baseKm += trip.distanceKm
-                baseWh += trip.energyWh
+                baseWh += tripWh
                 add(baseKm, baseWh)
             }
             return if (km.size > 1) DrivingHistory(km.toDoubleArray(), wh.toDoubleArray()) else null
         }
 
         /**
-         * At each of a trip's [points], counted back from its end: the share of its distance and
-         * the share of its net energy covered so far (a share can dip where it regenerated). Null
-         * when the points can't give a shape (too few, no odometer progress, or no net energy).
+         * [shares]: at each of a trip's points, counted back from its end, the share of its distance
+         * and the share of its booked energy covered so far (a share can dip where it regenerated).
+         * [unbookedWh]: what the points used that the window never booked.
          */
-        private fun pointShape(points: List<Pair<Double, Double>>): List<Pair<Double, Double>>? {
+        private class PointShape(val shares: List<Pair<Double, Double>>, val unbookedWh: Double)
+
+        /**
+         * The [PointShape] of a trip's points. Null when they can't give one (too few, no odometer
+         * progress, or no net energy).
+         */
+        private fun pointShape(points: List<Pair<Double, Double>>): PointShape? {
             if (points.size < 2) return null
             val endOdometer = points.last().first
             val spanKm = endOdometer - points.first().first
             if (spanKm <= 0.0) return null
-            // Each step's net discharge, newest first — negative where it regenerated, as on the
-            // net counter the trip totals come from — and nothing implausible for one step.
-            val stepsWh = DoubleArray(points.size - 1) { i ->
-                val newer = points.size - 1 - i
-                val stepWh = (points[newer].second - points[newer - 1].second) * 1000.0
-                if (stepWh.isFinite() && kotlin.math.abs(stepWh) <= 10_000.0) stepWh else 0.0
+            // Each step's net discharge — negative where it regenerated, as on the net counter the
+            // trip totals come from — and nothing implausible for one step, booked the way the live
+            // window booked it (WindowStepper), so a long stop counts no more here than it did there.
+            val stepper = WindowStepper(isPhev = false)
+            var fedWh = 0.0
+            val bookedWh = DoubleArray(points.size - 1) { i ->
+                val stepWh = (points[i + 1].second - points[i].second) * 1000.0
+                val plausibleWh = if (stepWh.isFinite() && kotlin.math.abs(stepWh) <= 10_000.0) stepWh else 0.0
+                fedWh += plausibleWh
+                stepper.add(plausibleWh, points[i + 1].first - points[i].first)
             }
-            val totalWh = stepsWh.sum()
+            val totalWh = bookedWh.sum()
             if (totalWh <= 0.0) return null
             var coveredWh = 0.0
-            return stepsWh.mapIndexed { i, stepWh ->
-                coveredWh += stepWh
-                val odometer = points[points.size - 2 - i].first
-                ((endOdometer - odometer) / spanKm).coerceIn(0.0, 1.0) to coveredWh / totalWh
+            val shares = (bookedWh.lastIndex downTo 0).map { i ->
+                coveredWh += bookedWh[i]
+                ((endOdometer - points[i].first) / spanKm).coerceIn(0.0, 1.0) to coveredWh / totalWh
             }
+            return PointShape(shares, unbookedWh = fedWh - totalWh)
         }
 
         /** Consumption over a window, and how much driving the window actually held. */
@@ -2098,7 +2153,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     // spikes the rate for up to a full window length. windowStepWh bounds each
                     // delta to ±MAX_SAMPLE_WH_PER_KM × Δkm, which clips those steps (and long idle
                     // drain) to a plausible per-100 m cost while keeping real driving and its regen
-                    // (≥ 0 on PHEVs; see windowStepWh). The restore rebuild sums the same steps.
+                    // (≥ 0 on PHEVs; see windowStepWh). The restore rebuild and the trip history
+                    // book the same steps from the stored points (WindowStepper).
                     val rawNowWh = liveEnergyKwh * 1000.0
                     val prevSample = energySamples.lastOrNull()
                     // PHEV: the window's x-axis is EV-only distance — an interval driven on
@@ -2464,7 +2520,11 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 // samples even at low speed; longer gaps (parked stretches) contribute 0.
                 val restoreMaxGapSeconds = 60.0
                 energySamples.clear()
+                // The trip's energy (seeds the accumulators below), and the window's series,
+                // booked as the live loop booked it — a long stop's drain is capped at move-off
+                // rather than kept in full (see WindowStepper).
                 var cumEnergyWh = 0.0
+                var windowEnergyWh = 0.0
                 // Mirror of the live path's ICE gating: ICE-propelled kilometres don't
                 // advance the EV-only distance axis the window rate is computed on. Same
                 // authority as live — the lifetime ICE-km counter carried as a debt, with
@@ -2472,6 +2532,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 // Pre-gating history has no fuel signals in rawJson, so every pair reads
                 // electric and the rebuild matches old behaviour.
                 val isPhevRestore = currentCarConfig()?.isPhev == true
+                val windowStepper = WindowStepper(isPhevRestore)
                 val iceCounters = arrayOfNulls<Int>(dataPoints.size)
                 if (isPhevRestore) {
                     dataPoints.forEachIndexed { i, dp -> iceCounters[i] = pointIceMileageKm(dp.rawJson) }
@@ -2486,13 +2547,16 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     if (i > 0) {
                         val prev = dataPoints[i - 1]
                         restoreIceDebtKm += iceCounterStepKm(iceCounters[i - 1], iceCounters[i])
+                        val pairKm = (dp.odometer - prev.odometer).coerceAtLeast(0.0)
+                        var evPairKm = 0.0
                         if (!pointIce[i - 1]) {
-                            val pairKm = (dp.odometer - prev.odometer).coerceAtLeast(0.0)
                             val withheld = withholdIceDebt(pairKm, restoreIceDebtKm)
                             restoreIceDebtKm = withheld.debtKm
-                            evAxisKm += withheld.evKm
+                            evPairKm = withheld.evKm
+                            evAxisKm += evPairKm
                         }
                         val dt = (dp.timestamp - prev.timestamp).coerceAtLeast(0L) / 1000.0
+                        var pairWh = 0.0
                         if (dt in 0.0..restoreMaxGapSeconds) {
                             val bmsDeltaWh = (dp.totalDischarge - prev.totalDischarge) * 1000.0
                             val powerDeltaWh = prev.power * 1000.0 * (dt / 3600.0)
@@ -2500,15 +2564,15 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                             // the live series); only an implausible one falls back to power × dt.
                             val bmsPlausible = bmsDeltaWh.isFinite() && kotlin.math.abs(bmsDeltaWh) <= 10_000.0 &&
                                 (bmsDeltaWh >= 0.0 || !isPhevRestore)
-                            val chosenWh = if (bmsPlausible) bmsDeltaWh else powerDeltaWh
-                            // Bounded exactly like the live series (windowStepWh), so a stale-0 power
+                            pairWh = if (bmsPlausible) bmsDeltaWh else powerDeltaWh
+                            // Bounded like the live series (windowStepWh), so a stale-0 power
                             // fallback or a counter step can't inject a window spike.
-                            val dPairKm = (dp.odometer - prev.odometer).coerceAtLeast(SAMPLE_INTERVAL_KM)
-                            cumEnergyWh += windowStepWh(chosenWh, dPairKm, isPhevRestore)
+                            cumEnergyWh += windowStepWh(pairWh, pairKm.coerceAtLeast(SAMPLE_INTERVAL_KM), isPhevRestore)
                         }
+                        windowEnergyWh += windowStepper.add(pairWh, pairKm, if (isPhevRestore) evPairKm else pairKm)
                     }
                     val dKm = (dp.odometer - trip.startOdometer).coerceAtLeast(0.0)
-                    energySamples.add(EnergySample(if (isPhevRestore) evAxisKm else dKm, cumEnergyWh))
+                    energySamples.add(EnergySample(if (isPhevRestore) evAxisKm else dKm, windowEnergyWh))
                 }
                 accumulatedEnergyWh = cumEnergyWh
                 // Seed the live EV axes so the first post-resume tick continues the
@@ -2523,8 +2587,10 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 _liveAccumulatedKwh.value = (cumEnergyWh / 1000.0).coerceAtLeast(0.0)
                 // Seed the live per-sample delta tracker so the first post-resume live sample
                 // diffs against the restored cumulative energy (≈ trip energy) rather than
-                // restarting from null and dropping a sample.
-                lastSampleRawEnergyWh = cumEnergyWh
+                // restarting from null and dropping a sample. Less what the stepper still holds,
+                // so it is the trip energy at the last booked step, as live: a stop the car is
+                // still standing in at the reopen is then bounded with the move-off sample.
+                lastSampleRawEnergyWh = cumEnergyWh - windowStepper.pendingWh
                 // Seed the per-tick BMS-delta tracker from the last restored data point
                 // so the next live tick computes (currentTd − lastTd) cleanly. Without
                 // this, the first post-resume tick has prevTd=null → falls back to

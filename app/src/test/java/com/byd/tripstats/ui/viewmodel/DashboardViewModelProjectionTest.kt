@@ -434,6 +434,74 @@ class DashboardViewModelProjectionTest {
         assertEquals(0.0, DashboardViewModel.windowStepWh(Double.NaN, 0.1, isPhev = false), 1e-9)
     }
 
+    // ── WindowStepper — stored points book a stop the way the live window did ──────────
+
+    /** 10 s points over 1.9 h of standing with the climate on: 1.3 kWh, the odometer still. */
+    private val standingPairs = 684
+    private val standingWhPerPair = 1300.0 / standingPairs
+
+    @Test
+    fun `a long stop is booked at move-off, bounded like one live sample`() {
+        val stepper = DashboardViewModel.Companion.WindowStepper(isPhev = false)
+        assertEquals(18.0, stepper.add(18.0, 0.1), 1e-9)
+        var booked = 0.0
+        repeat(standingPairs) { booked += stepper.add(standingWhPerPair, 0.0) }
+        assertEquals(0.0, booked, 1e-9)
+        assertEquals(1300.0, stepper.pendingWh, 1e-6)
+        // The first 100 m after it carries the stop, clipped to 150 Wh — not 1.3 kWh.
+        assertEquals(150.0, stepper.add(18.0, 0.1), 1e-9)
+        assertEquals(0.0, stepper.pendingWh, 1e-9)
+        // An odometer count read through a Float can land under 0.1; it is still a step.
+        assertEquals(18.0, stepper.add(18.0, 10000.1f.toDouble() - 10000.0f.toDouble()), 1e-9)
+    }
+
+    @Test
+    fun `stored points give the window the live loop built`() {
+        // 5 km at 180 Wh/km, the 1.3 kWh stop, 5 km more: (odometer, Wh) as the data points hold it.
+        val points = arrayListOf(1000.0 to 0.0)
+        for (i in 1..100) {
+            if (i == 51) repeat(standingPairs) { points += points.last().first to points.last().second + standingWhPerPair }
+            points += (1000.0 + i * 0.1) to points.last().second + 18.0
+        }
+        // Live: a sample each time the car has moved 100 m, the energy since the one before bounded.
+        val live = arrayListOf(0.0 to 0.0)
+        var lastSample = points.first()
+        for (p in points.drop(1)) {
+            if (p.first - lastSample.first < 0.1 - 1e-9) continue
+            live += (p.first - 1000.0) to live.last().second + DashboardViewModel.windowStepWh(p.second - lastSample.second, 0.1, false)
+            lastSample = p
+        }
+        // Rebuilt: every stored pair through the stepper, one sample per point.
+        val stepper = DashboardViewModel.Companion.WindowStepper(isPhev = false)
+        val rebuilt = arrayListOf(0.0 to 0.0)
+        points.zipWithNext { a, b ->
+            rebuilt += (b.first - 1000.0) to rebuilt.last().second + stepper.add(b.second - a.second, b.first - a.first)
+        }
+        val liveRate = DashboardViewModel.windowRate(live, null, 10.0)!!.whPerKm
+        // 99 steps at 18 Wh and the move-off step at 150: the stop adds 13.2 Wh/km, not 130.
+        assertEquals((99 * 18.0 + 150.0) / 10.0, liveRate, 1e-6)
+        assertEquals(liveRate, DashboardViewModel.windowRate(rebuilt, null, 10.0)!!.whPerKm, 1e-6)
+    }
+
+    @Test
+    fun `history leaves out the part of a long stop the live window never booked`() {
+        // 20 km at 200 Wh/km with the 1.3 kWh stop 5 km before the end: the trip used 5.3 kWh.
+        val points = arrayListOf(1000.0 to 0.0)
+        for (i in 1..200) {
+            if (i == 151) repeat(standingPairs) { points += points.last().first to points.last().second + standingWhPerPair / 1000.0 }
+            points += (1000.0 + i * 0.1) to points.last().second + 0.02
+        }
+        val tripWh = points.last().second * 1000.0
+        assertEquals(5300.0, tripWh, 1e-6)
+        val h = DashboardViewModel.buildDrivingHistory(
+            listOf(DashboardViewModel.Companion.HistoryTrip(20.0, tripWh, points)), DashboardViewModel.MAX_WINDOW_KM
+        )!!
+        // The last 10 km: 100 steps at 20 Wh, one of them carrying the stop clipped to 150.
+        assertEquals(2130.0, h.energyOverLastKm(10.0), 1e-6)
+        // The whole trip, less the 1170 Wh the window never booked.
+        assertEquals(4130.0, h.energyOverLastKm(20.0), 1e-6)
+    }
+
     @Test
     fun `history point detail keeps the regen in a trip's last kilometres`() {
         // 20 km trip: the first 10 km at 200 Wh/km, the last 10 km stop-and-go at 100 Wh/km net
