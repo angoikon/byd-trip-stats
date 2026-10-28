@@ -142,10 +142,11 @@ If entities show **unavailable**:
 | Engine Speed Front | `engine_speed_front` | rpm | — |
 | Engine Speed Rear | `engine_speed_rear` | rpm | — |
 | Charging Power | `charging_power` | kW | power |
-| Fuel Percentage | `fuel_percentage` | % | — |
-| Fuel Driving Range | `fuel_driving_range_km` | km | — |
+| Fuel Percentage (PHEV only) | `fuel_percentage` | % | — |
+| Fuel Driving Range (PHEV only) | `fuel_driving_range_km` | km | — |
 | Drive Mode | `drive_mode` | — | — |
 | Regen Mode | `regen_mode` | — | — |
+| Energy Mode | `energy_mode` | — | — |
 | Latitude | `location_latitude` | — | — |
 | Longitude | `location_longitude` | — | — |
 | Altitude | `location_altitude` | m | — |
@@ -171,6 +172,22 @@ If entities show **unavailable**:
 | Tyre Temp RF | `tyre_temperature_right_front_c` | °C | temperature |
 | Tyre Temp LR | `tyre_temperature_left_rear_c` | °C | temperature |
 | Tyre Temp RR | `tyre_temperature_right_rear_c` | °C | temperature |
+
+> **PHEV only:** `fuel_percentage` and `fuel_driving_range_km` exist only when the car selected
+> in the app is a plug-in hybrid. On a BEV they are left out of both the discovery set and the
+> state payload. A car with no tank has no reading to give: the SDK's fuel getters answer with a
+> sentinel, the app filters that to nothing, and the telemetry then reports 0, so before this
+> change a BEV published a flat `0` for ever and Home Assistant drew an empty tank. Their absence
+> is not a zero.
+>
+> `energy_mode` is the other field only a PHEV can answer, but it behaves differently: the entity
+> exists on every car and reads `—` on a BEV.
+>
+> If you ran an earlier version on a BEV, your broker still holds the two retained fuel configs.
+> The app deletes them for you on the first connection after upgrading, by publishing an empty
+> payload to each config topic (the same thing step 4 of **Troubleshooting** does by hand), so the
+> two entities disappear from Home Assistant on their own. A PHEV's discovery set is unchanged and
+> is not republished.
 
 ### Binary sensors (`binary_sensor.*`)
 

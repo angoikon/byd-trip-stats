@@ -325,7 +325,7 @@ internal fun MqttConnectionSection(context: Context, scope: CoroutineScope) {
                                 scope.launch {
                                     try {
                                         val (ok, status) = withContext(Dispatchers.IO) {
-                                            manager.testPublish(telemetry)
+                                            manager.testPublish(telemetry, selectedCarConfig)
                                         }
                                         result = if (ok) context.getString(R.string.mqtt_test_success) else status
                                         resultOk = ok

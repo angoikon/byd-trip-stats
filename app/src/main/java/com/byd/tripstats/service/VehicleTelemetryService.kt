@@ -569,7 +569,7 @@ class VehicleTelemetryService : Service() {
                         tripRepository?.processTelemetry(telemetry)
                         chargingRepository?.onTelemetry(telemetry, carConfig)
                         abrpConnectionManager?.onTelemetry(telemetry, carConfig, serviceScope)
-                        mqttConnectionManager?.onTelemetry(telemetry, serviceScope)
+                        mqttConnectionManager?.onTelemetry(telemetry, carConfig, serviceScope)
                         cellImbalanceMonitor?.onTelemetry(telemetry)
                         // Feed the vehicle id to the Pro entitlement gate so a vehicle-bound license
                         // can confirm it's running on the right car. Prefer the non-PII T-Box serial
