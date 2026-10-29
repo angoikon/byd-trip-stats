@@ -502,6 +502,96 @@ class DashboardViewModelProjectionTest {
         assertEquals(4130.0, h.energyOverLastKm(20.0), 1e-6)
     }
 
+    // ── WindowLeveller — a hill inside the window isn't consumption ────────────────────────
+
+    /** Battery Wh of lifting [massKg] by [riseM]. */
+    private fun liftWh(massKg: Double, riseM: Double) = massKg * DashboardViewModel.GRAVITY_MS2 * riseM / 3600.0
+
+    @Test
+    fun `only a BEV with a mass on file is levelled`() {
+        val seal = com.byd.tripstats.data.config.CarCatalog.BYD_SEAL_EXCELLENCE
+        assertEquals(2260.0, DashboardViewModel.levellingMassKg(seal)!!, 1e-9)
+        assertEquals(null, DashboardViewModel.levellingMassKg(shark))
+        assertEquals(null, DashboardViewModel.levellingMassKg(seal.copy(estimatedKerbMassKg = null)))
+        assertEquals(null, DashboardViewModel.levellingMassKg(null))
+    }
+
+    @Test
+    fun `the gravity term takes off a climb and gives back a descent in full`() {
+        val leveller = DashboardViewModel.Companion.WindowLeveller(2000.0)
+        leveller.anchor(100.0)
+        assertEquals(liftWh(2000.0, 10.0), leveller.gravityWh(110.0, 0.1), 1e-9)
+        assertEquals(-liftWh(2000.0, 10.0), leveller.gravityWh(100.0, 0.1), 1e-9)
+    }
+
+    @Test
+    fun `a GPS jump is held to a road's grade, and a reading of 0 is no fix`() {
+        val leveller = DashboardViewModel.Companion.WindowLeveller(2000.0)
+        leveller.anchor(100.0)
+        // 55 m over 100 m of road is a fix jumping, not a road: held to 15 m.
+        assertEquals(liftWh(2000.0, 15.0), leveller.gravityWh(155.0, 0.1), 1e-9)
+        // The jumped reading is the new reference, so a jump that stays counts once.
+        assertEquals(0.0, leveller.gravityWh(155.0, 0.1), 1e-9)
+        // A lost fix is passed over: the next good reading rises from the last one, held to the
+        // grade over all the distance since it (40 m in 300 m passes; in 200 m it wouldn't).
+        assertEquals(0.0, leveller.gravityWh(0.0, 0.1), 1e-9)
+        assertEquals(liftWh(2000.0, 40.0), leveller.gravityWh(195.0, 0.2), 1e-9)
+        // A jump that comes back cancels: clipped on the way up and on the way down.
+        val spike = DashboardViewModel.Companion.WindowLeveller(2000.0)
+        spike.anchor(100.0)
+        assertEquals(0.0, spike.gravityWh(155.0, 0.1) + spike.gravityWh(100.0, 0.1), 1e-9)
+    }
+
+    @Test
+    fun `a levelled window reads the driving up a hill and down it again, live and rebuilt`() {
+        // 10 km up 400 m and 10 km back down, driving at 150 Wh/km throughout, in a 2 t car. Raw,
+        // the counter reads 368 Wh/km over the climb and −68 over the descent.
+        val massKg = 2000.0
+        val altitudes = (0..200).map { i -> 100.0 + 4.0 * if (i <= 100) i else 200 - i }
+        val energyWh = arrayListOf(0.0)
+        for (i in 1..200) energyWh += energyWh.last() + 15.0 + liftWh(massKg, altitudes[i] - altitudes[i - 1])
+        // Live: a sample each 100 m, less the height it gained.
+        val leveller = DashboardViewModel.Companion.WindowLeveller(massKg)
+        val live = arrayListOf(0.0 to 0.0)
+        leveller.anchor(altitudes[0])
+        for (i in 1..200) {
+            val gravityWh = leveller.gravityWh(altitudes[i], 0.1)
+            live += (i * 0.1) to live.last().second + DashboardViewModel.windowStepWh(energyWh[i] - energyWh[i - 1] - gravityWh, 0.1, false)
+        }
+        assertEquals(150.0, DashboardViewModel.windowRate(live.take(101), null, 10.0)!!.whPerKm, 1e-6)
+        assertEquals(150.0, DashboardViewModel.windowRate(live, null, 10.0)!!.whPerKm, 1e-6)
+        // Rebuilt from stored points: the same.
+        val stepper = DashboardViewModel.Companion.WindowStepper(
+            isPhev = false,
+            DashboardViewModel.Companion.WindowLeveller(massKg).apply { anchor(altitudes[0]) },
+        )
+        val rebuilt = arrayListOf(0.0 to 0.0)
+        for (i in 1..200) {
+            val stepKm = (1000.0 + i * 0.1) - (1000.0 + (i - 1) * 0.1)
+            rebuilt += (i * 0.1) to rebuilt.last().second + stepper.add(energyWh[i] - energyWh[i - 1], stepKm, altitudeM = altitudes[i])
+        }
+        assertEquals(150.0, DashboardViewModel.windowRate(rebuilt.take(101), null, 10.0)!!.whPerKm, 1e-6)
+        assertEquals(150.0, DashboardViewModel.windowRate(rebuilt, null, 10.0)!!.whPerKm, 1e-6)
+    }
+
+    @Test
+    fun `history levels the hill in a trip's last kilometres`() {
+        // 20 km at 150 Wh/km of driving: 10 km level, then 10 km up 400 m in a 2 t car.
+        val massKg = 2000.0
+        val altitudes = (0..200).map { i -> if (i <= 100) 100.0 else 100.0 + 4.0 * (i - 100) }
+        val points = arrayListOf(1000.0 to 0.0)
+        for (i in 1..200) {
+            points += (1000.0 + i * 0.1) to points.last().second + (15.0 + liftWh(massKg, altitudes[i] - altitudes[i - 1])) / 1000.0
+        }
+        val trip = DashboardViewModel.Companion.HistoryTrip(20.0, points.last().second * 1000.0, points, altitudes)
+        val levelled = DashboardViewModel.buildDrivingHistory(listOf(trip), DashboardViewModel.MAX_WINDOW_KM, massKg)!!
+        assertEquals(1500.0, levelled.energyOverLastKm(10.0), 1e-6)
+        assertEquals(3000.0, levelled.energyOverLastKm(20.0), 1e-6)
+        // With no mass to level by (a PHEV, or none on file) the climb stays in.
+        val raw = DashboardViewModel.buildDrivingHistory(listOf(trip), DashboardViewModel.MAX_WINDOW_KM)!!
+        assertEquals(1500.0 + liftWh(massKg, 400.0), raw.energyOverLastKm(10.0), 1e-6)
+    }
+
     @Test
     fun `history point detail keeps the regen in a trip's last kilometres`() {
         // 20 km trip: the first 10 km at 200 Wh/km, the last 10 km stop-and-go at 100 Wh/km net

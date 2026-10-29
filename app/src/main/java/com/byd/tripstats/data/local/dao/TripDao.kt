@@ -83,7 +83,7 @@ interface TripDataPointDao {
     @Query("SELECT * FROM trip_data_points WHERE tripId = :tripId ORDER BY timestamp ASC")
     suspend fun getDataPointsForTripSync(tripId: Long): List<TripDataPointEntity>
 
-    @Query("SELECT odometer, totalDischarge FROM trip_data_points WHERE tripId = :tripId ORDER BY timestamp ASC")
+    @Query("SELECT odometer, totalDischarge, altitude FROM trip_data_points WHERE tripId = :tripId ORDER BY timestamp ASC")
     suspend fun getOdometerDischargeForTrip(tripId: Long): List<OdometerDischarge>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -168,8 +168,8 @@ interface TripDataPointDao {
 /** Lightweight projection returned by [TripDataPointDao.getAvgSohPerTrip]. */
 data class TripSohSummary(val tripId: Long, val avgSoh: Double)
 
-/** Projection returned by [TripDataPointDao.getOdometerDischargeForTrip]: where each point was, and the pack's discharge counter there. */
-data class OdometerDischarge(val odometer: Double, val totalDischarge: Double)
+/** Projection returned by [TripDataPointDao.getOdometerDischargeForTrip]: where each point was (odometer, GPS altitude), and the pack's discharge counter there. */
+data class OdometerDischarge(val odometer: Double, val totalDischarge: Double, val altitude: Double)
 
 /** Projection for the one-time precise-SoH backfill (id + rawJson). */
 data class SohBackfillRow(val id: Long, val rawJson: String)
