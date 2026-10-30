@@ -96,6 +96,28 @@ class DashboardViewModelProjectionTest {
         assertEquals(0.0, DashboardViewModel.projectedEvRangeKm(5000.0, -10.0, 190.0, isPhev = false), 0.0)
     }
 
+    @Test
+    fun `the consumption the chart shows is the one the range was divided out by`() {
+        // Untouched, PHEV-floored, optimism-capped and sanity-floored rates: in each case the
+        // energy left over the shown consumption gives back the projected range.
+        data class Case(val whPerKm: Double, val baseline: Double, val isPhev: Boolean, val reference: Double?)
+        val remainingWh = 40_000.0
+        val cases = listOf(
+            Case(170.0, 185.0, isPhev = false, reference = null),
+            Case(33.0, phevBaselineWhPerKm, isPhev = true, reference = null),
+            Case(60.0, 150.0, isPhev = false, reference = 180.0),
+            Case(10.0, 150.0, isPhev = false, reference = null),
+        )
+        for ((whPerKm, baseline, isPhev, reference) in cases) {
+            val shown = DashboardViewModel.projectionWhPerKm(whPerKm, baseline, isPhev, reference)!!
+            val projected = DashboardViewModel.projectedEvRangeKm(remainingWh, whPerKm, baseline, isPhev, reference)
+            assertEquals("rate $whPerKm", projected, remainingWh / shown, 1e-9)
+        }
+        assertEquals(DashboardViewModel.MIN_PLAUSIBLE_WH_PER_KM,
+            DashboardViewModel.projectionWhPerKm(10.0, 150.0, isPhev = false)!!, 0.0)
+        assertEquals(null, DashboardViewModel.projectionWhPerKm(0.0, 190.0, isPhev = false))
+    }
+
     // ── remainingEvEnergyWh — the numerator fix for large-battery PHEVs ──────────
 
     @Test

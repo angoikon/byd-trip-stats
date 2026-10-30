@@ -32,6 +32,8 @@ import androidx.compose.ui.unit.sp
 import com.byd.tripstats.R
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.data.preferences.UnitSystem
+import com.byd.tripstats.data.preferences.consumptionUnit
+import com.byd.tripstats.data.preferences.convertEfficiency
 import com.byd.tripstats.data.preferences.displayLabel
 import com.byd.tripstats.ui.theme.*
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
@@ -105,6 +107,9 @@ private class RangeChartSeries(
  *                               read was unusable.
  * @param isStabilised           False while the projection is still on the catalog rate (no
  *                               driving history yet) — the chart says so and leans on the BMS line.
+ * @param projectionWhPerKm      The consumption [projectedRangeKm] was divided out by (Wh/km),
+ *                               shown next to the chart's window badge. Null with no projection,
+ *                               and on points cached before it was recorded.
  */
 @Serializable
 data class RangeDataPoint(
@@ -112,7 +117,8 @@ data class RangeDataPoint(
     val soc:                    Double,
     val electricDrivingRangeKm: Int,
     val projectedRangeKm:       Double?  = null,
-    val isStabilised:           Boolean  = false
+    val isStabilised:           Boolean  = false,
+    val projectionWhPerKm:      Double?  = null
 )
 
 /**
@@ -233,13 +239,20 @@ fun RangeProjectionChart(
 
         // ── Header ────────────────────────────────────────────────────────────────
         Column(modifier = modifier.fillMaxSize()) {
-            val modelLabel = when (activeRangeModel) {
+            val unitSystem = if (useImperial) UnitSystem.IMPERIAL else UnitSystem.METRIC
+            val windowLabel = when (activeRangeModel) {
                 DashboardViewModel.RangeModel.RECENT_DRIVING -> stringResource(
                     R.string.legend_recent_driving,
-                    rangeWindow.displayLabel(if (useImperial) UnitSystem.IMPERIAL else UnitSystem.METRIC)
+                    rangeWindow.displayLabel(unitSystem)
                 )
                 DashboardViewModel.RangeModel.BASELINE       -> stringResource(R.string.legend_baseline)
             }
+            // The badge also gives the consumption the range was divided out by, taken from the
+            // point the header's range comes from: "Last 100 km · 17.4 kWh/100km".
+            val projectionWhPerKm = points.lastOrNull { it.projectedRangeKm != null }?.projectionWhPerKm
+            val modelLabel = projectionWhPerKm?.let {
+                "$windowLabel · ${"%.1f".format(unitSystem.convertEfficiency(it / 10.0))} ${unitSystem.consumptionUnit}"
+            } ?: windowLabel
             val modelColor = when (activeRangeModel) {
                 DashboardViewModel.RangeModel.RECENT_DRIVING -> RegenGreen
                 DashboardViewModel.RangeModel.BASELINE       -> MaterialTheme.colorScheme.onSurfaceVariant

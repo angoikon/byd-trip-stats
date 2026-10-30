@@ -979,7 +979,26 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             baselineWhPerKm: Double,
             isPhev: Boolean,
             referenceWhPerKm: Double? = null
-        ): Double {
+        ): Double =
+            // A non-positive rate is a "no valid data" signal (callers never pass one in
+            // practice — the live/restore tiers all resolve to a positive rate) → 0 rather than
+            // NaN/Infinity.
+            projectionWhPerKm(whPerKm, baselineWhPerKm, isPhev, referenceWhPerKm)
+                ?.let { (remainingEnergyWh / it).coerceAtLeast(0.0) }
+                ?: 0.0
+
+        /**
+         * The consumption [projectedEvRangeKm] divides the energy left by: [whPerKm] after the
+         * PHEV floor, the optimism cap and the sanity floor. The range chart shows it next to its
+         * window, so the range reads as the energy left over this figure. Null for a
+         * non-positive [whPerKm].
+         */
+        internal fun projectionWhPerKm(
+            whPerKm: Double,
+            baselineWhPerKm: Double,
+            isPhev: Boolean,
+            referenceWhPerKm: Double? = null
+        ): Double? {
             // Softened floor (PHEV_BASELINE_FLOOR_FRACTION × baseline): the rate inputs are
             // ICE-gated upstream, so a genuinely-below-rated EV rate is real and may project
             // above the SoC-scaled catalog figure; the fractional floor only catches the
@@ -987,10 +1006,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             val phevFloored =
                 if (isPhev) maxOf(whPerKm, baselineWhPerKm * PHEV_BASELINE_FLOOR_FRACTION)
                 else whPerKm
-            // A non-positive rate is a "no valid data" signal (callers never pass one in
-            // practice — the live/restore tiers all resolve to a positive rate) → return 0
-            // rather than NaN/Infinity.
-            if (phevFloored <= 0.0) return 0.0
+            if (phevFloored <= 0.0) return null
             // Optimism cap: bound the projection to at most 1/OPTIMISM_CAP better than the
             // caller's demonstrated reference rate (this trip's / lifetime average). This is
             // what structurally contains a downhill balloon — a rolling window that has drifted
@@ -1007,8 +1023,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             // Kept as the absolute backstop for when no reference rate is available (the optimism
             // cap above is the adaptive, usually-tighter bound). It sits far below normal driving,
             // so it only bites in the broken near-zero case.
-            val rate = optimismFloored.coerceAtLeast(MIN_PLAUSIBLE_WH_PER_KM)
-            return (remainingEnergyWh / rate).coerceAtLeast(0.0)
+            return optimismFloored.coerceAtLeast(MIN_PLAUSIBLE_WH_PER_KM)
         }
 
         /**
@@ -1470,13 +1485,14 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
      */
     private fun refreshIdleProjection(telemetry: VehicleTelemetry) {
         smoothedWhPerKm = null
-        val (projectedRange, model) = projectRange(telemetry)
+        val (projectedRange, projectionWhPerKm, model) = projectRange(telemetry)
         val point = RangeDataPoint(
             distanceKm = 0.0,
             soc = telemetry.soc.takeIf { it > 0 } ?: telemetry.socPanel.toDouble(),
             electricDrivingRangeKm = telemetry.electricDrivingRangeKm,
             projectedRangeKm = projectedRange,
-            isStabilised = model != RangeModel.BASELINE
+            isStabilised = model != RangeModel.BASELINE,
+            projectionWhPerKm = projectionWhPerKm
         )
         if (_tripDataPoints.value != listOf(point)) _tripDataPoints.value = listOf(point)
     }
@@ -1490,24 +1506,28 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         val points = _tripDataPoints.value
         val latest = points.lastOrNull() ?: return
         smoothedWhPerKm = null
-        val (projectedRange, model) = projectRange(telemetry)
+        val (projectedRange, projectionWhPerKm, model) = projectRange(telemetry)
         val updated = latest.copy(
             soc = if (withReadings) telemetry.soc.takeIf { it > 0 } ?: telemetry.socPanel.toDouble() else latest.soc,
             electricDrivingRangeKm = if (withReadings) telemetry.electricDrivingRangeKm else latest.electricDrivingRangeKm,
             projectedRangeKm = projectedRange,
-            isStabilised = model != RangeModel.BASELINE
+            isStabilised = model != RangeModel.BASELINE,
+            projectionWhPerKm = projectionWhPerKm
         )
         if (updated == latest) return
         _tripDataPoints.value = points.dropLast(1) + updated
         currentTripId.value?.let { liveProjectionCache.update(it, _tripDataPoints.value) }
     }
 
+    /** A projection: the range, the consumption it was divided out by (see projectionWhPerKm), its tier. */
+    private data class RangeProjection(val rangeKm: Double?, val whPerKm: Double?, val model: RangeModel)
+
     /**
      * Projected range now, from the window rate over [energySamples] and the driving before this
      * trip (see rangeRate). Advances the rate's EMA and sets the active tier. The range is null
-     * when the remaining-energy read is unusable.
+     * when the remaining-energy read is unusable, and the consumption with it.
      */
-    private fun projectRange(telemetry: VehicleTelemetry): Pair<Double?, RangeModel> {
+    private fun projectRange(telemetry: VehicleTelemetry): RangeProjection {
         val car = currentCarConfig()
         // PHEVs: use the usable EV-only battery capacity for the EV range leg;
         // fall back to gross batteryKwh if phevUsableBatteryKwh is not defined.
@@ -1565,7 +1585,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             if (remainingEnergyWh > 0.0)
                 projectedEvRangeKm(remainingEnergyWh, rate, baselineWhPerKm, isPhev, referenceWhPerKm)
             else null
-        return projectedRange to rangeRate.model
+        val usedWhPerKm = projectedRange?.let { projectionWhPerKm(rate, baselineWhPerKm, isPhev, referenceWhPerKm) }
+        return RangeProjection(projectedRange, usedWhPerKm, rangeRate.model)
     }
 
     // Odometer-only trip distance (no integration fallback). Used for avg speed display
@@ -1830,14 +1851,15 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         if (clearPoints) {
             // The window already holds the driving before this trip, so the projection is the
             // driver's own from switch-on — not the car's figure until the first 100 m.
-            val (projectedRange, model) = projectRange(telemetry)
+            val (projectedRange, projectionWhPerKm, model) = projectRange(telemetry)
             _tripDataPoints.value = listOf(
                 RangeDataPoint(
                     distanceKm = initialTripDistanceKm,
                     soc = telemetry.soc.takeIf { it > 0 } ?: telemetry.socPanel.toDouble(),
                     electricDrivingRangeKm = telemetry.electricDrivingRangeKm,
                     projectedRangeKm = projectedRange,
-                    isStabilised = model != RangeModel.BASELINE
+                    isStabilised = model != RangeModel.BASELINE,
+                    projectionWhPerKm = projectionWhPerKm
                 )
             )
         }
@@ -2282,7 +2304,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     }
 
                     val effectiveSoc = telemetry.soc.takeIf { it > 0 } ?: telemetry.socPanel.toDouble()
-                    val (projectedRange, model) = projectRange(telemetry)
+                    val (projectedRange, projectionWhPerKm, model) = projectRange(telemetry)
 
                     _tripDataPoints.value = _tripDataPoints.value + RangeDataPoint(
                         distanceKm = distKm,
@@ -2292,7 +2314,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         soc = effectiveSoc,
                         electricDrivingRangeKm = telemetry.electricDrivingRangeKm,
                         projectedRangeKm = projectedRange,
-                        isStabilised = model != RangeModel.BASELINE
+                        isStabilised = model != RangeModel.BASELINE,
+                        projectionWhPerKm = projectionWhPerKm
                     )
                     // Snapshot the as-computed-live curve so a reopen restores it
                     // verbatim instead of rebuilding it (display aid only — see
@@ -2747,7 +2770,10 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         soc                    = pointSoc,
                         electricDrivingRangeKm = dp.electricDrivingRangeKm,
                         projectedRangeKm       = projected,
-                        isStabilised           = pointRate.model != RangeModel.BASELINE
+                        isStabilised           = pointRate.model != RangeModel.BASELINE,
+                        projectionWhPerKm      = projected?.let {
+                            projectionWhPerKm(rate, baselineWhPerKm, isPhevCar, pointRate.referenceWhPerKm)
+                        }
                     )
                 }
                 // Seed the live EMA from the last replayed rate (what the live loop would hold
