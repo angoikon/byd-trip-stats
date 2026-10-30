@@ -7,6 +7,10 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- MapLibre 6 breaks the Leaflet bridge ("maplibre_gl.Map is not a constructor"): stay on 5.x. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.css" />
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@maplibre/maplibre-gl-leaflet@0.1.4/leaflet-maplibre-gl.js"></script>
 <style>
   :root {
     --bg: #0f1115;
@@ -574,20 +578,32 @@ function hexToRgba(hex, alpha) {
 // returns a Chart.js instance (or any object with a `.destroy()` method),
 // or `null` to drop the card.
 
+// The basemap is drawn by MapLibre, which needs WebGL; without it (or without the library) the
+// route is still drawn, on a blank map, instead of the whole card failing.
+const CAN_DRAW_BASEMAP = typeof L !== 'undefined' && typeof L.maplibreGL === 'function' && (() => {
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+    gl?.getExtension('WEBGL_lose_context')?.loseContext();
+    return !!gl;
+  } catch { return false; }
+})();
+
 function buildRouteMap(wrap, points) {
   const coords = points
     .filter(p => (p.latitude || p.longitude) && (p.latitude !== 0 || p.longitude !== 0))
     .map(p => [p.latitude, p.longitude]);
   if (coords.length < 2) return null;
 
-  const map = L.map(wrap, { zoomControl: true, attributionControl: true });
-  // CARTO dark-matter tiles — free, no API key, and (unlike osm.org tiles)
-  // don't require a Referer header, so they work from file:// pages too.
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    subdomains: 'abcd',
-    maxZoom: 19,
-    attribution: '© OpenStreetMap contributors © CARTO'
-  }).addTo(map);
+  // maxZoom is the map's own: with no tile layer Leaflet would zoom a short route without limit.
+  const map = L.map(wrap, { zoomControl: true, attributionControl: true, maxZoom: 19 });
+  // OpenFreeMap's dark vector map — no key or account (CARTO's dark tiles carry an
+  // "API KEY REQUIRED" watermark since 2026-08), and unlike osm.org tiles it doesn't
+  // require a Referer header, so it works from file:// pages too. Its style brings
+  // its own attribution.
+  if (CAN_DRAW_BASEMAP) {
+    L.maplibreGL({ style: 'https://tiles.openfreemap.org/styles/dark' }).addTo(map);
+  }
   const line = L.polyline(coords, { color: '#4cc9f0', weight: 4, opacity: 0.9 }).addTo(map);
   L.circleMarker(coords[0], {
     radius: 6, color: '#90e0a0', fillColor: '#90e0a0', fillOpacity: 1

@@ -12,10 +12,14 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png" />
 <link rel="icon" href="icons/icon-192.png" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- MapLibre 6 breaks the Leaflet bridge ("maplibre_gl.Map is not a constructor"): stay on 5.x. -->
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@maplibre/maplibre-gl-leaflet@0.1.4/leaflet-maplibre-gl.js"></script>
 <style>
 :root {
   --bg:       #0f1115;
@@ -767,7 +771,7 @@ async function ensureSql() {
   const timeout = new Promise((_, reject) =>
     setTimeout(() => reject(new Error(
       'sql.js WASM module timed out (20 s).\n\nMake sure you have an internet connection for the first load — ' +
-      'sql.js, Chart.js and Leaflet are loaded from CDN and cached for offline use afterwards.'
+      'sql.js, Chart.js, Leaflet and MapLibre are loaded from CDN and cached for offline use afterwards.'
     )), 20_000)
   );
   SQL = await Promise.race([
@@ -2207,6 +2211,17 @@ function renderChargeCharts(pts) {
 }
 
 // ── Map ────────────────────────────────────────────────────────────────────────
+// The basemap is drawn by MapLibre, which needs WebGL; without it (or without the library) the
+// route is still drawn, on a blank map, instead of the whole map failing.
+const CAN_DRAW_BASEMAP = typeof L !== 'undefined' && typeof L.maplibreGL === 'function' && (() => {
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+    gl?.getExtension('WEBGL_lose_context')?.loseContext();
+    return !!gl;
+  } catch { return false; }
+})();
+
 function renderMap(containerId, route) {
   if (leafletMap) { leafletMap.remove(); leafletMap = null; }
   const el = document.getElementById(containerId);
@@ -2215,12 +2230,13 @@ function renderMap(containerId, route) {
     return;
   }
   el.innerHTML = '';
-  leafletMap = L.map(containerId, { zoomControl: true });
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
-    subdomains: 'abcd',
-    maxZoom: 20
-  }).addTo(leafletMap);
+  // maxZoom is the map's own: with no tile layer Leaflet would zoom a short route without limit.
+  leafletMap = L.map(containerId, { zoomControl: true, maxZoom: 20 });
+  // OpenFreeMap's dark vector map: no key or account, where CARTO's dark tiles carry an
+  // "API KEY REQUIRED" watermark since 2026-08. Its style brings its own attribution.
+  if (CAN_DRAW_BASEMAP) {
+    L.maplibreGL({ style: 'https://tiles.openfreemap.org/styles/dark' }).addTo(leafletMap);
+  }
   const latlngs = route.map(p => [p.lat, p.lon]);
   const poly = L.polyline(latlngs, { color: '#4cc9f0', weight: 3, opacity: 0.9 }).addTo(leafletMap);
   // Start marker (green) / End marker (pink)

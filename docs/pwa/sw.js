@@ -43,18 +43,11 @@ function fetchWithTimeout(request, ms) {
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
 
-  // Cache-first for CartoDB dark map tiles — makes previously viewed maps work offline
-  if (url.hostname.endsWith('.basemaps.cartocdn.com') || url.hostname === 'basemaps.cartocdn.com') {
-    e.respondWith(
-      caches.match(e.request).then(hit => hit || fetch(e.request).then(res => {
-        if (res.ok) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
-        return res;
-      }))
-    );
-    return;
-  }
+  // The map (tiles.openfreemap.org) is deliberately left to the browser's own HTTP cache: its
+  // style and tile index sit at fixed URLs that point at the current tile set, so a cache-first
+  // copy here would keep pointing at a tile set the server has since dropped.
 
-  // Network-first for CDN libs (sql.js, Chart.js, Leaflet) — cache on success
+  // Network-first for CDN libs (sql.js, Chart.js, Leaflet, MapLibre) — cache on success
   if (['cdnjs.cloudflare.com', 'cdn.jsdelivr.net', 'unpkg.com'].some(h => url.hostname === h)) {
     e.respondWith(
       fetch(e.request)
