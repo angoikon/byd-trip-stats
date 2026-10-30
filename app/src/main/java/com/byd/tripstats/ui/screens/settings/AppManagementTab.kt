@@ -12,6 +12,7 @@ import com.byd.tripstats.data.preferences.OffStateMode
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.sdk.DiLink5Platform
 import com.byd.tripstats.sdk.VehicleCompatibilityProbe
+import com.byd.tripstats.ui.components.PerformanceOverlaySettings
 import com.byd.tripstats.ui.viewmodel.DashboardViewModel
 import com.byd.tripstats.util.WifiKeepalive
 import kotlinx.coroutines.CoroutineScope
@@ -57,6 +58,9 @@ internal fun AppManagementTab(
             // The persisted flag, read without initialising the monitor: initialising starts its
             // CPU/memory sampling, which only the Diagnostics page itself should do.
             val diagnosticsEnabled = AppDiagnosticsMonitor.isEnabled(context)
+            // Initialising only reads the switch; the overlay itself runs from MainActivity.
+            remember { PerformanceOverlaySettings.initialize(context) }
+            val overlayEnabled by PerformanceOverlaySettings.enabled.collectAsState()
 
             val lastBackup = remember { viewModel.listDatabaseBackups().firstOrNull() }
             val backupStatus = if (lastBackup == null) {
@@ -127,10 +131,16 @@ internal fun AppManagementTab(
                     icon = Icons.Filled.Memory,
                     title = stringResource(R.string.app_diagnostics_label),
                     body = stringResource(R.string.diagnostics_card_desc),
-                    statusLine = stringResource(
-                        if (diagnosticsEnabled) R.string.diagnostics_live_on_status
-                        else R.string.diagnostics_live_off_status
-                    )
+                    statusLine = buildList {
+                        add(
+                            stringResource(
+                                if (diagnosticsEnabled) R.string.diagnostics_live_on_status
+                                else R.string.diagnostics_live_off_status
+                            )
+                        )
+                        // Said here so a strip left on is easy to trace back to its switch.
+                        if (overlayEnabled) add(stringResource(R.string.performance_overlay_on_status))
+                    }.joinToString(" • ")
                 )
             )
         }
@@ -138,7 +148,10 @@ internal fun AppManagementTab(
         when (page) {
             AppPage.POWER         -> PowerBackgroundSection(context = context, scope = scope)
             AppPage.COMPATIBILITY -> VehicleCompatibilitySection(context = context, scope = scope)
-            AppPage.DIAGNOSTICS   -> AppDiagnosticsCard()
+            AppPage.DIAGNOSTICS   -> {
+                AppDiagnosticsCard()
+                PerformanceOverlaySection()
+            }
         }
     }
 }

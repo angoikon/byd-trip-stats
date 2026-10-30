@@ -994,6 +994,7 @@
     <string name="d5_vehicle_access_off_status">Πρόσβαση σε δεδομένα οχήματος ανενεργή</string>
     <string name="diagnostics_live_on_status">Ζωντανές λεπτομέρειες ενεργές</string>
     <string name="diagnostics_live_off_status">Ζωντανές λεπτομέρειες ανενεργές</string>
+    <string name="performance_overlay_on_status">Επικάλυψη επιδόσεων ενεργή</string>
     <string name="pref_appearance_title">Εμφάνιση</string>
     <string name="pref_appearance_desc">Θέμα, διάταξη πίνακα και εικονίδια &amp; κινούμενα γραφικά του πίνακα.</string>
     <string name="pref_language_units_title">Γλώσσα &amp; μονάδες</string>
@@ -1125,6 +1126,8 @@
     <string name="show_diagnostic_details_label">Εμφάνιση λεπτομερειών διαγνωστικών</string>
     <string name="diagnostic_enabled_desc">Τα εργαλεία διεργασίας, μνήμης, καρέ, αδειών και ADB σε πραγματικό χρόνο είναι ορατά.</string>
     <string name="diagnostic_disabled_desc">Απενεργοποιημένο εξ\' ορισμού ώστε αυτή η οθόνη να μην παράγει δεδομένα.</string>
+    <string name="performance_overlay_label">Επικάλυψη επιδόσεων</string>
+    <string name="performance_overlay_desc">Εμφανίζει πάνω από την εφαρμογή, όσο είναι ανοιχτή, τη χρήση CPU της, τον ρυθμό καρέ και τον χρόνο απόδοσης, καθώς και τις συχνότητες και θερμοκρασίες GPU και CPU της μονάδας.</string>
     <string name="send_diag_log_action">Αποστολή αρχείου καταγραφής διαγνωστικών στο Telegram</string>
     <string name="enable_troubleshooting_hint">Ενεργοποιήστε μόνο κατά την αντιμετώπιση προβλημάτων· τα γραφήματα ιστορικού δειγματοληπτούν κάθε 2 δευτερόλεπτα όταν είναι ορατά.</string>
     <string name="background_readiness_label">Ετοιμότητα παρασκηνίου</string>

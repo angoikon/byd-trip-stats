@@ -1074,6 +1074,7 @@
     <string name="d5_vehicle_access_off_status">Dostęp do danych pojazdu wyłączony</string>
     <string name="diagnostics_live_on_status">Szczegóły na żywo włączone</string>
     <string name="diagnostics_live_off_status">Szczegóły na żywo wyłączone</string>
+    <string name="performance_overlay_on_status">Nakładka wydajności włączona</string>
     <string name="pref_appearance_title">Wygląd</string>
     <string name="pref_appearance_desc">Motyw, układ pulpitu oraz ikony i animacje pulpitu.</string>
     <string name="pref_language_units_title">Język i jednostki</string>
@@ -1229,6 +1230,8 @@
     <string name="show_diagnostic_details_label">Pokaż szczegóły diagnostyczne</string>
     <string name="diagnostic_enabled_desc">Widoczne są narzędzia procesów, pamięci, klatek, uprawnień i ADB na żywo.</string>
     <string name="diagnostic_disabled_desc">Domyślnie wyłączone, aby ten ekran nie odpytywał ciągle, gdy tylko sprawdzasz kopie zapasowe.</string>
+    <string name="performance_overlay_label">Nakładka wydajności</string>
+    <string name="performance_overlay_desc">Pokazuje nad aplikacją, gdy jest otwarta, jej użycie CPU, liczbę klatek na sekundę i czas renderowania oraz taktowanie i temperatury GPU i CPU jednostki.</string>
     <string name="send_diag_log_action">Wyślij dziennik diagnostyczny do Telegrama</string>
     <string name="enable_troubleshooting_hint">Włączaj tylko przy rozwiązywaniu problemów; wykresy historii próbkują co 2 sekundy, gdy są widoczne.</string>
     <string name="background_readiness_label">Gotowość działania w tle</string>

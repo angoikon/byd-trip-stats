@@ -1100,6 +1100,7 @@
     <string name="d5_vehicle_access_off_status">Vehicle data access off</string>
     <string name="diagnostics_live_on_status">Live details on</string>
     <string name="diagnostics_live_off_status">Live details off</string>
+    <string name="performance_overlay_on_status">Performance overlay on</string>
     <string name="pref_appearance_title">Appearance</string>
     <string name="pref_appearance_desc">Theme, dashboard layout, and dashboard icons &amp; animations.</string>
     <string name="pref_language_units_title">Language &amp; units</string>
@@ -1256,6 +1257,8 @@
     <string name="show_diagnostic_details_label">Show diagnostic details</string>
     <string name="diagnostic_enabled_desc">Live process, memory, frame, permission, and ADB tools are visible.</string>
     <string name="diagnostic_disabled_desc">Off by default so this screen does not keep polling while you are just checking backups.</string>
+    <string name="performance_overlay_label">Performance overlay</string>
+    <string name="performance_overlay_desc">Shows the app\'s CPU use, frame rate and render time, and the head unit\'s GPU and CPU clocks and temperatures, over the app while it is open.</string>
     <string name="send_diag_log_action">Send diagnostics log to Telegram</string>
     <string name="enable_troubleshooting_hint">Enable this only when troubleshooting; the history charts sample every 2 seconds while visible.</string>
     <string name="background_readiness_label">Background Readiness</string>

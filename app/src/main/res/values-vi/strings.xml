@@ -1074,6 +1074,7 @@
     <string name="d5_vehicle_access_off_status">Truy cập dữ liệu xe: tắt</string>
     <string name="diagnostics_live_on_status">Chi tiết trực tiếp: bật</string>
     <string name="diagnostics_live_off_status">Chi tiết trực tiếp: tắt</string>
+    <string name="performance_overlay_on_status">Lớp phủ hiệu năng: bật</string>
     <string name="pref_appearance_title">Hiển thị</string>
     <string name="pref_appearance_desc">Giao diện, bố cục bảng điều khiển, và biểu tượng &amp; hiệu ứng của bảng điều khiển.</string>
     <string name="pref_language_units_title">Ngôn ngữ &amp; đơn vị</string>
@@ -1229,6 +1230,8 @@
     <string name="show_diagnostic_details_label">Hiện chi tiết chẩn đoán</string>
     <string name="diagnostic_enabled_desc">Các công cụ tiến trình, bộ nhớ, khung hình, quyền và ADB trực tiếp đều hiển thị.</string>
     <string name="diagnostic_disabled_desc">Tắt theo mặc định để màn hình này không liên tục thăm dò khi bạn chỉ đang kiểm tra các bản sao lưu.</string>
+    <string name="performance_overlay_label">Lớp phủ hiệu năng</string>
+    <string name="performance_overlay_desc">Hiển thị trên ứng dụng khi đang mở: mức dùng CPU, tốc độ khung hình và thời gian kết xuất của ứng dụng, cùng xung nhịp và nhiệt độ GPU, CPU của đầu máy.</string>
     <string name="send_diag_log_action">Gửi nhật ký chẩn đoán tới Telegram</string>
     <string name="enable_troubleshooting_hint">Chỉ bật khi khắc phục sự cố; các biểu đồ lịch sử lấy mẫu mỗi 2 giây khi hiển thị.</string>
     <string name="background_readiness_label">Sẵn sàng Nền</string>

@@ -277,7 +277,7 @@ page, and use the back arrow (or the car's back gesture) to return.
 | **Power & background** | What keeps running when the car is off (**Always On** / **Minimal** / **Deep Sleep**), and on DiLink 3 **Keep Wi-Fi alive when car is off**. On DiLink 5, also **Allow reading vehicle data** |
 | **Backup & Restore** | Opens the backup screen — local, SD card (Pro) and Telegram backups, restore, settings backup, and reset |
 | **Vehicle Compatibility** | Records a telemetry report that helps add support for your model; send it by Telegram, save it, or email it via a QR code |
-| **App Diagnostics** | Sends the diagnostics log the same three ways, and shows live CPU / memory, permissions and an ADB shell |
+| **App Diagnostics** | Sends the diagnostics log the same three ways, and shows live CPU / memory, permissions and an ADB shell. Below that, a separate **Performance overlay** section puts the app's CPU, frame rate and render time, and the head unit's GPU / CPU clocks and temperatures, in a small strip over the app while it is open (drag it out of the way) |
 
 ### Connections
 

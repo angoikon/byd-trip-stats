@@ -1074,6 +1074,7 @@
     <string name="d5_vehicle_access_off_status">Acces la datele vehiculului dezactivat</string>
     <string name="diagnostics_live_on_status">Detalii live activate</string>
     <string name="diagnostics_live_off_status">Detalii live dezactivate</string>
+    <string name="performance_overlay_on_status">Suprapunere performanță activată</string>
     <string name="pref_appearance_title">Afișare</string>
     <string name="pref_appearance_desc">Temă, aspectul bordului, și pictogramele &amp; animațiile bordului.</string>
     <string name="pref_language_units_title">Limbă și unități</string>
@@ -1229,6 +1230,8 @@
     <string name="show_diagnostic_details_label">Arată detaliile de diagnostic</string>
     <string name="diagnostic_enabled_desc">Instrumentele live de proces, memorie, cadre, permisiuni și ADB sunt vizibile.</string>
     <string name="diagnostic_disabled_desc">Oprit implicit pentru ca acest ecran să nu interogheze continuu când doar verificați backupurile.</string>
+    <string name="performance_overlay_label">Suprapunere performanță</string>
+    <string name="performance_overlay_desc">Afișează peste aplicație, cât timp este deschisă, utilizarea CPU, rata de cadre și timpul de randare, precum și frecvențele și temperaturile GPU și CPU ale unității.</string>
     <string name="send_diag_log_action">Trimite jurnalul de diagnostic pe Telegram</string>
     <string name="enable_troubleshooting_hint">Activați doar la depanare; graficele de istoric eșantionează la fiecare 2 secunde cât sunt vizibile.</string>
     <string name="background_readiness_label">Pregătire fundal</string>

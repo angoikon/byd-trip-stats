@@ -994,6 +994,7 @@
     <string name="d5_vehicle_access_off_status">Fahrzeugdatenzugriff aus</string>
     <string name="diagnostics_live_on_status">Live-Details an</string>
     <string name="diagnostics_live_off_status">Live-Details aus</string>
+    <string name="performance_overlay_on_status">Leistungs-Overlay an</string>
     <string name="pref_appearance_title">Darstellung</string>
     <string name="pref_appearance_desc">Design, Dashboard-Layout sowie Dashboard-Symbole &amp; Animationen.</string>
     <string name="pref_language_units_title">Sprache &amp; Einheiten</string>
@@ -1125,6 +1126,8 @@
     <string name="show_diagnostic_details_label">Diagnosedetails anzeigen</string>
     <string name="diagnostic_enabled_desc">Live-Prozess-, Speicher-, Frame-, Berechtigungs- und ADB-Tools sind sichtbar.</string>
     <string name="diagnostic_disabled_desc">Standardmäßig deaktiviert, damit dieser Bildschirm nicht ständig abfragt.</string>
+    <string name="performance_overlay_label">Leistungs-Overlay</string>
+    <string name="performance_overlay_desc">Zeigt über der App, solange sie geöffnet ist, ihre CPU-Last, Bildrate und Renderzeit sowie GPU- und CPU-Takt und -Temperaturen des Infotainmentsystems.</string>
     <string name="send_diag_log_action">Diagnoseprotokoll an Telegram senden</string>
     <string name="enable_troubleshooting_hint">Nur bei der Fehlerbehebung aktivieren; die Verlaufsdiagramme werden alle 2 Sekunden abgefragt, während sie sichtbar sind.</string>
     <string name="background_readiness_label">Hintergrundbereitschaft</string>

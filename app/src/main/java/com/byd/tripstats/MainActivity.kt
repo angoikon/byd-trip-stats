@@ -54,6 +54,7 @@ import com.byd.tripstats.data.preferences.ThemeMode
 import com.byd.tripstats.sdk.DiLink5Platform
 import com.byd.tripstats.service.DrivingWidgetPrefs
 import com.byd.tripstats.service.VehicleTelemetryService
+import com.byd.tripstats.ui.components.PerformanceOverlay
 import com.byd.tripstats.ui.components.ScreenshotFlashOverlay
 import com.byd.tripstats.ui.navigation.AppNavigation
 import com.byd.tripstats.ui.screens.InitializationScreen
@@ -398,6 +399,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
+                    PerformanceOverlay(window)
                     ScreenshotFlashOverlay()
                 }
             }

@@ -994,6 +994,7 @@
     <string name="d5_vehicle_access_off_status">Accès aux données du véhicule désactivé</string>
     <string name="diagnostics_live_on_status">Détails en direct activés</string>
     <string name="diagnostics_live_off_status">Détails en direct désactivés</string>
+    <string name="performance_overlay_on_status">Superposition des performances activée</string>
     <string name="pref_appearance_title">Apparence</string>
     <string name="pref_appearance_desc">Thème, disposition du tableau de bord, et icônes &amp; animations du tableau de bord.</string>
     <string name="pref_language_units_title">Langue &amp; unités</string>
@@ -1125,6 +1126,8 @@
     <string name="show_diagnostic_details_label">Afficher les détails de diagnostic</string>
     <string name="diagnostic_enabled_desc">Les outils de processus, mémoire, frame, permission et ADB en direct sont visibles.</string>
     <string name="diagnostic_disabled_desc">Désactivé par défaut pour que cet écran ne reste pas en train d\'interroger.</string>
+    <string name="performance_overlay_label">Superposition des performances</string>
+    <string name="performance_overlay_desc">Affiche par-dessus l\'application, tant qu\'elle est ouverte, son utilisation du CPU, la fréquence d\'images et le temps de rendu, ainsi que les fréquences et températures du GPU et du CPU de l\'unité.</string>
     <string name="send_diag_log_action">Envoyer le journal de diagnostic à Telegram</string>
     <string name="enable_troubleshooting_hint">Activer uniquement lors du dépannage; les graphiques d\'historique échantillonnent toutes les 2 secondes quand visibles.</string>
     <string name="background_readiness_label">Préparation en arrière-plan</string>

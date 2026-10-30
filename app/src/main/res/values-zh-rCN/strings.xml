@@ -1077,6 +1077,7 @@
     <string name="d5_vehicle_access_off_status">车辆数据访问：关闭</string>
     <string name="diagnostics_live_on_status">实时详情：开启</string>
     <string name="diagnostics_live_off_status">实时详情：关闭</string>
+    <string name="performance_overlay_on_status">性能悬浮层：开启</string>
     <string name="pref_appearance_title">外观</string>
     <string name="pref_appearance_desc">主题、仪表板布局，以及仪表板图标和动画。</string>
     <string name="pref_language_units_title">语言 &amp; 单位</string>
@@ -1233,6 +1234,8 @@
     <string name="show_diagnostic_details_label">显示诊断详情</string>
     <string name="diagnostic_enabled_desc">实时进程、内存、帧率、权限和 ADB 工具可见。</string>
     <string name="diagnostic_disabled_desc">默认关闭，以避免在您仅查看备份时此页面持续轮询。</string>
+    <string name="performance_overlay_label">性能悬浮层</string>
+    <string name="performance_overlay_desc">应用打开时在其上方显示应用的 CPU 占用、帧率和渲染时间，以及主机 GPU 和 CPU 的频率与温度。</string>
     <string name="send_diag_log_action">将诊断日志发送到 Telegram</string>
     <string name="enable_troubleshooting_hint">仅在排查问题时启用；历史图表在可见时每 2 秒采样一次。</string>
     <string name="background_readiness_label">后台就绪状态</string>

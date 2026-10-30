@@ -1074,6 +1074,7 @@
     <string name="d5_vehicle_access_off_status">Доступ к данным автомобиля выключен</string>
     <string name="diagnostics_live_on_status">Подробности в реальном времени включены</string>
     <string name="diagnostics_live_off_status">Подробности в реальном времени выключены</string>
+    <string name="performance_overlay_on_status">Оверлей производительности включён</string>
     <string name="pref_appearance_title">Оформление</string>
     <string name="pref_appearance_desc">Тема, макет панели, а также значки и анимации панели.</string>
     <string name="pref_language_units_title">Язык и единицы</string>
@@ -1229,6 +1230,8 @@
     <string name="show_diagnostic_details_label">Показать детали диагностики</string>
     <string name="diagnostic_enabled_desc">Видны инструменты процессов, памяти, кадров, разрешений и ADB в реальном времени.</string>
     <string name="diagnostic_disabled_desc">По умолчанию выключено, чтобы этот экран не опрашивал постоянно, пока вы просто проверяете копии.</string>
+    <string name="performance_overlay_label">Оверлей производительности</string>
+    <string name="performance_overlay_desc">Показывает поверх приложения, пока оно открыто, загрузку CPU, частоту кадров и время отрисовки, а также частоты и температуры GPU и CPU головного устройства.</string>
     <string name="send_diag_log_action">Отправить журнал диагностики в Telegram</string>
     <string name="enable_troubleshooting_hint">Включайте только при диагностике проблем; графики истории снимают образцы каждые 2 секунды, пока видимы.</string>
     <string name="background_readiness_label">Готовность фоновой работы</string>

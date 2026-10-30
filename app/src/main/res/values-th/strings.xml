@@ -994,6 +994,7 @@
     <string name="d5_vehicle_access_off_status">การเข้าถึงข้อมูลรถ: ปิด</string>
     <string name="diagnostics_live_on_status">รายละเอียดสด: เปิด</string>
     <string name="diagnostics_live_off_status">รายละเอียดสด: ปิด</string>
+    <string name="performance_overlay_on_status">โอเวอร์เลย์ประสิทธิภาพ: เปิด</string>
     <string name="pref_appearance_title">รูปลักษณ์</string>
     <string name="pref_appearance_desc">ธีม เค้าโครงแดชบอร์ด และไอคอน &amp; แอนิเมชันของแดชบอร์ด</string>
     <string name="pref_language_units_title">ภาษา &amp; หน่วย</string>
@@ -1125,6 +1126,8 @@
     <string name="show_diagnostic_details_label">แสดงรายละเอียดการวินิจฉัย</string>
     <string name="diagnostic_enabled_desc">เครื่องมือกระบวนการ หน่วยความจำ เฟรม การอนุญาต และ ADB แบบสดจะมองเห็นได้</string>
     <string name="diagnostic_disabled_desc">ปิดใช้งานโดยค่าเริ่มต้นเพื่อให้หน้าจอนี้ไม่ต้องสำรวจ</string>
+    <string name="performance_overlay_label">โอเวอร์เลย์ประสิทธิภาพ</string>
+    <string name="performance_overlay_desc">แสดงการใช้ CPU ของแอป อัตราเฟรม และเวลาเรนเดอร์ รวมถึงความเร็วสัญญาณนาฬิกาและอุณหภูมิของ GPU และ CPU ของเครื่อง ทับบนแอปขณะเปิดอยู่</string>
     <string name="send_diag_log_action">ส่งบันทึกการวินิจฉัยไปยัง Telegram</string>
     <string name="enable_troubleshooting_hint">เปิดใช้งานเฉพาะเมื่อแก้ไขปัญหา กราฟประวัติจะเก็บตัวอย่างทุก 2 วินาทีเมื่อมองเห็น</string>
     <string name="background_readiness_label">ความพร้อมพื้นหลัง</string>

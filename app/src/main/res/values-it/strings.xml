@@ -1077,6 +1077,7 @@
     <string name="d5_vehicle_access_off_status">Accesso ai dati del veicolo disattivato</string>
     <string name="diagnostics_live_on_status">Dettagli live attivi</string>
     <string name="diagnostics_live_off_status">Dettagli live disattivati</string>
+    <string name="performance_overlay_on_status">Overlay prestazioni attivo</string>
     <string name="pref_appearance_title">Aspetto</string>
     <string name="pref_appearance_desc">Tema, layout del cruscotto, e icone &amp; animazioni del cruscotto.</string>
     <string name="pref_language_units_title">Lingua &amp; unità</string>
@@ -1233,6 +1234,8 @@
     <string name="show_diagnostic_details_label">Mostra dettagli diagnostici</string>
     <string name="diagnostic_enabled_desc">Sono visibili processo live, memoria, frame, permessi e strumenti ADB.</string>
     <string name="diagnostic_disabled_desc">Disattivato per default affinché questa schermata non continui a eseguire polling mentre controlli solo i backup.</string>
+    <string name="performance_overlay_label">Overlay prestazioni</string>
+    <string name="performance_overlay_desc">Mostra sopra l\'app, finché è aperta, l\'uso della CPU, la frequenza dei fotogrammi e il tempo di rendering, oltre a frequenze e temperature di GPU e CPU dell\'unità.</string>
     <string name="send_diag_log_action">Invia log diagnostico a Telegram</string>
     <string name="enable_troubleshooting_hint">Abilita solo durante la risoluzione dei problemi; i grafici storico campionano ogni 2 secondi mentre sono visibili.</string>
     <string name="background_readiness_label">Prontezza in background</string>

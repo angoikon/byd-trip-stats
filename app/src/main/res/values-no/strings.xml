@@ -1077,6 +1077,7 @@
     <string name="d5_vehicle_access_off_status">Tilgang til kjøretøydata av</string>
     <string name="diagnostics_live_on_status">Live-detaljer på</string>
     <string name="diagnostics_live_off_status">Live-detaljer av</string>
+    <string name="performance_overlay_on_status">Ytelsesoverlegg på</string>
     <string name="pref_appearance_title">Utseende</string>
     <string name="pref_appearance_desc">Tema, dashbordoppsett, og dashbordikoner &amp; animasjoner.</string>
     <string name="pref_language_units_title">Språk &amp; enheter</string>
@@ -1233,6 +1234,8 @@
     <string name="show_diagnostic_details_label">Vis diagnostikkdetaljer</string>
     <string name="diagnostic_enabled_desc">Live prosess, minne, rammer, tillatelser og ADB-verktøy er synlige.</string>
     <string name="diagnostic_disabled_desc">Av som standard slik at denne skjermen ikke fortsetter å polle mens du bare sjekker sikkerhetskopier.</string>
+    <string name="performance_overlay_label">Ytelsesoverlegg</string>
+    <string name="performance_overlay_desc">Viser appens CPU-bruk, bildefrekvens og gjengivelsestid, og enhetens GPU- og CPU-klokkefrekvenser og temperaturer, over appen mens den er åpen.</string>
     <string name="send_diag_log_action">Send diagnostikklogg til Telegram</string>
     <string name="enable_troubleshooting_hint">Aktiver dette kun ved feilsøking; historikkdiagrammene tar prøver hvert 2. sekund mens de er synlige.</string>
     <string name="background_readiness_label">Bakgrunnsberedskap</string>

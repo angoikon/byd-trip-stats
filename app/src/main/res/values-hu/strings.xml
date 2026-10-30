@@ -1074,6 +1074,7 @@
     <string name="d5_vehicle_access_off_status">Járműadat-hozzáférés ki</string>
     <string name="diagnostics_live_on_status">Élő részletek be</string>
     <string name="diagnostics_live_off_status">Élő részletek ki</string>
+    <string name="performance_overlay_on_status">Teljesítmény-átfedés be</string>
     <string name="pref_appearance_title">Megjelenés</string>
     <string name="pref_appearance_desc">Téma, műszerfal elrendezése, valamint a műszerfal ikonjai és animációi.</string>
     <string name="pref_language_units_title">Nyelv és mértékegységek</string>
@@ -1229,6 +1230,8 @@
     <string name="show_diagnostic_details_label">Diagnosztikai részletek megjelenítése</string>
     <string name="diagnostic_enabled_desc">Láthatók az élő folyamat-, memória-, képkocka-, engedély- és ADB-eszközök.</string>
     <string name="diagnostic_disabled_desc">Alapból kikapcsolva, hogy ez a képernyő ne kérdezgessen folyamatosan, amíg csak a mentéseket nézi.</string>
+    <string name="performance_overlay_label">Teljesítmény-átfedés</string>
+    <string name="performance_overlay_desc">Az alkalmazás fölött, amíg nyitva van, megjeleníti a CPU-használatát, a képkockasebességet és a renderelési időt, valamint a fejegység GPU- és CPU-órajelét és hőmérsékletét.</string>
     <string name="send_diag_log_action">Diagnosztikai napló küldése Telegramra</string>
     <string name="enable_troubleshooting_hint">Csak hibakereséskor kapcsolja be; az előzménygrafikonok 2 másodpercenként mintavételeznek, amíg láthatók.</string>
     <string name="background_readiness_label">Háttérkészenlét</string>

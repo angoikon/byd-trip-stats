@@ -1074,6 +1074,7 @@
     <string name="d5_vehicle_access_off_status">Akses data kendaraan mati</string>
     <string name="diagnostics_live_on_status">Detail langsung nyala</string>
     <string name="diagnostics_live_off_status">Detail langsung mati</string>
+    <string name="performance_overlay_on_status">Overlay performa nyala</string>
     <string name="pref_appearance_title">Tampilan</string>
     <string name="pref_appearance_desc">Tema, tata letak dasbor, serta ikon &amp; animasi dasbor.</string>
     <string name="pref_language_units_title">Bahasa &amp; satuan</string>
@@ -1229,6 +1230,8 @@
     <string name="show_diagnostic_details_label">Tampilkan detail diagnostik</string>
     <string name="diagnostic_enabled_desc">Alat proses, memori, bingkai, izin, dan ADB langsung terlihat.</string>
     <string name="diagnostic_disabled_desc">Mati secara bawaan agar layar ini tidak terus menyurvei saat Anda hanya memeriksa cadangan.</string>
+    <string name="performance_overlay_label">Overlay performa</string>
+    <string name="performance_overlay_desc">Menampilkan penggunaan CPU aplikasi, laju bingkai dan waktu render, serta clock dan suhu GPU dan CPU head unit di atas aplikasi selama aplikasi terbuka.</string>
     <string name="send_diag_log_action">Kirim log diagnostik ke Telegram</string>
     <string name="enable_troubleshooting_hint">Aktifkan ini hanya saat memecahkan masalah; grafik riwayat mengambil sampel setiap 2 detik saat terlihat.</string>
     <string name="background_readiness_label">Kesiapan Latar</string>

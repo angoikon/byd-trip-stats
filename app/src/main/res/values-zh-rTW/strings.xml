@@ -1077,6 +1077,7 @@
     <string name="d5_vehicle_access_off_status">車輛資料存取：關閉</string>
     <string name="diagnostics_live_on_status">即時詳情：開啟</string>
     <string name="diagnostics_live_off_status">即時詳情：關閉</string>
+    <string name="performance_overlay_on_status">效能疊加層：開啟</string>
     <string name="pref_appearance_title">外觀</string>
     <string name="pref_appearance_desc">主題、儀表板版面配置，以及儀表板圖示和動畫。</string>
     <string name="pref_language_units_title">語言 &amp; 單位</string>
@@ -1233,6 +1234,8 @@
     <string name="show_diagnostic_details_label">顯示診斷詳情</string>
     <string name="diagnostic_enabled_desc">即時程序、記憶體、畫面更新率、權限和 ADB 工具可見。</string>
     <string name="diagnostic_disabled_desc">預設關閉，以避免在您僅查看備份時此頁面持續輪詢。</string>
+    <string name="performance_overlay_label">效能疊加層</string>
+    <string name="performance_overlay_desc">應用程式開啟時在其上方顯示應用程式的 CPU 使用率、畫面更新率和算繪時間，以及主機 GPU 和 CPU 的時脈與溫度。</string>
     <string name="send_diag_log_action">將診斷記錄傳送至 Telegram</string>
     <string name="enable_troubleshooting_hint">僅在排查問題時啟用；歷史圖表在可見時每 2 秒採樣一次。</string>
     <string name="background_readiness_label">背景就緒狀態</string>

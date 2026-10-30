@@ -1077,6 +1077,7 @@
     <string name="d5_vehicle_access_off_status">Acesso aos dados do veículo desligado</string>
     <string name="diagnostics_live_on_status">Detalhes em tempo real ligados</string>
     <string name="diagnostics_live_off_status">Detalhes em tempo real desligados</string>
+    <string name="performance_overlay_on_status">Sobreposição de desempenho ligada</string>
     <string name="pref_appearance_title">Aspeto</string>
     <string name="pref_appearance_desc">Tema, esquema do painel, e ícones &amp; animações do painel.</string>
     <string name="pref_language_units_title">Idioma &amp; unidades</string>
@@ -1233,6 +1234,8 @@
     <string name="show_diagnostic_details_label">Mostrar detalhes de diagnóstico</string>
     <string name="diagnostic_enabled_desc">Ferramentas de processo, memória, fotograma, permissão e ADB em tempo real estão visíveis.</string>
     <string name="diagnostic_disabled_desc">Desativado por predefinição para que este ecrã não fique a consultar continuamente enquanto está apenas a verificar as cópias de segurança.</string>
+    <string name="performance_overlay_label">Sobreposição de desempenho</string>
+    <string name="performance_overlay_desc">Mostra sobre a aplicação, enquanto está aberta, o uso de CPU, a taxa de fotogramas e o tempo de renderização, bem como as frequências e temperaturas da GPU e da CPU da unidade.</string>
     <string name="send_diag_log_action">Enviar registo de diagnóstico para o Telegram</string>
     <string name="enable_troubleshooting_hint">Ative isto apenas durante a resolução de problemas; os gráficos do histórico tomam amostras a cada 2 segundos enquanto estão visíveis.</string>
     <string name="background_readiness_label">Prontidão em segundo plano</string>

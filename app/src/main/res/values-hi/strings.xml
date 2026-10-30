@@ -994,6 +994,7 @@
     <string name="d5_vehicle_access_off_status">वाहन डेटा एक्सेस बंद</string>
     <string name="diagnostics_live_on_status">लाइव विवरण चालू</string>
     <string name="diagnostics_live_off_status">लाइव विवरण बंद</string>
+    <string name="performance_overlay_on_status">प्रदर्शन ओवरले चालू</string>
     <string name="pref_appearance_title">रूप-रंग</string>
     <string name="pref_appearance_desc">थीम, डैशबोर्ड लेआउट, और डैशबोर्ड आइकन &amp; एनिमेशन।</string>
     <string name="pref_language_units_title">भाषा &amp; इकाइयां</string>
@@ -1125,6 +1126,8 @@
     <string name="show_diagnostic_details_label">डायग्नोस्टिक विवरण दिखाएं</string>
     <string name="diagnostic_enabled_desc">लाइव प्रक्रिया, मेमोरी, फ्रेम, अनुमति और ADB उपकरण दृश्यमान हैं।</string>
     <string name="diagnostic_disabled_desc">डिफ़ॉल्ट रूप से अक्षम ताकि यह स्क्रीन अव्यवस्थित न हो।</string>
+    <string name="performance_overlay_label">प्रदर्शन ओवरले</string>
+    <string name="performance_overlay_desc">ऐप खुला रहने पर उसके ऊपर ऐप का CPU उपयोग, फ्रेम दर और रेंडर समय, तथा हेड यूनिट की GPU और CPU क्लॉक और तापमान दिखाता है।</string>
     <string name="send_diag_log_action">Telegram को डायग्नोस्टिक लॉग भेजें</string>
     <string name="enable_troubleshooting_hint">केवल समस्या निवारण के समय सक्षम करें। इतिहास चार्ट दृश्यमान होने पर हर 2 सेकंड में नमूने लेते हैं।</string>
     <string name="background_readiness_label">पृष्ठभूमि तत्परता</string>

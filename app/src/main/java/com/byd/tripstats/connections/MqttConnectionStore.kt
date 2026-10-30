@@ -2,6 +2,7 @@ package com.byd.tripstats.connections
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.SystemClock
 
 data class MqttConnectionConfig(
     val enabled: Boolean = false,
@@ -49,8 +50,24 @@ object MqttConnectionStore {
 
     private const val DEFAULT_INTERVAL_SECONDS = 1
 
+    /**
+     * The publisher's status as of its latest message. [updateStatus] saves it to storage only
+     * when it changes or once a minute ([STATUS_SAVE_INTERVAL_MS]): at the default 1 s interval, saving
+     * every publish rewrote this file every second of a drive. [load] reads these ahead of the
+     * saved copy, so the publish pacing and the settings screen still see every message; only a
+     * process restart falls back to the saved copy, at most a minute old, and then the first
+     * message goes out at once instead of an interval later.
+     */
+    private const val STATUS_SAVE_INTERVAL_MS = 60_000L
+    private val statusLock = Any()
+    private var liveStatus: String? = null
+    private var livePublishAtMs = 0L
+    private var savedStatus: String? = null
+    private var savedAtElapsedMs = 0L
+
     fun load(context: Context): MqttConnectionConfig {
         val prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val (status, publishedAtMs) = synchronized(statusLock) { liveStatus to livePublishAtMs }
         val port = prefs.getInt(KEY_BROKER_PORT, 1883)
         return MqttConnectionConfig(
             enabled = prefs.getBoolean(KEY_ENABLED, false),
@@ -64,8 +81,8 @@ object MqttConnectionStore {
             useTls = prefs.getBoolean(KEY_USE_TLS, port == 8883),
             useWebSocket = prefs.getBoolean(KEY_USE_WEBSOCKET, false),
             webSocketPath = prefs.getString(KEY_WEBSOCKET_PATH, "/mqtt") ?: "/mqtt",
-            lastStatus = prefs.getString(KEY_LAST_STATUS, "Not configured") ?: "Not configured",
-            lastPublishAtMs = prefs.getLong(KEY_LAST_PUBLISH_AT_MS, 0L)
+            lastStatus = status ?: prefs.getString(KEY_LAST_STATUS, "Not configured") ?: "Not configured",
+            lastPublishAtMs = publishedAtMs.takeIf { it > 0L } ?: prefs.getLong(KEY_LAST_PUBLISH_AT_MS, 0L)
         )
     }
 
@@ -98,12 +115,21 @@ object MqttConnectionStore {
      * that write was silently restored to the value it replaced.
      *
      * A [publishedAtMs] of zero leaves the stored time alone, so a failed publish does not reset
-     * the interval the next tick measures against.
+     * the interval the next tick measures against. Both are held in memory and saved only when
+     * [statusSaveDue] says so (see [STATUS_SAVE_INTERVAL_MS]).
      */
     fun updateStatus(context: Context, status: String, publishedAtMs: Long = 0L) {
-        val edit = prefs(context).edit().putString(KEY_LAST_STATUS, status)
-        if (publishedAtMs > 0L) edit.putLong(KEY_LAST_PUBLISH_AT_MS, publishedAtMs)
-        edit.apply()
+        synchronized(statusLock) {
+            liveStatus = status
+            if (publishedAtMs > 0L) livePublishAtMs = publishedAtMs
+            val nowElapsedMs = SystemClock.elapsedRealtime()
+            if (!statusSaveDue(status, savedStatus, nowElapsedMs, savedAtElapsedMs, STATUS_SAVE_INTERVAL_MS)) return
+            savedStatus = status
+            savedAtElapsedMs = nowElapsedMs
+            val edit = prefs(context).edit().putString(KEY_LAST_STATUS, status)
+            if (livePublishAtMs > 0L) edit.putLong(KEY_LAST_PUBLISH_AT_MS, livePublishAtMs)
+            edit.apply()
+        }
     }
 
     /**
@@ -195,3 +221,15 @@ object MqttConnectionStore {
         else -> "••••$value"
     }
 }
+
+/**
+ * Whether [MqttConnectionStore.updateStatus] saves to storage: when the status reads differently
+ * from the one saved last (a broker going down shows at once), or [intervalMs] after that save.
+ */
+internal fun statusSaveDue(
+    status: String,
+    savedStatus: String?,
+    nowElapsedMs: Long,
+    savedAtElapsedMs: Long,
+    intervalMs: Long,
+): Boolean = status != savedStatus || nowElapsedMs - savedAtElapsedMs >= intervalMs

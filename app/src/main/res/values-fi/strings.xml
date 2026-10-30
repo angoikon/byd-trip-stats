@@ -1077,6 +1077,7 @@
     <string name="d5_vehicle_access_off_status">Ajoneuvon tietojen käyttö pois</string>
     <string name="diagnostics_live_on_status">Reaaliaikaiset tiedot päällä</string>
     <string name="diagnostics_live_off_status">Reaaliaikaiset tiedot pois</string>
+    <string name="performance_overlay_on_status">Suorituskykypeite päällä</string>
     <string name="pref_appearance_title">Ulkoasu</string>
     <string name="pref_appearance_desc">Teema, kojelaudan asettelu sekä kojelaudan kuvakkeet ja animaatiot.</string>
     <string name="pref_language_units_title">Kieli &amp; yksiköt</string>
@@ -1233,6 +1234,8 @@
     <string name="show_diagnostic_details_label">Näytä diagnostiikkatiedot</string>
     <string name="diagnostic_enabled_desc">Live-prosessi, muisti, kehykset, luvat ja ADB-työ-kalut ovat näkyvissä.</string>
     <string name="diagnostic_disabled_desc">Oletuksena pois päältä jottei tämä näyttö jatka kyselyä kun vain tarkistat varmuuskopioita.</string>
+    <string name="performance_overlay_label">Suorituskykypeite</string>
+    <string name="performance_overlay_desc">Näyttää sovelluksen päällä, kun se on auki, sen suoritinkäytön, kuvataajuuden ja piirtoajan sekä laitteen GPU:n ja CPU:n kellotaajuudet ja lämpötilat.</string>
     <string name="send_diag_log_action">Lähetä diagnostiikkaloki Telegramiin</string>
     <string name="enable_troubleshooting_hint">Ota käyttöön vain vian-etsinnän aikana; historiakaaviot näytteistavat 2 sekunnin välein näkyvissä ollessaan.</string>
     <string name="background_readiness_label">Taustavalmius</string>

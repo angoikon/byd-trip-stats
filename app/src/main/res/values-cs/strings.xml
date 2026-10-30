@@ -1074,6 +1074,7 @@
     <string name="d5_vehicle_access_off_status">Přístup k datům vozidla vypnut</string>
     <string name="diagnostics_live_on_status">Živé detaily zapnuty</string>
     <string name="diagnostics_live_off_status">Živé detaily vypnuty</string>
+    <string name="performance_overlay_on_status">Překryv výkonu zapnut</string>
     <string name="pref_appearance_title">Vzhled</string>
     <string name="pref_appearance_desc">Motiv, rozvržení přehledu a ikony a animace přehledu.</string>
     <string name="pref_language_units_title">Jazyk a jednotky</string>
@@ -1229,6 +1230,8 @@
     <string name="show_diagnostic_details_label">Zobrazit detaily diagnostiky</string>
     <string name="diagnostic_enabled_desc">Jsou viditelné živé nástroje procesů, paměti, snímků, oprávnění a ADB.</string>
     <string name="diagnostic_disabled_desc">Ve výchozím stavu vypnuto, aby tato obrazovka neustále nedotazovala, když jen kontrolujete zálohy.</string>
+    <string name="performance_overlay_label">Překryv výkonu</string>
+    <string name="performance_overlay_desc">Zobrazuje nad aplikací, když je otevřená, její vytížení CPU, snímkovou frekvenci a dobu vykreslování a také takty a teploty GPU a CPU jednotky.</string>
     <string name="send_diag_log_action">Odeslat diagnostický protokol na Telegram</string>
     <string name="enable_troubleshooting_hint">Zapínejte jen při řešení problémů; grafy historie vzorkují každé 2 sekundy, dokud jsou viditelné.</string>
     <string name="background_readiness_label">Připravenost pozadí</string>

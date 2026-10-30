@@ -1074,6 +1074,7 @@
     <string name="d5_vehicle_access_off_status">גישה לנתוני הרכב כבויה</string>
     <string name="diagnostics_live_on_status">פרטים חיים פעילים</string>
     <string name="diagnostics_live_off_status">פרטים חיים כבויים</string>
+    <string name="performance_overlay_on_status">שכבת ביצועים פעילה</string>
     <string name="pref_appearance_title">מראה</string>
     <string name="pref_appearance_desc">ערכת נושא, פריסת לוח המחוונים, וסמלים ואנימציות בלוח המחוונים.</string>
     <string name="pref_language_units_title">שפה ויחידות</string>
@@ -1229,6 +1230,8 @@
     <string name="show_diagnostic_details_label">הצג פרטי אבחון</string>
     <string name="diagnostic_enabled_desc">כלי תהליך, זיכרון, פריימים, הרשאות ו-ADB חיים גלויים.</string>
     <string name="diagnostic_disabled_desc">כבוי כברירת מחדל כדי שמסך זה לא ימשיך לתשאל בזמן שאתם רק בודקים גיבויים.</string>
+    <string name="performance_overlay_label">שכבת ביצועים</string>
+    <string name="performance_overlay_desc">מציגה מעל האפליקציה, כל עוד היא פתוחה, את השימוש שלה במעבד, קצב הפריימים וזמן הרינדור, וכן את תדרי וטמפרטורות ה-GPU וה-CPU של היחידה.</string>
     <string name="send_diag_log_action">שלח יומן אבחון ל-Telegram</string>
     <string name="enable_troubleshooting_hint">הפעילו רק בעת פתרון בעיות; גרפי ההיסטוריה דוגמים כל 2 שניות כשהם גלויים.</string>
     <string name="background_readiness_label">מוכנות רקע</string>
