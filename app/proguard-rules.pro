@@ -234,11 +234,8 @@
 -dontwarn io.netty.channel.epoll.Epoll
 -dontwarn io.netty.channel.epoll.EpollEventLoopGroup
 -dontwarn io.netty.channel.epoll.EpollSocketChannel
-# Still genuinely absent — these live in netty-handler-proxy, which we do not ship.
--dontwarn io.netty.handler.proxy.HttpProxyHandler
--dontwarn io.netty.handler.proxy.ProxyHandler
--dontwarn io.netty.handler.proxy.Socks4ProxyHandler
--dontwarn io.netty.handler.proxy.Socks5ProxyHandler
+# The io.netty.handler.proxy.* -dontwarn rules went the same way: netty-handler-proxy is now
+# declared too (SOCKS5 for a broker on the tailnet), so a missing class must fail the build.
 -dontwarn java.util.spi.ToolProvider
 -dontwarn org.apache.log4j.Level
 -dontwarn org.apache.log4j.Logger

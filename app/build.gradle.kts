@@ -43,7 +43,7 @@ android {
     val versionMajor    = 2
     val versionMinor    = 19
     val versionPatch    = 0
-    val versionPre      = 13 // 99 = stable; 1–98 = beta (e.g. 1 → "beta01")
+    val versionPre      = 14 // 99 = stable; 1–98 = beta (e.g. 1 → "beta01")
     // Hotfix revision for the SAME versionName. Bumps versionCode ONLY — the in-app
     // updater compares the GitHub tag against versionName (UpdateRepository.isNewerVersion),
     // NOT versionCode, so this does NOT auto-trigger an update, yet it lets us rebuild the
@@ -339,6 +339,10 @@ dependencies {
     // Without it the "Use WebSocket" transport dies with NoClassDefFoundError
     // right after the TLS handshake. Keep the version in sync with hivemqMqtt.
     implementation(libs.netty.codec.http)
+    // Proxy support is optional in the same way: netty-handler-proxy holds the SOCKS5 handler
+    // that a broker on the tailnet is reached through (TailscaleManager.outboundProxyPort).
+    // Without it the first proxied connect dies with NoClassDefFoundError.
+    implementation(libs.netty.handler.proxy)
 
     // QR code generation (Pro licence request — encodes a pre-filled mailto)
     implementation(libs.zxing.core)

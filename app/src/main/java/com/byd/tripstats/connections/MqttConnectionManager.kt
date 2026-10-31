@@ -6,6 +6,8 @@ import android.util.Log
 import com.byd.tripstats.data.model.VehicleTelemetry
 import com.byd.tripstats.data.config.CarConfig
 import com.hivemq.client.mqtt.MqttClient
+import com.hivemq.client.mqtt.MqttClientTransportConfig
+import com.hivemq.client.mqtt.MqttProxyProtocol
 import com.hivemq.client.mqtt.datatypes.MqttQos
 import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient
 import kotlinx.coroutines.CoroutineScope
@@ -15,6 +17,8 @@ import org.json.JSONObject
 import android.provider.Settings
 import android.os.Build
 import com.byd.tripstats.ui.components.energyModeLabel
+import com.byd.tripstats.util.DiagLog
+import com.byd.tripstats.util.TailscaleManager
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -31,6 +35,10 @@ class MqttConnectionManager(context: Context) {
     @Volatile private var client: Mqtt3AsyncClient? = null
     @Volatile private var connected = false
     @Volatile private var lastEndpoint: String = ""
+    // The tailnet route last written to diag.log, and the one whose connect failure was: one line
+    // per route rather than one per retry tick.
+    @Volatile private var loggedProxyRoute: String = ""
+    @Volatile private var loggedProxyFailure: String = ""
     @Volatile private var currentDeviceId: String = ""
     // Which broker + device id we have already reconciled discovery against, so the common
     // case costs a string compare rather than rebuilding the whole set on every publish tick.
@@ -129,11 +137,18 @@ class MqttConnectionManager(context: Context) {
 
     private fun ensureConnected(config: MqttConnectionConfig, isPhev: Boolean): Boolean {
         val resolvedId = resolveDeviceId(config)
-        val endpoint = "${config.brokerUrl.trim()}:${config.brokerPort}"
+        val host = config.brokerUrl.trim()
+        val endpoint = "$host:${config.brokerPort}"
+        // A broker on the tailnet can only be reached through the Tailscale daemon's SOCKS5
+        // listener (see TailscaleManager.outboundProxyPort). The route is part of what a live
+        // connection has to match, so Tailscale coming up or going away reconnects over the right
+        // path; the discovery scope below stays on `endpoint`, which names the broker alone.
+        val proxyPort = TailscaleManager.outboundProxyPort(appContext, host)
+        val connectKey = if (proxyPort != null) "$endpoint via 127.0.0.1:$proxyPort" else endpoint
         val avTopic = "byd-trip-stats/$resolvedId/availability"
         val stTopic = "byd-trip-stats/$resolvedId/state"
         synchronized(lock) {
-            if (connected && client != null && endpoint == lastEndpoint && resolvedId == currentDeviceId) {
+            if (connected && client != null && connectKey == lastEndpoint && resolvedId == currentDeviceId) {
                 // Test & Save asks for a republish over a connection that is already up, so this
                 // path has to be able to send discovery as well — it is not only a connect-time job.
                 // Unlike the connect path below this sits outside publish()'s try, and the service
@@ -145,8 +160,43 @@ class MqttConnectionManager(context: Context) {
                 return true
             }
             shutdown()
-            lastEndpoint = endpoint
+            lastEndpoint = connectKey
             currentDeviceId = resolvedId
+            if (proxyPort != null && connectKey != loggedProxyRoute) {
+                loggedProxyRoute = connectKey
+                DiagLog.event(appContext, TAG, "MQTT: $host is on the tailnet — connecting through Tailscale (127.0.0.1:$proxyPort)")
+            }
+
+            // Built on its own and handed over whole: the proxy setting exists only here, and
+            // mixing these calls with the client builder's own serverHost/ssl setters would leave
+            // two transport configs, one of them silently ignored.
+            val transport = MqttClientTransportConfig.builder()
+                .serverHost(host)
+                .serverPort(config.brokerPort.coerceIn(1, 65535))
+
+            // WebSocket transport lets users front the broker with a reverse proxy
+            // (nginx/Traefik/Caddy) that speaks HTTP/WS rather than raw MQTT TCP.
+            if (config.useWebSocket) {
+                transport.webSocketConfig()
+                    // HiveMQ expects the path without a leading slash (e.g. "mqtt").
+                    .serverPath(config.webSocketPath.trim().removePrefix("/").ifBlank { "mqtt" })
+                    .applyWebSocketConfig()
+            }
+
+            // wss:// = WebSocket + TLS; otherwise TLS over raw TCP (mqtts).
+            if (config.useTls) {
+                transport.sslWithDefaultConfig()
+            }
+
+            // HiveMQ hands the proxy the broker's name unresolved, so a MagicDNS name is resolved
+            // by tailscaled, which knows the tailnet's names; the head unit's DNS doesn't.
+            if (proxyPort != null) {
+                transport.proxyConfig()
+                    .protocol(MqttProxyProtocol.SOCKS_5)
+                    .host("127.0.0.1")
+                    .port(proxyPort)
+                    .applyProxyConfig()
+            }
 
             // Do NOT use automaticReconnect — it reconnects internally and bypasses
             // ensureConnected(), so the availability "online" publish never fires
@@ -156,22 +206,7 @@ class MqttConnectionManager(context: Context) {
             val builder = MqttClient.builder()
                 .useMqttVersion3()
                 .identifier("BydTripStats")
-                .serverHost(config.brokerUrl.trim())
-                .serverPort(config.brokerPort.coerceIn(1, 65535))
-
-            // WebSocket transport lets users front the broker with a reverse proxy
-            // (nginx/Traefik/Caddy) that speaks HTTP/WS rather than raw MQTT TCP.
-            if (config.useWebSocket) {
-                builder.webSocketConfig()
-                    // HiveMQ expects the path without a leading slash (e.g. "mqtt").
-                    .serverPath(config.webSocketPath.trim().removePrefix("/").ifBlank { "mqtt" })
-                    .applyWebSocketConfig()
-            }
-
-            // wss:// = WebSocket + TLS; otherwise TLS over raw TCP (mqtts).
-            if (config.useTls) {
-                builder.sslWithDefaultConfig()
-            }
+                .transportConfig(transport.build())
 
             if (config.username.isNotBlank()) {
                 builder.simpleAuth()
@@ -184,6 +219,7 @@ class MqttConnectionManager(context: Context) {
             val newClient = builder.buildAsync()
             val latch = CountDownLatch(1)
             var ok = false
+            var failure: Throwable? = null
             // Set Last Will and Testament so Home Assistant sees offline on unexpected disconnect
             try {
                 newClient.connectWith()
@@ -198,6 +234,7 @@ class MqttConnectionManager(context: Context) {
                     .whenComplete { _, throwable ->
                         ok = throwable == null
                         if (throwable != null) {
+                            failure = throwable
                             Log.e(TAG, "MQTT connect failed", throwable)
                         }
                         latch.countDown()
@@ -210,6 +247,7 @@ class MqttConnectionManager(context: Context) {
                     .whenComplete { _, throwable ->
                         ok = throwable == null
                         if (throwable != null) {
+                            failure = throwable
                             Log.e(TAG, "MQTT connect failed", throwable)
                         }
                         latch.countDown()
@@ -218,6 +256,17 @@ class MqttConnectionManager(context: Context) {
             latch.await(10, TimeUnit.SECONDS)
             connected = ok
             client = if (ok) newClient else null
+            // Release builds strip Log.e, and the tailnet route is the one nobody can check from
+            // the car, so its first failure on each route goes to diag.log.
+            if (ok) {
+                loggedProxyFailure = ""
+            } else if (proxyPort != null && connectKey != loggedProxyFailure) {
+                loggedProxyFailure = connectKey
+                val reason = failure
+                    ?.let { t -> generateSequence(t) { it.cause }.take(3).joinToString(" <- ") { "${it.javaClass.simpleName}: ${it.message}" } }
+                    ?: "no answer within 10 s"
+                DiagLog.event(appContext, TAG, "MQTT: connecting through Tailscale failed — ${reason.take(300)}")
+            }
             if (ok) {
                 try {
                     // Discovery first (retained) so HA knows entities before seeing them go online

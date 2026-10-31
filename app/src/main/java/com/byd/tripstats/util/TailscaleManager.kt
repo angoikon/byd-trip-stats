@@ -34,6 +34,22 @@ internal fun tailscaleStateIsOurs(stateJson: String, ourHostname: String): Boole
 }.getOrDefault(false)
 
 /**
+ * Whether [host] is somewhere only the tailnet reaches: a Tailscale address (100.64.0.0/10, or
+ * fd7a:115c:a1e0::/48 for IPv6) or a full MagicDNS name (`….ts.net`). A machine's short MagicDNS
+ * name (`homeassistant`) is not among them: it can't be told apart from a name on the home network,
+ * and sending that one to the tailnet would break it there.
+ */
+internal fun isTailnetAddress(host: String): Boolean {
+    val h = host.trim().removePrefix("[").removeSuffix("]").trimEnd('.').lowercase()
+    if (h.endsWith(".ts.net")) return true
+    if (h.startsWith("fd7a:115c:a1e0:")) return true
+    val octets = h.split('.')
+    if (octets.size != 4 || octets.any { it.isEmpty() || it.length > 3 || !it.all(Char::isDigit) }) return false
+    val values = octets.map { it.toInt() }
+    return values.all { it in 0..255 } && values[0] == 100 && values[1] in 64..127
+}
+
+/**
  * Puts the head unit on the user's Tailscale network, so the web companion and ADB are reachable
  * from anywhere rather than only from the home Wi-Fi.
  *
@@ -51,8 +67,11 @@ internal fun tailscaleStateIsOurs(stateJson: String, ourHostname: String): Boole
  *  - **`--tun=userspace-networking`.** No VpnService, no VPN consent dialog, no root, and no
  *    `/dev/net/tun`. tailscaled keeps WireGuard inside its own process and forwards inbound TCP on
  *    the node's `100.x` address to localhost, which is exactly what makes our companion (:8888)
- *    and adbd (:5555) reachable. There is deliberately no outbound proxy: nothing on the car needs
- *    to *reach into* the tailnet.
+ *    and adbd (:5555) reachable. The other direction needs help: no interface means the app's own
+ *    sockets never enter the tailnet, so a connection to a `100.x` address just goes out over
+ *    Wi-Fi or 4G and times out (issue #34: MQTT to a broker on the tailnet). The daemon therefore
+ *    also runs a SOCKS5 listener on loopback ([SOCKS_PORT]), and [outboundProxyPort] tells the MQTT
+ *    client when to use it.
  *  - **`--socket=@tailscaled`** — an abstract-namespace socket. A socket *file* under
  *    `/data/local/tmp` fails with `bind: permission denied`, because Android's SELinux policy
  *    grants the shell domain `file` access to `shell_data_file` but not `sock_file { create }`.
@@ -93,6 +112,24 @@ object TailscaleManager {
     private const val LEGACY_DIR_NAME = ".tailscale"
     private const val SOCKET = "@tripstats-tailscaled"
     private const val KEY_DIR_MIGRATED = "dir_migrated_v1"
+
+    /**
+     * The daemon's SOCKS5 listener, on loopback only — next to the telemetry daemon's 28200. It
+     * asks for no password (tailscaled has no option for one), so any app on the head unit could
+     * use it to reach the tailnet as the car; the tailnet's own access rules still apply.
+     */
+    private const val SOCKS_PORT = 28201
+
+    /**
+     * What the running daemon was launched with. [start] leaves a running daemon alone unless the
+     * binary changed, and adding the SOCKS5 listener changed only the launch line — so a daemon
+     * started by an older app would have kept running without it. Bump [LAUNCH_REVISION] whenever
+     * the launch line changes; a daemon launched under another revision is restarted once.
+     */
+    private const val KEY_LAUNCH_REVISION = "launch_revision"
+    private const val LAUNCH_REVISION = 1
+    /** The SOCKS5 port the running daemon listens on, or 0 when it was launched without one. */
+    private const val KEY_SOCKS_PORT = "socks_port"
 
     /**
      * Shell-owned, and the only directory the daemon and our shell channel can both write: in
@@ -258,9 +295,10 @@ object TailscaleManager {
 
         val running = queryStatus(context)
         val replaced = installBinary(context, source)
+        val launchCurrent = prefs(context).getInt(KEY_LAUNCH_REVISION, 0) == LAUNCH_REVISION
 
         if (running != null && running.state != State.ERROR) {
-            if (!replaced) {
+            if (!replaced && launchCurrent) {
                 // Already up (the daemon outlives our process), so don't restart and drop the tailnet.
                 diag(context, "start: daemon already up, state=${running.state} ip=${running.ip}")
                 return@withContext publish(running)
@@ -268,13 +306,22 @@ object TailscaleManager {
             // The process in memory is still the previous build. The CLI on disk is the new one, so
             // it would accept a new subcommand and then hand it to a daemon that has never heard of
             // it — which is how an app update used to look like a broken feature. Restart instead.
-            diag(context, "start: daemon is the previous build — restarting it to pick up the update")
+            // Same for an older launch line: the daemon would carry on without what it now adds.
+            diag(
+                context,
+                if (replaced) "start: daemon is the previous build — restarting it to pick up the update"
+                else "start: daemon was launched by an older version — restarting it once for the new launch line",
+            )
             publish(Status(State.STARTING))
             sh(context, "pkill -f '${killPattern(context)}'", timeoutMs = 10_000L)
             kotlinx.coroutines.delay(500)
         }
 
         publish(Status(State.STARTING))
+        // tailscaled exits at once when it can't bind --socks5-server, so a port something else
+        // holds must cost only the tailnet broker, never remote access itself.
+        val socksPort = SOCKS_PORT.takeIf { awaitLoopbackPortFree(it) }
+        val socksFlag = socksPort?.let { "--socks5-server=127.0.0.1:$it " }.orEmpty()
         // setsid so it outlives the shell that launched it — proven to survive the adb session.
         // `>>`, appending: rotateLogIfLarge empties the log in place while the daemon runs, and an
         // appending writer simply carries on at the new end.
@@ -285,8 +332,17 @@ object TailscaleManager {
         sh(
             context,
             "cd ${dir(context)} || exit 1; HOME=${dir(context)} SSL_CERT_DIR=$CA_CERT_DIRS setsid ${bin(context)} --tun=userspace-networking " +
-                "--statedir=${dir(context)} --socket=$SOCKET >> ${logFile(context)} 2>&1 < /dev/null &",
+                "$socksFlag--statedir=${dir(context)} --socket=$SOCKET >> ${logFile(context)} 2>&1 < /dev/null &",
             timeoutMs = 10_000L,
+        )
+        prefs(context).edit()
+            .putInt(KEY_LAUNCH_REVISION, LAUNCH_REVISION)
+            .putInt(KEY_SOCKS_PORT, socksPort ?: 0)
+            .apply()
+        diag(
+            context,
+            if (socksPort != null) "start: outbound proxy on 127.0.0.1:$socksPort"
+            else "start: port $SOCKS_PORT is taken — no outbound proxy, so MQTT can't reach a broker on the tailnet",
         )
 
         // The daemon needs a moment before its socket answers; poll rather than guess.
@@ -560,6 +616,17 @@ object TailscaleManager {
     /** `https://<machine>.<tailnet>.ts.net/`, or null when TLS isn't being terminated. */
     fun currentHttpsUrl(): String? = _status.value.httpsUrl
 
+    /**
+     * The loopback SOCKS5 port to dial [host] through, or null to dial it directly: when [host]
+     * isn't on the tailnet ([isTailnetAddress]), Tailscale is off, or the daemon was launched
+     * without the listener. Only tailnet hosts go through it, so a public broker keeps working when
+     * the daemon is down. Read from what [start] recorded, so it costs no shell call.
+     */
+    fun outboundProxyPort(context: Context, host: String): Int? {
+        if (!isEnabled(context) || !isTailnetAddress(host)) return null
+        return prefs(context).getInt(KEY_SOCKS_PORT, 0).takeIf { it > 0 }
+    }
+
     // ── HTTPS (tailscale serve) ───────────────────────────────────────────────
 
     private val _httpsEnabled = MutableStateFlow(false)
@@ -692,6 +759,23 @@ object TailscaleManager {
             return false
         }
         return true
+    }
+
+    /**
+     * Whether [port] on loopback is free, allowing up to 3 s for a daemon [start] has just stopped
+     * to let go of it. The check binds in our own process: what matters is whether tailscaled could.
+     * The address is spelled out because Android's `InetAddress.getLoopbackAddress()` is `::1`,
+     * which says nothing about 127.0.0.1.
+     */
+    private suspend fun awaitLoopbackPortFree(port: Int): Boolean {
+        repeat(6) { attempt ->
+            val free = runCatching {
+                java.net.ServerSocket().use { it.bind(java.net.InetSocketAddress("127.0.0.1", port)) }
+            }.isSuccess
+            if (free) return true
+            if (attempt < 5) kotlinx.coroutines.delay(500)
+        }
+        return false
     }
 
     private fun sha256(file: File): String? = runCatching {

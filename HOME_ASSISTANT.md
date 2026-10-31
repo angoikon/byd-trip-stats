@@ -82,6 +82,7 @@ Both the car's head unit and Home Assistant must connect to the **same** MQTT br
 |---|---|
 | **HiveMQ Cloud** (free tier) | Easiest if your car has internet. Port `8883` (TLS). |
 | **Mosquitto add-on** (local) | Best for LAN-only setups. Runs inside HA. Port `1883` or `8883`. |
+| Broker on your **tailnet** | With Tailscale on in the car, enter the broker's `100.x` address or its full `….ts.net` name (a short name isn't routed through Tailscale) — see [Remote access](HOW_TO_USE.md#remote-access-tailscale). |
 | Any other broker | Works as long as both sides can reach it. |
 
 ### 2. Configure the app

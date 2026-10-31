@@ -444,6 +444,14 @@ adb connect 100.99.138.80:5555 # ADB, from anywhere
 The address is **stable** — it stays the same across reboots and across switching between Wi-Fi and
 mobile data.
 
+**A broker on your tailnet**
+
+If your MQTT broker runs on a machine that is also on your tailnet (Home Assistant with the
+Tailscale add-on, say), enter it in **Settings → Connections → MQTT** by its **100.x address** or
+its **full Tailscale name** (`homeassistant.tail1234.ts.net`). The car then connects to it through
+Tailscale, from anywhere, mobile data included. A short name such as `homeassistant` is not sent
+through Tailscale, because the app can't tell it apart from a name on your home network.
+
 **Encrypting it (optional)**
 
 Turn on **Serve over HTTPS** and the Tailscale daemon terminates TLS itself, using a real
