@@ -13,6 +13,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.byd.tripstats.data.config.CarCatalog
 import com.byd.tripstats.data.config.CarConfig
+import com.byd.tripstats.sdk.DiLink5Platform
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -243,6 +244,8 @@ class PreferencesManager(private val context: Context) {
     // Backward compat: only an EXPLICIT legacy keepServiceAliveWhenOff=false is honoured
     // as DISABLED (Minimal); everyone else — new installs and the old `true` default —
     // gets Always On. An explicit OFF_STATE_MODE choice always wins.
+    // Both readers return the mode in effect, which on DiLink-5 is always Always On
+    // (effectiveOffStateMode); the cache and the store keep the user's own choice.
 
     val offStateMode: Flow<OffStateMode> = context.dataStore.data
         .map { prefs ->
@@ -252,13 +255,16 @@ class PreferencesManager(private val context: Context) {
                    else OffStateMode.ENABLED
         }
         .onEach { cache.edit().putString("off_state_mode", it.name).apply() }
+        .map { effectiveOffStateMode(it, DiLink5Platform.isDiLink5) }
 
-    fun getCachedOffStateMode(): OffStateMode =
+    fun getCachedOffStateMode(): OffStateMode = effectiveOffStateMode(
         cache.getString("off_state_mode", null)
             ?.let { runCatching { OffStateMode.valueOf(it) }.getOrNull() }
             ?: if (cache.contains("keep_service_alive_when_off") && !getCachedKeepServiceAliveWhenOff())
                    OffStateMode.DISABLED
-               else OffStateMode.ENABLED
+               else OffStateMode.ENABLED,
+        DiLink5Platform.isDiLink5,
+    )
 
     suspend fun saveOffStateMode(mode: OffStateMode) {
         context.dataStore.edit { it[OFF_STATE_MODE] = mode.name }

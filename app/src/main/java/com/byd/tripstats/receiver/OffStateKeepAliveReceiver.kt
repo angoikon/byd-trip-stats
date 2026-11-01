@@ -10,6 +10,7 @@ import android.os.PowerManager
 import android.util.Log
 import com.byd.tripstats.data.preferences.OffStateMode
 import com.byd.tripstats.data.preferences.PreferencesManager
+import com.byd.tripstats.sdk.DiLink5Platform
 import com.byd.tripstats.service.VehicleTelemetryService
 import com.byd.tripstats.util.DiagLog
 import com.byd.tripstats.util.McuWakeHelper
@@ -54,6 +55,14 @@ class OffStateKeepaliveReceiver : BroadcastReceiver() {
         // already scheduled, cancel the chain and exit without doing any work.
         if (PreferencesManager(appContext).getCachedOffStateMode() == OffStateMode.DEEP_SLEEP) {
             DiagLog.event(appContext, TAG, "deep sleep mode — cancelling chain and returning")
+            cancel(appContext)
+            return
+        }
+        // DiLink-5 runs Always On only (effectiveOffStateMode), so this is a chain armed by Minimal
+        // before that: end it. It also kept calling the MCU keepalive below, which goes through the
+        // power device and was never meant to run on DiLink-5.
+        if (DiLink5Platform.isDiLink5) {
+            DiagLog.event(appContext, TAG, "DiLink-5 runs Always On — cancelling chain and returning")
             cancel(appContext)
             return
         }

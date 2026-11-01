@@ -2,6 +2,7 @@ package com.byd.tripstats.util
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.byd.tripstats.sdk.DiLink5Platform
 
 /**
  * Persistent flag indicating the telemetry service has self-stopped due to
@@ -25,8 +26,10 @@ object ServiceIdleState {
     private fun prefs(context: Context): SharedPreferences =
         context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
+    // Never on DiLink-5, which always runs Always On (effectiveOffStateMode), so a flag left by a
+    // self-stop from before can't keep the service from starting.
     fun isStayingIdle(context: Context): Boolean =
-        prefs(context).getBoolean(KEY_STAYING_IDLE, false)
+        !DiLink5Platform.isDiLink5 && prefs(context).getBoolean(KEY_STAYING_IDLE, false)
 
     fun setStayingIdle(context: Context, value: Boolean) {
         prefs(context).edit().putBoolean(KEY_STAYING_IDLE, value).apply()

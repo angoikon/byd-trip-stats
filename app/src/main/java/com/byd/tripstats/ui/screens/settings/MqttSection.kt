@@ -261,11 +261,15 @@ internal fun MqttConnectionSection(context: Context, scope: CoroutineScope) {
                         supportingText = { Text(stringResource(R.string.publish_interval_desc, intervalInput.ifBlank { "1" }), style = MaterialTheme.typography.bodySmall) },
                         modifier = Modifier.fillMaxWidth()
                     )
-                    Text(
-                        stringResource(R.string.publish_parked_info),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    // Explains the Background activity modes, which DiLink-5 doesn't have; its own
+                    // note above (mqtt_di5_note) covers publishing while parked there.
+                    if (!com.byd.tripstats.sdk.DiLink5Platform.isDiLink5) {
+                        Text(
+                            stringResource(R.string.publish_parked_info),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         Button(
                             onClick = {
