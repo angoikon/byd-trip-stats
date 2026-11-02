@@ -4,17 +4,18 @@ import kotlin.math.abs
 import kotlin.math.exp
 
 /**
- * Instant consumption (kWh/100 km) for the dashboard's Power tile: motor power ÷ speed, plus what
- * the battery spends beyond the motors.
+ * Instant consumption (kWh/100 km) for the dashboard's Power tile: the car's power ÷ speed, plus
+ * what the battery spends beyond that reading.
  *
- * The motor power is in whole kW and leaves out climate, the 12 V supply and losses: on the dev
- * Seal's trip 821 it added up to 5.74 kWh where the battery gave 6.40. So the estimator learns the
- * difference as an extra load in kW — the battery's discharge counter minus the integrated motor
+ * The power reading is the whole car's — climate and heated/ventilated seats included, matching
+ * BYD's own display — but it comes in whole kW (a few hundred watts read 0), and on the dev Seal's
+ * trip 821 it added up to 5.74 kWh where the battery gave 6.40. So the estimator learns the
+ * difference as an extra load in kW — the battery's discharge counter minus the integrated
  * power, over the trip's continuous readings — and adds it. That load runs whether the car moves
  * or not, so it is learned over every reading: splitting by speed was tried and read 7 % high,
  * because the counter's 0.1 kWh steps land a moment late — energy used pulling away from a stop
- * shows up in the readings after. It adapts to the car and its climate use without a per-car
- * figure; on a car whose power is already measured at the battery it learns ~0. Replaying trip 821
+ * shows up in the readings after. It adapts to the car without a per-car figure; on a car whose
+ * reading already matches the battery it learns ~0. Replaying trip 821
  * through this class, the figure over its moving stretches came within 2 % of the battery there
  * (14.5 vs 14.8 kWh/100 km); the stored points' gaps left the standstill draw out of that replay,
  * which live readings, every 0.2 s, keep.
@@ -38,7 +39,7 @@ class InstantConsumptionEstimator(private val smoothingSeconds: Double = 3.0) {
     private var motorKwh = 0.0
     private var hours = 0.0
 
-    /** What the battery spends beyond the motors (climate, 12 V, losses), in kW. */
+    /** What the battery spends beyond the car's power reading, in kW. */
     var extraLoadKw: Double = 0.0
         private set
 
@@ -91,9 +92,9 @@ class InstantConsumptionEstimator(private val smoothingSeconds: Double = 3.0) {
     companion object {
         const val MIN_SPEED_KMH = 10.0
         const val MAX_GAP_SECONDS = 10.0
-        // Climate, 12 V and losses settle within a few minutes of driving.
+        // The shortfall settles within a few minutes of driving.
         const val MIN_LEARNING_HOURS = 5.0 / 60.0
-        // Heat pump or heater flat out, with margin; a larger figure is a counter glitch.
+        // Far above the shortfall seen; a larger figure is a counter glitch.
         const val MAX_EXTRA_LOAD_KW = 6.0
         // A counter step this large between two readings (≤ 10 s apart) is a glitch, not driving.
         const val MAX_COUNTER_STEP_KWH = 1.0

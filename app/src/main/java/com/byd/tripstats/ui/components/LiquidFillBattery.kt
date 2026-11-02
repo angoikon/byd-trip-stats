@@ -35,6 +35,30 @@ private const val WAVE_FRAME_MS = 1_000L / WAVE_FPS
 private const val WAVE_STEP_DEG = 360f * WAVE_FRAME_MS / WAVE_PERIOD_MS
 
 /**
+ * A SoC change smaller than this many percentage points is shown at once instead of animated.
+ * The BMS SoC steps by 0.1 % (every 15–30 s at highway speed) and the panel SoC by 1 %, and either
+ * moves the fill by about a pixel or less, yet each step's animation redrew the whole window at the
+ * display's full rate for its length: about 57 frames per 0.1 % step for the top-bar battery,
+ * measured on an emulator. Larger changes, such as the fill rising from empty as the dashboard
+ * opens, still animate.
+ */
+private const val SOC_ANIMATION_MIN_STEP = 2f
+
+internal fun socChangeAnimates(from: Float, to: Float): Boolean =
+    kotlin.math.abs(to - from) >= SOC_ANIMATION_MIN_STEP
+
+/** [soc] as the batteries draw it: a large change animated with [animationSpec], a small one at once. */
+@Composable
+private fun animateSocAsState(soc: Float, animationSpec: AnimationSpec<Float>): State<Float> {
+    val animated = remember { Animatable(soc) }
+    LaunchedEffect(soc) {
+        if (socChangeAnimates(animated.value, soc)) animated.animateTo(soc, animationSpec)
+        else animated.snapTo(soc)
+    }
+    return animated.asState()
+}
+
+/**
  * Liquid-Fill Battery - Premium animated battery indicator
  * 
  * Features:
@@ -59,14 +83,13 @@ fun LiquidFillBattery(
     height: Dp = 200.dp
 ) {
     // Animate the liquid fill level
-    val animatedSoc by animateFloatAsState(
-        targetValue = soc,
+    val animatedSoc by animateSocAsState(
+        soc = soc,
         animationSpec = if (animationsEnabled) {
             tween(durationMillis = 1500, easing = EaseInOutCubic)
         } else {
             snap()
         },
-        label = "socAnimation"
     )
     
     // Gate all animations on Lifecycle.State.RESUMED using Animatable +
@@ -300,11 +323,7 @@ fun CompactBattery(
     isCharging: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    val animatedSoc by animateFloatAsState(
-        targetValue = soc,
-        animationSpec = tween(1000),
-        label = "compactSoc"
-    )
+    val animatedSoc by animateSocAsState(soc = soc, animationSpec = tween(1000))
     
     val batteryColor = when {
         animatedSoc >= 80f -> Color(0xFF00FF88)
