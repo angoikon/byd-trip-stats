@@ -133,6 +133,19 @@ object MqttConnectionStore {
     }
 
     /**
+     * Drops the in-memory status so [load] reads the saved copy again. For tests: this object
+     * outlives a cleared preferences file, and its status would otherwise carry into the next test.
+     */
+    internal fun forgetLiveStatus() {
+        synchronized(statusLock) {
+            liveStatus = null
+            livePublishAtMs = 0L
+            savedStatus = null
+            savedAtElapsedMs = 0L
+        }
+    }
+
+    /**
      * The discovery set the broker is believed to already hold, as a digest.
      *
      * Deliberately not part of [MqttConnectionConfig]: it is not a user setting, and the settings

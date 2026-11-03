@@ -14,7 +14,9 @@ import org.junit.runner.RunWith
  * a config it read when the screen was opened. These tests pin which of the two owns which field.
  *
  * The preferences files are the real ones, so each test snapshots them first and puts them back
- * afterwards. Running this on a car must not cost the owner their broker settings.
+ * afterwards. Running this on a car must not cost the owner their broker settings. The MQTT store
+ * also holds the publisher's status in memory, which survives a cleared file, so that is dropped
+ * on both sides of each test.
  */
 @RunWith(AndroidJUnit4::class)
 class ConnectionStatusOwnershipTest {
@@ -35,12 +37,14 @@ class ConnectionStatusOwnershipTest {
         savedAbrp = snapshot(abrpPrefs)
         clear(mqttPrefs)
         clear(abrpPrefs)
+        MqttConnectionStore.forgetLiveStatus()
     }
 
     @After
     fun tearDown() {
         restore(mqttPrefs, savedMqtt)
         restore(abrpPrefs, savedAbrp)
+        MqttConnectionStore.forgetLiveStatus()
     }
 
     @Test

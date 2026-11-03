@@ -1,7 +1,6 @@
 package com.byd.tripstats.data.local
 
 import androidx.room.testing.MigrationTestHelper
-import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
@@ -23,8 +22,7 @@ class ChargingSessionMigrationTest {
     @get:Rule
     val helper = MigrationTestHelper(
         InstrumentationRegistry.getInstrumentation(),
-        BydStatsDatabase::class.java.canonicalName,
-        FrameworkSQLiteOpenHelperFactory(),
+        BydStatsDatabase::class.java,
     )
 
     @Test
