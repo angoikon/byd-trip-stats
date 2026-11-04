@@ -578,13 +578,17 @@ class VehicleTelemetryService : Service() {
 
                         // Feed the parked Wi-Fi keepalive daemon our 12V / SoC (the same values we
                         // publish to MQTT) so its drain guard has real numbers — the daemon can't read
-                        // the battery device from its own shell context. No-op unless the toggle is on;
-                        // throttled internally. Launched off-loop so the shell write never stalls the poll.
+                        // the battery device from its own shell context — and the car state, so it acts
+                        // only after switch-off (null = no source, which blocks nothing). No-op unless
+                        // the toggle is on; throttled internally. Launched off-loop so the shell write
+                        // never stalls the poll.
+                        val keepaliveCarOn = snapshot.effectiveCarOn()
                         serviceScope.launch {
                             com.byd.tripstats.util.WifiKeepalive.pushGuard(
                                 applicationContext,
                                 telemetry.battery12vVoltage.takeIf { it > 0.0 },
                                 telemetry.soc.takeIf { it > 0.0 },
+                                keepaliveCarOn,
                             )
                         }
 

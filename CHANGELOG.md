@@ -1,3 +1,12 @@
+## [2.19.1] - Unreleased
+
+> **What's new in a nutshell**
+>
+> With **"Keep Wi-Fi alive when car is off"** on, **wireless Android Auto no longer drops every 30 seconds** when you stand still: the keepalive now waits until you switch the car off, as its description says, and it never touches the Wi-Fi hotspot that wireless Android Auto and CarPlay use. Thanks to **[@Benjamin2210](https://github.com/Benjamin2210)** for the report.
+
+### Fixed
+- **"Keep Wi-Fi alive when car is off" no longer cuts wireless Android Auto** — the keepalive turned Wi-Fi back on whenever it was off and the car stood still, but it didn't check whether the car was switched off. Wireless Android Auto and CarPlay connect your phone through a Wi-Fi hotspot the head unit runs, and while that hotspot is on, the head unit's normal Wi-Fi is off. So at every stop longer than half a minute — parked with the car on, at lights, in a queue — the keepalive switched normal Wi-Fi on, which shut the hotspot down and dropped Android Auto. The car then started the hotspot again, and 30 seconds later the keepalive shut it down again. Now the keepalive does nothing while the car is on, so it also no longer undoes Wi-Fi you switched off yourself while parked, and it never turns Wi-Fi on while the head unit's hotspot is on, whether for Android Auto, CarPlay or a hotspot you share. After you switch off, it takes up to about 2 minutes to start, as the app restarts after the car shuts it down, so Wi-Fi may be off briefly before it comes back. On a car that doesn't report whether it is switched on, the hotspot check alone still protects Android Auto. DiLink-3 only, as the keepalive is. Thanks to **[@Benjamin2210](https://github.com/Benjamin2210)** for the report ([#35](https://github.com/angoikon/byd-trip-stats/issues/35)).
+
 ## [2.19.0] - 2026-Nov-03
 
 > **What's new in a nutshell**

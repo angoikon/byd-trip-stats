@@ -36,16 +36,19 @@ object WifiKeepalive {
         46, 98, 121, 100, 119, 105, 102, 105, 107, 101, 101, 112,
     )
 
-    /** "/data/local/tmp/.bydwifiguard" — 12V,SoC the daemon reads for its drain guard. */
+    /** "/data/local/tmp/.bydwifiguard" — "12V,SoC,carOn" the daemon reads for its guards. */
     private val GUARD_PATH = s(
         47, 100, 97, 116, 97, 47, 108, 111, 99, 97, 108, 47, 116, 109, 112, 47,
         46, 98, 121, 100, 119, 105, 102, 105, 103, 117, 97, 114, 100,
     )
 
     // 12V/SoC drift slowly while parked, and this feeds a guard against gradual multi-hour drain, so
-    // a slow cadence is plenty — no benefit to pushing more often, just more adb round-trips.
+    // a slow cadence is plenty — no benefit to pushing more often, just more adb round-trips. A change
+    // of car state goes out at once instead (see pushGuard).
     private const val GUARD_PUSH_INTERVAL_MS = 300_000L   // 5 min
-    @Volatile private var lastGuardPushMs = 0L
+    private val guardPushLock = Any()
+    private var lastGuardPushMs = 0L          // guarded by guardPushLock
+    private var lastPushedCarOn: Int? = null  // guarded by guardPushLock
 
     /** Whether the daemon should keep Wi-Fi up: the toggle is on and the off-state mode is Always On. */
     fun isActive(toggleOn: Boolean, mode: OffStateMode): Boolean =
@@ -75,22 +78,36 @@ object WifiKeepalive {
 
     /**
      * Hand the daemon the app's own 12V / SoC readings — the SAME values the app publishes to MQTT —
-     * so its parked keepalive can guard against battery drain. The daemon can't read the battery
-     * device from its bare shell context (getInstance returns null there), so the app, which reads
-     * them fine, writes them to a file the daemon polls. This is transport, not a second reading.
+     * so its parked keepalive can guard against battery drain, plus [carOn]
+     * (VehicleTelemetrySnapshot.effectiveCarOn(), null = no source) so it acts only once the car is
+     * switched off. The daemon can't read the battery device from its bare shell context
+     * (getInstance returns null there), so the app, which reads them fine, writes them to a file the
+     * daemon polls. This is transport, not a second reading.
      *
-     * Called from the telemetry loop; throttled to [GUARD_PUSH_INTERVAL_MS] and a no-op unless the
-     * keepalive is [isActive] and the privileged setup is complete. Null (unknown) values are
+     * Called from the telemetry loop; throttled to [GUARD_PUSH_INTERVAL_MS], except that a change of
+     * [carOn] goes out at once — the keepalive must stop the moment the car is switched on, and the
+     * app's first push after BYD's switch-off sweep revives it carries the switch-off. A no-op unless
+     * the keepalive is [isActive] and the privileged setup is complete. Null (unknown) values are
      * written blank — the daemon treats a blank/absent value as "unknown, don't block".
      */
-    suspend fun pushGuard(context: Context, v12: Double?, soc: Double?) {
+    suspend fun pushGuard(context: Context, v12: Double?, soc: Double?, carOn: Int?) {
         val prefs = PreferencesManager(context)
         if (!isActive(prefs.getCachedWifiKeepaliveWhenOff(), prefs.getCachedOffStateMode())) return
-        val now = SystemClock.elapsedRealtime()
-        if (lastGuardPushMs != 0L && now - lastGuardPushMs < GUARD_PUSH_INTERVAL_MS) return
         if (!AdbPermissionManager.isSetupComplete(context)) return
-        lastGuardPushMs = now
-        val line = "${v12 ?: ""},${soc ?: ""}"
+        // The loop launches this every second; decide and record under the lock so two launches
+        // never both push the same change.
+        val due = synchronized(guardPushLock) {
+            val now = SystemClock.elapsedRealtime()
+            val due = lastGuardPushMs == 0L || carOn != lastPushedCarOn ||
+                now - lastGuardPushMs >= GUARD_PUSH_INTERVAL_MS
+            if (due) {
+                lastGuardPushMs = now
+                lastPushedCarOn = carOn
+            }
+            due
+        }
+        if (!due) return
+        val line = WifiKeepaliveGuard.format(v12, soc, carOn)
         AdbPermissionManager.runShellBatch(
             context,
             listOf("echo '$line' > $GUARD_PATH 2>/dev/null; chmod 644 $GUARD_PATH 2>/dev/null; echo ok"),

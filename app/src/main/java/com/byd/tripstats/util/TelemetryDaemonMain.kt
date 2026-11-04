@@ -319,25 +319,27 @@ object TelemetryDaemonMain {
     // unit stays alive on 4G. This is the same counter 3rd party keepalive apps use on
     // DiLink-3: from this privileged shell (uid 2000) run `svc wifi enable` when Wi-Fi drops — a plain
     // radio toggle, NOT a vehicle-power write (the ACC-whitelist / power-feature paths need DEVICE_ACC
-    // which is denied even to uid 2000). Gated so it can't flatten the 12V starter battery:
-    //   • not while DRIVING (our own speed > WIFI_MOVING_KMH) — so a deliberate Wi-Fi-off set while
+    // which is denied even to uid 2000). The decision is WifiKeepaliveGuard.reason (shared, unit-tested):
+    //   • not while DRIVING (our own speed > MOVING_KMH) — so a deliberate Wi-Fi-off set while
     //     driving is never overridden; parked/off (speed ~0) is when Wi-Fi actually needs help;
-    //   • only when the 12V aux battery and the traction SoC are above cutoff — those values are FED
-    //     BY THE APP via /data/local/tmp/.bydwifiguard (the battery/BMS devices don't instantiate in
-    //     this bare shell context, so the daemon can't read them itself; the app can, and does);
+    //   • not while the CAR IS ON (carOn > 0) — the keepalive is for after switch-off. Speed alone
+    //     let it act at every standstill with the car on, undoing a Wi-Fi-off set while parked;
+    //   • not while the head unit's HOTSPOT is up — wireless Android Auto / CarPlay run on it, and
+    //     turning normal Wi-Fi on tears it down (issue #35: AA dropped every 30 s at a standstill);
+    //   • only when the 12V aux battery and the traction SoC are above cutoff;
     //   • only when Wi-Fi is actually down — so on a running-but-stationary car (Wi-Fi still up) we do
     //     nothing regardless of the above.
+    // 12V, SoC and carOn are FED BY THE APP via /data/local/tmp/.bydwifiguard: the battery/BMS devices
+    // don't instantiate in this bare shell context, so the daemon can't read them itself, and the car
+    // state the app trusts (bodywork power level on DiLink-3) is one the daemon never had. A missing
+    // or stale value blocks nothing. The hotspot state the daemon reads itself (hotspotOn).
     // The power-state reading (n01) is LOGGED for diagnosis but NOT gated on: on the dev's DiLink-3 it
     // never reported the expected "off" value (0), so gating on it silently disabled the whole feature
-    // (2026-09 test: only "thread up", never a decision line). Speed is the reliable, already-streamed
-    // signal; combined with the "Wi-Fi down" check it captures "parked with Wi-Fi cut" without n01.
+    // (2026-09 test: only "thread up", never a decision line).
     // Enabled by a flag file the app writes over the adb channel (see WifiKeepalive); polled here so
     // the toggle takes effect without relaunching the daemon.
-    private const val WIFI_V12_MIN = 12.0          // volts — skip below this to protect the 12V battery
-    private const val WIFI_SOC_MIN = 15.0          // percent — skip below this (traction battery)
-    private const val WIFI_MOVING_KMH = 2.0        // above this = driving → leave Wi-Fi alone
     private const val WIFI_CHECK_INTERVAL_MS = 30_000L
-    private const val WIFI_GUARD_STALE_MS = 15 * 60 * 1000L  // ignore app-fed 12V/SoC older than this (push is 5 min, so one missed push is tolerated)
+    private const val WIFI_GUARD_STALE_MS = 15 * 60 * 1000L  // ignore app-fed 12V/SoC/carOn older than this (push is 5 min, so one missed push is tolerated)
 
     private fun startWifiKeepalive(ctx: Context) {
         // "/data/local/tmp/.bydwifikeep" — matches WifiKeepalive.FLAG_PATH.
@@ -345,7 +347,7 @@ object TelemetryDaemonMain {
             47,100,97,116,97,47,108,111,99,97,108,47,116,109,112,47,
             46,98,121,100,119,105,102,105,107,101,101,112,
         ))
-        // "/data/local/tmp/.bydwifiguard" — the app writes "12V,SoC" here (WifiKeepalive.pushGuard),
+        // "/data/local/tmp/.bydwifiguard" — the app writes "12V,SoC,carOn" here (WifiKeepalive.pushGuard),
         // because the battery/BMS devices don't instantiate in this bare shell context (getInstance
         // returns null, so an in-daemon read is always null). See readGuard().
         val guardFile = java.io.File(s(
@@ -367,18 +369,19 @@ object TelemetryDaemonMain {
                     val power = RuntimeExtensionBridge.intValue("n01", ctx, -1)   // diagnostic only
                     val speed = snapshot.get().speedKmh ?: 0.0
                     val onWifi = wifiUp(ctx)
-                    val (v12, soc) = readGuard(guardFile)   // 12V,SoC fed by the app; null if absent/stale
-                    val diag = "n01=$power spd=$speed wifi=$onWifi 12V=$v12 soc=$soc"
+                    val ap = hotspotOn(ctx)                 // null if unreadable
+                    val guard = readGuard(guardFile)        // fed by the app; all null if absent/stale
+                    val diag = "n01=$power spd=$speed carOn=${guard.carOn} ap=$ap wifi=$onWifi " +
+                        "12V=${guard.v12} soc=${guard.soc}"
 
-                    // Only trust a 12V reading that looks like volts (10–15). Anything else is a
-                    // units mismatch (mV / 0.1V) or unreadable → don't block on it (the diag logs it).
-                    val reason = when {
-                        speed > WIFI_MOVING_KMH -> "skip-driving"
-                        v12 != null && v12 in 10.0..15.0 && v12 < WIFI_V12_MIN -> "skip-12v"
-                        soc != null && soc in 0.0..100.0 && soc < WIFI_SOC_MIN -> "skip-soc"
-                        onWifi -> "wifi-up"
-                        else -> "enable"
-                    }
+                    val reason = WifiKeepaliveGuard.reason(
+                        speedKmh = speed,
+                        carOn = guard.carOn,
+                        hotspotOn = ap,
+                        v12 = guard.v12,
+                        soc = guard.soc,
+                        wifiUp = onWifi,
+                    )
                     if (reason == "enable") {
                         val ok = runSvcWifiEnable()
                         if (lastReason != "enable" || cycle % 10 == 0) log("wifi-keepalive: enable ok=$ok $diag")
@@ -396,15 +399,30 @@ object TelemetryDaemonMain {
     }
 
     /**
-     * Read the "12V,SoC" the app writes to [f] (WifiKeepalive.pushGuard). Either field may be blank
+     * Read the "12V,SoC,carOn" the app writes to [f] (WifiKeepalive.pushGuard). Any field may be blank
      * (unknown → null). Ignored when the file is older than [WIFI_GUARD_STALE_MS]: a stale file means
-     * the app stopped feeding values, so both are treated as unknown rather than acting on old data.
+     * the app stopped feeding values, so all are treated as unknown rather than acting on old data.
      */
-    private fun readGuard(f: java.io.File): Pair<Double?, Double?> = runCatching {
-        if (!f.exists() || System.currentTimeMillis() - f.lastModified() > WIFI_GUARD_STALE_MS) return null to null
-        val parts = f.readText().trim().split(",")
-        parts.getOrNull(0)?.trim()?.toDoubleOrNull() to parts.getOrNull(1)?.trim()?.toDoubleOrNull()
-    }.getOrDefault(null to null)
+    private fun readGuard(f: java.io.File): WifiKeepaliveGuard.Guard {
+        val unknown = WifiKeepaliveGuard.Guard(null, null, null)
+        return runCatching {
+            if (!f.exists() || System.currentTimeMillis() - f.lastModified() > WIFI_GUARD_STALE_MS) unknown
+            else WifiKeepaliveGuard.parse(f.readText())
+        }.getOrDefault(unknown)
+    }
+
+    /**
+     * Whether the head unit's Wi-Fi hotspot is up or starting — the link wireless Android Auto and
+     * CarPlay run on (see WifiKeepaliveGuard). WifiManager.getWifiApState() is hidden, hence the
+     * reflection; this daemon already reaches hidden APIs that way (buildContext), and the call needs
+     * only ACCESS_WIFI_STATE, which uid 2000 holds. Null when it can't be read, which blocks nothing.
+     */
+    private fun hotspotOn(ctx: Context): Boolean? = runCatching {
+        val wm = ctx.getSystemService(Context.WIFI_SERVICE) ?: return null
+        // "getWifiApState"
+        val state = wm.javaClass.getMethod(s(103,101,116,87,105,102,105,65,112,83,116,97,116,101)).invoke(wm) as Int
+        WifiKeepaliveGuard.hotspotActive(state)
+    }.getOrNull()
 
     /** Any connected network with a Wi-Fi transport — no location permission needed. */
     @Suppress("DEPRECATION") // allNetworks: deprecated at API 31, but this app targets 29 (same as RtDispatch.wifiUp)
