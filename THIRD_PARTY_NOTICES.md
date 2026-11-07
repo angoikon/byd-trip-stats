@@ -1,5 +1,23 @@
 # Third-party notices
 
+## EGM96 geoid grid (`app/src/main/resources/geoid/egm96_30min.bin`)
+
+The app turns GPS altitude into height above sea level with the Earth Gravitational Model 1996
+(EGM96). The numbers are NGA/NASA's `WW15MGH.DAC` 15' grid, published by the US government. They were
+taken from the npm package `egm96-universal` 1.1.1 and reduced to every second row and column.
+
+- Upstream: <https://github.com/nicolas-van/egm96-universal>
+- License: **MIT** — Copyright (c) 2020 Nicolas Vanhoren
+
+**How the shipped grid was produced** (only the data is used, none of the package's code):
+
+```
+npm pack egm96-universal@1.1.1
+tar xzf egm96-universal-1.1.1.tgz
+python3 tools/geoid_grid.py package/dist/egm96-universal.esm.js app/src/main/resources/geoid/egm96_30min.bin
+# sha256 6e0094d5712c27fc0230ce9db5a651deb132ca3819400a1cbb677f6591b36e15
+```
+
 ## Tailscale (`app/src/main/jniLibs/arm64-v8a/libtailscale.so`)
 
 BYD Trip Stats bundles a build of the Tailscale client daemon, used to put the head unit on the

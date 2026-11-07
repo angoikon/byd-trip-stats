@@ -624,7 +624,7 @@ span.star { cursor: default; }
       <div class="chart-panel"><div class="chart-title">Power Profile</div><div class="chart-wrap"><canvas id="chart-power"></canvas></div></div>
       <div class="chart-panel"><div class="chart-title">Energy Consumed (kWh)</div><div class="chart-wrap"><canvas id="chart-energy"></canvas></div></div>
       <div class="chart-panel"><div class="chart-title">State of Charge</div><div class="chart-wrap"><canvas id="chart-soc"></canvas></div></div>
-      <div class="chart-panel"><div class="chart-title">Elevation Profile</div><div class="chart-wrap"><canvas id="chart-altitude"></canvas></div></div>
+      <div class="chart-panel"><div class="chart-title" id="altitude-title">Elevation Profile</div><div class="chart-wrap"><canvas id="chart-altitude"></canvas></div></div>
       <div class="chart-panel"><div class="chart-title">Battery Voltage</div><div class="chart-wrap"><canvas id="chart-voltage"></canvas></div></div>
       <div class="chart-panel"><div class="chart-title">Tyre Pressures (PSI)</div><div class="chart-wrap"><canvas id="chart-tyre"></canvas></div></div>
       <div class="chart-panel"><div class="chart-title">Instantaneous Consumption</div><div class="chart-wrap"><canvas id="chart-instant"></canvas></div></div>
@@ -2111,6 +2111,9 @@ function renderTripCharts(pts) {
   });
 
   // 6. Elevation Profile
+  // The car's server sends height above sea level; a database file opened here holds the GPS reading.
+  document.getElementById('altitude-title').textContent =
+    liveMode ? 'Elevation Profile' : 'Elevation Profile (GPS height, not above sea level)';
   mkChart('chart-altitude', {
     type: 'line',
     data: { datasets: [{ label: 'Altitude (m)', data: d.map(p => ({ x: +p.timestamp, y: +p.altitude || 0 })),

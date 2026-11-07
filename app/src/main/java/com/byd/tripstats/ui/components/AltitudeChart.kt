@@ -29,6 +29,7 @@ import java.util.Locale
 import com.byd.tripstats.ui.theme.BydArcticBlue
 import androidx.compose.ui.res.stringResource
 import com.byd.tripstats.R
+import com.byd.tripstats.util.altitudeAboveSeaLevel
 import kotlin.math.roundToInt
 
 private val timeFmt = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
@@ -56,6 +57,7 @@ fun AltitudeChart(
     val modes    = remember(dataPoints) { dataPoints.map { it.extractTripModes() } }
     val hasModes = remember(modes) { modes.any { it.driveMode != 0 } }
     val singleDriveMode = remember(modes) { modes.singleDriveModeOrNull() }
+    val altitudes = remember(dataPoints) { dataPoints.map { it.altitudeAboveSeaLevel.toFloat() } }
 
     Canvas(modifier = modifier.fillMaxSize().pointerInput(Unit) {
         awaitEachGesture {
@@ -69,7 +71,6 @@ fun AltitudeChart(
         val padL = 80f; val padR = 16f; val padT = 16f; val padB = 40f
         val chartW = w - padL - padR; val chartH = h - padT - padB
         val nc = drawContext.canvas.nativeCanvas
-        val altitudes = dataPoints.map { it.altitude.toFloat() }
         val rawMin = altitudes.min(); val rawMax = altitudes.max()
         val range = (rawMax - rawMin).coerceAtLeast(10f)
         val yStep = when {

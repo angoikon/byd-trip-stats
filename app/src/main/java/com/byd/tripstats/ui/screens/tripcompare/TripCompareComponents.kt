@@ -7,6 +7,7 @@ import com.byd.tripstats.data.preferences.SocSource
 import com.byd.tripstats.ui.theme.AccelerationOrange
 import com.byd.tripstats.ui.theme.BydElectricAzure
 import com.byd.tripstats.ui.theme.RegenGreen
+import com.byd.tripstats.util.altitudeAboveSeaLevel
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -85,7 +86,7 @@ internal fun normaliseTripData(
                 if (socSource == SocSource.PANEL && p.socPanel > 0) p.socPanel.toDouble()
                 else p.soc
             }.average(),
-            avgElevation   = pts.map { it.altitude }.average()
+            avgElevation   = pts.map { it.altitudeAboveSeaLevel }.average()
         )
     }
 }

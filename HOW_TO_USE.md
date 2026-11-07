@@ -145,7 +145,7 @@ Each trip detail screen includes:
 - speed
 - power
 - SoC
-- altitude
+- altitude above sea level
 - motor RPM (front / rear / both, depending on drivetrain)
 - instantaneous consumption
 - battery voltage (HV bus + cell min/max band)

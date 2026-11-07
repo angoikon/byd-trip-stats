@@ -6,6 +6,7 @@ import com.byd.tripstats.data.config.CarConfig
 import com.byd.tripstats.data.model.VehicleTelemetry
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.data.preferences.SocSource
+import com.byd.tripstats.util.Geoid
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -119,7 +120,9 @@ class AbrpConnectionManager(context: Context) {
         payload.put("speed", telemetry.locationGpsSpeed?.takeIf { it > 0.1 } ?: telemetry.speed)
         telemetry.locationLatitude.takeIf { it != 0.0 }?.let { payload.put("lat", it) }
         telemetry.locationLongitude.takeIf { it != 0.0 }?.let { payload.put("lon", it) }
-        telemetry.locationAltitude.takeIf { it > 0.0 }?.let { payload.put("elevation", it) }
+        telemetry.locationAltitude.takeIf { it != 0.0 && it.isFinite() }?.let {
+            payload.put("elevation", Geoid.aboveSeaLevel(it, telemetry.locationLatitude, telemetry.locationLongitude))
+        }
         telemetry.locationOrientation?.takeIf { it.isFinite() }?.let { payload.put("heading", it) }
         telemetry.instrumentOutCarTemperature?.let { payload.put("ext_temp", it) }
         // HV pack voltage + signed current (positive = discharge, negative = regen/charge) — matches

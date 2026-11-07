@@ -18,6 +18,7 @@ import android.provider.Settings
 import android.os.Build
 import com.byd.tripstats.ui.components.energyModeLabel
 import com.byd.tripstats.util.DiagLog
+import com.byd.tripstats.util.Geoid
 import com.byd.tripstats.util.TailscaleManager
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -699,12 +700,15 @@ class MqttConnectionManager(context: Context) {
         var gpsUpdated = false
         telemetry.locationLatitude.takeIf { it != 0.0 }?.let { lastKnownLat = it; gpsUpdated = true }
         telemetry.locationLongitude.takeIf { it != 0.0 }?.let { lastKnownLon = it; gpsUpdated = true }
-        telemetry.locationAltitude.takeIf { it > 0.0 }?.let { lastKnownAlt = it; gpsUpdated = true }
+        telemetry.locationAltitude.takeIf { it != 0.0 && it.isFinite() }?.let { lastKnownAlt = it; gpsUpdated = true }
         telemetry.locationOrientation?.takeIf { it.isFinite() }?.let { lastKnownHeading = it.toDouble() }
         if (gpsUpdated) persistGps()
         if (lastKnownLat != 0.0) payload.put("location_latitude", lastKnownLat)
         if (lastKnownLon != 0.0) payload.put("location_longitude", lastKnownLon)
-        if (lastKnownAlt > 0.0) payload.put("location_altitude", lastKnownAlt.round(2))
+        // lastKnownAlt stays the GPS reading, as stored by every earlier version; it converts here.
+        if (lastKnownAlt != 0.0) {
+            payload.put("location_altitude", Geoid.aboveSeaLevel(lastKnownAlt, lastKnownLat, lastKnownLon).round(2))
+        }
         lastKnownHeading?.let { payload.put("heading", it) }
         telemetry.instrumentOutCarTemperature?.let { payload.put("ext_temp", it) }
         telemetry.cabinTemperature?.let { payload.put("cabin_temp", it.round(1)) }

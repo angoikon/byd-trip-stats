@@ -12,6 +12,7 @@ import com.byd.tripstats.data.preferences.convertEfficiency
 import com.byd.tripstats.data.preferences.convertSpeed
 import com.byd.tripstats.data.preferences.distanceUnit
 import com.byd.tripstats.data.preferences.speedUnit
+import com.byd.tripstats.util.altitudeAboveSeaLevel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -87,9 +88,12 @@ internal fun TripDataPointEntity.exportValues(): List<Any> = listOf(
     batteryCellVoltageMax, batteryCellVoltageMin,
     socPanel,
     tyreTempLF, tyreTempRF, tyreTempLR, tyreTempRR,
+    altitudeAboveSeaLevel,
     rawJson,
 )
 
+// "altitude" stays the GPS reading, because replaying an export feeds it back in as one. New columns
+// go before rawJson, so no column that a spreadsheet already reads moves.
 private val tripExportColumns = listOf(
     "timestamp", "latitude", "longitude", "altitude",
     "speed", "power", "soc",
@@ -103,6 +107,7 @@ private val tripExportColumns = listOf(
     "batteryCellVoltageMax", "batteryCellVoltageMin",
     "socPanel",
     "tyreTempLF", "tyreTempRF", "tyreTempLR", "tyreTempRR",
+    "altitudeAboveSeaLevel",
     "rawJson",
 )
 

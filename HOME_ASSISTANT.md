@@ -150,7 +150,7 @@ If entities show **unavailable**:
 | Energy Mode | `energy_mode` | — | — |
 | Latitude | `location_latitude` | — | — |
 | Longitude | `location_longitude` | — | — |
-| Altitude | `location_altitude` | m | — |
+| Altitude (above sea level) | `location_altitude` | m | — |
 | Heading | `heading` | ° | — |
 | External Temperature | `ext_temp` | °C | temperature |
 | Cabin Temperature | `cabin_temp` | °C | temperature |

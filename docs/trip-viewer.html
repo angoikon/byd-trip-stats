@@ -544,6 +544,8 @@ function renderSpec(spec, series, nonZero, points) {
     return;
   }
 
+  if (spec.unlessField && series[spec.unlessField].length > 0) return;
+
   // Series-based default — line chart from raw fields.
   const datasets = spec.series
     .filter(s => series[s.field].length > 0)
@@ -739,8 +741,13 @@ const CHART_SPECS = [
       { field: 'socPanel', label: 'Panel SOC', color: '#4cc9f0', requireNonZero: true }
     ] },
 
-  { title: 'Altitude (m)', yLabel: 'm', requireNonZero: true,
-    series: [{ field: 'altitude', label: 'Altitude', color: '#ffb84d', fill: true }] },
+  { title: 'Altitude above sea level (m)', yLabel: 'm', requireNonZero: true,
+    series: [{ field: 'altitudeAboveSeaLevel', label: 'Altitude', color: '#ffb84d', fill: true }] },
+
+  // Exports from before 2.19.1 only carry the raw GPS reading.
+  { title: 'GPS altitude, not above sea level (m)', yLabel: 'm', requireNonZero: true,
+    unlessField: 'altitudeAboveSeaLevel',
+    series: [{ field: 'altitude', label: 'GPS altitude', color: '#ffb84d', fill: true }] },
 
   { title: 'Battery temperature (°C)', yLabel: '°C', requireNonZero: true,
     series: [{ field: 'batteryTemp', label: 'Battery temp', color: '#ff7f50', fill: true }] },

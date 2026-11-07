@@ -11,6 +11,7 @@ import com.byd.tripstats.data.notify.VehicleEventLog
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.data.preferences.SocSource
 import com.byd.tripstats.data.repository.BatteryVoltageHistoryRepository
+import com.byd.tripstats.util.altitudeAboveSeaLevel
 import fi.iki.elonen.NanoHTTPD
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -473,7 +474,7 @@ code{background:#20242d;padding:2px 8px;border-radius:6px;font-size:13px;color:#
                     put("power",                pt.power)
                     put("soc",                  pt.soc)
                     put("socPanel",             pt.socPanel)
-                    put("altitude",             pt.altitude)
+                    put("altitude",             pt.altitudeAboveSeaLevel)
                     put("batteryTemp",          pt.batteryTemp)
                     put("engineSpeedFront",     pt.engineSpeedFront)
                     put("engineSpeedRear",      pt.engineSpeedRear)
