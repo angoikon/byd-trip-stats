@@ -1251,6 +1251,7 @@
     <string name="d5_consent_decline_back">Πίσω</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_on_status">Το 4G ξεκλείδωσε</string>
+    <string name="d5_mobile_data_blocked_status">Το 4G μπλοκάρεται από το αυτοκίνητο</string>
     <string name="driving_widget_consent_title">Εμφάνιση widget οδήγησης;</string>
     <string name="driving_widget_consent_body">Σε αυτό το αυτοκίνητο, το Android κρύβει την οθόνη της εφαρμογής όποτε το αυτοκίνητο δεν είναι στο P. Η καταγραφή διαδρομής συνεχίζεται στο παρασκήνιο έτσι κι αλλιώς.\n\nΑντ\' αυτού, η εφαρμογή μπορεί να εμφανίζει ένα μικρό widget πάνω από άλλες εφαρμογές ενώ οδηγείτε, με την ταχύτητα, την ισχύ, την μπαταρία και την αυτονομία σας — το ίδιο είδος widget που χρησιμοποιούν άλλες εφαρμογές αυτοκινήτου. Προορίζεται για μια ματιά, όπως ο πίνακας οργάνων: κρατήστε τα μάτια σας στον δρόμο. Εξαφανίζεται στο P, όπου επανέρχεται ο πλήρης πίνακας.\n\nΜπορείτε να το ενεργοποιήσετε ή να το απενεργοποιήσετε αργότερα στις Ρυθμίσεις.</string>
     <string name="driving_widget_consent_allow">Εμφάνιση widget</string>

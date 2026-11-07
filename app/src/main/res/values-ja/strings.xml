@@ -1352,6 +1352,7 @@
     <string name="d5_consent_decline_back">戻る</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_on_status">4G解放済み</string>
+    <string name="d5_mobile_data_blocked_status">車両が4Gをブロック中</string>
     <string name="driving_widget_consent_title">運転中ウィジェットを表示しますか？</string>
     <string name="driving_widget_consent_body">この車では、車が P 以外のときはいつでも Android がアプリの画面を隠します。どちらにしてもトリップの記録はバックグラウンドで続きます。\n\n代わりに、運転中はアプリが他のアプリの上に小さなウィジェットを表示できます。速度、パワー、バッテリー、航続距離を — 他の車用アプリが使うのと同じ種類のウィジェットです。メーターのように、ちらっと見るためのものです。道路から目を離さないでください。P では消え、完全なダッシュボードが戻ります。\n\n後で設定からオン・オフを切り替えられます。</string>
     <string name="driving_widget_consent_allow">ウィジェットを表示</string>

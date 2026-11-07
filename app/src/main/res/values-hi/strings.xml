@@ -1251,6 +1251,7 @@
     <string name="d5_consent_decline_back">वापस</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_on_status">4G अनलॉक</string>
+    <string name="d5_mobile_data_blocked_status">कार ने 4G रोका है</string>
     <string name="driving_widget_consent_title">ड्राइविंग विजेट दिखाएं?</string>
     <string name="driving_widget_consent_body">इस कार में, जब भी कार P से बाहर होती है, Android ऐप की स्क्रीन छिपा देता है। यात्रा रिकॉर्डिंग किसी भी तरह बैकग्राउंड में चलती रहती है।\n\nइसके बजाय, ड्राइव करते समय ऐप अन्य ऐप्स के ऊपर एक छोटा विजेट दिखा सकता है, जिसमें आपकी गति, पावर, बैटरी और रेंज हो — वैसा ही विजेट जैसा अन्य कार ऐप्स उपयोग करते हैं। यह एक नज़र के लिए है, इंस्ट्रूमेंट क्लस्टर की तरह: अपनी नज़र सड़क पर रखें। P में यह चला जाता है, जहां पूरा डैशबोर्ड वापस आ जाता है।\n\nआप इसे बाद में सेटिंग में चालू या बंद कर सकते हैं।</string>
     <string name="driving_widget_consent_allow">विजेट दिखाएं</string>

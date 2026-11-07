@@ -1352,6 +1352,7 @@
     <string name="d5_consent_decline_back">返回</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_on_status">4G 已解鎖</string>
+    <string name="d5_mobile_data_blocked_status">4G 遭車輛封鎖</string>
     <string name="driving_widget_consent_title">顯示駕駛小工具？</string>
     <string name="driving_widget_consent_body">在這輛車上，只要車輛不在 P 檔，Android 就會隱藏應用的畫面。無論如何，行程記錄都會在背景繼續。\n\n作為替代，應用可以在你駕駛時於其他應用之上顯示一個小工具，包含你的速度、功率、電池和續航——與其他車載應用使用的同類小工具。它用於瞥一眼，就像儀表板：請注視道路。回到 P 檔時它會消失，完整儀表板隨之回來。\n\n你之後可以在設定中開啟或關閉它。</string>
     <string name="driving_widget_consent_allow">顯示小工具</string>

@@ -1352,6 +1352,7 @@
     <string name="d5_consent_decline_back">Voltar</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_on_status">4G desbloqueado</string>
+    <string name="d5_mobile_data_blocked_status">4G bloqueado pelo carro</string>
     <string name="driving_widget_consent_title">Mostrar um widget de direção?</string>
     <string name="driving_widget_consent_body">Neste carro, o Android oculta a tela do app sempre que o carro não está em P. A gravação da viagem continua em segundo plano de qualquer forma.\n\nEm vez disso, o app pode mostrar um pequeno widget sobre outros apps enquanto você dirige, com sua velocidade, potência, bateria e autonomia — o mesmo tipo de widget que outros apps de carro usam. É feito para uma olhada rápida, como o painel de instrumentos: mantenha os olhos na estrada. Ele some em P, onde o painel completo volta.\n\nVocê pode ativá-lo ou desativá-lo depois nas Configurações.</string>
     <string name="driving_widget_consent_allow">Mostrar widget</string>

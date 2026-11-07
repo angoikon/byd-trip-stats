@@ -1348,6 +1348,7 @@
     <string name="d5_consent_decline_back">Назад</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_on_status">4G разблокирован</string>
+    <string name="d5_mobile_data_blocked_status">4G заблокирован автомобилем</string>
     <string name="driving_widget_consent_title">Показать виджет вождения?</string>
     <string name="driving_widget_consent_body">В этом автомобиле Android скрывает экран приложения всякий раз, когда автомобиль не в положении P. Запись поездки в любом случае продолжается в фоне.\n\nВместо этого приложение может показывать во время движения небольшой виджет поверх других приложений — со скоростью, мощностью, батареей и запасом хода, такой же виджет, какой используют другие автомобильные приложения. Он предназначен для беглого взгляда, как приборная панель: смотрите на дорогу. В положении P он исчезает, и возвращается полная панель.\n\nВключить или выключить его можно позже в Настройках.</string>
     <string name="driving_widget_consent_allow">Показать виджет</string>

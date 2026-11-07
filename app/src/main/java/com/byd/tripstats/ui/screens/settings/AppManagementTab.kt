@@ -84,10 +84,13 @@ internal fun AppManagementTab(
                     if (!AdbPermissionManager.hasHiddenApiConsent(context)) {
                         add(stringResource(R.string.d5_vehicle_access_off_status))
                     }
-                    // Only where the app actually lifted BYD's 4G block — a car that never had it
-                    // has nothing to report.
-                    if (Di5MobileDataGate.isUnblocked(context)) {
-                        add(stringResource(R.string.d5_mobile_data_on_status))
+                    // Only where the car has BYD's 4G block — a car that never had it has nothing to
+                    // report. Live: "blocked" means the app couldn't keep it off, not the second
+                    // between the car putting it back and the app lifting it again.
+                    when (Di5MobileDataGate.status(context)) {
+                        Di5MobileDataGate.Status.UNLOCKED -> add(stringResource(R.string.d5_mobile_data_on_status))
+                        Di5MobileDataGate.Status.BLOCKED -> add(stringResource(R.string.d5_mobile_data_blocked_status))
+                        Di5MobileDataGate.Status.NONE -> Unit
                     }
                 } else if (WifiKeepalive.isActive(wifiKeepalive, offStateMode)) {
                     add(stringResource(R.string.wifi_keepalive_on_status))

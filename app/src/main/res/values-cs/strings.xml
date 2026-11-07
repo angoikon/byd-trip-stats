@@ -1348,6 +1348,7 @@
     <string name="d5_consent_decline_back">Zpět</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_on_status">4G odemčeno</string>
+    <string name="d5_mobile_data_blocked_status">4G blokováno vozem</string>
     <string name="driving_widget_consent_title">Zobrazit jízdní widget?</string>
     <string name="driving_widget_consent_body">V tomto autě Android skryje obrazovku aplikace, kdykoli auto není v P. Záznam jízdy tak či tak pokračuje na pozadí.\n\nMísto toho může aplikace během jízdy zobrazovat malý widget přes ostatní aplikace s vaší rychlostí, výkonem, baterií a dojezdem — stejný druh widgetu, jaký používají jiné aplikace pro auta. Je určen pro letmý pohled, jako přístrojový štít: sledujte silnici. V P zmizí a vrátí se úplný panel.\n\nPozději jej můžete zapnout nebo vypnout v Nastavení.</string>
     <string name="driving_widget_consent_allow">Zobrazit widget</string>

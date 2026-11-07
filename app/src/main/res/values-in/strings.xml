@@ -1348,6 +1348,7 @@
     <string name="d5_consent_decline_back">Kembali</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_on_status">4G terbuka</string>
+    <string name="d5_mobile_data_blocked_status">4G diblokir oleh mobil</string>
     <string name="driving_widget_consent_title">Tampilkan widget berkendara?</string>
     <string name="driving_widget_consent_body">Di mobil ini, Android menyembunyikan layar aplikasi setiap kali mobil tidak di P. Perekaman perjalanan tetap berjalan di latar belakang.\n\nSebagai gantinya, aplikasi dapat menampilkan widget kecil di atas aplikasi lain saat Anda berkendara, dengan kecepatan, daya, baterai, dan jangkauan Anda — jenis widget yang sama seperti yang digunakan aplikasi mobil lain. Ini dimaksudkan untuk sekilas pandang, seperti panel instrumen: tetap fokus ke jalan. Ia hilang di P, tempat dasbor lengkap kembali.\n\nAnda dapat mengaktifkan atau menonaktifkannya nanti di Pengaturan.</string>
     <string name="driving_widget_consent_allow">Tampilkan widget</string>

@@ -1352,6 +1352,7 @@
     <string name="d5_consent_decline_back">Terug</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_on_status">4G ontgrendeld</string>
+    <string name="d5_mobile_data_blocked_status">4G geblokkeerd door de auto</string>
     <string name="driving_widget_consent_title">Een rij-widget tonen?</string>
     <string name="driving_widget_consent_body">In deze auto verbergt Android het scherm van de app zodra de auto niet in P staat. De ritregistratie loopt hoe dan ook door op de achtergrond.\n\nIn plaats daarvan kan de app tijdens het rijden een kleine widget over andere apps tonen, met je snelheid, vermogen, accu en actieradius — hetzelfde soort widget dat andere auto-apps gebruiken. Het is bedoeld voor een blik, zoals het instrumentenpaneel: houd je ogen op de weg. In P verdwijnt het en is het volledige dashboard terug.\n\nJe kunt het later aan- of uitzetten in Instellingen.</string>
     <string name="driving_widget_consent_allow">Widget tonen</string>

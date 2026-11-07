@@ -1352,6 +1352,7 @@
     <string name="d5_consent_decline_back">Takaisin</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_on_status">4G avattu</string>
+    <string name="d5_mobile_data_blocked_status">Auto estää 4G:n</string>
     <string name="driving_widget_consent_title">Näytetäänkö ajowidget?</string>
     <string name="driving_widget_consent_body">Tässä autossa Android piilottaa sovelluksen näytön aina, kun auto ei ole P-asennossa. Matkan tallennus jatkuu joka tapauksessa taustalla.\n\nSen sijaan sovellus voi näyttää ajon aikana pienen widgetin muiden sovellusten päällä, jossa näkyvät nopeutesi, teho, akku ja toimintamatka — samanlaisen widgetin kuin muut autosovellukset. Se on tarkoitettu vilkaisuun, kuten mittaristo: pidä katse tiessä. P-asennossa se katoaa, ja koko koontinäyttö palaa.\n\nVoit kytkeä sen päälle tai pois myöhemmin Asetuksista.</string>
     <string name="driving_widget_consent_allow">Näytä widget</string>

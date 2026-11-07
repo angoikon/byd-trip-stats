@@ -1348,6 +1348,7 @@
     <string name="d5_consent_decline_back">Vissza</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_on_status">4G feloldva</string>
+    <string name="d5_mobile_data_blocked_status">Az autó blokkolja a 4G-t</string>
     <string name="driving_widget_consent_title">Megjelenik a vezetési widget?</string>
     <string name="driving_widget_consent_body">Ennél az autónál az Android elrejti az alkalmazás képernyőjét, valahányszor az autó nem P-ben van. Az útrögzítés így is, úgy is folytatódik a háttérben.\n\nHelyette az alkalmazás vezetés közben egy kis widgetet jeleníthet meg más alkalmazások fölött a sebességeddel, teljesítményeddel, akkumulátoroddal és hatótávoddal — ugyanolyan widget, amilyet más autós alkalmazások használnak. Egy pillantásra szánták, mint a műszerfalat: tartsd a szemed az úton. P-ben eltűnik, ott visszatér a teljes irányítópult.\n\nKésőbb be- vagy kikapcsolhatod a Beállításokban.</string>
     <string name="driving_widget_consent_allow">Widget megjelenítése</string>

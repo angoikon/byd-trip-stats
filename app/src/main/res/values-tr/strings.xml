@@ -1352,6 +1352,7 @@
     <string name="d5_consent_decline_back">Geri</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_on_status">4G açıldı</string>
+    <string name="d5_mobile_data_blocked_status">4G araç tarafından engellendi</string>
     <string name="driving_widget_consent_title">Sürüş widget\'ı gösterilsin mi?</string>
     <string name="driving_widget_consent_body">Bu araçta Android, araç P\'de olmadığı her an uygulamanın ekranını gizler. Yolculuk kaydı yine de arka planda sürer.\n\nBunun yerine uygulama, sürüş sırasında diğer uygulamaların üzerinde küçük bir widget gösterebilir; hızınız, gücünüz, bataryanız ve menzilinizle — diğer araç uygulamalarının kullandığı türden bir widget. Gösterge paneli gibi bir bakış içindir: gözünüzü yoldan ayırmayın. P\'de kaybolur ve tam gösterge paneli geri gelir.\n\nDaha sonra Ayarlar\'dan açıp kapatabilirsiniz.</string>
     <string name="driving_widget_consent_allow">Widget\'ı göster</string>

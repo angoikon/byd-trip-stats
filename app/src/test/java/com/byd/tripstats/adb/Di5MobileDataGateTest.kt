@@ -142,4 +142,130 @@ class Di5MobileDataGateTest {
     fun `roaming changed again since a beta wrote it is left alone`() {
         assertNull(Di5MobileDataGate.roamingToRestore(saved = 0, current = 0))
     }
+
+    // ── The blocked watch ───────────────────────────────────────────────────────────────
+
+    @Test
+    fun `with no lost lifts the block is lifted after a second`() {
+        assertEquals(1_000L, Di5MobileDataGate.liftDelayMs(0))
+    }
+
+    @Test
+    fun `lost lifts back off from 10 s, doubling to a 5-minute cap`() {
+        assertEquals(10_000L, Di5MobileDataGate.liftDelayMs(1))
+        assertEquals(20_000L, Di5MobileDataGate.liftDelayMs(2))
+        assertEquals(40_000L, Di5MobileDataGate.liftDelayMs(3))
+        assertEquals(160_000L, Di5MobileDataGate.liftDelayMs(5))
+        assertEquals(300_000L, Di5MobileDataGate.liftDelayMs(6))
+        assertEquals(300_000L, Di5MobileDataGate.liftDelayMs(50))
+    }
+
+    @Test
+    fun `a lift the car undoes within 15 s counts as lost`() {
+        assertEquals(1, Di5MobileDataGate.missesAfterHold(0, 3_000L))
+        assertEquals(4, Di5MobileDataGate.missesAfterHold(3, Di5MobileDataGate.QUICK_REBLOCK_MS - 1))
+    }
+
+    @Test
+    fun `a lift that holds resets the count - the German Sealion 7's 30-40 s keeps lifting at once`() {
+        assertEquals(0, Di5MobileDataGate.missesAfterHold(4, Di5MobileDataGate.QUICK_REBLOCK_MS))
+        assertEquals(0, Di5MobileDataGate.missesAfterHold(0, 35_000L))
+    }
+
+    @Test
+    fun `lifts 1 to 5 are logged, then every 10th`() {
+        val logged = (1..40).filter { Di5MobileDataGate.shouldLogLift(it) }
+        assertEquals(listOf(1, 2, 3, 4, 5, 10, 20, 30, 40), logged)
+        assertFalse(Di5MobileDataGate.shouldLogLift(0))
+    }
+
+    @Test
+    fun `durations read as seconds, minutes or hours`() {
+        assertEquals("41 s", Di5MobileDataGate.formatDuration(41_900L))
+        assertEquals("119 s", Di5MobileDataGate.formatDuration(119_000L))
+        assertEquals("15 min", Di5MobileDataGate.formatDuration(15 * 60_000L))
+        assertEquals("3 h", Di5MobileDataGate.formatDuration(3 * 3_600_000L + 59 * 60_000L))
+        assertEquals("0 s", Di5MobileDataGate.formatDuration(-5L))
+    }
+
+    @Test
+    fun `the first lift of a run carries no note`() {
+        assertEquals("", Di5MobileDataGate.liftNote(1, null, false, 0, 0L, 0L))
+    }
+
+    @Test
+    fun `an early lift says how long the previous one held`() {
+        assertEquals(
+            " (lift 3, back 41 s after the previous one)",
+            Di5MobileDataGate.liftNote(3, 41_000L, measured = true, count = 1, minHeldMs = 41_000L, maxHeldMs = 41_000L),
+        )
+    }
+
+    @Test
+    fun `a lift found by a check only bounds the hold`() {
+        assertEquals(
+            " (lift 2, back within 15 min of the previous one)",
+            Di5MobileDataGate.liftNote(2, 15 * 60_000L, measured = false, count = 0, minHeldMs = 0L, maxHeldMs = 0L),
+        )
+    }
+
+    @Test
+    fun `every 10th lift summarises the holds since the last logged line`() {
+        assertEquals(
+            " (lift 20; the last 10 came back after 31–58 s)",
+            Di5MobileDataGate.liftNote(20, 40_000L, measured = true, count = 10, minHeldMs = 31_000L, maxHeldMs = 58_000L),
+        )
+        assertEquals(
+            " (lift 10; the last 5 came back after 40 s)",
+            Di5MobileDataGate.liftNote(10, 40_000L, measured = true, count = 5, minHeldMs = 40_000L, maxHeldMs = 40_000L),
+        )
+        assertEquals(
+            " (lift 30; the last 10 came back after 50 s–3 min)",
+            Di5MobileDataGate.liftNote(30, 40_000L, measured = true, count = 10, minHeldMs = 50_000L, maxHeldMs = 200_000L),
+        )
+    }
+
+    @Test
+    fun `a car that never had the block shows nothing`() {
+        assertEquals(
+            Di5MobileDataGate.Status.NONE,
+            Di5MobileDataGate.statusFor(blockSeen = false, lastCheckSawBydBit = true, blockedForMs = 600_000L, lastLiftFailed = true),
+        )
+    }
+
+    @Test
+    fun `the second between the car's block and the app's lift still reads unlocked`() {
+        assertEquals(
+            Di5MobileDataGate.Status.UNLOCKED,
+            Di5MobileDataGate.statusFor(blockSeen = true, lastCheckSawBydBit = true, blockedForMs = 1_000L, lastLiftFailed = false),
+        )
+        assertEquals(
+            Di5MobileDataGate.Status.UNLOCKED,
+            Di5MobileDataGate.statusFor(blockSeen = true, lastCheckSawBydBit = true, blockedForMs = null, lastLiftFailed = false),
+        )
+    }
+
+    @Test
+    fun `a block that lasts a minute or a lift that failed reads blocked`() {
+        assertEquals(
+            Di5MobileDataGate.Status.BLOCKED,
+            Di5MobileDataGate.statusFor(
+                blockSeen = true, lastCheckSawBydBit = true,
+                blockedForMs = Di5MobileDataGate.BLOCKED_STATUS_AFTER_MS, lastLiftFailed = false,
+            ),
+        )
+        assertEquals(
+            Di5MobileDataGate.Status.BLOCKED,
+            Di5MobileDataGate.statusFor(blockSeen = true, lastCheckSawBydBit = true, blockedForMs = null, lastLiftFailed = true),
+        )
+    }
+
+    @Test
+    fun `a lasting block the latest dump can't pin on BYD is not called the car's`() {
+        // Lifted (policy 4) yet still blocked: Data Saver or a power mode, not BYD's bit.
+        assertEquals(
+            Di5MobileDataGate.Status.UNLOCKED,
+            Di5MobileDataGate.statusFor(blockSeen = true, lastCheckSawBydBit = false, blockedForMs = 600_000L, lastLiftFailed = false),
+        )
+    }
 }

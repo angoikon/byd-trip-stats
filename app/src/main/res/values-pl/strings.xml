@@ -1348,6 +1348,7 @@
     <string name="d5_consent_decline_back">Wstecz</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_on_status">4G odblokowane</string>
+    <string name="d5_mobile_data_blocked_status">4G zablokowane przez samochód</string>
     <string name="driving_widget_consent_title">Pokazać widżet jazdy?</string>
     <string name="driving_widget_consent_body">W tym samochodzie Android ukrywa ekran aplikacji, gdy samochód nie jest w P. Rejestrowanie trasy i tak trwa w tle.\n\nZamiast tego aplikacja może pokazywać mały widżet nad innymi aplikacjami podczas jazdy, z Twoją prędkością, mocą, baterią i zasięgiem — taki sam widżet, jakiego używają inne aplikacje samochodowe. Jest przeznaczony na rzut oka, jak zegary: patrz na drogę. Znika w P, gdzie wraca pełny pulpit.\n\nMożesz go później włączyć lub wyłączyć w Ustawieniach.</string>
     <string name="driving_widget_consent_allow">Pokaż widżet</string>

@@ -1251,6 +1251,7 @@
     <string name="d5_consent_decline_back">Zurück</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_on_status">4G freigeschaltet</string>
+    <string name="d5_mobile_data_blocked_status">4G vom Auto gesperrt</string>
     <string name="driving_widget_consent_title">Fahr-Widget anzeigen?</string>
     <string name="driving_widget_consent_body">Bei diesem Auto blendet Android den Bildschirm der App aus, sobald das Auto nicht in P steht. Die Fahrtaufzeichnung läuft so oder so im Hintergrund weiter.\n\nStattdessen kann die App während der Fahrt ein kleines Widget über anderen Apps anzeigen, mit deiner Geschwindigkeit, Leistung, Batterie und Reichweite — dieselbe Art von Widget, die andere Auto-Apps nutzen. Es ist für einen kurzen Blick gedacht, wie das Kombiinstrument: Behalte die Straße im Auge. In P verschwindet es, dort ist das vollständige Dashboard zurück.\n\nDu kannst es später in den Einstellungen ein- oder ausschalten.</string>
     <string name="driving_widget_consent_allow">Widget anzeigen</string>

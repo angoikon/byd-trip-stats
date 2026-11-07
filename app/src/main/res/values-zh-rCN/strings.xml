@@ -1352,6 +1352,7 @@
     <string name="d5_consent_decline_back">返回</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_on_status">4G 已解锁</string>
+    <string name="d5_mobile_data_blocked_status">4G 被车辆封锁</string>
     <string name="driving_widget_consent_title">显示驾驶小组件？</string>
     <string name="driving_widget_consent_body">在这辆车上，只要车辆不在 P 挡，Android 就会隐藏应用的画面。无论如何，行程记录都会在后台继续。\n\n作为替代，应用可以在你驾驶时于其他应用之上显示一个小组件，包含你的速度、功率、电池和续航——与其他车载应用使用的同类小组件。它用于瞥一眼，就像仪表盘：请注视道路。回到 P 挡时它会消失，完整仪表盘随之回来。\n\n你以后可以在设置中开启或关闭它。</string>
     <string name="driving_widget_consent_allow">显示小组件</string>

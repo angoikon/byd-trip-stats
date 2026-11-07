@@ -1348,6 +1348,7 @@
     <string name="d5_consent_decline_back">חזרה</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_on_status">ה־4G פתוח</string>
+    <string name="d5_mobile_data_blocked_status">ה־4G חסום על ידי הרכב</string>
     <string name="driving_widget_consent_title">להציג widget נהיגה?</string>
     <string name="driving_widget_consent_body">ברכב הזה, Android מסתיר את מסך האפליקציה בכל פעם שהרכב אינו ב-P. הקלטת הנסיעה ממשיכה ברקע כך או כך.\n\nבמקום זאת, האפליקציה יכולה להציג widget קטן מעל אפליקציות אחרות בזמן שאתה נוהג, עם המהירות, ההספק, הסוללה והטווח שלך — אותו סוג widget שאפליקציות רכב אחרות משתמשות בו. הוא נועד למבט חטוף, כמו לוח המחוונים: שמור את עיניך על הכביש. הוא נעלם ב-P, שם לוח המחוונים המלא חוזר.\n\nאפשר להפעיל או לכבות אותו מאוחר יותר בהגדרות.</string>
     <string name="driving_widget_consent_allow">הצג widget</string>

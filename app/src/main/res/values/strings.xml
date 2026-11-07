@@ -1376,6 +1376,7 @@
     <string name="d5_consent_decline_back">Go back</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_on_status">4G unlocked</string>
+    <string name="d5_mobile_data_blocked_status">4G blocked by the car</string>
     <!-- Driving widget — Android Automotive head units (Atto 3 EVO / DiLink 100) only -->
     <string name="driving_widget_consent_title">Show a driving widget?</string>
     <string name="driving_widget_consent_body">On this car, Android hides the app\'s screen whenever the car is out of P. Trip recording carries on in the background either way.\n\nInstead, the app can show a small widget over other apps while you drive, with your speed, power, battery and range — the same kind of widget other car apps use. It is meant for a glance, like the instrument cluster: keep your eyes on the road. It goes away in P, where the full dashboard is back.\n\nYou can turn it on or off later in Settings.</string>

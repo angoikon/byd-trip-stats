@@ -1352,6 +1352,7 @@
     <string name="d5_consent_decline_back">Tilbake</string>
     <!-- DiLink-5 mobile-data (4G) unlock — netpolicy + roaming gates (issue #26) -->
     <string name="d5_mobile_data_on_status">4G låst opp</string>
+    <string name="d5_mobile_data_blocked_status">4G blokkert av bilen</string>
     <string name="driving_widget_consent_title">Vis en kjøre-widget?</string>
     <string name="driving_widget_consent_body">I denne bilen skjuler Android appens skjerm hver gang bilen ikke står i P. Turregistreringen fortsetter uansett i bakgrunnen.\n\nI stedet kan appen vise en liten widget oppå andre apper mens du kjører, med hastighet, effekt, batteri og rekkevidde — samme type widget som andre bilapper bruker. Den er ment for et raskt blikk, som instrumentpanelet: hold øynene på veien. Den forsvinner i P, der det fullstendige dashbordet er tilbake.\n\nDu kan slå den på eller av senere i Innstillinger.</string>
     <string name="driving_widget_consent_allow">Vis widget</string>

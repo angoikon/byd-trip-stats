@@ -235,12 +235,18 @@ class BydStatsApplication : Application(), Configuration.Provider {
             // the car has it. After the watch above, because every step needs the
             // channel — at a cold boot that is the moment adb is back. On DiLink-5 every process
             // start is a wake/boot event (the car force-stops the app at switch-off and the
-            // supervisor revives it), and the watchdog repeats this every 15 minutes in case a
-            // firmware re-applies its bit mid-session.
+            // supervisor revives it). Some cars put the block back within a minute while driving,
+            // so from here on the gate also lifts it again whenever Android reports this app's
+            // network blocked; registered after the channel watch, since a lift needs the channel.
             try {
                 com.byd.tripstats.adb.Di5MobileDataGate.reassert(applicationContext, label = "startup")
             } catch (t: Throwable) {
                 Log.w(TAG, "Mobile-data gate threw: ${t.message}")
+            }
+            try {
+                com.byd.tripstats.adb.Di5MobileDataGate.startWatching(applicationContext)
+            } catch (t: Throwable) {
+                Log.w(TAG, "Mobile-data watch threw: ${t.message}")
             }
         }
     }
