@@ -79,4 +79,25 @@ class BodyworkCarOnTest {
         )
         assertEquals(listOf(2, 3, 4), DI5_BODYWORK_LOCK_AREAS)
     }
+
+    @Test
+    fun `DiLink-5 lock readings - 2 is locked, 1 is unlocked`() {
+        // As read on a Sealion 7: 2,2,2 driving and after walking away; 1,1,1 with the driver in.
+        assertEquals(1, di5CarLockedFromLockStates(listOf(2, 2, 2)))
+        assertEquals(0, di5CarLockedFromLockStates(listOf(1, 1, 1)))
+    }
+
+    @Test
+    fun `one DiLink-5 door reading unlocked means unlocked`() {
+        assertEquals(0, di5CarLockedFromLockStates(listOf(2, 1, 2)))
+        // A door without a reading doesn't stop the others from saying locked.
+        assertEquals(1, di5CarLockedFromLockStates(listOf(0, 2, null)))
+    }
+
+    @Test
+    fun `no DiLink-5 lock reading means the lock state is unknown`() {
+        assertNull(di5CarLockedFromLockStates(emptyList()))
+        assertNull(di5CarLockedFromLockStates(listOf(null, null, null)))
+        assertNull(di5CarLockedFromLockStates(listOf(0, -1, 255)))
+    }
 }

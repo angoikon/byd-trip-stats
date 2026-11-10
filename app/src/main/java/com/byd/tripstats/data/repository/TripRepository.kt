@@ -17,6 +17,7 @@ import com.byd.tripstats.data.local.entity.TripTagCrossRef
 import com.byd.tripstats.data.local.entity.TAG_PALETTE_SIZE
 import com.byd.tripstats.data.model.VehicleTelemetry
 import com.byd.tripstats.data.notify.VehicleEvents
+import com.byd.tripstats.data.preferences.DEFAULT_CAR_OFF_TIMEOUT_MINUTES
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.sdk.AaosPlatform
 import com.byd.tripstats.sdk.DiLink5Platform
@@ -158,6 +159,45 @@ internal fun di5StandstillCountsAsCarOn(
     capMs: Long,
     charging: Boolean = false
 ): Boolean = isDiLink5 && movedInThisProcess && !carOffWindowOpen && !charging && standstillMs < capMs
+
+/**
+ * DiLink-5: how long after switch-off a trip on the default car-off timeout closes when the car
+ * reports it is switched off. BYD closes the app at switch-off and restarts it about 30 s later,
+ * and with nobody at the car the head unit sleeps about 125 s after switch-off (Sealion 7, Germany,
+ * 2026-11-10). The 3-minute timeout ran out while it slept, so the trip — and its MQTT, Home
+ * Assistant and Telegram messages — waited for the next wake, about 35 minutes on. 90 s lands about
+ * a minute after the restart with half a minute to spare, and still keeps a shorter stop as one
+ * trip (same log: back in the car and switched on 79 s after switching off).
+ */
+internal const val DI5_SWITCHED_OFF_TIMEOUT_MS = 90_000L
+
+/**
+ * The car-off timeout that applies now: [configuredMs], except on DiLink 5 while the car's bodywork
+ * power level reads OFF (0). There a trip on the default timeout ([defaultMs]) closes after
+ * [DI5_SWITCHED_OFF_TIMEOUT_MS]. A timeout the user changed is kept: set longer, it still carries a
+ * trip through a longer stop, and the trip closes when the head unit next wakes, as before. Any
+ * other power level, or none, leaves the configured timeout: switched back on (2), the trip waits
+ * the full time for the car to move again.
+ */
+internal fun effectiveCarOffTimeoutMs(
+    configuredMs: Long,
+    defaultMs: Long,
+    isDiLink5: Boolean,
+    powerLevel: Int?,
+): Long =
+    if (isDiLink5 && powerLevel == 0 && configuredMs == defaultMs) minOf(configuredMs, DI5_SWITCHED_OFF_TIMEOUT_MS)
+    else configuredMs
+
+/**
+ * DiLink-5: whether the car reporting it is switched off (bodywork power level 0) refuses a trip
+ * start. A parked Sealion 7 opened a 0 km trip when its odometer reading stepped from 2666.8 to
+ * 2666.9 while it read OFF (2026-11-10, 18:39). But the reading is the last one taken: after the head
+ * unit sleeps it is still the one from before, and a drive the same evening started a second before
+ * the reading turned ON. So the car's own speed above 5 km/h ([carSpeedKmh], the same threshold as
+ * a start on speed) overrides it: a car that moves isn't off.
+ */
+internal fun di5SwitchedOffBlocksStart(isDiLink5: Boolean, powerLevel: Int?, carSpeedKmh: Double): Boolean =
+    isDiLink5 && powerLevel == 0 && carSpeedKmh <= 5.0
 
 // ── Trip merge ──────────────────────────────────────────────────────────────
 
@@ -378,6 +418,16 @@ class TripRepository private constructor(context: Context) {
     private fun carOffTimeoutMs(): Long =
         prefsManager.getCachedCarOffTimeoutMinutes() * 60_000L
 
+    // The timeout for the car-off window open now: carOffTimeoutMs(), shortened on DiLink 5 while the
+    // car reads switched off (effectiveCarOffTimeoutMs). The newest telemetry's reading, so the
+    // watchdog, which has none of its own, uses the same one.
+    private fun liveCarOffTimeoutMs(): Long = effectiveCarOffTimeoutMs(
+        configuredMs = carOffTimeoutMs(),
+        defaultMs    = DEFAULT_CAR_OFF_TIMEOUT_MINUTES * 60_000L,
+        isDiLink5    = DiLink5Platform.isDiLink5,
+        powerLevel   = _latestTelemetry.value?.bodyworkPowerLevel,
+    )
+
     /**
      * Decides what to do when an active trip has been car-off past the timeout.
      * Extracted so the live telemetry handler and the watchdog share identical
@@ -386,7 +436,7 @@ class TripRepository private constructor(context: Context) {
      */
     private suspend fun evaluateCarOffStop(now: Long) {
         if (carOffSinceMs <= 0L) return
-        val timeoutMs = carOffTimeoutMs()
+        val timeoutMs = liveCarOffTimeoutMs()
         val confirmEnabled = prefsManager.getCachedConfirmBeforeAutoStop()
         val action = decideCarOffStop(
             offDurationMs  = now - carOffSinceMs,
@@ -401,11 +451,13 @@ class TripRepository private constructor(context: Context) {
             // Persistent, not just logcat: on DiLink-5 this is the last thing the app manages to
             // record before the OEM force-stop, and its absence is itself the finding — it means
             // the app was already dead when the engine-off timeout came due.
+            val powerLevel = if (DiLink5Platform.isDiLink5)
+                " powerLevel=${_latestTelemetry.value?.bodyworkPowerLevel ?: "-"}" else ""
             DiagLog.event(
                 appContext, TAG,
                 "car-off stop: $action (off=${(now - carOffSinceMs) / 1000}s " +
                     "timeout=${timeoutMs / 1000}s uiVisible=$uiVisible confirm=$confirmEnabled " +
-                    "kept=$keepCurrentOffWindow)"
+                    "kept=$keepCurrentOffWindow$powerLevel)"
             )
         }
         when (action) {
@@ -1326,7 +1378,7 @@ class TripRepository private constructor(context: Context) {
         _pendingAutoStop.value = false
         if (tripState != TripState.ACTIVE) return
         // End exactly where the silent auto-stop would have: car-off + timeout.
-        val endAt = if (carOffSinceMs > 0L) carOffSinceMs + carOffTimeoutMs() else null
+        val endAt = if (carOffSinceMs > 0L) carOffSinceMs + liveCarOffTimeoutMs() else null
         Log.i(TAG, "Auto-stop prompt: user confirmed stop")
         manualStopCooldownUntilMs = System.currentTimeMillis() + MANUAL_STOP_COOLDOWN_MS
         doEndTrip(reason = "auto-stop-confirmed", overrideEndTime = endAt)
@@ -1999,8 +2051,34 @@ class TripRepository private constructor(context: Context) {
      * Why [t] should open a trip, or null if it shouldn't. The reason is carried into the
      * `trip start` diag.log line: release builds strip Log, and without it a 0 km "ghost" trip
      * could only be explained by ruling the other paths out by hand.
+     *
+     * On DiLink 5 a car that reports it is switched off and isn't moving opens no trip, whatever
+     * else looks like movement (di5SwitchedOffBlocksStart).
      */
     private fun autoStartReason(
+        t: VehicleTelemetry,
+        previousTelemetry: VehicleTelemetry?
+    ): String? {
+        val reason = movementStartReason(t, previousTelemetry) ?: return null
+        val carSpeed = startSpeedKmh(t.speed, t.locationGpsSpeed, t.speedFromGps, DiLink5Platform.isDiLink5)
+        if (!di5SwitchedOffBlocksStart(DiLink5Platform.isDiLink5, t.bodyworkPowerLevel, carSpeed)) return reason
+        // A refused start is the trip that didn't happen, so it goes on record — at most once a
+        // minute, in case something keeps looking like movement while the car stands switched off.
+        val now = System.currentTimeMillis()
+        if (now - lastRefusedStartLogMs >= 60_000L) {
+            lastRefusedStartLogMs = now
+            DiagLog.event(
+                appContext, TAG,
+                "trip start refused: the car reports it is switched off " +
+                    "(powerLevel=0 speed=${"%.1f".format(carSpeed)}) — would have been: $reason"
+            )
+        }
+        return null
+    }
+    private var lastRefusedStartLogMs = 0L
+
+    /** [autoStartReason] before the DiLink-5 switched-off check: the movement that would open a trip. */
+    private fun movementStartReason(
         t: VehicleTelemetry,
         previousTelemetry: VehicleTelemetry?
     ): String? {

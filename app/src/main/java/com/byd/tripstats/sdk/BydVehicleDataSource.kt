@@ -196,16 +196,27 @@ internal fun anyDoorOpenFromStates(states: List<Int?>): Int? = when {
     else -> null
 }
 
-// DiLink-5, diagnostic only: the per-door and per-lock readings as the text of one diag.log line.
+// DiLink-5: the per-door and per-lock readings as the text of one diag.log line.
 // DiLink 5's bodywork layer offers lock readings for three doors only (left rear, right front,
-// right rear), passed through as the car sends them; the line is there to learn what they read
-// locked and unlocked before any of it is published.
+// right rear), passed through as the car sends them (see di5CarLockedFromLockStates).
 internal fun di5BodyworkDoorState(doors: List<Int?>, locks: List<Int?>): String =
     "doors(LF,RF,LR,RR,bonnet,boot)=${doors.joinToString(",") { it?.toString() ?: "null" }} " +
         "locks(LR,RF,RR)=${locks.joinToString(",") { it?.toString() ?: "null" }}"
 
 // The areas whose lock DiLink 5's bodywork layer can read (its DOOR_LOCK_AREA_* numbers).
 internal val DI5_BODYWORK_LOCK_AREAS = listOf(2, 3, 4)
+
+// DiLink 5's lock readings as carLocked: 1 locked, 0 unlocked, null no reading. The car sends
+// 1 = unlocked and 2 = locked (0 and anything else: no reading). Read on a Sealion 7 (Germany,
+// 2026-11-10): 2 while driving (the doors lock themselves on the move) and after the driver walked
+// away; 1 with the driver in the car, and 1 six seconds before the driver's door opened. The BYD
+// cloud's per-door lock fields use the same values. Central locking moves all doors together, so
+// one door reading unlocked means unlocked. There is no reading for the driver's door.
+internal fun di5CarLockedFromLockStates(locks: List<Int?>): Int? = when {
+    locks.any { it == 1 } -> 0
+    locks.any { it == 2 } -> 1
+    else -> null
+}
 
 // A GPS speed describes the moment of its fix, not now. The system location fallback re-applies the
 // newest known fix on every poll, and underground no new fix ever arrives — so without an age limit the
@@ -3003,18 +3014,23 @@ class BydVehicleDataSource(context: Context) {
     private val DI5_BODYWORK_POWER_MAX_LINES = 200
 
     /**
-     * DiLink-5, diagnostic only: the per-door states and the three lock readings, on change. None of
-     * the lock getters the app tries exists on DiLink 5, so the lock state has never been read there
-     * (published as "unlocked"). DiLink 5's bodywork layer has one more (per door, three doors), a
-     * plain read like the door state. What it reads locked and unlocked is unknown, so it is logged
-     * first and feeds nothing. Same 5-s tick and the same kind of cap as the power line.
+     * DiLink-5: the per-door lock readings of its bodywork layer (three doors), a plain read like
+     * the door state. None of the lock getters in m30 exists on DiLink 5, so these are its only lock
+     * source (di5CarLockedFromLockStates). null on DiLink 3, which doesn't read them.
      */
-    private fun logDi5BodyworkDoorsIfChanged(device: Any, doorStates: List<Int?>) {
-        if (!DiLink5Platform.isDiLink5) return
-        val lockMethod = m29["doorLockStatus"]?.takeIf { it.isNotEmpty() }
-        val locks = DI5_BODYWORK_LOCK_AREAS.map { area ->
-            lockMethod?.let { invokeIndexedIntGetter(device, area, it) }
-        }
+    private fun readDi5BodyworkLocks(device: Any): List<Int?>? {
+        if (!DiLink5Platform.isDiLink5) return null
+        val lockMethod = m29["doorLockStatus"]?.takeIf { it.isNotEmpty() } ?: return null
+        return DI5_BODYWORK_LOCK_AREAS.map { area -> invokeIndexedIntGetter(device, area, lockMethod) }
+    }
+
+    /**
+     * DiLink-5: the per-door states and the three lock readings in diag.log, on change, so a log
+     * shows what the car reported while the doors and locks moved. Same 5-s tick and the same kind
+     * of cap as the power line.
+     */
+    private fun logDi5BodyworkDoorsIfChanged(doorStates: List<Int?>, locks: List<Int?>?) {
+        if (!DiLink5Platform.isDiLink5 || locks == null) return
         val state = di5BodyworkDoorState(doorStates, locks)
         if (state == lastDi5BodyworkDoorState) return
         lastDi5BodyworkDoorState = state
@@ -3048,15 +3064,18 @@ class BydVehicleDataSource(context: Context) {
             val powerLevel = mappedPowerLevel ?: publicPowerLevel
             logDi3BodyworkPowerIfChanged(device, mappedPowerLevel, publicPowerLevel, autoSystemState)
             logDi5BodyworkPowerIfChanged(device, mappedPowerLevel, autoSystemState)
-            // Car lock state — try various known getter names
+            // Car lock state — try various known getter names; DiLink 5 has none of them and reads
+            // its per-door locks instead (di5CarLockedFromLockStates).
+            val di5Locks = readDi5BodyworkLocks(device)
             val lockState = invokeIntGetter(device, *runtimeMethodNames("m30"))
+                ?: di5Locks?.let { di5CarLockedFromLockStates(it) }
             // Any door open: areas 1–6, only OPEN/CLOSED count (anyDoorOpenFromStates).
             val doorStateMethod = m29["doorState"].orEmpty()
             val doorStates = if (doorStateMethod.isNotEmpty()) {
                 BODYWORK_DOOR_AREAS.map { area -> invokeIndexedIntGetter(device, area, doorStateMethod) }
             } else emptyList()
             val anyDoorOpen = anyDoorOpenFromStates(doorStates)
-            logDi5BodyworkDoorsIfChanged(device, doorStates)
+            logDi5BodyworkDoorsIfChanged(doorStates, di5Locks)
             val washerFluidValues = readNumericGetterMap(device, RuntimeExtensionBridge.methodGroups("m31"))
             val washerFluidLowWarn = runtimeGroupMap("m31")["washerFluidLowWarn"]
                 ?.let { invokeIntGetter(device, *it.toTypedArray()) }
