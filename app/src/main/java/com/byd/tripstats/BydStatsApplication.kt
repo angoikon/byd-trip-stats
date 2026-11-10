@@ -24,6 +24,7 @@ import com.byd.tripstats.util.RtDispatch
 import com.byd.tripstats.util.RtInProcessPatches
 import com.byd.tripstats.util.RtShellPatches
 import com.byd.tripstats.util.DiagLog
+import com.byd.tripstats.util.ProcessExitLog
 import com.byd.tripstats.util.ServiceIdleState
 import com.byd.tripstats.worker.DatabaseMaintenanceWorker
 import com.byd.tripstats.worker.ServiceWatchdogWorker
@@ -165,6 +166,10 @@ class BydStatsApplication : Application(), Configuration.Provider {
             "Application.onCreate pid=${android.os.Process.myPid()} stayingIdle=$idle " +
                 "sinceBoot=${SystemClock.elapsedRealtime() / 1000}s",
         )
+        // How the previous process ended, as Android recorded it (Android 11+, so DiLink 5 and
+        // DiLink 100): on DiLink 5 it should tell the car's switch-off force-stop from a crash.
+        // Diagnostic only; off the main thread, and it never throws. See ProcessExitLog.
+        CoroutineScope(Dispatchers.IO).launch { ProcessExitLog.logNewExits(applicationContext) }
         // Once per head-unit boot: did the app actually come up with it? A force-stopped package
         // gets no BOOT_COMPLETED, so on DiLink 5 it can miss a boot entirely — silently, since with
         // no process there is nothing to log, notify or retry. The only trace is this late first

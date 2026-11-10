@@ -163,6 +163,50 @@ internal fun carOnFromBodyworkPowerLevel(level: Int?): Int? = when (level) {
     else -> null
 }
 
+// DiLink-5, diagnostic only: the bodywork readings that might say whether the car is on, as the
+// text of one diag.log line. DiLink 5's bodywork layer maps the car's raw power level onto the SDK's
+// values (0 OFF / 1 ACC / 2 ON, 255 = no reading), so those get a name; the other two are logged
+// as read, since what their values mean on DiLink 5 is what the line is there to find out.
+internal fun di5BodyworkPowerState(powerLevel: Int?, autoSystemState: Int?, readyLight: Int?): String {
+    val level = when (powerLevel) {
+        null -> "null"
+        0 -> "0 (OFF)"
+        1 -> "1 (ACC)"
+        2 -> "2 (ON)"
+        3 -> "3 (OK)"
+        255 -> "255 (none)"
+        else -> powerLevel.toString()
+    }
+    return "powerLevel=$level autoSystemState=${autoSystemState ?: "null"} readyLight=${readyLight ?: "null"}"
+}
+
+// The bodywork door areas, in the SDK's numbering (BODYWORK_CMD_DOOR_*): left front, right front,
+// left rear, right rear, bonnet, boot. There is no area 0.
+internal val BODYWORK_DOOR_AREAS = 1..6
+
+// Whether any door is open, from getDoorState(area) over BODYWORK_DOOR_AREAS: 1 if one reads the
+// SDK's OPEN (1), else 0 if one reads CLOSED (0), else null (no reading). Every other value is a
+// non-reading and counts as neither: 255 (UNDEFINED), BYD's large negative sentinels, and the -1
+// that DiLink 5's bodywork layer returns for a door it has no value for. Area 0 is one of those
+// (it is no door), and reading 0..5 with "anything but 0 is open" reported a door open at all
+// times on DiLink 5 (Sealion 7, Germany, 2026-11). That loop also never read the boot (area 6).
+internal fun anyDoorOpenFromStates(states: List<Int?>): Int? = when {
+    states.any { it == 1 } -> 1
+    states.any { it == 0 } -> 0
+    else -> null
+}
+
+// DiLink-5, diagnostic only: the per-door and per-lock readings as the text of one diag.log line.
+// DiLink 5's bodywork layer offers lock readings for three doors only (left rear, right front,
+// right rear), passed through as the car sends them; the line is there to learn what they read
+// locked and unlocked before any of it is published.
+internal fun di5BodyworkDoorState(doors: List<Int?>, locks: List<Int?>): String =
+    "doors(LF,RF,LR,RR,bonnet,boot)=${doors.joinToString(",") { it?.toString() ?: "null" }} " +
+        "locks(LR,RF,RR)=${locks.joinToString(",") { it?.toString() ?: "null" }}"
+
+// The areas whose lock DiLink 5's bodywork layer can read (its DOOR_LOCK_AREA_* numbers).
+internal val DI5_BODYWORK_LOCK_AREAS = listOf(2, 3, 4)
+
 // A GPS speed describes the moment of its fix, not now. The system location fallback re-applies the
 // newest known fix on every poll, and underground no new fix ever arrives — so without an age limit the
 // speed from the last fix before losing signal stood in for the car's speed indefinitely. On a DiLink-5
@@ -1822,21 +1866,22 @@ class BydVehicleDataSource(context: Context) {
             onRegistered = { device ->
                 bodyworkDevice = device
                 Log.i(TAG, "✅ BodyworkDevice registered (${device.javaClass.name})")
-                // DiLink-3 only, no class name (diag.log gets shared): see logBodyworkSnapshot.
-                if (!DiLink5Platform.isDiLink5) DiagLog.event(appContext, TAG, "🚗 bodywork device registered")
+                // No class name (diag.log gets shared). On DiLink 3 this device is carOn's fallback;
+                // on DiLink 5 it's only on record (logDi5BodyworkPowerIfChanged) — whether it binds
+                // there at all is part of what the line tells.
+                DiagLog.event(appContext, TAG, "🚗 bodywork device registered")
                 dumpForCompatProbe("bodywork", device)
                 logBodyworkSnapshot(device)
                 registerEventMirrorListener(device, "Bodywork")
                 anySuccess = true
             },
             onEvent = null,
+            // lastError comes from the last candidate, the public SDK class — never a private name.
             onUnavailable = { lastError ->
-                if (!DiLink5Platform.isDiLink5) {
-                    DiagLog.event(
-                        appContext, TAG,
-                        "🚗 bodywork device unavailable (${lastError ?: "getInstance returned null"}) — no power-level source"
-                    )
-                }
+                DiagLog.event(
+                    appContext, TAG,
+                    "🚗 bodywork device unavailable (${lastError ?: "getInstance returned null"}) — no power-level source"
+                )
             }
         )
 
@@ -2925,6 +2970,63 @@ class BydVehicleDataSource(context: Context) {
     }
     private var lastDi3BodyworkPowerState: String? = null
 
+    /**
+     * DiLink-5 only, diagnostic: feeds nothing. DiLink 5 has no car-on signal. A switch-off shows
+     * only as the car's force-stop and the supervisor's restart, and the head unit can sleep about
+     * two minutes later, before the 3-minute car-off timeout ends the trip (a Sealion 7 in Germany,
+     * 2026-11: most parks closed their trip at the next wake, ~35 min on). A reading that says "off"
+     * in the restarted process would let that trip close at once. The candidates: the power level
+     * and system state the private mapping already reads here every slow tick (on DiLink 5 these
+     * are the SDK's public getters), and the READY lamp, another plain getter of DiLink 5's
+     * bodywork layer. This line records them, so a log shows whether they follow the car.
+     * Runs every 5 s, so it writes only when a value changes.
+     */
+    private fun logDi5BodyworkPowerIfChanged(device: Any, powerLevel: Int?, autoSystemState: Int?) {
+        if (!DiLink5Platform.isDiLink5) return
+        val readyLight = m29["readyLight"]?.takeIf { it.isNotEmpty() }?.let { invokeIntGetter(device, it) }
+        val state = di5BodyworkPowerState(powerLevel, autoSystemState, readyLight)
+        if (state == lastDi5BodyworkPowerState) return
+        lastDi5BodyworkPowerState = state
+        // A value that flickers (a blinking lamp) would otherwise write every 5 s and push
+        // everything else out of diag.log; a day's switch-ons and -offs fit well within the cap.
+        if (di5BodyworkPowerLines >= DI5_BODYWORK_POWER_MAX_LINES) return
+        di5BodyworkPowerLines++
+        val snap = _vehicleSnapshot.value
+        val capped = if (di5BodyworkPowerLines == DI5_BODYWORK_POWER_MAX_LINES) " — later changes not logged" else ""
+        DiagLog.event(
+            appContext, TAG,
+            "🚗 bodywork poll: $state (speed=${"%.0f".format(snap.directSpeedKmh)} power=${snap.enginePower ?: "-"})$capped"
+        )
+    }
+    private var lastDi5BodyworkPowerState: String? = null
+    private var di5BodyworkPowerLines = 0
+    private val DI5_BODYWORK_POWER_MAX_LINES = 200
+
+    /**
+     * DiLink-5, diagnostic only: the per-door states and the three lock readings, on change. None of
+     * the lock getters the app tries exists on DiLink 5, so the lock state has never been read there
+     * (published as "unlocked"). DiLink 5's bodywork layer has one more (per door, three doors), a
+     * plain read like the door state. What it reads locked and unlocked is unknown, so it is logged
+     * first and feeds nothing. Same 5-s tick and the same kind of cap as the power line.
+     */
+    private fun logDi5BodyworkDoorsIfChanged(device: Any, doorStates: List<Int?>) {
+        if (!DiLink5Platform.isDiLink5) return
+        val lockMethod = m29["doorLockStatus"]?.takeIf { it.isNotEmpty() }
+        val locks = DI5_BODYWORK_LOCK_AREAS.map { area ->
+            lockMethod?.let { invokeIndexedIntGetter(device, area, it) }
+        }
+        val state = di5BodyworkDoorState(doorStates, locks)
+        if (state == lastDi5BodyworkDoorState) return
+        lastDi5BodyworkDoorState = state
+        if (di5BodyworkDoorLines >= DI5_BODYWORK_DOOR_MAX_LINES) return
+        di5BodyworkDoorLines++
+        val capped = if (di5BodyworkDoorLines == DI5_BODYWORK_DOOR_MAX_LINES) " — later changes not logged" else ""
+        DiagLog.event(appContext, TAG, "🚪 bodywork doors: $state$capped")
+    }
+    private var lastDi5BodyworkDoorState: String? = null
+    private var di5BodyworkDoorLines = 0
+    private val DI5_BODYWORK_DOOR_MAX_LINES = 200
+
     private fun logBodyworkSnapshot(device: Any) {
         try {
             val autoSystemState = m29["autoSystemState"]?.takeIf { it.isNotEmpty() }?.let { invokeIntGetter(device, it) }
@@ -2945,17 +3047,16 @@ class BydVehicleDataSource(context: Context) {
             val publicPowerLevel = if (!DiLink5Platform.isDiLink5) invokeIntGetter(device, "getPowerLevel") else null
             val powerLevel = mappedPowerLevel ?: publicPowerLevel
             logDi3BodyworkPowerIfChanged(device, mappedPowerLevel, publicPowerLevel, autoSystemState)
+            logDi5BodyworkPowerIfChanged(device, mappedPowerLevel, autoSystemState)
             // Car lock state — try various known getter names
             val lockState = invokeIntGetter(device, *runtimeMethodNames("m30"))
-            // Any door open — read door slots 0-5, filter out sentinel values (e.g. -2147482645).
+            // Any door open: areas 1–6, only OPEN/CLOSED count (anyDoorOpenFromStates).
             val doorStateMethod = m29["doorState"].orEmpty()
             val doorStates = if (doorStateMethod.isNotEmpty()) {
-                (0..5).mapNotNull { idx ->
-                    invokeIndexedIntGetter(device, idx, doorStateMethod)
-                        ?.takeIf { it > -1_000_000 }
-                }
+                BODYWORK_DOOR_AREAS.map { area -> invokeIndexedIntGetter(device, area, doorStateMethod) }
             } else emptyList()
-            val anyDoorOpen = if (doorStates.isNotEmpty()) if (doorStates.any { it != 0 }) 1 else 0 else null
+            val anyDoorOpen = anyDoorOpenFromStates(doorStates)
+            logDi5BodyworkDoorsIfChanged(device, doorStates)
             val washerFluidValues = readNumericGetterMap(device, RuntimeExtensionBridge.methodGroups("m31"))
             val washerFluidLowWarn = runtimeGroupMap("m31")["washerFluidLowWarn"]
                 ?.let { invokeIntGetter(device, *it.toTypedArray()) }

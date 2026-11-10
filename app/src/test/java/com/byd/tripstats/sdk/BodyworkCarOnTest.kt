@@ -29,4 +29,54 @@ class BodyworkCarOnTest {
         assertNull(carOnFromBodyworkPowerLevel(255))          // INVALID
         assertNull(carOnFromBodyworkPowerLevel(-2147482645))  // BODYWORK_COMMAND_INVALID_VALUE
     }
+
+    @Test
+    fun `the DiLink-5 bodywork line names the power level and keeps the rest as read`() {
+        assertEquals(
+            "powerLevel=2 (ON) autoSystemState=1 readyLight=0",
+            di5BodyworkPowerState(powerLevel = 2, autoSystemState = 1, readyLight = 0),
+        )
+        assertEquals(
+            "powerLevel=0 (OFF) autoSystemState=null readyLight=null",
+            di5BodyworkPowerState(powerLevel = 0, autoSystemState = null, readyLight = null),
+        )
+        assertEquals("powerLevel=1 (ACC)", di5BodyworkPowerState(1, 0, 0).substringBefore(" auto"))
+        assertEquals("powerLevel=255 (none)", di5BodyworkPowerState(255, 0, 0).substringBefore(" auto"))
+        assertEquals("powerLevel=null", di5BodyworkPowerState(null, 0, 0).substringBefore(" auto"))
+        assertEquals("powerLevel=-2147482645", di5BodyworkPowerState(-2147482645, 0, 0).substringBefore(" auto"))
+    }
+
+    @Test
+    fun `the doors are read over areas 1 to 6, bonnet and boot included`() {
+        assertEquals(1..6, BODYWORK_DOOR_AREAS)
+    }
+
+    @Test
+    fun `a door counts as open only when it reads OPEN`() {
+        // All shut, as DiLink 5 reads them (its layer maps the car's "closed" to the SDK's 0).
+        assertEquals(0, anyDoorOpenFromStates(listOf(0, 0, 0, 0, 0, 0)))
+        // The boot (area 6) open.
+        assertEquals(1, anyDoorOpenFromStates(listOf(0, 0, 0, 0, 0, 1)))
+        // DiLink 5 answers -1 for a door it has no value for; that is no open door. The old loop
+        // read area 0, got -1 there, and reported a door open on every DiLink-5 car.
+        assertEquals(0, anyDoorOpenFromStates(listOf(-1, 0, 0, 0, 0, 0)))
+        // UNDEFINED and BYD's sentinel are not readings either.
+        assertEquals(0, anyDoorOpenFromStates(listOf(255, -2147482645, 0, null, 0, 0)))
+    }
+
+    @Test
+    fun `no OPEN or CLOSED reading means the door state is unknown`() {
+        assertNull(anyDoorOpenFromStates(emptyList()))
+        assertNull(anyDoorOpenFromStates(listOf(null, null, null, null, null, null)))
+        assertNull(anyDoorOpenFromStates(listOf(-1, -1, 255, -2147482645, null, -1)))
+    }
+
+    @Test
+    fun `the DiLink-5 door line lists every door and lock as read`() {
+        assertEquals(
+            "doors(LF,RF,LR,RR,bonnet,boot)=0,0,0,0,0,1 locks(LR,RF,RR)=1,2,null",
+            di5BodyworkDoorState(listOf(0, 0, 0, 0, 0, 1), listOf(1, 2, null)),
+        )
+        assertEquals(listOf(2, 3, 4), DI5_BODYWORK_LOCK_AREAS)
+    }
 }
