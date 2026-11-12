@@ -2,6 +2,7 @@ package com.byd.tripstats.data.repository
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.SystemClock
 import android.util.Log
 import androidx.room.withTransaction
 import com.byd.tripstats.data.analysis.ChargingEnergy
@@ -15,6 +16,7 @@ import com.byd.tripstats.data.notify.ChargeOrigin
 import com.byd.tripstats.data.notify.VehicleEvents
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.sdk.DiLink5Platform
+import com.byd.tripstats.util.DiagLog
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +29,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.roundToInt
 
 /**
  * Hybrid charging session management:
@@ -37,12 +40,14 @@ import java.util.concurrent.atomic.AtomicBoolean
  *   car-off charging period (overnight, remote charging, etc.).
  *
  *   chargingPower > 0 → open / continue a real-time session, record data points.
- *   chargingPower = 0 → close active session immediately (no debounce needed —
- *   if the car is on and power dropped to 0, charging definitively stopped).
+ *   chargingPower = 0 → close the active session, unless the car is still out of D/R: then
+ *   the session is held for CHARGE_PAUSE_HOLD_MS first, because an AC charge pauses for
+ *   seconds when the car is switched on or unlocked (see endOrHoldActiveSession).
  *
  * ── Car OFF (carOn = 0) ────────────────────────────────────────────────────
- *   Close any active real-time session immediately.
- *   Continue persisting SoC + timestamp so the next wake-up can reconstruct.
+ *   Charging → keep recording; not charging → close (after the same pause hold).
+ *   SoC + timestamp are persisted only while the car is on, so the next wake-up can
+ *   reconstruct, from there or from the end of a session recorded since.
  *
  * This means live charts are available for sessions recorded while the car is on,
  * and synthetic sessions (peakKw = avgKw = 0, no data points) represent car-off
@@ -70,7 +75,10 @@ class ChargingRepository private constructor(context: Context) {
     val activeSessionId: StateFlow<Long?> = _activeSessionId.asStateFlow()
 
     private var activeSession: ChargingSessionEntity? = null
-    private var lastChargingSeenAtMs: Long = 0L
+    /** elapsedRealtime of the last charging packet — what [CHARGE_PAUSE_HOLD_MS] is measured from. */
+    private var lastChargingSeenElapsedMs: Long = 0L
+    /** The session a pause is holding open, so the pause and its end are logged once each. */
+    private var pausedSessionId: Long? = null
     // Post-charge settle top-up: after a near-full off-state session closes, the BMS keeps
     // recomputing SoC upward for a few minutes (e.g. 98.5% → 100%). While settleUntilMs is
     // in the future, applyPostChargeSettle() revises the already-closed session's end SoC.
@@ -89,7 +97,7 @@ class ChargingRepository private constructor(context: Context) {
     private val activeSessionRecoveryAttempted = AtomicBoolean(false)
     private var wasCarOn = false
 
-    private data class ShutdownState(
+    internal data class ShutdownState(
         val soc: Double,
         val timestamp: Long,
         val tempAvg: Double,
@@ -169,9 +177,10 @@ class ChargingRepository private constructor(context: Context) {
                 // Do NOT close the session — it will be closed when charging stops.
                 handleRealTimeCharging(telemetry, carConfig)
             } else {
-                // Car is off and not charging — close any open session, then keep revising
-                // a just-closed near-full session's end SoC while the BMS settles to 100%.
-                closeActiveSessionIfAny(carConfig, telemetry)
+                // Car is off and not charging — close any open session (unless a pause holds it),
+                // then keep revising a just-closed near-full session's end SoC while the BMS
+                // settles to 100%.
+                endOrHoldActiveSession(carConfig, telemetry)
                 applyPostChargeSettle(telemetry)
             }
         }
@@ -209,14 +218,14 @@ class ChargingRepository private constructor(context: Context) {
                     socEnd = requireNotNull(lastPoint).soc,
                     peakKw = maxOf(session.peakKw, positivePowers.maxOrNull() ?: session.peakKw)
                 )
-                lastChargingSeenAtMs = now
+                lastChargingSeenElapsedMs = SystemClock.elapsedRealtime()
                 _activeSessionId.value = session.id
                 _isCharging.value = true
                 Log.i(TAG, "Resumed active charging session ${session.id}")
             } else {
                 // The app was killed mid-charge, so this row is finalised long after the fact.
                 closePersistedActiveSession(session, points, carConfig)
-                    ?.let { notifyChargingFinished(it.id, settleArmed = false, origin = ChargeOrigin.RECOVERED) }
+                    ?.let { notifyChargingFinished(it.id, settleWaitMs = 0L, origin = ChargeOrigin.RECOVERED) }
             }
         }
     }
@@ -228,7 +237,14 @@ class ChargingRepository private constructor(context: Context) {
         carConfig : CarConfig?
     ) {
         if (telemetry.isCharging) {
-            lastChargingSeenAtMs = System.currentTimeMillis()
+            val nowElapsed = SystemClock.elapsedRealtime()
+            val held = activeSession?.id?.takeIf { it == pausedSessionId }
+            if (held != null) {
+                DiagLog.event(appContext, TAG,
+                    "🔌 charge resumed after ${(nowElapsed - lastChargingSeenElapsedMs) / 1000}s — session $held continues")
+            }
+            pausedSessionId = null
+            lastChargingSeenElapsedMs = nowElapsed
             settleSessionId = null; settleUntilMs = 0L   // active charging — cancel any pending settle top-up
             if (activeSession == null) {
                 startSession(telemetry, carConfig)
@@ -243,10 +259,38 @@ class ChargingRepository private constructor(context: Context) {
             }
         } else {
             // Car is on but the incoming packet says charging has stopped.
-            // Integration tests and downstream logic expect this to close
-            // immediately rather than waiting for a grace window.
-            closeActiveSessionIfAny(carConfig, telemetry, force = true)
+            endOrHoldActiveSession(carConfig, telemetry)
         }
+    }
+
+    /**
+     * Ends the open session on a not-charging packet, unless the charge has only paused.
+     *
+     * An AC charge pauses for a few seconds when the car is switched on or unlocked, and on
+     * DiLink-3 every charging signal drops with it. On the dev Seal (2026-11-12, 2.1 kW AC, cable
+     * in throughout) switching the car on mid-charge took pack power to 0 for ~10 s: the session
+     * closed, "charging finished" went out, and the charge carried on as a new session, so one
+     * charge became #331 + #332. While the car stays out of D/R, the session is held for
+     * [CHARGE_PAUSE_HOLD_MS] from the last charging packet; a charge that comes back in that time
+     * continues it, and one that doesn't ends at its last data point, as it would have anyway.
+     * DiLink-5 holds its pauses in the data source instead ([com.byd.tripstats.sdk.DI5_CHARGING_PAUSE_HOLD_MS]),
+     * where the cable state is known, so it closes here at once as before.
+     */
+    private suspend fun endOrHoldActiveSession(carConfig: CarConfig?, telemetry: VehicleTelemetry) {
+        val session = activeSession ?: return
+        val pausedForMs = SystemClock.elapsedRealtime() - lastChargingSeenElapsedMs
+        if (holdsChargePause(DiLink5Platform.isDiLink5, telemetry.gear, pausedForMs)) {
+            if (pausedSessionId != session.id) {
+                pausedSessionId = session.id
+                DiagLog.event(appContext, TAG,
+                    "🔌 charge paused — session ${session.id} held up to ${CHARGE_PAUSE_HOLD_MS / 60_000} min " +
+                        "(gear=${telemetry.gear} carOn=${telemetry.carOn} power=${telemetry.enginePower})")
+            }
+            // Still a charge in progress: an update installed now would cut it in two.
+            _isCharging.value = true
+            return
+        }
+        closeActiveSessionIfAny(carConfig, telemetry)
     }
 
     private suspend fun startSession(telemetry: VehicleTelemetry, carConfig: CarConfig?) {
@@ -267,7 +311,10 @@ class ChargingRepository private constructor(context: Context) {
         )
         val id = sessionDao.insertSession(session)
         activeSession = session.copy(id = id)
-        lastChargingSeenAtMs = System.currentTimeMillis()
+        lastChargingSeenElapsedMs = SystemClock.elapsedRealtime()
+        DiagLog.event(appContext, TAG,
+            "🔌 charge session $id started: soc=${telemetry.soc} panel=${telemetry.socPanel} " +
+                "power=${telemetry.chargingPower} carOn=${telemetry.carOn} gear=${telemetry.gear}")
         recordDataPoint(telemetry)
         // Signal observers only after the first data point is committed,
         // so any close triggered immediately after open sees non-empty data.
@@ -313,14 +360,9 @@ class ChargingRepository private constructor(context: Context) {
     private suspend fun closeActiveSessionIfAny(
         carConfig : CarConfig?,
         telemetry : VehicleTelemetry,
-        force: Boolean = true
     ) {
         val session = activeSession ?: return
         val now = System.currentTimeMillis()
-        if (!force && now - lastChargingSeenAtMs < ACTIVE_SESSION_CLOSE_GRACE_MS) {
-            _isCharging.value = true
-            return
-        }
         val dataPoints = sessionDao.getDataPointsForSessionSync(session.id)
         val closed = closePersistedActiveSession(session, dataPoints, carConfig)
 
@@ -330,25 +372,33 @@ class ChargingRepository private constructor(context: Context) {
         // (e.g. 98.5% → 100%). applyPostChargeSettle() revises the closed row's end SoC
         // during this window. Bounded + capped so it can never absorb a drive or a
         // separate charge. Car-off only (off-state charging completion).
+        // The settle runs from when current stopped, and a pause hold has already waited through
+        // part of it: what the BMS settled meanwhile is caught by the first tick after this close.
+        // Without the deduction a held session's message would go out after the service's
+        // 5-minute self-stop.
+        val sinceChargingMs = (SystemClock.elapsedRealtime() - lastChargingSeenElapsedMs).coerceAtLeast(0L)
+        val settleWindowMs = (SETTLE_GRACE_MS - sinceChargingMs).coerceAtLeast(SETTLE_MIN_WINDOW_MS)
         val closedEndSoc = maxOf(dataPoints.lastOrNull()?.soc ?: 0.0, session.socEnd ?: 0.0)
         if (!telemetry.isCarOn && dataPoints.isNotEmpty() && closedEndSoc >= SETTLE_NEAR_FULL_PCT) {
             settleSessionId   = session.id
             settleBaselineSoc = closedEndSoc
-            settleUntilMs     = now + SETTLE_GRACE_MS
+            settleUntilMs     = now + settleWindowMs
         } else {
             settleSessionId = null
             settleUntilMs   = 0L
         }
 
         activeSession = null
-        lastChargingSeenAtMs = 0L
+        lastChargingSeenElapsedMs = 0L
+        pausedSessionId = null
         _activeSessionId.value = null
         _isCharging.value = false
 
         // The live close: this one is news, so it reaches the push as well as the wire.
         // null means the row was dropped as a phantom or a charger-handshake flap.
         closed?.let {
-            notifyChargingFinished(it.id, settleArmed = settleSessionId == it.id, origin = ChargeOrigin.LIVE)
+            notifyChargingFinished(it.id, settleWaitMs = if (settleSessionId == it.id) settleWindowMs else 0L,
+                origin = ChargeOrigin.LIVE)
         }
     }
 
@@ -359,13 +409,13 @@ class ChargingRepository private constructor(context: Context) {
      * is the kind of small disagreement that costs trust in every other number in it. The row
      * is re-read at the end of the wait so whatever settled is what gets sent.
      */
-    private fun notifyChargingFinished(sessionId: Long, settleArmed: Boolean, origin: ChargeOrigin) {
+    private fun notifyChargingFinished(sessionId: Long, settleWaitMs: Long, origin: ChargeOrigin) {
         scope.launch {
             // The scope carries no exception handler, so anything thrown here would reach the
             // thread's default handler and take the process down. This now runs at cold start on
             // every DiLink-5 ignition, where the cost of that would be the app itself.
             try {
-                if (settleArmed) delay(SETTLE_GRACE_MS + SETTLE_SEND_MARGIN_MS)
+                if (settleWaitMs > 0L) delay(settleWaitMs + SETTLE_SEND_MARGIN_MS)
                 val row = sessionDao.getSessionById(sessionId) ?: return@launch
                 val prefs = PreferencesManager(appContext)
                 VehicleEvents.getInstance(appContext).onChargingSessionClosed(
@@ -438,7 +488,7 @@ class ChargingRepository private constructor(context: Context) {
     ): ChargingSessionEntity? {
         if (dataPoints.isEmpty()) {
             sessionDao.deleteSession(session)
-            Log.i(TAG, "Phantom session ${session.id} deleted (0 data points)")
+            DiagLog.event(appContext, TAG, "🔌 charge session ${session.id} dropped: no data points")
             return null
         }
 
@@ -470,7 +520,8 @@ class ChargingRepository private constructor(context: Context) {
         if (isMicroSession) {
             sessionDao.deleteDataPointsForSession(session.id)
             sessionDao.deleteSession(session)
-            Log.i(TAG, "Transient charging flap ${session.id} deleted (${dataPoints.size} points, ${durationMs}ms)")
+            DiagLog.event(appContext, TAG,
+                "🔌 charge session ${session.id} dropped as a flap: ${dataPoints.size} points over ${durationMs / 1000}s")
             return null
         }
 
@@ -488,8 +539,9 @@ class ChargingRepository private constructor(context: Context) {
         )
         sessionDao.updateSession(closed)
         val received = receivedKwh?.let { "%.2f".format(it) } ?: "unmeasured"
-        Log.i(TAG, "Charging session ${session.id} closed — ${session.socStart}% → $endSoc%  " +
-            "${dataPoints.size} points  pack ${"%.2f".format(kwhAdded)} kWh  received $received")
+        DiagLog.event(appContext, TAG,
+            "🔌 charge session ${session.id} closed: soc=${session.socStart}→$endSoc " +
+                "${dataPoints.size} points over ${durationMs / 60_000} min, pack ${"%.2f".format(kwhAdded)} kWh, received $received")
         return closed
     }
 
@@ -501,77 +553,93 @@ class ChargingRepository private constructor(context: Context) {
         carConfig : CarConfig?
     ) {
         val now = System.currentTimeMillis()
-        val lastSoc       = previousShutdownState?.soc ?: -1.0
-        val lastTimestamp = previousShutdownState?.timestamp ?: -1L
-        val lastTempAvg   = previousShutdownState?.tempAvg ?: 0.0
-        val lastVoltage   = previousShutdownState?.voltage ?: 0
-
-        if (lastSoc < 0 || lastTimestamp < 0) {
+        val saved = previousShutdownState
+        if (saved == null || saved.soc < 0 || saved.timestamp < 0) {
             Log.i(TAG, "No shutdown state — skipping reconstruction (first ever run)")
             return
         }
 
-        val elapsedSinceLastStateMs = now - lastTimestamp
-        if (elapsedSinceLastStateMs in 0 until MIN_RECONSTRUCTION_GAP_MS) {
-            Log.i(TAG, "Saved state is too recent (${elapsedSinceLastStateMs}ms) — skipping reconstruction")
+        val elapsedSinceSavedMs = now - saved.timestamp
+        if (elapsedSinceSavedMs in 0 until MIN_RECONSTRUCTION_GAP_MS) {
+            Log.i(TAG, "Saved state is too recent (${elapsedSinceSavedMs}ms) — skipping reconstruction")
             return
         }
 
-        val socDelta   = telemetry.soc - lastSoc
+        // Duplicate guard: a session that started after the state was saved covers this window.
+        val recent = sessionDao.getMostRecentSession()
+        if (recent != null && recent.startTime >= saved.timestamp - OVERLAP_GUARD_MS) {
+            Log.i(TAG, "Recent session (id=${recent.id}) covers this window — skipping")
+            return
+        }
+
+        // A session that started before the state was saved but ran past it has already counted
+        // what it added. The state is only saved with the car on, so a charge the car was switched
+        // on during goes on long after the last save: on the dev Seal (2026-11-12) #332 ran
+        // 12:21–13:48 with the state saved at 12:36, and the wake at 13:50 stored 12:36–13:50 again
+        // as Reconstructed #334 (78.6 → 83.9 %, 4.37 kWh). Only what came after its end is unaccounted for.
+        val recorded = sessionDao.getLatestSessionEndedAfter(saved.timestamp)
+        val baseline = rebaseOnRecordedCharge(saved, recorded)
+        val rebased = baseline !== saved
+
+        val socDelta   = telemetry.soc - baseline.soc
         val batteryKwh = carConfig?.batteryKwh ?: FALLBACK_BATTERY_KWH
         val kwhAdded   = (socDelta / 100.0) * batteryKwh
+        val elapsedSinceBaselineMs = now - baseline.timestamp
 
-        Log.i(TAG, "Wake-up SoC: last=${"%.1f".format(lastSoc)}% → " +
+        Log.i(TAG, "Wake-up SoC: last=${"%.1f".format(baseline.soc)}% → " +
             "now=${"%.1f".format(telemetry.soc)}%  Δ=${"%.1f".format(socDelta)}%  " +
-            "≈${"%.2f".format(kwhAdded)} kWh")
+            "≈${"%.2f".format(kwhAdded)} kWh${if (rebased) "  (from the end of session ${recorded?.id})" else ""}")
+
+        if (rebased && socDelta < MIN_SOC_RISE_AFTER_RECORDED_CHARGE_PCT) {
+            DiagLog.event(
+                appContext, TAG,
+                "charge reconstruction skipped: session ${recorded?.id} recorded the charge until " +
+                    "${elapsedSinceBaselineMs / 60_000} min ago (BMS ${"%.1f".format(baseline.soc)} %), " +
+                    "now ${"%.1f".format(telemetry.soc)} % — nothing it didn't count"
+            )
+            return
+        }
 
         if (socDelta < MIN_SOC_DELTA_PCT || kwhAdded < MIN_KWH_ADDED) {
             Log.i(TAG, "Delta below threshold — no car-off session to reconstruct")
             return
         }
 
-        if (isBmsRestRebound(socDelta, previousShutdownState?.socPanel ?: 0, telemetry.socPanel)) {
-            com.byd.tripstats.util.DiagLog.event(
+        if (isBmsRestRebound(socDelta, baseline.socPanel, telemetry.socPanel)) {
+            DiagLog.event(
                 appContext, TAG,
-                "charge reconstruction skipped: BMS ${"%.1f".format(lastSoc)} → ${"%.1f".format(telemetry.soc)}% " +
-                    "but panel ${previousShutdownState?.socPanel} → ${telemetry.socPanel}% — rest rebound, not a charge"
+                "charge reconstruction skipped: BMS ${"%.1f".format(baseline.soc)} → ${"%.1f".format(telemetry.soc)}% " +
+                    "but panel ${baseline.socPanel} → ${telemetry.socPanel}% — rest rebound, not a charge"
             )
             return
         }
 
         implausibleReconstruction(
-            kwhAdded, elapsedSinceLastStateMs,
-            bmsBefore = lastSoc, panelBefore = previousShutdownState?.socPanel ?: 0,
+            kwhAdded, elapsedSinceBaselineMs,
+            bmsBefore = baseline.soc, panelBefore = baseline.socPanel,
         )?.let { reason ->
-            com.byd.tripstats.util.DiagLog.event(
+            DiagLog.event(
                 appContext, TAG,
-                "charge reconstruction skipped: BMS ${"%.1f".format(lastSoc)} → ${"%.1f".format(telemetry.soc)}% " +
-                    "panel ${previousShutdownState?.socPanel} → ${telemetry.socPanel}% " +
-                    "${"%.2f".format(kwhAdded)} kWh over ${elapsedSinceLastStateMs / 1000}s — $reason"
+                "charge reconstruction skipped: BMS ${"%.1f".format(baseline.soc)} → ${"%.1f".format(telemetry.soc)}% " +
+                    "panel ${baseline.socPanel} → ${telemetry.socPanel}% " +
+                    "${"%.2f".format(kwhAdded)} kWh over ${elapsedSinceBaselineMs / 1000}s — $reason"
             )
             return
         }
 
-        // Duplicate guard
-        val recent = sessionDao.getMostRecentSession()
-        if (recent != null && recent.startTime >= lastTimestamp - OVERLAP_GUARD_MS) {
-            Log.i(TAG, "Recent session (id=${recent.id}) covers this window — skipping")
-            return
-        }
-
         val session = ChargingSessionEntity(
-            startTime        = lastTimestamp,
+            startTime        = baseline.timestamp,
             endTime          = now,
-            socStart         = lastSoc,
+            socStart         = baseline.soc,
             socEnd           = telemetry.soc,
-            socStartPanel    = (previousShutdownState?.socPanel ?: 0).toDouble(),
+            socStartPanel    = baseline.socPanel.toDouble(),
             socEndPanel      = telemetry.socPanel.toDouble(),
             kwhAdded         = kwhAdded,
             peakKw           = 0.0,   // not available — car was off
             avgKw            = 0.0,   // not available — car was off
-            batteryTempStart = lastTempAvg,
+            batteryTempStart = baseline.tempAvg,
             batteryTempEnd   = telemetry.batteryTempAvg,
-            voltageStart     = lastVoltage,
+            voltageStart     = baseline.voltage,
             voltageEnd       = telemetry.batteryTotalVoltage,
             batteryKwh       = batteryKwh,
             carConfigId      = carConfig?.id ?: "",
@@ -581,9 +649,11 @@ class ChargingRepository private constructor(context: Context) {
             startOdometer    = telemetry.odometer.takeIf { it > 0.0 }
         )
         val id = sessionDao.insertSession(session)
-        Log.i(TAG, "✅ Synthetic session created (id=$id  " +
-            "${"%.1f".format(socDelta)}%  ${"%.2f".format(kwhAdded)} kWh)")
-        notifyChargingFinished(id, settleArmed = false, origin = ChargeOrigin.SOC_ESTIMATE)
+        DiagLog.event(appContext, TAG,
+            "🔌 charge reconstructed: session $id BMS ${"%.1f".format(baseline.soc)} → ${"%.1f".format(telemetry.soc)}% " +
+                "panel ${baseline.socPanel} → ${telemetry.socPanel}% ${"%.2f".format(kwhAdded)} kWh over " +
+                "${elapsedSinceBaselineMs / 60_000} min${if (rebased) " (from the end of session ${recorded?.id})" else ""}")
+        notifyChargingFinished(id, settleWaitMs = 0L, origin = ChargeOrigin.SOC_ESTIMATE)
     }
 
     private fun persistShutdownState(telemetry: VehicleTelemetry) {
@@ -713,6 +783,51 @@ class ChargingRepository private constructor(context: Context) {
             return null
         }
 
+        /**
+         * Whether a not-charging packet is a pause the open session waits out ([CHARGE_PAUSE_HOLD_MS])
+         * rather than its end. Gear alone decides "driving", for the reason computeChargingActive
+         * gives: a parked head unit's speed (GPS fallback included) can read above 0.
+         */
+        internal fun holdsChargePause(isDiLink5: Boolean, gear: String, pausedForMs: Long): Boolean =
+            !isDiLink5 && gear != "D" && gear != "R" && pausedForMs in 0 until CHARGE_PAUSE_HOLD_MS
+
+        /**
+         * The saved state a reconstruction measures from, moved to the end of [recorded] when that
+         * session ran past it: from there on, the session counted the charge itself. [recorded] is
+         * the latest closed session ending after the saved state (null when there is none).
+         * Returns [saved] itself (same instance) when nothing moves it.
+         */
+        internal fun rebaseOnRecordedCharge(saved: ShutdownState, recorded: ChargingSessionEntity?): ShutdownState {
+            if (recorded == null || recorded.isActive) return saved
+            val end = recorded.endTime ?: return saved
+            val socEnd = recorded.socEnd ?: return saved
+            if (end <= saved.timestamp) return saved
+            return ShutdownState(
+                soc       = socEnd,
+                timestamp = end,
+                tempAvg   = recorded.batteryTempEnd ?: saved.tempAvg,
+                voltage   = recorded.voltageEnd ?: saved.voltage,
+                // 0 = unknown, which makes isBmsRestRebound and the panel-gap check stand aside.
+                socPanel  = recorded.socEndPanel?.roundToInt() ?: 0,
+            )
+        }
+
+        /**
+         * How long a session is held through a pause in the charge (see endOrHoldActiveSession). The
+         * pauses seen last seconds: ~10 s on switching a DiLink-3 Seal on, 15–30 s on unlocking a
+         * DiLink-5 Sealion 7. It must stay well under the service's 5-minute "car off and not
+         * charging" self-stop (VehicleTelemetryService), which counts from the same packet: a hold
+         * still running when the service stops leaves the session open until the app next starts.
+         */
+        internal const val CHARGE_PAUSE_HOLD_MS = 3 * 60_000L
+
+        /**
+         * After a recorded charge, the BMS can still move the SoC up by itself — the post-charge
+         * settle, up to [SETTLE_MAX_RISE_PCT] — and that rise belongs to the recorded charge, not to
+         * a new one. A real charge after the recorded one is larger than that.
+         */
+        private const val MIN_SOC_RISE_AFTER_RECORDED_CHARGE_PCT = 4.0
+
         /** A real near-empty battery reads a few tenths with the panel at 0–1 %; below this it's the 0. */
         private const val ZERO_BASELINE_MAX_PCT = 0.5
 
@@ -726,11 +841,12 @@ class ChargingRepository private constructor(context: Context) {
         private const val MIN_RECONSTRUCTION_GAP_MS = 30_000L
         private const val OVERLAP_GUARD_MS    = 5 * 60 * 1000L
         private const val FALLBACK_BATTERY_KWH = 82.5
-        private const val ACTIVE_SESSION_CLOSE_GRACE_MS = 20_000L
         // Post-charge settle: hold a near-full off-state session open this long after charge
         // current stops so the BMS's SoC recalibration to 100% is captured. Comfortably
         // within the service's 5-min car-off self-stop window.
         private const val SETTLE_GRACE_MS = 4 * 60_000L
+        /** The shortest settle window after a close, however long a pause hold ran before it. */
+        private const val SETTLE_MIN_WINDOW_MS = 60_000L
         /** Small extra wait so the last settle tick is stored before the row is read back. */
         private const val SETTLE_SEND_MARGIN_MS = 15_000L
         private const val SETTLE_NEAR_FULL_PCT = 90.0

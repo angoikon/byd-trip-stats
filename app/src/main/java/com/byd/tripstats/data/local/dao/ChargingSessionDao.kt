@@ -42,6 +42,10 @@ interface ChargingSessionDao {
     @Query("SELECT * FROM charging_sessions ORDER BY startTime DESC LIMIT 1")
     suspend fun getMostRecentSession(): ChargingSessionEntity?
 
+    /** The closed session that ended last, if it ended after [since] — what a reconstruction measures from. */
+    @Query("SELECT * FROM charging_sessions WHERE isActive = 0 AND endTime > :since ORDER BY endTime DESC LIMIT 1")
+    suspend fun getLatestSessionEndedAfter(since: Long): ChargingSessionEntity?
+
     @Query("SELECT * FROM charging_sessions WHERE isActive = 0 AND endTime IS NOT NULL ORDER BY startTime DESC")
     suspend fun getAllCompletedSessions(): List<ChargingSessionEntity>
 

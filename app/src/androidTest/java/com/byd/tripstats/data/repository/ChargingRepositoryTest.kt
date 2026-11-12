@@ -2,6 +2,7 @@ package com.byd.tripstats.data.repository
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.SystemClock
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -130,13 +131,13 @@ class ChargingRepositoryTest {
 
     // ── Real-time: closing on non-charging packet ─────────────────────────────
 
-    @Test fun nonChargingPacketWithCarOnClosesSession() = runBlocking {
+    @Test fun nonChargingPacketInDriveGearClosesSession() = runBlocking {
         repo.onTelemetry(gen.generateAcChargingTelemetry(carOn = 1), car)
         Thread.sleep(SETTLE)
         assertNotNull(repo.activeSessionId.value)
 
-        // Non-charging packet while car still on
-        repo.onTelemetry(gen.generateAcChargingTelemetry(carOn = 1, chargingPower = 0.0), car)
+        // Unplugged and driving off: no pause hold.
+        repo.onTelemetry(gen.generateAcChargingTelemetry(carOn = 1, chargingPower = 0.0).copy(gear = "D"), car)
         Thread.sleep(SETTLE)
 
         assertNull("Session should be closed", repo.activeSessionId.value)
@@ -144,6 +145,36 @@ class ChargingRepositoryTest {
         // The session ran for ~400ms with zero SoC delta, so the micro-session guard
         // deletes it rather than persisting it. State reset is the key invariant here.
         assertTrue("Micro-session should be cleaned up", repo.getAllSessions().first().isEmpty())
+    }
+
+    @Test fun nonChargingPacketWhileParkedHoldsSession() = runBlocking {
+        repo.onTelemetry(gen.generateAcChargingTelemetry(carOn = 1), car)
+        Thread.sleep(SETTLE)
+        val id = repo.activeSessionId.value
+        assertNotNull(id)
+
+        // A pause: switching the car on mid-charge takes the power to 0 for seconds.
+        repo.onTelemetry(gen.generateAcChargingTelemetry(carOn = 1, chargingPower = 0.0), car)
+        Thread.sleep(SETTLE)
+
+        assertEquals("a pause should hold the session open", id, repo.activeSessionId.value)
+        assertTrue(repo.isCharging.value)
+    }
+
+    @Test fun aChargeThatResumesAfterAPauseStaysOneSession() = runBlocking {
+        repo.onTelemetry(gen.generateAcChargingTelemetry(carOn = 0, soc = 70.0), car)
+        Thread.sleep(SETTLE)
+        val id = repo.activeSessionId.value!!
+
+        repo.onTelemetry(gen.generateAcChargingTelemetry(carOn = 0, soc = 70.1, chargingPower = 0.0), car)
+        Thread.sleep(SETTLE)
+        repo.onTelemetry(gen.generateAcChargingTelemetry(carOn = 2, soc = 70.2), car)
+        Thread.sleep(SETTLE)
+
+        assertEquals(id, repo.activeSessionId.value)
+        assertEquals(1, repo.getAllSessions().first().size)
+        // The paused packet stores no point: the two charging ones do.
+        assertEquals(2, repo.getDataPointsForSessionSync(id).size)
     }
 
     @Test fun carOffPacketKeepsSessionOpenWhenStillCharging() = runBlocking {
@@ -168,7 +199,8 @@ class ChargingRepositoryTest {
         Thread.sleep(SETTLE)
         assertNotNull(repo.activeSessionId.value)
 
-        // Car turns off and charging stops
+        // Car turns off and charging stops, for longer than a pause
+        runOutPauseHold()
         repo.onTelemetry(gen.generateAcChargingTelemetry(carOn = 0, chargingPower = 0.0), car)
         Thread.sleep(SETTLE)
 
@@ -243,6 +275,47 @@ class ChargingRepositoryTest {
         repo.onTelemetry(gen.generateAcChargingTelemetry(carOn = 1, soc = 75.0, chargingPower = 0.0), car)
         Thread.sleep(SETTLE)
         assertEquals(1, repo.getAllSessions().first().size)
+    }
+
+    @Test fun aChargeRecordedPastTheSavedStateIsNotReconstructedAgain() = runBlocking {
+        // Dev Seal, 2026-11-12: the state was saved at 12:36 with the car on mid-charge, the live
+        // session went on recording until 13:48, and the wake at 13:50 stored 12:36–13:50 again.
+        val now = System.currentTimeMillis()
+        writeShutdownState(soc = 78.6f, tsOffsetMs = -74 * 60_000L)
+        db.chargingSessionDao().insertSession(
+            ChargingSessionEntity(
+                startTime = now - 89 * 60_000L, endTime = now - 2 * 60_000L,
+                socStart = 77.7, socEnd = 83.9, socStartPanel = 78.0, socEndPanel = 84.0,
+                batteryKwh = 82.5, carConfigId = "BYD_SEAL_EXCELLENCE",
+                isActive = false, kwhAdded = 5.12,
+            )
+        )
+        repo.onTelemetry(gen.generateAcChargingTelemetry(carOn = 1, soc = 83.9, chargingPower = 0.0), car)
+        Thread.sleep(SETTLE)
+        assertEquals("no Reconstructed copy of the recorded charge", 1, repo.getAllSessions().first().size)
+    }
+
+    @Test fun aChargeAfterARecordedSessionIsReconstructedFromItsEnd() = runBlocking {
+        val now = System.currentTimeMillis()
+        val recordedEnd = now - 3 * 3_600_000L
+        writeShutdownState(soc = 50.0f, tsOffsetMs = -5 * 3_600_000L)
+        db.chargingSessionDao().insertSession(
+            ChargingSessionEntity(
+                startTime = now - 6 * 3_600_000L, endTime = recordedEnd,
+                socStart = 45.0, socEnd = 60.0, socStartPanel = 45.0, socEndPanel = 60.0,
+                batteryKwh = 82.5, carConfigId = "BYD_SEAL_EXCELLENCE",
+                isActive = false, kwhAdded = 12.4,
+            )
+        )
+        repo.onTelemetry(gen.generateAcChargingTelemetry(carOn = 1, soc = 80.0, chargingPower = 0.0), car)
+        Thread.sleep(SETTLE)
+
+        val sessions = repo.getAllSessions().first()
+        assertEquals(2, sessions.size)
+        val reconstructed = sessions.single { it.startTime == recordedEnd }
+        assertEquals(60.0, reconstructed.socStart, 0.1)
+        assertEquals(80.0, reconstructed.socEnd!!, 0.1)
+        assertEquals(16.5, reconstructed.kwhAdded!!, 0.1)   // 20 % of 82.5 kWh
     }
 
     // ── SoC persistence ───────────────────────────────────────────────────────
@@ -388,6 +461,7 @@ class ChargingRepositoryTest {
         Thread.sleep(SETTLE)
         repo.onTelemetry(gen.generateAcChargingTelemetry(carOn = 0, soc = 91.0, chargingPower = 7.2), car)
         Thread.sleep(SETTLE)
+        runOutPauseHold()
         repo.onTelemetry(gen.generateAcChargingTelemetry(carOn = 0, soc = 91.0, chargingPower = 0.0), car)
         Thread.sleep(SETTLE)
 
@@ -414,6 +488,13 @@ class ChargingRepositoryTest {
     }
 
     // ── Helper ────────────────────────────────────────────────────────────────
+
+    /** Moves the last charging packet back past the pause hold, as if the pause had lasted that long. */
+    private fun runOutPauseHold() {
+        ChargingRepository::class.java.getDeclaredField("lastChargingSeenElapsedMs")
+            .also { it.isAccessible = true }
+            .setLong(repo, SystemClock.elapsedRealtime() - ChargingRepository.CHARGE_PAUSE_HOLD_MS - 1_000L)
+    }
 
     private fun writeShutdownState(soc: Float, tsOffsetMs: Long) {
         repoPrefs().edit()

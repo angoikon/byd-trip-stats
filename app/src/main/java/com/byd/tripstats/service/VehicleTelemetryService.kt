@@ -677,6 +677,8 @@ class VehicleTelemetryService : Service() {
                                             "chargingPower=${telemetry.chargingPower}) — treating as off")
                                 }
                             } else if (SystemClock.elapsedRealtime() - carOffSinceMs >= 5 * 60 * 1000L) {
+                                // ChargingRepository.CHARGE_PAUSE_HOLD_MS (3 min) holds a paused charge
+                                // open from the same packet this counts from; it must end first.
                                 val offStateMode = PreferencesManager(applicationContext)
                                     .getCachedOffStateMode()
                                 when (offStateMode) {
