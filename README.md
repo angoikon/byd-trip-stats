@@ -1,10 +1,10 @@
 <div align="center">
 
-<img width="1921" height="973" alt="Screenshot 2026-03-08 at 18 04 08" src="https://github.com/user-attachments/assets/e16f41b0-febb-4e19-85f3-d74b0dfc5a27" />
+<img src="website/assets/screenshots/hero-dashboard.png" alt="BYD Trip Stats live dashboard: projected range against the BMS estimate, live power, speed and SoC, and the battery, HV/12V, motor and tyre cards" />
 
 
 # BYD Trip Stats
-### Trip Analytics & Telemetry Dashboard for BYD DiLink 3 & 5 Vehicles
+### Trip Analytics & Telemetry Dashboard for BYD DiLink 3, 5 & 100 Vehicles
 
 [![Android](https://img.shields.io/badge/Android-10%2B-green?style=flat-square&logo=android)](https://developer.android.com)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-purple?style=flat-square&logo=kotlin)](https://kotlinlang.org)
@@ -31,22 +31,26 @@
 
 ### Requirements
 
-- A BYD vehicle with **DiLink 3.0** (BEV as well as PHEV are supported)
-- Android **10 or higher** on the DiLink head unit
-- **DiLink 5.0** (e.g. Sealion 7, Android 11) is supported via a separate build —
-  see [**Running on DiLink 5.0**](docs/DILINK5.md).
-- **DiLink 100** (Atto 3 EVO, Android 14) uses the regular **DiLink 3** build, not `dilink5` — its
-  screen says *DiLink 5.0 UI*, but that is the interface version; the head unit underneath is a
-  different platform. Speed, gear, power and trip distance work there; battery, range and odometer
-  can't be read yet.
+A BYD with one of these head units, BEV or PHEV:
+
+| Head unit | Cars | Android | APK to install |
+|---|---|---|---|
+| **DiLink 3.0** | Seal, Dolphin, Atto 3, Seal U, Seagull, Han, Tang and most others | 10 | `dilink3` |
+| **DiLink 5.0** | Sealion 7, Shark 6 | 11 | `dilink5` — see [**Running on DiLink 5.0**](docs/DILINK5.md) |
+| **DiLink 100** | Atto 3 EVO | 14 (Android Automotive) | `dilink3` |
+
+- **Atto 3 EVO:** install the `dilink3` APK, not `dilink5`. The screen says *DiLink 5.0 UI*, but that is
+  the interface version; the head unit underneath is DiLink 100, a different platform. Speed, gear,
+  power, battery level, range, charging, outside temperature and trip distance work there; the
+  odometer, tyre pressures and the battery's health and cell readings can't be read yet.
 
 ### Installation
 
-1. Download the latest signed APK from the [**Releases**](https://github.com/angoikon/byd-trip-stats/releases) tab
-2. On your DiLink unit, run the app - enable installation from unknown sources and follow the on-screen prompt to install
+1. Download the latest signed APK from the [**Releases**](https://github.com/angoikon/byd-trip-stats/releases) tab — `dilink5` on a DiLink 5.0 car, `dilink3` on every other car, the Atto 3 EVO included
+2. On your DiLink unit, open the APK, enable installation from unknown sources and follow the on-screen prompt to install
 3. Launch BYD Trip Stats, grant permissions for saving data to your car's internal storage
 4. On first launch, select your BYD model and allow the app to finish initial setup
-5. When the app asks for its **one-time ADB authorisation**, tap **Authorize**, then **Allow** when the car asks to allow USB debugging. It lets the app keep running in the background and restart itself after the car stops it, streams live speed and power up to 10 times a second on DiLink 3, and is what the Wi-Fi keepalive, Tailscale remote access and (on DiLink 5) in-app updates run through
+5. When the app asks for its **one-time ADB authorisation**, tap **Authorize**, then **Allow** when the car asks to allow USB debugging. It lets the app keep running in the background and restart itself after the car stops it, streams live speed and power up to 10 times a second on DiLink 3 and DiLink 100, and is what the Wi-Fi keepalive, Tailscale remote access and (on DiLink 5) in-app updates run through
 
 No Electro setup, MQTT broker, or topic configuration is required for normal operation.
 
@@ -57,13 +61,14 @@ No Electro setup, MQTT broker, or topic configuration is required for normal ope
 
 ### Known Limitations
 
-- **Some fields are still inferred or unresolved.** SoH is currently shown as an estimate, there is no cabin temperature present in the SDK.
+- **Some fields are still inferred or unresolved.** SoH is currently shown as an estimate, and there is no cabin temperature in the SDK. DiLink 5 gives apps no cell voltages, and DiLink 100 no odometer, tyre pressures, SoH or cell voltages.
+- **On DiLink 100 the app's screen is hidden while you drive.** Android Automotive covers any app that isn't certified for driving whenever the car leaves P. Trips keep recording, and the optional **driving widget** (Settings → App → Power & background) shows the speed, power, battery, range and outside temperature over other apps instead.
 - **Background persistence depends on DiLink firmware behaviour.** The app uses a foreground service, wake lock, boot receiver, and watchdog, but some BYD firmware builds are still aggressive about killing third-party apps while the car is off.
 - **Parked WiFi depends on the head unit.** Many BYD units cut the WiFi module ~15 minutes after the car is switched off, which takes the web companion, ADB and a LAN-only MQTT broker offline even though the unit is still on mobile data. Two things in the app help:
   - **Keep Wi-Fi alive when car is off** (DiLink 3, Settings → App → Power & background, off by default) turns Wi-Fi back on whenever it drops while the car is off, and backs off when the 12V battery or state of charge is low. It needs the one-time ADB authorisation and works only in the **Always On** off-state mode, the one that keeps reading the 12V battery and state of charge after you park.
   - **Tailscale** (Settings → Connections) keeps the car reachable over mobile data, so the web companion, ADB and a broker on your tailnet (entered by its `100.x` address or full `.ts.net` name) keep working without Wi-Fi at all.
   - A **cloud/internet-reachable broker** (e.g. HiveMQ Cloud) usually keeps receiving telemetry while parked anyway, because the unit stays on cellular (4G).
-  - On **DiLink 5** the head unit powers itself down about ten minutes after the car is switched off, so nothing runs after that. Telemetry resumes when the car powers on, and any charging that happened while parked is reconstructed from the State-of-Charge change.
+  - On **DiLink 5** the head unit powers itself down a few minutes after the car is switched off (two to seven minutes on the Sealion 7s measured), so nothing runs after that. Telemetry resumes when the car powers on, and any charging that happened while parked is reconstructed from the State-of-Charge change.
 
 ---
 
@@ -77,18 +82,20 @@ No Electro setup, MQTT broker, or topic configuration is required for normal ope
 - Manual override with confirmation safeguards
 
 **Real-Time Telemetry**
-- Live speed, gear, power and front-motor RPM up to 10 times a second on DiLink 3 (after the one-time ADB authorisation) and event-driven on DiLink 5; trips record a point every second
+- Live speed, gear, power and front-motor RPM up to 10 times a second on DiLink 3 and DiLink 100 (after the one-time ADB authorisation) and event-driven on DiLink 5; trips record a point every second
 - Live motor RPM per driven axle and estimated power split (AWD only: front 160 kW / rear 230 kW proportional to total output)
-- Battery SoH, cell voltage range, thermal min/max delta
+- Battery SoH, cell voltage range (not on DiLink 5 or DiLink 100), thermal min/max delta
 - HV and 12V bus voltage, tyre pressures per wheel (bar / PSI / kPa) and tyre temperatures (×4) where the car exposes them
 - Gear state, speed, engine power, regen detection
 - Instant consumption (kWh/100 km) on a tap of the dashboard's Power readout: motor power over speed, plus the climate / 12 V load learned per trip from the battery's counter
 - Environmentals card with ambient temperature and PM2.5 in/out readings where available
+- Driving widget on DiLink 100 — pick which values to show over other apps while you drive, and drag each where you want it
 
 **Range Projection Engine**
 - Consumption model (Wh/km) fed from the BMS total-discharge counter — the same source as the live consumption readout — with engine-power integration as a fallback
 - Consumption over your **last 10, 100 or 500 km** of driving (Settings → Preferences → Battery and range estimate, or a tap on the dashboard's Range readout; 100 km by default). The window runs back across trips, so the projection is your own from the moment you switch on, not re-learned every drive
 - Catalogue baseline only until a fresh install has ~3 km of driving to go on
+- Hills don't count as consumption on a BEV: the energy that went into a climb comes off, and what a descent gave back goes on
 - PHEVs: kilometres driven on petrol don't dilute the EV rate, and the dashboard shows the petrol and combined range next to the EV projection
 - WLTP upper bound prevents implausible projections during low-speed urban starts
 - Compared continuously against BMS estimate with signed delta display
@@ -101,9 +108,9 @@ No Electro setup, MQTT broker, or topic configuration is required for normal ope
 
 **Analytics & History**
 - Full per-trip storage: route, telemetry timeseries, computed statistics
-- Daily / weekly / monthly / annual energy consumption views
+- Consumption, distance and energy charts for this week, month or year, or dates you pick, by day, week or month
 - Up to 14 heatmap dimensions with crosshair bin-range interaction (13 universal + 1 AWD-exclusive torque-split map)
-- OpenStreetMap route overlay with energy event markers, fully offline
+- OpenStreetMap route overlay with energy event markers; map tiles are kept on the car once downloaded
 - Physics-based energy breakdown per trip: rolling resistance, aerodynamic drag, gradient (climb/descent), and auxiliary losses — scaled to always sum to actual consumed energy
 - Drive and regen mode visualisation woven into existing charts: faint colour-coded background bands on Speed and Power charts show active drive mode across the full trip timeline; the Speed chart line itself changes colour segment-by-segment as the mode changes; crosshair tooltips on both charts show the active drive mode and regen mode at the touched moment; the Analysis tab Mode Insights card shows a horizontal stacked-bar summarising time spent in each drive and regen mode as a share of total trip distance
 
@@ -113,7 +120,7 @@ No Electro setup, MQTT broker, or topic configuration is required for normal ope
 - Full database restore with integrity verification; restores both `.db` and `.db.gz`
 - Local safety backup before update installation
 - Direct vehicle polling with fallback listeners across charging, statistic, climate, instrument, speed, location, and energy devices
-- App Diagnostics monitor: live CPU, RAM, thread, and uptime stats with 60-second history charts and ADB shell runner, available in Settings → App → App Diagnostics
+- App Diagnostics monitor: live CPU, RAM, thread, and uptime stats with 60-second history charts, an ADB shell runner and an optional performance overlay, available in Settings → App → App Diagnostics
 
 **Connections**
 - Optional ABRP Link Generic upload using your ABRP user token
@@ -162,7 +169,7 @@ Adaptive layouts for both landscape and portrait orientations on the rotating in
 
 ### II. Range Projection & Efficiency
 
-A proprietary consumption-modelling algorithm computes realistic remaining range in real time — based on your actual Wh/km from the BMS total-discharge counter, not the BMS's static range estimate. The projection self-calibrates across the trip using a rolling 5 km window with EMA smoothing, and is bounded by WLTP to prevent overcorrection during low-speed urban starts.
+A proprietary consumption-modelling algorithm computes realistic remaining range in real time — the energy left in the battery divided by your actual consumption over your last 10, 100 or 500 km of driving (100 km by default), measured from the BMS total-discharge counter rather than taken from the BMS's static range estimate. That stretch runs back across your earlier trips, so the projection is your own from the moment you switch on. A fresh install starts from the car's catalogue figure until it has about 3 km to go on, and the projection is capped at WLTP.
 
 <div align="center">
 <table>
@@ -305,7 +312,7 @@ Set your electricity tariff under Settings → Preferences → Costs. Trip cost 
 
 Two complementary mechanisms cover all charging scenarios with no user interaction required:
 
-- **Car ON** — real-time session with full Power / SoC / Voltage / Temperature charts in the Charging Detail view
+- **Car ON** — real-time session with full Power / SoC / Voltage / Temperature charts in the Charging Detail view, showing both the energy the battery kept (*kWh added*) and what the car measured coming in (*kWh received*)
 - **Car OFF** — SoC delta reconstruction on next wake-up still covers overnight, timed, and remote charging sessions when DiLink kills the app mid-charge
 
 ---
@@ -329,16 +336,16 @@ All except the web companion are opt-in, and any of them can be disabled without
 
 | Layer | Technology | Notes |
 |---|---|---|
-| Language | Kotlin 1.9 | 100% Kotlin, no Java |
+| Language | Kotlin 1.9 | Kotlin throughout; Java only for the vehicle-SDK compile stubs and one context wrapper |
 | UI | Jetpack Compose + Material 3 | Adaptive for DiLink landscape / portrait / split-screen |
 | Architecture | MVVM + StateFlow | Clean ViewModel/Repository separation |
 | Persistence | Room (SQLite) | WAL mode, versioned migrations, maintenance workers |
 | Async | Kotlin Coroutines + Channels | Event-driven telemetry pipeline |
 | Charts | Custom Canvas rendering | No third-party chart libraries |
-| Maps | OpenStreetMap (OSMDroid) | Fully offline-capable |
+| Maps | OpenStreetMap (OSMDroid) | Tiles cached on the car after the first download |
 | Optional outbound connections | ABRP, HiveMQ MQTT client, Telegram Bot API, embedded Tailscale daemon | Disabled by default; used only when configured |
 | Build | Gradle KTS | ProGuard release build, signed APK pipeline |
-| Min SDK | API 29 (Android 10) | Matches DiLink 3.0 platform |
+| Min SDK | API 29 (Android 10) | DiLink 3.0; DiLink 5.0 runs Android 11, DiLink 100 Android 14 |
 
 ---
 
@@ -431,7 +438,7 @@ Contributions are welcome! Whether it's bug reporting or new feature requests.
 
 ### Areas you might assist
 
-- 🐛 **Testing** on Dolphin, Atto3 as well as other BYD models
+- 🐛 **Testing** on Dolphin, Atto 3, Atto 3 EVO as well as other BYD models
 - 🌍 **Translations** to reviews/corrections
 - 📊 **New chart types** or visualizations
 - 🗺️ **Enhanced route analysis** features
@@ -443,7 +450,7 @@ Found a bug? Open an [Issue](https://github.com/angoikon/byd-trip-stats/issues) 
 - Your BYD model
 - Version app
 - Steps to reproduce the problem
-- Logcat output (if possible)
+- The diagnostics log, if you can (Settings → App → App Diagnostics: send it to your Telegram bot or by email via the QR code)
 
 Alternatively, drop a message at [Discord](https://discord.gg/pf8TjjTce9) at #help channel
 
@@ -453,7 +460,7 @@ Have an idea? Open an issue with the "enhancement" label — well-reasoned reque
 
 ### Testing Help
 
-If you are running BYD Trip Stats on a **Dolphin, Atto3, or any other BYD model**, reports about what works and what doesn't are especially valuable.
+If you are running BYD Trip Stats on a **Dolphin, Atto 3, Atto 3 EVO, or any other BYD model**, reports about what works and what doesn't are especially valuable.
 
 ---
 
@@ -494,10 +501,15 @@ If you are running BYD Trip Stats on a **Dolphin, Atto3, or any other BYD model*
 - [x] PHEV hybrid breakdown, energy-mode timeline and fuel / combined range ✅ *(v2.15.0)*
 - [x] Settings travel with every backup ✅ *(v2.16.0)*
 - [x] Notifications via Telegram and the web companion, Tailscale remote access, companion Files tab, compressed backups, and in-app updates on DiLink 5 ✅ *(v2.17.0)*
+- [x] Atto 3 EVO (DiLink 100): battery, range, charging and on/off state through Android Automotive's vehicle data, plus the driving widget ✅ *(v2.17.2)*
+- [x] MQTT summaries of every finished trip and charging session; 4G for the app on DiLink 5 cars where BYD blocks it ✅ *(v2.18.0)*
+- [x] Range projected from your last 10, 100 or 500 km of driving across trips; distance and energy charts with custom dates; instant consumption on the dashboard ✅ *(v2.19.0)*
 
-### Planned (v2.0.0+)
+### Planned
 
 - [ ] DiLink home screen widget — quick-glance tile showing current SoC, last trip distance, and range projection without opening the app
+- [ ] Odometer and tyre pressures on DiLink 100 (Atto 3 EVO)
+
 **Vote on features** by 👍 reacting to issues!
 
 ---
@@ -506,7 +518,7 @@ If you are running BYD Trip Stats on a **Dolphin, Atto3, or any other BYD model*
 
 ### Current Limitations
 
-1. **No offline charts** - Route maps require internet first time
+1. **Route maps need internet the first time** - each area's map tiles download once, then stay on the car
 2. **No trip editing** - Can't modify trip start/end times
 3. **No cloud sync** - All data is local only
 
@@ -523,7 +535,7 @@ See [Issues](https://github.com/angoikon/byd-trip-stats/issues) for full list.
 ## ❓ FAQ
 
 ### Q: Does this work with other BYD EVs?
-**A:** Full compatibility with DiLink 3 firmware, initial support for DiLink5 firmware
+**A:** Yes. Any DiLink 3 car works with the `dilink3` build, DiLink 5 cars (Sealion 7, Shark 6) with the `dilink5` build, and the Atto 3 EVO (DiLink 100) with the `dilink3` build. A few readings aren't available on DiLink 5 and DiLink 100; see [Requirements](#requirements).
 
 ### Q: Will this drain my car's 12V battery?
 **A:** It uses your 12V which is always being charged via your high-voltage EV battery. Very minimal battery impact.

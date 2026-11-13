@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BYD Trip Stats — Trip Analytics & Telemetry for BYD DiLink 3 & 5</title>
+  <title>BYD Trip Stats — Trip Analytics & Telemetry for BYD DiLink 3, 5 & 100</title>
   <meta name="description" content="A standalone in-car analytics dashboard that runs on your BYD DiLink head unit. Live telemetry, autonomous trip recording, real-time range projection, charging analysis and battery health — 100% on-device, no cloud. Free, with an optional one-time €9.99 Pro unlock (battery-health report, SD-card backup & more)." />
 
   <!-- Open Graph / social -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="BYD Trip Stats — Trip Analytics for BYD DiLink" />
   <meta property="og:description" content="Live telemetry, autonomous trips, real-time range projection and battery health — running right on your car's screen. 100% local. Free, with an optional €9.99 Pro unlock." />
-  <meta property="og:image" content="assets/screenshots/og-cover.png" />
-  <meta property="og:url" content="https://bydtripstats.pages.dev/" />
+  <meta property="og:image" content="https://byd-trip-stats.angoikon.workers.dev/assets/screenshots/hero-dashboard.png" />
+  <meta property="og:url" content="https://byd-trip-stats.angoikon.workers.dev/" />
   <meta name="twitter:card" content="summary_large_image" />
 
   <link rel="icon" type="image/png" href="assets/logo.png" />
@@ -73,7 +73,7 @@
         </div>
         <ul class="hero__meta">
           <li>BEV &amp; PHEV</li>
-          <li>DiLink 3 &amp; 5</li>
+          <li>DiLink 3, 5 &amp; 100</li>
           <li>Free &amp; source-available</li>
         </ul>
       </div>
@@ -119,8 +119,8 @@
           <div class="card__icon" data-i="range"></div>
           <h3>Real-time range projection</h3>
           <p>A consumption model fed from the BMS discharge counter — not the static factory estimate —
-             self-calibrates over a rolling 5&nbsp;km window, starts from your own driving history, and
-             is capped at WLTP.</p>
+             works from your last 10, 100 or 500&nbsp;km of driving, across trips, so the range is your own
+             from the moment you switch on. Capped at WLTP.</p>
         </article>
 
         <article class="card">
@@ -153,16 +153,16 @@
 
         <article class="card">
           <div class="card__icon" data-i="map"></div>
-          <h3>Offline route maps</h3>
-          <p>OpenStreetMap route overlays with energy-event markers, rendered fully offline so your
-             trips draw on the map without any connection.</p>
+          <h3>Route maps</h3>
+          <p>OpenStreetMap route overlays with energy-event markers. Map tiles are kept on the car once
+             downloaded, so places you've driven before draw without a connection.</p>
         </article>
 
         <article class="card">
           <div class="card__icon" data-i="export"></div>
           <h3>Filter, sort &amp; export</h3>
-          <p>Multi-field filtering, six sort criteria, daily/weekly/monthly/annual consumption views,
-             and per-trip export to CSV, JSON or a self-contained HTML viewer.</p>
+          <p>Multi-field filtering, six sort criteria, consumption, distance and energy charts by week,
+             month, year or dates you pick, and per-trip export to CSV, JSON or a self-contained HTML viewer.</p>
         </article>
 
         <article class="card">
@@ -204,25 +204,26 @@
       <header class="section__head">
         <span class="eyebrow">The range engine</span>
         <h2>Range you can actually trust</h2>
-        <p>Most cars show you a single static estimate. BYD Trip Stats models your <em>real</em> Wh/km
-           from the same BMS total-discharge counter that feeds the live consumption readout — then
-           projects forward with the best of four tiers available at that moment.</p>
+        <p>Most cars show you a single static estimate. BYD Trip Stats divides the energy left in your
+           battery by your <em>real</em> consumption over your most recent driving, measured from the same
+           BMS total-discharge counter that feeds the live consumption readout. You choose how much
+           driving it looks back over.</p>
       </header>
       <div class="split">
       <div class="split__copy">
         <ol class="steps">
-          <li><b>Live trip</b> — a rolling 5&nbsp;km window with EMA smoothing, trusted once the
-              current drive passes a 3&nbsp;km stabilisation period.</li>
-          <li><b>Trip average</b> — this drive's own consumption so far, available within ~0.2&nbsp;km
-              of setting off.</li>
-          <li><b>Lifetime average</b> — your long-run consumption across past trips, so even the first
-              few hundred metres start from how <em>you</em> drive rather than a brochure figure.</li>
-          <li><b>Baseline</b> — the catalogue rate for your model, used only until there is history to
-              go on.</li>
+          <li><b>Last 10&nbsp;km</b> — follows the road you're on right now.</li>
+          <li><b>Last 100&nbsp;km</b> — the default, a balance of quick and steady.</li>
+          <li><b>Last 500&nbsp;km</b> — stays steady, and reflects the season you're driving in.</li>
+          <li><b>Baseline</b> — the catalogue rate for your model, used only until a fresh install has
+              about 3&nbsp;km of driving to go on.</li>
         </ol>
-        <p class="muted">Every projection is capped at WLTP, so slow urban starts can't produce
-           implausible numbers, and compared continuously against the BMS estimate with a signed delta,
-           so you always see how the model differs from the factory guess.</p>
+        <p>The stretch runs back across your earlier trips, so the projection is how <em>you</em> drive
+           from the moment you switch on, and it shows with the car parked too. Pick it with a tap on the
+           dashboard's Range readout. Climbs and descents don't count as consumption on a BEV, and
+           kilometres driven on petrol don't count on a PHEV.</p>
+        <p class="muted">Every projection is capped at WLTP and compared continuously against the BMS
+           estimate with a signed delta, so you always see how the model differs from the factory guess.</p>
       </div>
       <div class="split__media">
         <figure class="shot" data-shot="assets/screenshots/range-projection.png">
@@ -369,11 +370,12 @@
         <span class="eyebrow">Compatibility</span>
         <h2>Supported BYD models</h2>
         <p>Any DiLink 3 vehicle on Android 10+, plus DiLink 5 head units on Android 11+ (the Sealion 7),
-           which take their own build from the same Releases page. Tested primarily on the Seal; other
+           which take their own build from the same Releases page, and DiLink 100 head units on
+           Android 14 (the Atto 3 EVO), which use the regular build. Tested primarily on the Seal; other
            models depend on how close their firmware is. BEV and PHEV (DM-i) both supported.</p>
       </header>
       <ul class="chips">
-        <li>Seal</li><li>Dolphin</li><li>Atto 2</li><li>Atto 3</li><li>Seal U</li>
+        <li>Seal</li><li>Dolphin</li><li>Atto 2</li><li>Atto 3</li><li>Atto 3 EVO (DiLink 100)</li><li>Seal U</li>
         <li>Seagull / Dolphin Surf / Atto 1</li><li>M6</li><li>Seal 5 / Sealion 5</li><li>Seal 6</li>
         <li>Seal 7 DM-i</li><li>Sealion 6</li><li>Sealion 7 (DiLink 5)</li><li>Han</li><li>Tang</li>
         <li>Song Plus DM-i</li><li>Song Pro DM-i</li><li>Shark 6</li><li>+ DM-i PHEV variants</li>
@@ -503,7 +505,8 @@
         </details>
         <details>
           <summary>How do I install it?</summary>
-          <p>Download the signed APK from GitHub Releases (DiLink 5 cars take the <code>dilink5</code> build),
+          <p>Download the signed APK from GitHub Releases (DiLink 5 cars take the <code>dilink5</code> build;
+             the Atto 3 EVO takes the regular <code>dilink3</code> one, even though its screen says DiLink 5.0 UI),
              enable installation from unknown sources on your DiLink unit, accept permissions by following the
              on-screen prompts, then pick your model on first launch. After that, new versions can be installed
              from inside the app, under Settings → About &amp; FAQ.</p>
@@ -511,8 +514,9 @@
         <details>
           <summary>Will it drain my 12&nbsp;V battery?</summary>
           <p>Impact is minimal — the 12&nbsp;V is continuously topped up from the high-voltage pack
-             while the car is off. You can always set the app to Minimal (reduced functionality) or Deep Sleep
-             under Settings → App → Power &amp; background.</p>
+             while the car is off. On DiLink 3 and DiLink 100 you can also set the app to Minimal (reduced
+             functionality) or Deep Sleep under Settings → App → Power &amp; background. DiLink 5 always runs
+             Always On, since the head unit powers itself down a few minutes after you switch off anyway.</p>
         </details>
         <details>
           <summary>Is my data secure?</summary>
@@ -526,12 +530,14 @@
           <p>Yes, with Tailscale (free for personal use). Under Settings → Connections → Tailscale, tap
              <em>Sign in with your phone</em>, scan the QR code and approve — the web companion and ADB are
              then reachable from anywhere, with nothing opened on your router. It needs the same one-time ADB
-             setup as instant telemetry. On DiLink 5 the head unit powers down about ten minutes after you
+             setup as instant telemetry. On DiLink 5 the head unit powers down a few minutes after you
              switch the car off, so access lasts until then.</p>
         </details>
         <details>
           <summary>Does it work on other BYD EVs besides the Seal?</summary>
-          <p>If your car runs DiLink 3 — or DiLink 5 (the Sealion 7) — regardless of being BEV or PHEV, then you can most definitely run the app.</p>
+          <p>If your car runs DiLink 3, DiLink 5 (the Sealion 7) or DiLink 100 (the Atto 3 EVO) — regardless of being BEV or PHEV — then you can most definitely run the app.
+             On DiLink 100, speed, gear, power, battery level, range, charging and outside temperature work; the odometer,
+             tyre pressures and the battery's health and cell readings can't be read there yet.</p>
         </details>
         <details>
           <summary>Where can I find more information?</summary>
@@ -563,7 +569,7 @@
           <img src="assets/logo.png" alt="" class="brand__icon" width="30" height="30" />
           <span class="brand__text">BYD Trip Stats</span>
         </a>
-        <p>Trip analytics &amp; telemetry for "BYD DiLink 3 &amp; 5" vehicles.</p>
+        <p>Trip analytics &amp; telemetry for "BYD DiLink 3, 5 &amp; 100" vehicles.</p>
       </div>
       <nav class="footer__links">
         <div>

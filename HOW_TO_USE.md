@@ -8,7 +8,7 @@ A plain-language guide for using the app in its current **Phase 2** form, where 
 
 You need:
 
-1. **A BYD vehicle with DiLink 3.0** (tested on Seal; should work on Atto 3, Dolphin, Seal U), or **DiLink 5.0** (Sealion 7), which uses its own build. The **Atto 3 EVO** has a **DiLink 100** head unit — its screen says *DiLink 5.0 UI*, but that is the interface version — and it uses the regular DiLink 3 build; speed, gear, power and trip distance work there, battery, range and odometer not yet
+1. **A BYD vehicle with DiLink 3.0** (tested on Seal; should work on Atto 3, Dolphin, Seal U), or **DiLink 5.0** (Sealion 7), which uses its own build. The **Atto 3 EVO** has a **DiLink 100** head unit — its screen says *DiLink 5.0 UI*, but that is the interface version — and it uses the regular DiLink 3 build; speed, gear, power, battery level, range, charging, outside temperature and trip distance work there, while the odometer, tyre pressures and the battery's health and cell readings can't be read yet
 2. **BYD Trip Stats installed on the DiLink unit**
 
 You do **not** need Electro or an MQTT topic for normal operation.
@@ -274,7 +274,7 @@ page, and use the back arrow (or the car's back gesture) to return.
 
 | Card | What's inside |
 |---|---|
-| **Power & background** | What keeps running when the car is off (**Always On** / **Minimal** / **Deep Sleep**), and on DiLink 3 **Keep Wi-Fi alive when car is off**. On DiLink 5, also **Allow reading vehicle data** |
+| **Power & background** | What keeps running when the car is off (**Always On** / **Minimal** / **Deep Sleep**; DiLink 5 always runs Always On), and on DiLink 3 **Keep Wi-Fi alive when car is off**. On DiLink 5, also **Allow reading vehicle data** |
 | **Backup & Restore** | Opens the backup screen — local, SD card (Pro) and Telegram backups, restore, settings backup, and reset |
 | **Vehicle Compatibility** | Records a telemetry report that helps add support for your model; send it by Telegram, save it, or email it via a QR code |
 | **App Diagnostics** | Sends the diagnostics log the same three ways, and shows live CPU / memory, permissions and an ADB shell. Below that, a separate **Performance overlay** section puts the app's CPU, frame rate and render time, and the head unit's GPU / CPU clocks and temperatures, in a small strip over the app while it is open (drag it out of the way) |
