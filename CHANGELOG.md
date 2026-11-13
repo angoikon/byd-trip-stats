@@ -1,4 +1,4 @@
-## [2.19.1] - Unreleased
+## [2.20.0] - 2026-Nov-13
 
 > **What's new in a nutshell**
 >
