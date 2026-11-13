@@ -174,6 +174,12 @@ If entities show **unavailable**:
 | Tyre Temp LR | `tyre_temperature_left_rear_c` | °C | temperature |
 | Tyre Temp RR | `tyre_temperature_right_rear_c` | °C | temperature |
 
+> **Not read yet:** `soc`, `soc_panel`, `total_discharge` and `odometer` are left out of the state
+> message until the car has reported them: for a moment after the app starts, and on DiLink-5 also when
+> the car wakes. Until 2.20.0 they went out as `0`, which read as a real value: Home Assistant took the
+> odometer falling to 0 for a meter reset, and a day's consumption worked out from `total_discharge`
+> came out at the car's whole lifetime.
+>
 > **PHEV only:** `fuel_percentage` and `fuel_driving_range_km` exist only when the car selected
 > in the app is a plug-in hybrid. On a BEV they are left out of both the discovery set and the
 > state payload. A car with no tank has no reading to give: the SDK's fuel getters answer with a

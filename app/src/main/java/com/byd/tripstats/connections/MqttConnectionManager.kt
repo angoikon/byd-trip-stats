@@ -666,16 +666,19 @@ class MqttConnectionManager(context: Context) {
         val isPhev = isPhevCar(carConfig)
         val payload = JSONObject()
         payload.put("current_datetime", Instant.now().toString())
-        payload.put("soc", telemetry.soc)
-        payload.put("soc_panel", telemetry.socPanel)
+        putReadTotals(
+            payload,
+            soc = telemetry.soc,
+            socPanel = telemetry.socPanel,
+            totalDischarge = telemetry.totalDischarge,
+            odometer = telemetry.odometer,
+        )
         payload.put("battery_12v_voltage", telemetry.battery12vVoltage)
         payload.put("battery_total_voltage", telemetry.batteryTotalVoltage)
         telemetry.batteryTotalCurrent?.let { payload.put("battery_total_current", it) }
         payload.put("electric_driving_range_km", telemetry.electricDrivingRangeKm)
-        payload.put("total_discharge", telemetry.totalDischarge)
         payload.put("speed", telemetry.locationGpsSpeed?.takeIf { it > 0.1 } ?: telemetry.speed)
         payload.put("gear", telemetry.gear)
-        payload.put("odometer", telemetry.odometer)
         payload.put("engine_power", telemetry.enginePower)
         payload.put("engine_speed_front", telemetry.engineSpeedFront)
         payload.put("engine_speed_rear", telemetry.engineSpeedRear)
@@ -821,6 +824,31 @@ class MqttConnectionManager(context: Context) {
 
         /** Whether [id] belongs in the discovery set for this car. */
         fun advertisesSensor(id: String, isPhev: Boolean): Boolean = isPhev || id !in FUEL_SENSOR_IDS
+
+        /**
+         * The state of charge and the car's running totals, each only once it has been read.
+         *
+         * Each falls back to 0 until the car reports it: after every start of the app, and on
+         * DiLink 5 at a wake, when the lifetime discharge counter reads a sentinel and the poll
+         * drops it. 0 is never a real value for any of them, but it went out as one. The odometer
+         * is `total_increasing`, so Home Assistant takes a 0 as a meter reset. And a consumer that
+         * worked out a day's consumption from `total_discharge` saw it fall to 0 and climb back by
+         * the car's whole lifetime, about 700 kWh in a day without a single trip (Sealion 7,
+         * 2026-11-13). So an unread one is left out, as the SoH, tyre and pack-temperature
+         * readings already are.
+         */
+        internal fun putReadTotals(
+            payload: JSONObject,
+            soc: Double,
+            socPanel: Int,
+            totalDischarge: Double,
+            odometer: Double,
+        ) {
+            if (soc > 0.0) payload.put("soc", soc)
+            if (socPanel > 0) payload.put("soc_panel", socPanel)
+            if (totalDischarge > 0.0) payload.put("total_discharge", totalDischarge)
+            if (odometer > 0.0) payload.put("odometer", odometer)
+        }
 
         /**
          * The deletions that have to ride along with a BEV's discovery set.
