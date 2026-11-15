@@ -52,11 +52,14 @@ object BootSessionTracker {
      * anything; later process starts in the same boot return [Result.firstStartOfBoot] = false.
      */
     fun recordStart(context: Context): Result {
-        val elapsed = SystemClock.elapsedRealtime()
+        // Measured from Android's own start, not the kernel's: on DiLink-3 `adb reboot` restarts
+        // Android without rebooting the kernel (uptime keeps counting), which kernel uptime alone
+        // took for the same boot — no line, no score. See [sinceAndroidStartMs].
+        val elapsed = sinceAndroidStartMs(SystemClock.elapsedRealtime(), systemServerStartMs())
         val sinceBootSec = elapsed / 1000
-        // Wall clock minus uptime is stable within a boot and changes across one — the same trick
-        // that lets sinceBoot distinguish a real cold boot from BYD's ignition-on re-broadcast of
-        // BOOT_COMPLETED (which arrives with uptime still climbing).
+        // Wall clock minus time-since-start is stable within a boot and changes across one — the
+        // same trick that lets sinceBoot distinguish a real cold boot from BYD's ignition-on
+        // re-broadcast of BOOT_COMPLETED (which arrives with uptime still climbing).
         val bootId = System.currentTimeMillis() - elapsed
 
         val p = prefs(context)
@@ -101,5 +104,88 @@ object BootSessionTracker {
             recentMissed = updated.count { it == 'x' },
             recentTotal = updated.length,
         )
+    }
+
+    /**
+     * Why the head unit booted, for the boot-session line in diag.log — see [describeBootReason].
+     *
+     * Read in-process. `persist.sys.cloud_reboot_time` and `sys.system_server.start_elapsed` are
+     * `system_prop`, which the app can read; `sys.boot.reason` is `system_boot_reason_prop`, which it
+     * can't (empty on the dev Seal, 2026-11-15), so the reason itself usually reads "unknown". Times
+     * are measured from Android's start, like [recordStart]: from the kernel's, an Android-only
+     * restart the morning after BYD's cloud restart was matched to that restart and tagged with it.
+     * Never throws: an unreadable property reads as empty.
+     */
+    fun bootReason(): String {
+        val elapsed = SystemClock.elapsedRealtime()
+        val serverStart = systemServerStartMs()
+        return describeBootReason(
+            sysBootReason = prop("sys.boot.reason"),
+            bootStartMs = System.currentTimeMillis() - sinceAndroidStartMs(elapsed, serverStart),
+            cloudRebootSec = prop("persist.sys.cloud_reboot_time").toLongOrNull(),
+            androidOnlyRestart = isAndroidOnlyRestart(elapsed, serverStart),
+        )
+    }
+
+    private fun systemServerStartMs(): Long? = prop("sys.system_server.start_elapsed").toLongOrNull()
+
+    private fun prop(key: String): String = try {
+        @Suppress("PrivateApi")
+        val sp = Class.forName("android.os.SystemProperties")
+        (sp.getMethod("get", String::class.java).invoke(null, key) as? String).orEmpty().trim()
+    } catch (t: Throwable) {
+        ""
+    }
+}
+
+/**
+ * Milliseconds since Android last started, given the kernel's uptime and `sys.system_server.start_elapsed`
+ * (the uptime at which SystemServer started; Android 10+). A restart of Android alone — `adb reboot`
+ * on DiLink-3 — leaves the kernel's uptime running, so only this tells it apart from the boot before.
+ * Falls back to the kernel's uptime when the property is missing, unreadable or doesn't fit.
+ */
+internal fun sinceAndroidStartMs(elapsedMs: Long, systemServerStartElapsedMs: Long?): Long =
+    if (systemServerStartElapsedMs != null && systemServerStartElapsedMs in 0..elapsedMs) elapsedMs - systemServerStartElapsedMs
+    else elapsedMs
+
+/**
+ * SystemServer starts within seconds of the kernel at a real boot; one that started later than this
+ * into the kernel's uptime is a restart of Android alone (`adb reboot` on DiLink-3).
+ */
+internal const val ANDROID_ONLY_RESTART_MIN_MS = 5 * 60_000L
+
+internal fun isAndroidOnlyRestart(elapsedMs: Long, systemServerStartElapsedMs: Long?): Boolean =
+    systemServerStartElapsedMs != null && systemServerStartElapsedMs in ANDROID_ONLY_RESTART_MIN_MS..elapsedMs
+
+/** How close before a boot BYD's `cloud_reboot_time` has to fall for that boot to be its restart. */
+internal const val CLOUD_REBOOT_MATCH_MS = 10 * 60_000L
+
+/**
+ * The boot reason as the boot-session line shows it: Android's `sys.boot.reason` (or "unknown"),
+ * tagged when the boot was BYD's cloud restart.
+ *
+ * On DiLink-3, BYD's cloud service reboots a parked, locked head unit roughly every 24 hours
+ * (`reboot,bydcloud`, services.jar `BYDTCPConnectService.setDeviceReboot`). After such a parked
+ * boot BYD lets only its own allow-list start, so the app — and the Tailscale it launches — stays
+ * down until the car is next switched on, which shows up as a `MISSED` boot with no cause. BYD
+ * records the time of that decision in `persist.sys.cloud_reboot_time` (seconds), about a minute
+ * before the boot (63 s on the dev Seal, 2026-11-14), so a boot that starts within
+ * [CLOUD_REBOOT_MATCH_MS] after it is tagged even when `sys.boot.reason` can't be read. A restart of
+ * Android alone ([isAndroidOnlyRestart]) is tagged as such.
+ */
+internal fun describeBootReason(
+    sysBootReason: String,
+    bootStartMs: Long,
+    cloudRebootSec: Long?,
+    androidOnlyRestart: Boolean = false,
+): String {
+    val reason = sysBootReason.ifBlank { "unknown" }
+    val sinceCloudDecision = cloudRebootSec?.let { bootStartMs - it * 1000L }
+    val byCloud = reason.contains("bydcloud", ignoreCase = true) ||
+        (sinceCloudDecision != null && sinceCloudDecision in -60_000L..CLOUD_REBOOT_MATCH_MS)
+    return when {
+        byCloud -> "boot reason $reason (BYD cloud restart)"
+        androidOnlyRestart -> "boot reason $reason (Android-only restart)"
+        else -> "boot reason $reason"
     }
 }

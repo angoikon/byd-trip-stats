@@ -163,7 +163,8 @@ object VehicleCompatibilityProbe {
      * Called from BydVehicleDataSource.log*Snapshot() methods when enabled.
      *
      * Captures:
-     *  - All public no-arg getter methods (numeric, string, boolean, array)
+     *  - Public no-arg getters (numeric, string, boolean, array) — DiLink-3 only, getters only
+     *    ([isProbeReadOnlyGetter]), never on the OTA device ([probeSweepsDevice])
      *  - Public fields (location excluded for privacy)
      *  - Selected 1-arg int getters ([INDEXED_GETTER_NAMES]) with indices 0..[INDEXED_PROBE_MAX]
      *    to surface slot-based data such as tyre pressure per wheel and door state per slot
@@ -189,18 +190,26 @@ object VehicleCompatibilityProbe {
                 val snapshot = deviceSnapshots.getOrPut(label) { LinkedHashMap() }
 
                 // ── No-arg getters ────────────────────────────────────────────
-                // DiLink-3 ONLY. This blindly invokes EVERY no-arg method on the OEM device —
-                // including side-effecting ones (resetData(), setAllStatus() were both seen in DI5
-                // captures) — and on some DI5 firmware that wedges com.byd.data.collect and
-                // boot-loops the head unit (cluster/ADAS fault). D3 tolerates it; nothing newer is
-                // known to. Gated on blindSweepUnsafe rather than isDiLink5 alone because the old
+                // DiLink-3 ONLY. Invokes every no-arg GETTER on the OEM device — named get…/is…/has…
+                // and returning a value ([isProbeReadOnlyGetter]), never the BYD commands mixed in
+                // with them. Until 2.20.1 it invoked every no-arg method, commands included: on
+                // some DI5 firmware that wedged com.byd.data.collect and boot-looped the head unit
+                // (cluster/ADAS fault), and on DiLink-3 it sent dspReset/padReset/wakeUpMcu/
+                // setBCMPowerOnLevel (power), FinishOTA/StartOTA/syncMcuState (ota),
+                // restoreCarDefaultValue (setting) and setAllStatus (most devices) at every start
+                // while the probe was on. The OTA device is left out altogether
+                // ([probeSweepsDevice]): nothing on it is worth a call during an update.
+                // Gated on blindSweepUnsafe rather than isDiLink5 alone because the old
                 // "not Di5* ⇒ safe" default let a DiLink-100 car invoke wakeUpMcu/dspReset/padReset/
                 // StartOTA/syncMcuState for real — an unrecognised platform must fail safe.
                 // Elsewhere we keep the field constants + allowlisted indexed getters below and the
                 // pushed event path (recordDispatchedFeature).
-                if (!DiLink5Platform.blindSweepUnsafe) {
+                if (!DiLink5Platform.blindSweepUnsafe && probeSweepsDevice(label, cls.name)) {
                     cls.methods
-                        .filter { it.parameterCount == 0 && it.name !in excludedMethods }
+                        .filter {
+                            it.parameterCount == 0 && it.name !in excludedMethods &&
+                                isProbeReadOnlyGetter(it.name, it.returnType)
+                        }
                         .sortedBy { it.name }
                         .forEach { method ->
                             runCatching {
@@ -967,3 +976,35 @@ object VehicleCompatibilityProbe {
         }
     }
 }
+
+private val PROBE_GETTER_PREFIXES = listOf("get", "is", "has")
+
+/**
+ * Whether the DiLink-3 getter sweep in [VehicleCompatibilityProbe.recordDevice] may call the no-arg
+ * method [name]: only a getter, named `get…`, `is…` or `has…` with the next letter not lower case,
+ * and returning a value.
+ *
+ * BYD's devices mix commands in with their getters, and each sends something to the car: on the
+ * DiLink-3 SDK (dev Seal framework.jar, 2026-11-15) the power device has `dspReset()`, `padReset()`,
+ * `wakeUpMcu()` and `setBCMPowerOnLevel()`, the OTA device `FinishOTA()`, `StartOTA()` and
+ * `syncMcuState()`, the setting device `restoreCarDefaultValue()`, and nearly every device
+ * `setAllStatus()`. The permission check in front of them runs in our own process, where
+ * VehicleContextWrapper lets it pass. None of them is named like a getter, and a `void` method has
+ * nothing to record anyway. The letter check keeps out names that only start with the same letters
+ * (`issue…`, `hash…`).
+ */
+internal fun isProbeReadOnlyGetter(name: String, returnType: Class<*>): Boolean {
+    if (returnType == Void.TYPE) return false
+    val prefix = PROBE_GETTER_PREFIXES.firstOrNull { name.startsWith(it) } ?: return false
+    return name.length > prefix.length && !name[prefix.length].isLowerCase()
+}
+
+/**
+ * Whether [VehicleCompatibilityProbe.recordDevice] runs its getter sweep on this device at all. Not
+ * on BYD's OTA device: an update may be running when the app starts (each OTA reboot starts it
+ * again), and what the probe could read there isn't worth a call into the device that drives it.
+ * Its public fields are still recorded. The 12V reading the app uses comes from its own getter call,
+ * not from the probe.
+ */
+internal fun probeSweepsDevice(label: String, className: String): Boolean =
+    !label.equals("ota", ignoreCase = true) && !className.endsWith("OtaDevice", ignoreCase = true)

@@ -96,6 +96,8 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                                     // The Wi-Fi keepalive runs only in Always On, so the daemon's
                                     // flag follows the mode too.
                                     WifiKeepalive.sync(context)
+                                    // So does the DiLink-3 boot listener's notification access.
+                                    com.byd.tripstats.util.BootAnchor.sync(context)
                                 }
                                 // Reconcile background scheduling to the new mode immediately.
                                 // saveOffStateMode only persists the pref; without this, the

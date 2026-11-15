@@ -375,6 +375,7 @@ object SettingsBackup {
             pm.saveOffStateMode(it)
             // The Wi-Fi keepalive runs only in Always On; push the daemon's flag to match.
             runCatching { WifiKeepalive.sync(context) }
+            com.byd.tripstats.util.BootAnchor.sync(context)
         }
         p.enumOrNull<DashboardLayout>("dashboardLayout")?.let { pm.saveDashboardLayout(it) }
 

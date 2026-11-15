@@ -17,6 +17,22 @@ import java.io.File
 internal fun adbNeedsReassert(postDiLink3: Boolean, portOpen: Boolean, settingsCleared: Boolean): Boolean =
     postDiLink3 && !portOpen && settingsCleared
 
+/** How long a supervisor-log snapshot counts as the same failure as the next one. */
+internal const val SNAPSHOT_EPISODE_MS = 10 * 60_000L
+
+/**
+ * Whether a re-dispatch keeps the snapshot already on disk instead of writing a new one: when the
+ * earlier one is from this same failure (under [SNAPSHOT_EPISODE_MS] old) and holds more.
+ *
+ * Every dispatch truncates the supervisor log before it does anything else, even one that then
+ * reports its channel unreachable. A second dispatch seconds later therefore snapshots only that
+ * fresh header, and used to overwrite the record of the failure itself. On the dev Seal
+ * (2026-11-15) the 19 KB log from before an overnight reboot was replaced, one second later, by
+ * 40 bytes.
+ */
+internal fun keepEarlierSnapshot(earlierAgeMs: Long, earlierBytes: Long, newBytes: Int): Boolean =
+    earlierBytes > newBytes && earlierAgeMs in 0 until SNAPSHOT_EPISODE_MS
+
 internal object RtDispatch {
     private const val TAG = "RtDispatch"
 
@@ -480,6 +496,18 @@ internal object RtDispatch {
         val body = res.firstOrNull()?.takeIf { it.exitCode == 0 }?.output.orEmpty()
         if (body.isBlank()) {
             Log.i(TAG, "snapshot: nothing to copy")
+            return
+        }
+        // File.length()/lastModified() return 0 for a missing file rather than throwing, so a first
+        // snapshot is always written.
+        if (overwrite && keepEarlierSnapshot(
+                System.currentTimeMillis() - target.lastModified(), target.length(), body.length,
+            )
+        ) {
+            DiagLog.event(
+                context, TAG,
+                "supervisor log snapshot: kept the earlier ${target.length()}B one, not ${body.length}B",
+            )
             return
         }
         runCatching {

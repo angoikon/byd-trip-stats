@@ -6,8 +6,10 @@ import android.hardware.bydauto.gearbox.AbsBYDAutoGearboxListener
 import android.hardware.bydauto.speed.AbsBYDAutoSpeedListener
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.Looper
 import android.os.Process
+import android.os.SystemClock
 import com.byd.tripstats.runtimebridge.RuntimeExtensionBridge
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
@@ -108,7 +110,56 @@ object TelemetryDaemonMain {
         startWifiKeepalive(ctx)
 
         log("entering Looper.loop()")
-        runCatching { Looper.loop() }.onFailure { log("loop ended: ${it.message}") }
+        // Unknown platform → false, the behaviour every build had before 2.20.1.
+        val recover = runCatching {
+            daemonLoopRecovers(com.byd.tripstats.sdk.DiLink5Platform.isDiLink5, Build.VERSION.SDK_INT)
+        }.getOrDefault(false)
+        runLooper(recover)
+    }
+
+    /**
+     * Runs the main looper, which delivers every SDK listener callback to this process.
+     *
+     * An exception thrown while a message is handled ends `Looper.loop()`. Until 2.20.1 that ended the
+     * daemon's telemetry for good: the process stays up (the binder threads keep it alive), keeps its
+     * port and pid file, and answers clients with empty frames, so neither the supervisor nor the app
+     * ever replaces it — only a head-unit reboot does. Seen on an Australian Seal (DiLink-3,
+     * 2026-11-15), once in nine days, with `Given calling package android does not match caller's
+     * uid 2000`: on that firmware ActivityManagerService.getContentProvider() throws it, i.e. something
+     * on this looper used a ContentResolver through the system context. Which call is unknown — the
+     * line used to carry only the message — so the first failure now logs its stack.
+     *
+     * Where [recover] holds (DiLink-3 on Android 10, [daemonLoopRecovers]) the loop is entered again:
+     * the failed message is dropped and the listeners keep delivering. A message that keeps failing
+     * is paced to one try a second ([daemonLoopBackoffMs]) and logged sparingly
+     * ([daemonLoopShouldLog]), so it can't spin the CPU or flood the supervisor log. Elsewhere the
+     * loop ends on the first failure exactly as before; only the log line is richer.
+     */
+    private fun runLooper(recover: Boolean) {
+        var failures = 0
+        var lastFailureMs = 0L
+        while (true) {
+            val error = runCatching { Looper.loop() }.exceptionOrNull()
+            if (error == null) {
+                log("loop ended")   // only after quit(), which nothing here calls
+                return
+            }
+            failures++
+            val now = SystemClock.elapsedRealtime()
+            val sinceLast = if (failures > 1) now - lastFailureMs else null
+            lastFailureMs = now
+            if (!recover) {
+                log("loop ended: ${describeLoopError(error)}")
+                return
+            }
+            if (daemonLoopShouldLog(failures)) {
+                val what = if (failures == 1) describeLoopError(error)
+                    else "${error.javaClass.simpleName}: ${error.message}"
+                log("loop error #$failures, continuing: $what")
+            }
+            val pause = daemonLoopBackoffMs(sinceLast)
+            if (pause > 0) runCatching { Thread.sleep(pause) }
+        }
     }
 
     // prepareMainLooper is deprecated for ordinary app code (the framework sets the main looper up),
@@ -453,4 +504,35 @@ object TelemetryDaemonMain {
     }.toString()
 
     private fun log(m: String) { println("[daemon] $m"); System.out.flush() }
+}
+
+/**
+ * Whether the daemon re-enters its looper after a message throws ([TelemetryDaemonMain]'s
+ * `runLooper`): only on DiLink-3 proper — not DiLink-5, and not a newer Android (DiLink-100), where
+ * the loop keeps ending on the first failure exactly as it always has.
+ */
+internal fun daemonLoopRecovers(isDiLink5: Boolean, sdkInt: Int): Boolean = !isDiLink5 && sdkInt < 30
+
+/** Log the first five loop failures and then every 100th, so a failure that repeats can't flood the log. */
+internal fun daemonLoopShouldLog(failure: Int): Boolean = failure <= 5 || failure % 100 == 0
+
+/**
+ * How long to wait before entering the looper again: at once after an isolated failure, a second
+ * when the previous one was less than a second ago, so a message that keeps failing can't spin.
+ */
+internal fun daemonLoopBackoffMs(sinceLastFailureMs: Long?): Long =
+    if (sinceLastFailureMs != null && sinceLastFailureMs < 1_000L) 1_000L else 0L
+
+/**
+ * The exception, its first [maxFrames] stack frames and the same for its cause. Deep enough to reach
+ * past the binder and ContentResolver frames to the code that made the call.
+ */
+internal fun describeLoopError(t: Throwable, maxFrames: Int = 30): String = buildString {
+    fun frames(e: Throwable) = e.stackTrace.take(maxFrames).forEach { append("\n    at ").append(it) }
+    append(t.javaClass.name).append(": ").append(t.message)
+    frames(t)
+    t.cause?.takeIf { it !== t }?.let { c ->
+        append("\n  caused by ").append(c.javaClass.name).append(": ").append(c.message)
+        frames(c)
+    }
 }

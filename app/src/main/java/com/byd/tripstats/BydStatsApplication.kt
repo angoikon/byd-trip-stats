@@ -150,6 +150,9 @@ class BydStatsApplication : Application(), Configuration.Provider {
             // Re-sync the parked Wi-Fi-keepalive flag the UID-2000 daemon polls, so a reinstall or
             // reboot reflects the saved preferences (idempotent; no-op without the privileged setup).
             runCatching { com.byd.tripstats.util.WifiKeepalive.sync(applicationContext) }
+            // DiLink-3, Always On: notification access for the boot listener, so a boot with the
+            // car off (BYD's QuickBoot drops BOOT_COMPLETED) still starts the app. See BootAnchor.
+            com.byd.tripstats.util.BootAnchor.sync(applicationContext)
         }
         // If the service self-stopped due to off-state idle, skip re-arming the
         // periodic restart sources and skip auto-starting the service. The
@@ -177,11 +180,14 @@ class BydStatsApplication : Application(), Configuration.Provider {
         // card would require opening the app, which is itself the recovery.
         runCatching { BootSessionTracker.recordStart(this) }.getOrNull()?.let { boot ->
             if (boot.firstStartOfBoot) {
+                // The reason tells BYD's parked cloud restart (DiLink-3, roughly daily) from a
+                // reboot by hand or a power cut; never throws, see BootSessionTracker.bootReason.
+                val reason = runCatching { BootSessionTracker.bootReason() }.getOrDefault("boot reason unknown")
                 DiagLog.event(
                     this, TAG,
                     "boot session: first app start at boot+${boot.sinceBootSec}s — " +
                         (if (boot.missed) "MISSED (app did not start with the head unit)" else "ok") +
-                        "; missed ${boot.recentMissed}/${boot.recentTotal} recent boots",
+                        "; $reason; missed ${boot.recentMissed}/${boot.recentTotal} recent boots",
                 )
             }
         }

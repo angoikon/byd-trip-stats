@@ -46,6 +46,9 @@ class ServiceWatchdogWorker(
         runCatching { RtDispatch.reassertAndAwaitPort(applicationContext, "watchdog adb assert") }
         runCatching { RtDispatch.launch(applicationContext) }
             .onFailure { Log.w(TAG, "runtime dispatch retry threw: ${it.message}") }
+        // DiLink-3 boot listener: retry the notification-access grant if app start ran before the
+        // adb channel was up. A local check only, unless something needs changing. See BootAnchor.
+        com.byd.tripstats.util.BootAnchor.sync(applicationContext)
         // DiLink-5: re-check the car's third-party 4G block (BYD's netpolicy bit). Some cars put it
         // back (a Sealion 7 in Germany within a minute while driving), which the gate's blocked
         // watch lifts as it happens; this tick is the backstop where that watch isn't running,
