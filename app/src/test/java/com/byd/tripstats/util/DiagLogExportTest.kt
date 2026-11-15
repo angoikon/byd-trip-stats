@@ -89,4 +89,60 @@ class DiagLogExportTest {
         assertFalse(busy.value)
         assertFalse("work must not run in a cancelled scope", ran)
     }
+
+    // ── diag.log lines for the routes ──────────────────────────────────────────
+
+    @Test
+    fun `a failed upload says how long it tried and on what network`() {
+        assertEquals(
+            "diagnostics log upload for the QR code FAILED after 15 s: " +
+                "SocketTimeoutException: failed to connect (network: mobile data (blocked for this app))",
+            DiagLogExport.exportFailedLine(
+                "upload for the QR code",
+                "SocketTimeoutException: failed to connect",
+                elapsedMs = 15_400L,
+                network = "mobile data (blocked for this app)",
+            ),
+        )
+    }
+
+    @Test
+    fun `a failed save has no duration or network`() {
+        assertEquals(
+            "diagnostics log save FAILED: IOException: No space left on device",
+            DiagLogExport.exportFailedLine("save", "IOException: No space left on device", null, null),
+        )
+    }
+
+    @Test
+    fun `a Telegram bot token never reaches diag log`() {
+        val line = DiagLogExport.exportFailedLine(
+            "Telegram send",
+            "Send failed: https://api.telegram.org/bot123456789:AAH-x_Yz0aBcDeF/sendDocument",
+            elapsedMs = 2_000L,
+            network = "Wi-Fi",
+        )
+        assertFalse(line, line.contains("AAH-x_Yz0aBcDeF"))
+        assertTrue(line, line.contains("/bot<token>/sendDocument"))
+    }
+
+    @Test
+    fun `an error is kept to one short line`() {
+        val line = DiagLogExport.exportFailedLine("upload for the QR code", "a\nb\n" + "x".repeat(500), 1_000L, "Wi-Fi")
+        assertFalse(line.contains("\n"))
+        assertTrue(line, line.contains("a b x"))
+        assertTrue(line.length < 300)
+    }
+
+    @Test
+    fun `the network is named with what is wrong with it`() {
+        assertEquals("Wi-Fi", DiagLogExport.networkLabel("Wi-Fi", validated = true, blockedForApp = false))
+        assertEquals("Wi-Fi (no internet)", DiagLogExport.networkLabel("Wi-Fi", validated = false, blockedForApp = false))
+        assertEquals(
+            "mobile data (blocked for this app)",
+            DiagLogExport.networkLabel("mobile data", validated = true, blockedForApp = true),
+        )
+        assertEquals("none", DiagLogExport.networkLabel(null, validated = false, blockedForApp = false))
+        assertEquals("blocked for this app", DiagLogExport.networkLabel(null, validated = false, blockedForApp = true))
+    }
 }

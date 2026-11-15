@@ -1,7 +1,11 @@
 package com.byd.tripstats.util
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.NetworkInfo
 import android.os.Environment
+import android.os.SystemClock
 import android.util.Log
 import com.byd.tripstats.data.backup.TelegramManager
 import kotlinx.coroutines.CoroutineScope
@@ -79,7 +83,22 @@ object DiagLogExport {
         telegram: TelegramManager,
         onResult: (TelegramResult) -> Unit,
     ): Boolean = launchOnce(scope, _telegramSending, onResult) {
-        withContext(Dispatchers.IO) { sendLogs(context.applicationContext, telegram) }
+        withContext(Dispatchers.IO) {
+            val app = context.applicationContext
+            val started = SystemClock.elapsedRealtime()
+            sendLogs(app, telegram).also { result ->
+                val tookMs = SystemClock.elapsedRealtime() - started
+                when (result) {
+                    is TelegramResult.Failed -> DiagLog.event(
+                        app, TAG, exportFailedLine("Telegram send", result.reason, tookMs, networkNow(app))
+                    )
+                    is TelegramResult.Sent -> DiagLog.event(
+                        app, TAG, "diagnostics log sent to Telegram in ${tookMs / 1000} s (network: ${networkNow(app)})"
+                    )
+                    TelegramResult.NothingToSend -> Unit
+                }
+            }
+        }
     }
 
     /**
@@ -148,7 +167,14 @@ object DiagLogExport {
      * Copy the log(s) into Downloads/BydTripStats/, where the head unit's own file manager can reach
      * them for a USB-stick transfer. Returns the directory written to.
      */
-    fun saveToDownloads(context: Context): File {
+    fun saveToDownloads(context: Context): File = try {
+        copyToDownloads(context)
+    } catch (e: Exception) {
+        DiagLog.event(context, TAG, exportFailedLine("save", describe(e), elapsedMs = null, network = null))
+        throw e
+    }
+
+    private fun copyToDownloads(context: Context): File {
         val files = sources(context)
         check(files.isNotEmpty()) { "no diagnostic log to save yet" }
         val dir = File(
@@ -169,6 +195,25 @@ object DiagLogExport {
      * for the mailto-QR dialog. Blocking network call — background dispatcher only.
      */
     fun uploadTail(context: Context, retention: String = "24h"): String {
+        val started = SystemClock.elapsedRealtime()
+        return try {
+            uploadTailOnce(context, retention).also {
+                DiagLog.event(
+                    context, TAG,
+                    "diagnostics log uploaded for the QR code in ${(SystemClock.elapsedRealtime() - started) / 1000} s, " +
+                        "link valid $retention (network: ${networkNow(context)})"
+                )
+            }
+        } catch (e: Exception) {
+            DiagLog.event(
+                context, TAG,
+                exportFailedLine("upload for the QR code", describe(e), SystemClock.elapsedRealtime() - started, networkNow(context))
+            )
+            throw e
+        }
+    }
+
+    private fun uploadTailOnce(context: Context, retention: String): String {
         val files = sources(context)
         check(files.isNotEmpty()) { "no diagnostic log to upload yet" }
         val body = buildString {
@@ -183,6 +228,61 @@ object DiagLogExport {
             content = body,
             retention = retention,
         )
+    }
+
+    // ── diag.log lines for the routes ─────────────────────────────────────────
+
+    /** An exception as one short line: its type and message. */
+    private fun describe(e: Throwable): String = "${e.javaClass.simpleName}: ${e.message ?: "-"}"
+
+    /**
+     * The diag.log line for a send that failed. Written because the QR route shows a failure only as
+     * one small line under its buttons and drops it when the screen is left, so a tester could only
+     * report that no code appeared (Sealion 7, 2026-11-14) — and the next log that does get through
+     * now says why. The error is kept to one line, and a Telegram bot token is cut out of it: a
+     * failed request's message can carry the URL, and the token sits in that URL.
+     */
+    internal fun exportFailedLine(route: String, error: String, elapsedMs: Long?, network: String?): String {
+        val oneLine = error.replace(Regex("\\s+"), " ")
+            .replace(Regex("bot\\d+:[A-Za-z0-9_-]+"), "bot<token>")
+            .take(200)
+        val after = elapsedMs?.let { " after ${it / 1000} s" }.orEmpty()
+        val net = network?.let { " (network: $it)" }.orEmpty()
+        return "diagnostics log $route FAILED$after: $oneLine$net"
+    }
+
+    /**
+     * The network this app has right now, for a send's diag.log line: "Wi-Fi", "mobile data",
+     * either with "(no internet)" when Android hasn't validated it, "blocked for this app" when
+     * the system blocks this app's data (BYD's 4G block on DiLink-5), or "none". Never throws.
+     */
+    @Suppress("DEPRECATION")  // NetworkInfo is the only per-app view of a policy block.
+    private fun networkNow(context: Context): String = runCatching {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+            ?: return@runCatching "unknown"
+        val info = cm.activeNetworkInfo
+        val caps = cm.activeNetwork?.let { cm.getNetworkCapabilities(it) }
+        val kind = when {
+            caps?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true -> "Wi-Fi"
+            caps?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true -> "mobile data"
+            caps != null -> "other"
+            info?.type == ConnectivityManager.TYPE_WIFI -> "Wi-Fi"
+            info?.type == ConnectivityManager.TYPE_MOBILE -> "mobile data"
+            else -> null
+        }
+        networkLabel(
+            kind = kind,
+            validated = caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true,
+            blockedForApp = info?.detailedState == NetworkInfo.DetailedState.BLOCKED,
+        )
+    }.getOrDefault("unknown")
+
+    /** [networkNow]'s wording, from what it read. */
+    internal fun networkLabel(kind: String?, validated: Boolean, blockedForApp: Boolean): String = when {
+        kind == null -> if (blockedForApp) "blocked for this app" else "none"
+        blockedForApp -> "$kind (blocked for this app)"
+        !validated -> "$kind (no internet)"
+        else -> kind
     }
 
     /** Last [maxBytes] of a file, starting at a line boundary so the head isn't a broken line. */

@@ -1,3 +1,12 @@
+## [2.20.1] - Unreleased
+
+> **What's new in a nutshell**
+>
+> **When the diagnostics log can't be sent, the log now records why**, so the next one that gets through explains the earlier tries. Thanks to Markus, whose *Email via QR code* showed neither a code nor a reason.
+
+### Changed
+- **The diagnostics log records how each attempt to send it went** — *Email via QR code* uploads the log first and shows the code only once the upload has worked. When it failed, the only sign was one small line under the buttons, and leaving the screen while it said *Uploading…* dropped even that, so all you could report was that no code appeared. Now every failed send, whether by Telegram, Save or the QR upload, writes a line to the diagnostics log: the error, how long it tried, and the network the car had at that moment, including whether the system was blocking the app's mobile data. A Telegram send or an upload that works is recorded too. So the next log you send also shows what went wrong with the earlier tries. A Telegram bot token in an error message is cut out of the line. Thanks to Markus for the report.
+
 ## [2.20.0] - 2026-Nov-13
 
 > **What's new in a nutshell**
