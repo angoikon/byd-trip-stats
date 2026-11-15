@@ -24,7 +24,7 @@ import com.byd.tripstats.util.ServiceIdleState
  * inert until notification access is granted.
  *
  * Starting the process already runs Application.onCreate, which starts the telemetry service unless
- * the app is staying idle (Minimal / Deep Sleep after their self-stop). The explicit start here
+ * the app is staying idle (Deep Sleep after its self-stop). The explicit start here
  * follows the same rule, so a rebind after the process died never undoes a self-stop.
  */
 class BootAnchorListenerService : NotificationListenerService() {

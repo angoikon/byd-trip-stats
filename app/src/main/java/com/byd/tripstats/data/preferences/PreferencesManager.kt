@@ -235,17 +235,17 @@ class PreferencesManager(private val context: Context) {
     }
 
     // ── Off-state mode ────────────────────────────────────────────────────────
-    // Three-way enum replacing the old boolean keepServiceAliveWhenOff:
+    // Enum replacing the old boolean keepServiceAliveWhenOff:
     //   ENABLED    — service runs 24/7 (old true)
-    //   DISABLED   — service stops after 5 min, 90-min wakeup for snapshots (old false)
+    //   DISABLED   — Minimal, removed in 2.21.0: runs as DEEP_SLEEP (see OffStateMode)
     //   DEEP_SLEEP — service stops after 5 min, no wakeups, car can fully deep sleep
     // Default is ENABLED (Always On) — the only mode that keeps parked telemetry and
     // off-state charging detection working on cars that cut head-unit power at park.
     // Backward compat: only an EXPLICIT legacy keepServiceAliveWhenOff=false is honoured
-    // as DISABLED (Minimal); everyone else — new installs and the old `true` default —
-    // gets Always On. An explicit OFF_STATE_MODE choice always wins.
-    // Both readers return the mode in effect, which on DiLink-5 is always Always On
-    // (effectiveOffStateMode); the cache and the store keep the user's own choice.
+    // as DISABLED (and so runs as Deep Sleep); everyone else — new installs and the old
+    // `true` default — gets Always On. An explicit OFF_STATE_MODE choice always wins.
+    // Both readers return the mode in effect (effectiveOffStateMode): Always On on DiLink-5,
+    // never Minimal; the cache and the store keep the user's own choice.
 
     val offStateMode: Flow<OffStateMode> = context.dataStore.data
         .map { prefs ->

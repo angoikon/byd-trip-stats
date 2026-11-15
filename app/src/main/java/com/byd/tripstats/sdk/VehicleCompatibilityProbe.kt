@@ -192,7 +192,7 @@ object VehicleCompatibilityProbe {
                 // ── No-arg getters ────────────────────────────────────────────
                 // DiLink-3 ONLY. Invokes every no-arg GETTER on the OEM device — named get…/is…/has…
                 // and returning a value ([isProbeReadOnlyGetter]), never the BYD commands mixed in
-                // with them. Until 2.20.1 it invoked every no-arg method, commands included: on
+                // with them. Until 2.21.0 it invoked every no-arg method, commands included: on
                 // some DI5 firmware that wedged com.byd.data.collect and boot-looped the head unit
                 // (cluster/ADAS fault), and on DiLink-3 it sent dspReset/padReset/wakeUpMcu/
                 // setBCMPowerOnLevel (power), FinishOTA/StartOTA/syncMcuState (ota),

@@ -372,7 +372,8 @@ object SettingsBackup {
         p.enumOrNull<SocSource>("socSource")?.let     { pm.saveSocSource(it) }
         p.enumOrNull<RangeWindow>("rangeWindow")?.let { pm.saveRangeWindow(it) }
         p.enumOrNull<OffStateMode>("offStateMode")?.let {
-            pm.saveOffStateMode(it)
+            // A backup from before 2.21.0 may hold Minimal, which runs as Deep Sleep now: store that.
+            pm.saveOffStateMode(if (it == OffStateMode.DISABLED) OffStateMode.DEEP_SLEEP else it)
             // The Wi-Fi keepalive runs only in Always On; push the daemon's flag to match.
             runCatching { WifiKeepalive.sync(context) }
             com.byd.tripstats.util.BootAnchor.sync(context)

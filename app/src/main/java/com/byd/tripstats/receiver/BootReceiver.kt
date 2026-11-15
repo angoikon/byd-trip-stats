@@ -169,7 +169,8 @@ class BootReceiver : BroadcastReceiver() {
                             pending.finish()
                         }
                     }
-                    // Off-state keepalive chain — only arm when not in deep sleep mode
+                    // Off-state keepalive chain — only arm when not in deep sleep mode. The cached
+                    // reader returns Minimal (removed) as Deep Sleep, so this is Always On only.
                     if (offStateMode != OffStateMode.DEEP_SLEEP) {
                         OffStateKeepaliveReceiver.schedule(appContext, iteration = 0, source = "boot:$action")
                     } else {

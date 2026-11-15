@@ -7,7 +7,7 @@ import org.junit.Test
 /**
  * Unit tests for [isProbeReadOnlyGetter] and [probeSweepsDevice] — what the DiLink-3 compatibility
  * probe may call on a BYD device. The names below are the real no-arg methods of the DiLink-3 SDK
- * (dev Seal framework.jar, 2026-11-15); until 2.20.1 the probe called every one of them, commands
+ * (dev Seal framework.jar, 2026-11-15); until 2.21.0 the probe called every one of them, commands
  * included, at each start while it was switched on.
  */
 class ProbeGetterFilterTest {

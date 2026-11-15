@@ -15,9 +15,9 @@ import com.byd.tripstats.sdk.DiLink5Platform
  * eliminating the 15-min wake-lock-and-WiFi-lock cycle that drains the 12V
  * battery overnight.
  *
- * OffStateKeepaliveReceiver is exempt from the flag — it is the legitimate
- * 90-min off-state wake-up that takes a snapshot and lets the service
- * self-stop again.
+ * OffStateKeepaliveReceiver is exempt from the flag — it was Minimal's
+ * 90-min off-state wake-up; since Minimal's removal (2.21.0) it is armed
+ * only in Always On, which never sets the flag.
  */
 object ServiceIdleState {
     private const val PREFS = "service_idle_state"

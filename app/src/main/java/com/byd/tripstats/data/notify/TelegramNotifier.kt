@@ -40,8 +40,7 @@ import org.json.JSONObject
  *
  * The honest limits are:
  *  - **Deep Sleep** mode — nothing runs while parked, so nothing fires until the next drive.
- *  - **Minimal** mode — the service is revived by the 90-minute keepalive alarm, so an off-state
- *    event arrives up to 90 min late.
+ *    (Minimal, removed in 2.21.0, now runs as Deep Sleep: its 90-min wake-up never fired on DiLink-3.)
  *  - **A long park** — once the head unit itself powers down (~10 h), nothing can run.
  *  - **DiLink-5** — the OEM force-stops the app at ignition-off, so trips and off-state charges
  *    are only closed on the *next* start, and a reconstructed close is deliberately not

@@ -29,8 +29,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 /**
- * "Power & background" settings: the off-state background-activity mode (Always On / Minimal /
- * Deep Sleep; DiLink-5 always runs Always On and gets a note instead), the Wi-Fi keepalive that
+ * "Power & background" settings: the off-state background-activity mode (Always On / Deep Sleep;
+ * DiLink-5 always runs Always On and gets a note instead), the Wi-Fi keepalive that
  * runs while the car is off, and — DiLink-5 only — the
  * vehicle-data access switch. These are system behaviours on the head unit rather than display
  * preferences, so they are a page of the App tab (beside backups, compatibility and diagnostics)
@@ -84,9 +84,11 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // Two modes. Minimal (OffStateMode.DISABLED) was removed in 2.21.0: its 90-min alarm
+                    // can't fire on DiLink-3 while the car is off, so it was Deep Sleep, which a stored
+                    // Minimal now runs as (effectiveOffStateMode) and shows as selected.
                     listOf(
                         OffStateMode.ENABLED    to stringResource(R.string.bg_always_on),
-                        OffStateMode.DISABLED   to stringResource(R.string.bg_minimal),
                         OffStateMode.DEEP_SLEEP to stringResource(R.string.bg_deep_sleep),
                     ).forEach { (mode, label) ->
                         Button(
@@ -99,20 +101,11 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                                     // So does the DiLink-3 boot listener's notification access.
                                     com.byd.tripstats.util.BootAnchor.sync(context)
                                 }
-                                // Reconcile background scheduling to the new mode immediately.
-                                // saveOffStateMode only persists the pref; without this, the
-                                // keepalive chain is (re)armed only on the next ACC_OFF, so
-                                // switching e.g. Deep Sleep → Minimal while the car is already
-                                // parked would leave NO keepalive armed (Deep Sleep cancels it),
-                                // and off-state charging would never be sampled until the next
-                                // drive. Apply the change now instead of waiting for a car cycle.
+                                // Reconcile background scheduling to the new mode immediately:
+                                // saveOffStateMode only persists the pref.
                                 when (mode) {
-                                    OffStateMode.DEEP_SLEEP ->
+                                    OffStateMode.DISABLED, OffStateMode.DEEP_SLEEP ->
                                         OffStateKeepaliveReceiver.cancel(context)
-                                    OffStateMode.DISABLED ->
-                                        // Arm only if absent — if the service is still running it
-                                        // will schedule the chain itself on self-stop.
-                                        OffStateKeepaliveReceiver.ensureScheduled(context, "settings:minimal")
                                     OffStateMode.ENABLED -> {
                                         // Always On: keepalive is redundant (watchdog/restarter
                                         // keep the service alive); start the service now so it
@@ -123,8 +116,8 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                                 }
                             },
                             // Fixed height rather than letting content set it: only Always On has
-                            // a second line, so without this the other two would either be shorter
-                            // pills or need a blank line — and a blank line pushes their label off
+                            // a second line, so without this Deep Sleep would either be a shorter
+                            // pill or need a blank line — and a blank line pushes its label off
                             // centre, which is what it used to do.
                             modifier = Modifier.weight(1f).height(56.dp),
                             colors = ButtonDefaults.buttonColors(
@@ -152,11 +145,10 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                         }
                     }
                 }
-                // The modes that pause the Wi-Fi keepalive say so.
+                // The mode that pauses the Wi-Fi keepalive says so.
                 val keepaliveNote = " " + stringResource(R.string.bg_wifi_keepalive_paused_note)
                 listOf(
                     OffStateMode.ENABLED    to stringResource(R.string.bg_always_on_desc),
-                    OffStateMode.DISABLED   to stringResource(R.string.bg_minimal_desc) + keepaliveNote,
                     OffStateMode.DEEP_SLEEP to stringResource(R.string.bg_deep_sleep_desc) + keepaliveNote,
                 ).forEach { (mode, description) ->
                     Text(
@@ -167,30 +159,6 @@ internal fun PowerBackgroundSection(context: Context, scope: CoroutineScope) {
                         else
                             MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = if (offStateMode == mode) FontWeight.Medium else FontWeight.Normal,
-                    )
-                }
-                // Minimal-mode wake-alarm health — only relevant in Minimal (the 90-min charging-check
-                // alarm). Always On runs the service continuously and cancels this alarm, and Deep Sleep
-                // deliberately has none, so showing "never fired" in those modes is misleading (and got
-                // confused with the Wi-Fi keepalive). Show it only where it actually applies.
-                if (offStateMode == OffStateMode.DISABLED) {
-                    val kaLastFired = OffStateKeepaliveReceiver.lastFiredMs(context)
-                    val kaCount     = OffStateKeepaliveReceiver.fireCount(context)
-                    val kaArmed     = OffStateKeepaliveReceiver.isScheduled(context)
-                    val armedSuffix = if (kaArmed) stringResource(R.string.keepalive_armed) else ""
-                    val notArmedSuffix = if (kaArmed) "" else stringResource(R.string.keepalive_not_armed)
-                    val kaStatus = if (kaLastFired <= 0L) {
-                        stringResource(R.string.keepalive_never_fired, armedSuffix)
-                    } else {
-                        val agoMin = ((System.currentTimeMillis() - kaLastFired) / 60_000L).coerceAtLeast(0)
-                        val ago = if (agoMin < 60) "$agoMin min ago" else "${agoMin / 60}h ${agoMin % 60}m ago"
-                        stringResource(R.string.keepalive_fired, ago, kaCount, notArmedSuffix)
-                    }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f))
-                    Text(
-                        kaStatus,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }

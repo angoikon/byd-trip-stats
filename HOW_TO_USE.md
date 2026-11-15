@@ -274,7 +274,7 @@ page, and use the back arrow (or the car's back gesture) to return.
 
 | Card | What's inside |
 |---|---|
-| **Power & background** | What keeps running when the car is off (**Always On** / **Minimal** / **Deep Sleep**; DiLink 5 always runs Always On), and on DiLink 3 **Keep Wi-Fi alive when car is off**. On DiLink 5, also **Allow reading vehicle data** |
+| **Power & background** | What keeps running when the car is off (**Always On** / **Deep Sleep**; DiLink 5 always runs Always On), and on DiLink 3 **Keep Wi-Fi alive when car is off**. On DiLink 5, also **Allow reading vehicle data** |
 | **Backup & Restore** | Opens the backup screen — local, SD card (Pro) and Telegram backups, restore, settings backup, and reset |
 | **Vehicle Compatibility** | Records a telemetry report that helps add support for your model; send it by Telegram, save it, or email it via a QR code |
 | **App Diagnostics** | Sends the diagnostics log the same three ways, and shows live CPU / memory, permissions and an ADB shell. Below that, a separate **Performance overlay** section puts the app's CPU, frame rate and render time, and the head unit's GPU / CPU clocks and temperatures, in a small strip over the app while it is open (drag it out of the way) |
@@ -524,7 +524,7 @@ No reboot is needed. The change works straight away.
 
 The app uses a foreground telemetry service, wake lock, Wi-Fi lock, boot receiver, and a watchdog worker — but survival still depends on the OEM system behaviour. With the one-time ADB authorisation, a small background helper also brings the app back after the car has stopped it.
 
-**DiLink 3, Always On: restarts while parked.** BYD restarts the head unit of a parked, switched-off car about once a day. A head unit that starts with the car off won't let the usual start-up signal start any app, so the app (and remote access over Tailscale) used to stay down until you next switched the car on. In **Always On** the app now holds *Notification access* (granted through its ADB connection), because Android starts an app with a notification listener at every boot — so it comes back within about a minute. The app never reads, stores or sends notifications; the listener exists only to be started. Minimal and Deep Sleep withdraw the access, since those modes are meant to stay dark while parked. This also needs BYD Trip Stats switched **off** in *Disable Autostart*, as above.
+**DiLink 3, Always On: restarts while parked.** BYD restarts the head unit of a parked, switched-off car about once a day. A head unit that starts with the car off won't let the usual start-up signal start any app, so the app (and remote access over Tailscale) used to stay down until you next switched the car on. In **Always On** the app now holds *Notification access* (granted through its ADB connection), because Android starts an app with a notification listener at every boot — so it comes back within about a minute. The app never reads, stores or sends notifications; the listener exists only to be started. Deep Sleep withdraws the access, since that mode is meant to stay dark while parked. This also needs BYD Trip Stats switched **off** in *Disable Autostart*, as above.
 
 ---
 

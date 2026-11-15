@@ -74,7 +74,8 @@ internal fun AppManagementTab(
                     stringResource(
                         when (offStateMode) {
                             OffStateMode.ENABLED    -> R.string.bg_always_on
-                            OffStateMode.DISABLED   -> R.string.bg_minimal
+                            // DISABLED (Minimal, removed) runs as Deep Sleep; the reader never returns it.
+                            OffStateMode.DISABLED,
                             OffStateMode.DEEP_SLEEP -> R.string.bg_deep_sleep
                         }
                     )

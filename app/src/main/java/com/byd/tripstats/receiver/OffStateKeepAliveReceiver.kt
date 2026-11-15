@@ -22,6 +22,11 @@ import kotlinx.coroutines.withTimeout
 /**
  * Dedicated off-state keepalive receiver.
  *
+ * Since 2.21.0 armed only in Always On, by BootReceiver at switch-off — it was Minimal's wake-up,
+ * and Minimal is gone (Deep Sleep cancels the chain). On DiLink-3 it never fires while the car is
+ * off: BYD's AlarmManagerService drops every app alarm while `sys.quickboot.enable=1` (set at
+ * switch-off), bar a fixed list of system packages. There Always On's service keeps running anyway.
+ *
  * Fires every [INTERVAL_MS] (90 minutes) after ACC_OFF to:
  *   1. Call McuWakeHelper.keepAlive() — resets the MCU WiFi-cut countdown
  *   2. Start VehicleTelemetryService — reviving it samples BMS/charging state
@@ -58,6 +63,7 @@ class OffStateKeepaliveReceiver : BroadcastReceiver() {
             cancel(appContext)
             return
         }
+        // A Minimal user's chain lands above: the reader returns Minimal (removed) as Deep Sleep.
         // DiLink-5 runs Always On only (effectiveOffStateMode), so this is a chain armed by Minimal
         // before that: end it. It also kept calling the MCU keepalive below, which goes through the
         // power device and was never meant to run on DiLink-5.
@@ -66,12 +72,6 @@ class OffStateKeepaliveReceiver : BroadcastReceiver() {
             cancel(appContext)
             return
         }
-
-        // Record that the keepalive actually fired. Surfaced in Settings so a user can
-        // tell whether Minimal works on their vehicle: on head units that fully power
-        // off at park (no drain in Deep Sleep), this alarm can't fire and this timestamp
-        // never advances while parked — the signal to use Always On for parked data.
-        recordFired(appContext)
 
         // Acquire a partial wake lock for the duration of the async work.
         // AlarmManager.RTC_WAKEUP holds a wake lock only until onReceive()
@@ -119,9 +119,9 @@ class OffStateKeepaliveReceiver : BroadcastReceiver() {
         // ONLY reliable trigger for off-state EV charging. android.intent.action
         // .POWER_CONNECTED only reflects the head unit's own 12V/USB power, not the
         // traction battery being plugged in, so it does not fire when the EV starts
-        // charging while parked. A charge session that begins off-state is therefore
-        // detected at most ~90 min late here (Minimal mode); in Deep Sleep mode this
-        // chain isn't scheduled at all, so off-state charging is only reconstructed
+        // charging while parked. Minimal (removed in 2.21.0) relied on it to catch such a
+        // charge within ~90 min — on DiLink-3 it never fired while the car was off. In Deep
+        // Sleep this chain isn't scheduled at all, so off-state charging is only reconstructed
         // from the SoC delta on the next ACC_ON.
         private const val INTERVAL_MS = 90 * 60 * 1000L
 
@@ -131,34 +131,6 @@ class OffStateKeepaliveReceiver : BroadcastReceiver() {
 
         private val REQUEST_CODE = ACTION.hashCode()
         private val BACKUP_REQUEST_CODE = (ACTION + "_backup").hashCode()
-
-        // ── Health stats (surfaced in Settings) ──────────────────────────────
-        private const val STATS_PREFS = "offstate_keepalive_stats"
-        private const val KEY_LAST_FIRED = "last_fired_ms"
-        private const val KEY_FIRE_COUNT = "fire_count"
-
-        private fun statsPrefs(context: Context) =
-            context.getSharedPreferences(STATS_PREFS, Context.MODE_PRIVATE)
-
-        /** Record a real keepalive fire (wall-clock + running count). */
-        fun recordFired(context: Context) {
-            val p = statsPrefs(context)
-            p.edit()
-                .putLong(KEY_LAST_FIRED, System.currentTimeMillis())
-                .putInt(KEY_FIRE_COUNT, p.getInt(KEY_FIRE_COUNT, 0) + 1)
-                .apply()
-        }
-
-        /** Wall-clock ms of the last keepalive fire, or 0 if it has never fired. */
-        fun lastFiredMs(context: Context): Long = statsPrefs(context).getLong(KEY_LAST_FIRED, 0L)
-
-        /** Total number of keepalive fires recorded since install. */
-        fun fireCount(context: Context): Int = statsPrefs(context).getInt(KEY_FIRE_COUNT, 0)
-
-        /** Whether a keepalive alarm is currently armed. */
-        fun isScheduled(context: Context): Boolean = pendingIntent(
-            context, 0, PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE,
-        ) != null
 
         private fun pendingIntent(context: Context, iteration: Int, flags: Int): PendingIntent? {
             val intent = Intent(context, OffStateKeepaliveReceiver::class.java).apply {
@@ -208,26 +180,6 @@ class OffStateKeepaliveReceiver : BroadcastReceiver() {
                 "scheduled iteration=$iteration source=$source " +
                     "primary=+${INTERVAL_MS / 1000}s backup=+${(INTERVAL_MS + BACKUP_OFFSET_MS) / 1000}s",
             )
-        }
-
-        /**
-         * Re-arm the keepalive chain only if no alarm is currently pending.
-         * Cheap probe: `FLAG_NO_CREATE` returns null when no matching PendingIntent
-         * exists, so we never accidentally upsert. Use this from any code path
-         * that may run while the car is off and we want belt-and-braces coverage
-         * without overwriting a healthy schedule.
-         */
-        fun ensureScheduled(context: Context, source: String) {
-            val existing = pendingIntent(
-                context, 0,
-                PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE,
-            )
-            if (existing == null) {
-                DiagLog.event(context, TAG, "ensureScheduled: alarm missing — arming (source=$source)")
-                schedule(context, iteration = 0, source = "ensure:$source")
-            } else {
-                DiagLog.event(context, TAG, "ensureScheduled: alarm present — no-op (source=$source)")
-            }
         }
 
         fun cancel(context: Context) {

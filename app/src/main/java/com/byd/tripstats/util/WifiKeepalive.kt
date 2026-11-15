@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.first
  * which is fine: without it there is no daemon to read the flag anyway.
  *
  * Only Always On runs it, whatever the toggle says ([isActive]). The daemon's drain guard reads the
- * 12V/SoC that only the service feeds ([pushGuard]), and Minimal and Deep Sleep stop the service
+ * 12V/SoC that only the service feeds ([pushGuard]), and Deep Sleep (and Minimal before it) stops the service
  * after switch-off while the daemon lives on — so there it kept turning Wi-Fi back on all night with
  * a stale guard, which the daemon reads as "unknown, don't block". The toggle itself is kept, and
  * applies again once the user picks Always On.

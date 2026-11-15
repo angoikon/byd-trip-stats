@@ -110,7 +110,7 @@ object TelemetryDaemonMain {
         startWifiKeepalive(ctx)
 
         log("entering Looper.loop()")
-        // Unknown platform → false, the behaviour every build had before 2.20.1.
+        // Unknown platform → false, the behaviour every build had before 2.21.0.
         val recover = runCatching {
             daemonLoopRecovers(com.byd.tripstats.sdk.DiLink5Platform.isDiLink5, Build.VERSION.SDK_INT)
         }.getOrDefault(false)
@@ -120,7 +120,7 @@ object TelemetryDaemonMain {
     /**
      * Runs the main looper, which delivers every SDK listener callback to this process.
      *
-     * An exception thrown while a message is handled ends `Looper.loop()`. Until 2.20.1 that ended the
+     * An exception thrown while a message is handled ends `Looper.loop()`. Until 2.21.0 that ended the
      * daemon's telemetry for good: the process stays up (the binder threads keep it alive), keeps its
      * port and pid file, and answers clients with empty frames, so neither the supervisor nor the app
      * ever replaces it — only a head-unit reboot does. Seen on an Australian Seal (DiLink-3,

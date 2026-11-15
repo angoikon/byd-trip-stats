@@ -20,9 +20,9 @@ import kotlinx.coroutines.flow.first
  * (verified on the dev Seal, 2026-11-15: back 48 s after a reboot with the car off). It also brings the
  * app back ~11 s after BYD's switch-off sweep, where the background helper takes 60–90 s.
  *
- * Granted only in Always On, the one mode meant to keep running while parked: in Minimal and Deep
- * Sleep the listener would restart the app after every switch-off and every boot, and those modes are
- * meant to stay dark — so leaving Always On withdraws it. Only on DiLink-3 proper (not DiLink-5, which
+ * Granted only in Always On, the one mode meant to keep running while parked: in Deep Sleep the
+ * listener would restart the app after every switch-off and every boot, and that mode is meant to
+ * stay dark — so leaving Always On withdraws it (a stored Minimal runs as Deep Sleep). Only on DiLink-3 proper (not DiLink-5, which
  * doesn't ship the listener, nor a newer Android such as DiLink-100, which has no QuickBoot).
  *
  * Idempotent and cheap when nothing needs changing: the current state is read locally and the shell

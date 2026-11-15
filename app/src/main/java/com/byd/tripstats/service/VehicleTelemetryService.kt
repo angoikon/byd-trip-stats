@@ -692,26 +692,9 @@ class VehicleTelemetryService : Service() {
                                         }
                                         // Fall through to next loop iteration without stopping.
                                     }
-                                    OffStateMode.DISABLED -> {
-                                        DiagLog.event(
-                                            applicationContext, TAG,
-                                            "self-stop: car off + not charging for 5 min — arming 90-min keepalive and stopping",
-                                        )
-                                        ServiceIdleState.setStayingIdle(applicationContext, true)
-                                        ServiceWatchdogWorker.cancel(applicationContext)
-                                        ServiceRestarterJobService.cancelPeriodic(applicationContext)
-                                        // Defensive arm — BootReceiver on ACC_OFF may not fire reliably
-                                        // (remote-off, sleep timeout). Upsert-safe.
-                                        OffStateKeepaliveReceiver.schedule(
-                                            applicationContext,
-                                            iteration = 0,
-                                            source = "service-self-stop",
-                                        )
-                                        intentionalStop = true
-                                        stopSelf()
-                                        return@launch
-                                    }
-                                    OffStateMode.DEEP_SLEEP -> {
+                                    // DISABLED (Minimal, removed) never reaches here: the reader
+                                    // returns it as DEEP_SLEEP (effectiveOffStateMode).
+                                    OffStateMode.DISABLED, OffStateMode.DEEP_SLEEP -> {
                                         DiagLog.event(
                                             applicationContext, TAG,
                                             "self-stop: car off + not charging for 5 min — deep sleep mode, no keepalive scheduled",
