@@ -1,12 +1,15 @@
 package com.byd.tripstats.util
 
+import android.content.ContentValues
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.NetworkInfo
 import android.os.Environment
 import android.os.SystemClock
+import android.provider.MediaStore
 import android.util.Log
+import android.webkit.MimeTypeMap
 import com.byd.tripstats.data.backup.TelegramManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +20,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.io.RandomAccessFile
 import java.util.zip.GZIPOutputStream
 
@@ -28,6 +32,9 @@ object DiagLogExport {
 
     private const val TAG = "DiagLogExport"
     private const val DIAG_FILE = "diag.log"
+
+    /** Folder under Download that Save writes to, as backups and the probe report do. */
+    private const val DOWNLOAD_SUBFOLDER = "BydTripStats"
 
     /** DiagLog's rotation target; see [DiagLog]. */
     private const val DIAG_PREV_FILE = "diag.log.prev"
@@ -174,21 +181,101 @@ object DiagLogExport {
         throw e
     }
 
+    /**
+     * Each file goes in by its path first, which overwrites the copy an earlier Save left. That
+     * needs WRITE_EXTERNAL_STORAGE: installs that never ran ADB setup may not hold it (on DiLink-3
+     * the folder is then read-only and the copy fails with EACCES), and on Android 13+ (DiLink 100)
+     * the app can't hold it at all. A refused file goes in through the media store instead, which
+     * needs no permission, as backups always have.
+     */
     private fun copyToDownloads(context: Context): File {
         val files = sources(context)
         check(files.isNotEmpty()) { "no diagnostic log to save yet" }
         val dir = File(
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-            "BydTripStats",
+            DOWNLOAD_SUBFOLDER,
         )
-        if (!dir.exists() && !dir.mkdirs()) error("Could not create ${dir.absolutePath}")
+        var refused: Exception? = null
         files.forEach { src ->
-            val dst = File(dir, src.name)
-            src.copyTo(dst, overwrite = true)
-            Log.i(TAG, "exported ${src.name} (${src.length()} B) -> ${dst.absolutePath}")
+            try {
+                if (!dir.exists() && !dir.mkdirs()) error("Could not create ${dir.absolutePath}")
+                val dst = File(dir, src.name)
+                src.copyTo(dst, overwrite = true)
+                Log.i(TAG, "exported ${src.name} (${src.length()} B) -> ${dst.absolutePath}")
+            } catch (pathError: Exception) {
+                try {
+                    copyThroughMediaStore(context, src)
+                } catch (storeError: Exception) {
+                    throw IOException(
+                        "${storeError.message ?: storeError.javaClass.simpleName} " +
+                            "(direct copy: ${pathError.message ?: pathError.javaClass.simpleName})",
+                        storeError,
+                    )
+                }
+                if (refused == null) refused = pathError
+            }
+        }
+        // Says the app lacks write access to shared storage, which nothing else on screen shows.
+        refused?.let {
+            DiagLog.event(
+                context, TAG,
+                "diagnostics log saved through the media store; the direct copy was refused: ${describe(it)}",
+            )
         }
         return dir
     }
+
+    /**
+     * Writes [src] to Download/BydTripStats/ through the media store, replacing the copy an earlier
+     * save by this install made there. A file of that name this install didn't create (an earlier
+     * install's, or one copied in by hand) can't be replaced: the media store then numbers the new
+     * one, e.g. `diag (1).log`.
+     */
+    private fun copyThroughMediaStore(context: Context, src: File) {
+        val resolver = context.contentResolver
+        val collection = MediaStore.Downloads.EXTERNAL_CONTENT_URI
+        val relativePath = "${Environment.DIRECTORY_DOWNLOADS}/$DOWNLOAD_SUBFOLDER"
+        // Matches only rows this install owns; any other stays where it is.
+        runCatching {
+            resolver.delete(
+                collection,
+                "${MediaStore.Downloads.DISPLAY_NAME} = ? AND ${MediaStore.Downloads.RELATIVE_PATH} LIKE ?",
+                arrayOf(src.name, "$relativePath%"),
+            )
+        }
+        val values = ContentValues().apply {
+            put(MediaStore.Downloads.DISPLAY_NAME, src.name)
+            put(MediaStore.Downloads.MIME_TYPE, mimeTypeFor(src.name))
+            put(MediaStore.Downloads.RELATIVE_PATH, relativePath)
+            put(MediaStore.Downloads.IS_PENDING, 1)
+        }
+        val uri = resolver.insert(collection, values) ?: error("Could not create ${src.name} in Download")
+        try {
+            val bytes = resolver.openOutputStream(uri)?.use { out ->
+                src.inputStream().use { it.copyTo(out, 64 * 1024) }
+            } ?: error("Could not open ${src.name} in Download for writing")
+            // SIZE and DATE_MODIFIED are stamped by hand: this BYD ROM's media store doesn't fill
+            // them in when IS_PENDING clears (see LocalBackupManager.saveArchiveToDownloads).
+            values.clear()
+            values.put(MediaStore.Downloads.IS_PENDING, 0)
+            values.put(MediaStore.Downloads.SIZE, bytes)
+            values.put(MediaStore.Downloads.DATE_MODIFIED, System.currentTimeMillis() / 1000L)
+            resolver.update(uri, values, null, null)
+            Log.i(TAG, "exported ${src.name} ($bytes B) through the media store -> $uri")
+        } catch (e: Exception) {
+            runCatching { resolver.delete(uri, null, null) }
+            throw e
+        }
+    }
+
+    /**
+     * The type Android maps the file's extension to, so the media store keeps the name as given:
+     * with a type the extension doesn't map to, it would append that type's extension instead.
+     */
+    private fun mimeTypeFor(name: String): String =
+        MimeTypeMap.getSingleton()
+            .getMimeTypeFromExtension(name.substringAfterLast('.', "").lowercase())
+            ?: "application/octet-stream"
 
     /**
      * Upload the tail of the log (plus the supervisor snapshot, appended) and return the public URL

@@ -593,6 +593,12 @@ class MainActivity : ComponentActivity() {
             // Superseded by READ_MEDIA_* on Android 13+ where it has no effect.
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
                 add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                // WRITE too: Android grants only what is asked for, so asking for READ alone left
+                // installs set up before ADB setup granted WRITE (2.17.0) able to list shared
+                // storage but not write it (the diagnostics Save failed with EACCES on DiLink-3). Same Storage group as READ,
+                // so where READ is already held Android grants it without showing a dialog, and
+                // this runs at every launch, so existing installs pick it up on their next start.
+                add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             }
         }
 
