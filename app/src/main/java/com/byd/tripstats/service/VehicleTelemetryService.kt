@@ -328,6 +328,9 @@ class VehicleTelemetryService : Service() {
         serviceScope.launch {
             runCatching { com.byd.tripstats.util.TailscaleManager.restoreIfEnabled(applicationContext) }
                 .onFailure { Log.w(TAG, "Tailscale restore failed: ${it.message}") }
+            // Then, for as long as the service runs, start it again within about a minute if it dies
+            // (an Overdrive update killed it until 2.21.0). Ends with serviceScope.
+            com.byd.tripstats.util.TailscaleManager.watchDaemon(applicationContext)
         }
 
         // Start telemetry loop IMMEDIATELY using the synchronous SharedPreferences

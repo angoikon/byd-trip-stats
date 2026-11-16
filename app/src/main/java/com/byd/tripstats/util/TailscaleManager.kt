@@ -21,6 +21,34 @@ import java.io.File
  * The file is a JSON object of base64 values; each `profile-…` entry decodes to that profile's
  * prefs, `Hostname` among them. It also holds the machine's private keys, so nothing here logs it.
  */
+/**
+ * What Overdrive's pre-update cleanup kills by plain substring of the whole command line
+ * (`psAwkKillLine` in its AppUpdater and UpdateLifecycle, 2026-11). None of these may appear in the
+ * command line of a daemon of ours ([daemonCommandLine]), or each Overdrive update kills it.
+ */
+internal val OVERDRIVE_KILL_PATTERNS = listOf(
+    "tailscaled", "zrok", "cloudflared", "sing-box", "cam_daemon", "byd_cam_daemon",
+    "start_cam_daemon", "sentry_daemon", "acc_sentry", "sentry_proxy", "telegram_bot_daemon",
+    "start_telegram", "fast_cam_capture", "qcarcam_test",
+)
+
+/** The Tailscale daemon's own command line, as `ps` shows it: binary [dir]/tsd and its flags. */
+internal fun daemonCommandLine(dir: String, socksPort: Int?): String =
+    "$dir/tsd --tun=userspace-networking " +
+        socksPort?.let { "--socks5-server=127.0.0.1:$it " }.orEmpty() +
+        "--statedir=$dir --socket=${TailscaleManager.SOCKET}"
+
+/** Least time between two restarts by [TailscaleManager.watchDaemon], so a daemon that keeps dying can't loop. */
+internal const val DAEMON_WATCH_RESTART_COOLDOWN_MS = 120_000L
+
+/**
+ * Whether [TailscaleManager.watchDaemon] starts the daemon again: after two probes in a row found it
+ * gone (one could be a restart in progress), and not within [DAEMON_WATCH_RESTART_COOLDOWN_MS] of
+ * its previous restart ([sinceLastRestartMs] null when there was none).
+ */
+internal fun daemonWatchShouldRestart(misses: Int, sinceLastRestartMs: Long?): Boolean =
+    misses >= 2 && (sinceLastRestartMs == null || sinceLastRestartMs >= DAEMON_WATCH_RESTART_COOLDOWN_MS)
+
 internal fun tailscaleStateIsOurs(stateJson: String, ourHostname: String): Boolean = runCatching {
     val root = JSONObject(stateJson)
     val names = root.keys().asSequence()
@@ -107,10 +135,18 @@ object TailscaleManager {
      * appeared. And with the shared socket, our commands would have driven Overdrive's daemon
      * whenever that one was running. Unique names keep the two apart; [migrateFromSharedDir] moves
      * an existing install over once.
+     *
+     * The socket was `@tripstats-tailscaled` until 2.21.0, and that put the word "tailscaled" in our
+     * daemon's command line. Before installing an update of itself, Overdrive kills every process
+     * whose command line merely contains "tailscaled" (`ps -A -o PID,ARGS | grep -F tailscaled |
+     * … kill -9`, AppUpdater/UpdateLifecycle), so each Overdrive update took the car off the
+     * tailnet until our service next started. Its list also has "zrok", "cloudflared", "sing-box",
+     * "cam_daemon", "sentry_daemon" and "telegram_bot_daemon": keep all of them out of the launch line
+     * ([OVERDRIVE_KILL_PATTERNS], checked by a unit test).
      */
     private const val DIR_NAME = ".tripstats-tailscale"
     private const val LEGACY_DIR_NAME = ".tailscale"
-    private const val SOCKET = "@tripstats-tailscaled"
+    internal const val SOCKET = "@tripstats-ts"
     private const val KEY_DIR_MIGRATED = "dir_migrated_v1"
 
     /**
@@ -125,9 +161,11 @@ object TailscaleManager {
      * binary changed, and adding the SOCKS5 listener changed only the launch line — so a daemon
      * started by an older app would have kept running without it. Bump [LAUNCH_REVISION] whenever
      * the launch line changes; a daemon launched under another revision is restarted once.
+     * Revision 2 (2.21.0): the socket moved to [SOCKET], so the old daemon no longer answers and is
+     * stopped by path before the new one starts (see [start]).
      */
     private const val KEY_LAUNCH_REVISION = "launch_revision"
-    private const val LAUNCH_REVISION = 1
+    private const val LAUNCH_REVISION = 2
     /** The SOCKS5 port the running daemon listens on, or 0 when it was launched without one. */
     private const val KEY_SOCKS_PORT = "socks_port"
 
@@ -312,16 +350,17 @@ object TailscaleManager {
                 if (replaced) "start: daemon is the previous build — restarting it to pick up the update"
                 else "start: daemon was launched by an older version — restarting it once for the new launch line",
             )
-            publish(Status(State.STARTING))
-            sh(context, "pkill -f '${killPattern(context)}'", timeoutMs = 10_000L)
-            kotlinx.coroutines.delay(500)
         }
-
+        // Stop any daemon of ours before launching, also when nothing answered: one launched on an
+        // older socket name (before LAUNCH_REVISION 2) no longer answers on [SOCKET], nor does a hung
+        // one, and a second daemon on the same state folder would be the same machine twice, with
+        // the SOCKS port still held. By our own binary path only, never another app's tailscaled.
         publish(Status(State.STARTING))
+        sh(context, "pkill -f '${killPattern(context)}'", timeoutMs = 10_000L)
+        kotlinx.coroutines.delay(500)
         // tailscaled exits at once when it can't bind --socks5-server, so a port something else
         // holds must cost only the tailnet broker, never remote access itself.
         val socksPort = SOCKS_PORT.takeIf { awaitLoopbackPortFree(it) }
-        val socksFlag = socksPort?.let { "--socks5-server=127.0.0.1:$it " }.orEmpty()
         // setsid so it outlives the shell that launched it — proven to survive the adb session.
         // `>>`, appending: rotateLogIfLarge empties the log in place while the daemon runs, and an
         // appending writer simply carries on at the new end.
@@ -331,8 +370,8 @@ object TailscaleManager {
         // backgrounded now, with all three of its streams redirected.
         sh(
             context,
-            "cd ${dir(context)} || exit 1; HOME=${dir(context)} SSL_CERT_DIR=$CA_CERT_DIRS setsid ${bin(context)} --tun=userspace-networking " +
-                "$socksFlag--statedir=${dir(context)} --socket=$SOCKET >> ${logFile(context)} 2>&1 < /dev/null &",
+            "cd ${dir(context)} || exit 1; HOME=${dir(context)} SSL_CERT_DIR=$CA_CERT_DIRS setsid " +
+                "${daemonCommandLine(dir(context), socksPort)} >> ${logFile(context)} 2>&1 < /dev/null &",
             timeoutMs = 10_000L,
         )
         prefs(context).edit()
@@ -598,6 +637,44 @@ object TailscaleManager {
             ensureHttpsServe(context)
         }
     }
+
+    /** How often [watchDaemon] looks for the daemon. */
+    private const val WATCH_INTERVAL_MS = 20_000L
+
+    /**
+     * For as long as the telemetry service runs: notice within about a minute that our daemon has
+     * gone, and start it again. Until 2.21.0 it came back only when the service next started — after
+     * an Overdrive update killed it (see [SOCKET]), that was the next switch-off or switch-on.
+     *
+     * The probe is a bind attempt on the daemon's own SOCKS port ([KEY_SOCKS_PORT]): it fails while
+     * the daemon holds the port, so it is local, needs no shell and leaves nothing in the daemon's
+     * log, which a connection would. Skipped while Tailscale is off, or when the daemon runs without
+     * the port. A restart is [restoreIfEnabled] — the service's own start-up path — after two misses
+     * in a row, at most once per [DAEMON_WATCH_RESTART_COOLDOWN_MS] ([daemonWatchShouldRestart]).
+     * Returns only when cancelled with the service's scope.
+     */
+    suspend fun watchDaemon(context: Context) {
+        var misses = 0
+        var lastRestartMs: Long? = null
+        while (true) {
+            kotlinx.coroutines.delay(WATCH_INTERVAL_MS)
+            val port = prefs(context).getInt(KEY_SOCKS_PORT, 0)
+            val alive = !isEnabled(context) || port == 0 || loopbackPortInUse(port)
+            misses = if (alive) 0 else misses + 1
+            val now = android.os.SystemClock.elapsedRealtime()
+            if (!daemonWatchShouldRestart(misses, lastRestartMs?.let { now - it })) continue
+            diag(context, "watch: daemon gone (port $port free on $misses probes) — starting it again")
+            lastRestartMs = now
+            misses = 0
+            runCatching { restoreIfEnabled(context) }
+                .onFailure { diag(context, "watch: restart failed: ${it.javaClass.simpleName}: ${it.message}") }
+        }
+    }
+
+    /** Whether something holds [port] on loopback: binding it there fails. */
+    private fun loopbackPortInUse(port: Int): Boolean = runCatching {
+        java.net.ServerSocket().use { it.bind(java.net.InetSocketAddress("127.0.0.1", port)) }
+    }.isFailure
 
     /** Re-reads the daemon's own view of the world. Null when it isn't answering. */
     suspend fun refresh(context: Context): Status = withContext(Dispatchers.IO) {
