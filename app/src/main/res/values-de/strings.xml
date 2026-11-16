@@ -65,6 +65,7 @@
     <string name="awd_tap_hint">Allradantrieb — antippen, um Druckeinheit zu ändern</string>
     <string name="change_drive_mode_hint">Fahrmodus ändern, um Anzeige zu initialisieren</string>
     <string name="slope_value">Neigung: %1$s°</string>
+    <string name="altitude_value">Höhe: %1$s</string>
     <string name="ambient_temp_value">Außentemperatur: %1$s °C</string>
     <string name="pm25_value">PM2,5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">Zellen: Warte auf Daten…</string>

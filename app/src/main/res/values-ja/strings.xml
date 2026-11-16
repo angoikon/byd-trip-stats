@@ -76,6 +76,7 @@
     <string name="awd_tap_hint">AWD駆動系 — タップして空気圧単位を変更</string>
     <string name="change_drive_mode_hint">ドライブモードを変更してディスプレイを初期化</string>
     <string name="slope_value">傾斜：%1$s°</string>
+    <string name="altitude_value">標高：%1$s</string>
     <string name="ambient_temp_value">外気温：%1$s °C</string>
     <string name="pm25_value">PM2.5：%1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">セル：データ待機中…</string>

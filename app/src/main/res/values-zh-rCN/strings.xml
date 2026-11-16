@@ -76,6 +76,7 @@
     <string name="awd_tap_hint">四驱系统 — 点击更改气压单位</string>
     <string name="change_drive_mode_hint">切换驾驶模式以初始化显示</string>
     <string name="slope_value">坡度：%1$s°</string>
+    <string name="altitude_value">海拔：%1$s</string>
     <string name="ambient_temp_value">环境温度：%1$s °C</string>
     <string name="pm25_value">PM2.5：%1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">电芯：等待数据…</string>

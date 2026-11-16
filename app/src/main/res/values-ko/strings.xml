@@ -65,6 +65,7 @@
     <string name="awd_tap_hint">사륜구동 — 탭하여 압력 단위 변경</string>
     <string name="change_drive_mode_hint">디스플레이 초기화를 위해 주행 모드 변경</string>
     <string name="slope_value">경사: %1$s°</string>
+    <string name="altitude_value">고도: %1$s</string>
     <string name="ambient_temp_value">외부: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">셀: 데이터 대기 중…</string>

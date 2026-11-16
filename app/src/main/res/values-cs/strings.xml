@@ -73,6 +73,7 @@
     <string name="awd_tap_hint">Pohon AWD — klepnutím změníte jednotku tlaku</string>
     <string name="change_drive_mode_hint">Změňte jízdní režim pro inicializaci displeje</string>
     <string name="slope_value">Sklon: %1$s°</string>
+    <string name="altitude_value">Výška: %1$s</string>
     <string name="ambient_temp_value">Okolí: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">Články: čekání na data…</string>

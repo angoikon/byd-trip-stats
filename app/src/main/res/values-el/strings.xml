@@ -65,6 +65,7 @@
     <string name="awd_tap_hint">Τετρακίνηση — πατήστε για αλλαγή μονάδας πίεσης</string>
     <string name="change_drive_mode_hint">Αλλάξτε λειτουργία οδήγησης για αρχικοποίηση της εμφάνισης</string>
     <string name="slope_value">Κλίση: %1$s°</string>
+    <string name="altitude_value">Υψόμετρο: %1$s</string>
     <string name="ambient_temp_value">Θερμοκρασία: %1$s °C</string>
     <string name="pm25_value">PM2,5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">Κελιά: αναμονή δεδομένων…</string>

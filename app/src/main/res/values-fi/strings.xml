@@ -76,6 +76,7 @@
     <string name="awd_tap_hint">AWD-neliveto — napauta vaihtaaksesi paineyksiköt</string>
     <string name="change_drive_mode_hint">Vaihda ajotila alustaksesi näytön</string>
     <string name="slope_value">Kaltevuus: %1$s°</string>
+    <string name="altitude_value">Korkeus: %1$s</string>
     <string name="ambient_temp_value">Ulkoilma: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">Kennot: odotetaan tietoja…</string>

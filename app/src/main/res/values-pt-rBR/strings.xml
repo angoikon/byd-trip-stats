@@ -76,6 +76,7 @@
     <string name="awd_tap_hint">Tração nas quatro rodas — toque para mudar a unidade de pressão</string>
     <string name="change_drive_mode_hint">Mude o modo de condução para inicializar o display</string>
     <string name="slope_value">Inclinação: %1$s°</string>
+    <string name="altitude_value">Altitude: %1$s</string>
     <string name="ambient_temp_value">Ambiente: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">Células: aguardando dados…</string>

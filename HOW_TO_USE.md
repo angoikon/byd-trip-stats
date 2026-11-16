@@ -82,6 +82,7 @@ Typical cards include:
 - **Temperature** (ambient + battery)
 - **HV / 12V**
 - **Front / Rear Motors** (RPM + power split)
+- **Driving Dynamics** — drive and regen mode, with your altitude above sea level and the road slope below (DiLink-5 has no slope reading)
 - **Odometer**
 - **Total Discharge** — the car's lifetime counter of energy taken from the battery; tap it to see what it counts, the lifetime average it gives, and your recorded trips' average beside it
 

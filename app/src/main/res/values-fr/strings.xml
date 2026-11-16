@@ -65,6 +65,7 @@
     <string name="awd_tap_hint">Transmission intégrale — appuyer pour changer l\'unité de pression</string>
     <string name="change_drive_mode_hint">Changer le mode de conduite pour initialiser l\'affichage</string>
     <string name="slope_value">Pente: %1$s°</string>
+    <string name="altitude_value">Altitude: %1$s</string>
     <string name="ambient_temp_value">Ambiant: %1$s °C</string>
     <string name="pm25_value">PM2,5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">Cellules: en attente de données…</string>

@@ -73,6 +73,7 @@
     <string name="awd_tap_hint">Полный привод AWD — нажмите, чтобы сменить единицу давления</string>
     <string name="change_drive_mode_hint">Смените режим вождения для инициализации дисплея</string>
     <string name="slope_value">Уклон: %1$s°</string>
+    <string name="altitude_value">Высота: %1$s</string>
     <string name="ambient_temp_value">Снаружи: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s мкг/м³</string>
     <string name="cells_awaiting">Ячейки: ожидание данных…</string>

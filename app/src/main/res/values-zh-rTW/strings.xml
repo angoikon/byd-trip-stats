@@ -76,6 +76,7 @@
     <string name="awd_tap_hint">四輪傳動系統 — 點擊以變更氣壓單位</string>
     <string name="change_drive_mode_hint">切換駕駛模式以初始化顯示</string>
     <string name="slope_value">坡度：%1$s°</string>
+    <string name="altitude_value">海拔：%1$s</string>
     <string name="ambient_temp_value">環境溫度：%1$s °C</string>
     <string name="pm25_value">PM2.5：%1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">電芯：等待資料…</string>

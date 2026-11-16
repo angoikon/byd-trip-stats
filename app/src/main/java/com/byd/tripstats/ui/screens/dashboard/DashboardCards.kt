@@ -273,15 +273,7 @@ fun DashboardStatCard(
                     telemetry.driveModeName.takeIf { telemetry.driveMode != 0 },
                 ).joinToString(" / ").ifEmpty { "—" }
             },
-            subtitle = run {
-                val slope = vehicleSnapshot?.roadSlopeDeg
-                val needsInit = telemetry.isCarOn && telemetry.driveMode == 0
-                when {
-                    needsInit -> stringResource(R.string.change_drive_mode_hint)
-                    slope != null -> stringResource(R.string.slope_value, String.format("%.1f", slope))
-                    else -> null
-                }
-            },
+            subtitle = drivingDynamicsSubtitle(telemetry, vehicleSnapshot, unitSystem),
             icon = Icons.Filled.DirectionsCar,
             color = BydElectricBlue,
             modifier = modifier

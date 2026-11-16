@@ -73,6 +73,7 @@
     <string name="awd_tap_hint">Tracțiune AWD — atingeți pentru a schimba unitatea de presiune</string>
     <string name="change_drive_mode_hint">Schimbați modul de condus pentru a inițializa afișajul</string>
     <string name="slope_value">Pantă: %1$s°</string>
+    <string name="altitude_value">Altitudine: %1$s</string>
     <string name="ambient_temp_value">Ambient: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">Celule: se așteaptă date…</string>

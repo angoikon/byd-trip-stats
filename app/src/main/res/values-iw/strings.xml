@@ -73,6 +73,7 @@
     <string name="awd_tap_hint">הנעה כפולה AWD — הקישו לשינוי יחידת הלחץ</string>
     <string name="change_drive_mode_hint">שנו מצב נהיגה כדי לאתחל את התצוגה</string>
     <string name="slope_value">שיפוע: %1$s°</string>
+    <string name="altitude_value">גובה: %1$s</string>
     <string name="ambient_temp_value">סביבה: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s מק"ג/מ³</string>
     <string name="cells_awaiting">תאים: ממתין לנתונים…</string>

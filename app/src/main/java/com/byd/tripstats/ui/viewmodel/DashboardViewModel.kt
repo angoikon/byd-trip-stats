@@ -40,6 +40,7 @@ import com.byd.tripstats.service.VehicleTelemetryService
 import com.byd.tripstats.sdk.DiLink5Platform
 import com.byd.tripstats.sdk.VehicleTelemetrySnapshot
 import com.byd.tripstats.ui.components.RangeDataPoint
+import com.byd.tripstats.util.Geoid
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -1919,6 +1920,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     // ── Init ──────────────────────────────────────────────────────────────────
 
     init {
+        // The dashboard shows the altitude above sea level, which reads the geoid grid from the APK.
+        viewModelScope.launch(Dispatchers.IO) { Geoid.preload() }
+
         // One-time (2.9.1): backfill precise SoH from each data point's rawJson into the
         // sohPrecise column so the degradation chart/report are decimal-accurate across all
         // history (no false up-tick where rounded data meets the new precise recording).

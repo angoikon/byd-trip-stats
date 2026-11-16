@@ -65,6 +65,7 @@
     <string name="awd_tap_hint">ขับเคลื่อน 4 ล้อ — แตะเพื่อเปลี่ยนหน่วยความดัน</string>
     <string name="change_drive_mode_hint">เปลี่ยนโหมดขับขี่เพื่อเริ่มต้นการแสดงผล</string>
     <string name="slope_value">ความชัน: %1$s°</string>
+    <string name="altitude_value">ความสูง: %1$s</string>
     <string name="ambient_temp_value">อุณหภูมิอากาศ: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">เซลล์: รอข้อมูล…</string>

@@ -36,6 +36,11 @@ object Geoid {
         }.onFailure { Log.w(TAG, "Geoid grid unavailable: $it") }.getOrNull()
     }
 
+    /** Loads the grid now, so the first lookup on the main thread doesn't have to. */
+    fun preload() {
+        grid
+    }
+
     /** Height of sea level above the WGS84 ellipsoid here, in metres; null for an invalid position. */
     fun undulationM(latitude: Double, longitude: Double): Double? {
         if (!longitude.isFinite() || latitude.isNaN() || latitude !in -90.0..90.0) return null

@@ -484,6 +484,7 @@ If you are running BYD Trip Stats on a **Dolphin, Atto 3, Atto 3 EVO, or any oth
 - [x] Drive/regen mode timelines and analysis ✅ *(v2.0.0)*
 - [x] Environmentals PM2.5 display ✅ *(v2.0.0)*
 - [x] Slope in degrees display ✅ *(v2.0.0)*
+- [x] Live altitude above sea level ✅ *(v2.21.0)*
 - [x] App diagnostics CPU/RAM monitor ✅ *(v2.0.0)*
 - [x] Physics-based per-trip energy breakdown ✅ *(v2.0.0)*
 - [x] 12V DC monitoring when car is off — rolling 48-hour chart overlaying HV bus voltage, cell min/max, and SoC so 12V drain events (and the corresponding HV top-up) are immediately visible ✅ *(v2.1.0)*

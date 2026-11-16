@@ -76,6 +76,7 @@
     <string name="awd_tap_hint">Trazione integrale AWD — tocca per cambiare unità di pressione</string>
     <string name="change_drive_mode_hint">Cambia la modalità di guida per inizializzare il display</string>
     <string name="slope_value">Pendenza: %1$s°</string>
+    <string name="altitude_value">Quota: %1$s</string>
     <string name="ambient_temp_value">Ambiente: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">Celle: in attesa di dati…</string>
