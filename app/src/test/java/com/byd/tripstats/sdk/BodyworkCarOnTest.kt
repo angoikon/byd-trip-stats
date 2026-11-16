@@ -100,4 +100,24 @@ class BodyworkCarOnTest {
         assertNull(di5CarLockedFromLockStates(listOf(null, null, null)))
         assertNull(di5CarLockedFromLockStates(listOf(0, -1, 255)))
     }
+
+    @Test
+    fun `DiLink-5 per-door locks win over the alarm getter`() {
+        // Shark 6, 2026-11-13: every door read locked for the whole drive while getAlarmState gave 0.
+        assertEquals(1, carLockedFrom(listOf(2, 2, 2)) { 0 })
+        assertEquals(0, carLockedFrom(listOf(1, 1, 1)) { 1 })
+    }
+
+    @Test
+    fun `no DiLink-5 lock reading stays unknown instead of taking the alarm getter`() {
+        assertNull(carLockedFrom(listOf(0, 0, 0)) { 0 })
+    }
+
+    @Test
+    fun `without per-door locks the lock getters decide`() {
+        // DiLink 3 reads no per-door locks (null), so the m30 getters answer as before.
+        assertEquals(1, carLockedFrom(null) { 1 })
+        assertEquals(0, carLockedFrom(null) { 0 })
+        assertNull(carLockedFrom(null) { null })
+    }
 }

@@ -218,6 +218,14 @@ internal fun di5CarLockedFromLockStates(locks: List<Int?>): Int? = when {
     else -> null
 }
 
+// carLocked from the bodywork layer: where it gives per-door lock readings (DiLink 5) they alone
+// decide; elsewhere the m30 lock getters ([lockGetter], not called on DiLink 5). DiLink 5 has one of
+// those getters, getAlarmState, and it is the alarm, not the locks: on a Shark 6 (2026-11-13) it
+// answered 0 through a whole drive while every door read locked, and as the first getter to answer
+// it had made carLocked 0 on every point.
+internal fun carLockedFrom(di5Locks: List<Int?>?, lockGetter: () -> Int?): Int? =
+    if (di5Locks != null) di5CarLockedFromLockStates(di5Locks) else lockGetter()
+
 // A GPS speed describes the moment of its fix, not now. The system location fallback re-applies the
 // newest known fix on every poll, and underground no new fix ever arrives — so without an age limit the
 // speed from the last fix before losing signal stood in for the car's speed indefinitely. On a DiLink-5
@@ -3015,8 +3023,8 @@ class BydVehicleDataSource(context: Context) {
 
     /**
      * DiLink-5: the per-door lock readings of its bodywork layer (three doors), a plain read like
-     * the door state. None of the lock getters in m30 exists on DiLink 5, so these are its only lock
-     * source (di5CarLockedFromLockStates). null on DiLink 3, which doesn't read them.
+     * the door state. They are its only lock source (carLockedFrom): of the m30 getters DiLink 5
+     * has just one, the alarm. null on DiLink 3, which doesn't read them.
      */
     private fun readDi5BodyworkLocks(device: Any): List<Int?>? {
         if (!DiLink5Platform.isDiLink5) return null
@@ -3064,11 +3072,10 @@ class BydVehicleDataSource(context: Context) {
             val powerLevel = mappedPowerLevel ?: publicPowerLevel
             logDi3BodyworkPowerIfChanged(device, mappedPowerLevel, publicPowerLevel, autoSystemState)
             logDi5BodyworkPowerIfChanged(device, mappedPowerLevel, autoSystemState)
-            // Car lock state — try various known getter names; DiLink 5 has none of them and reads
-            // its per-door locks instead (di5CarLockedFromLockStates).
+            // Car lock state — DiLink 5 from its per-door locks, other cars from the known getter
+            // names (carLockedFrom).
             val di5Locks = readDi5BodyworkLocks(device)
-            val lockState = invokeIntGetter(device, *runtimeMethodNames("m30"))
-                ?: di5Locks?.let { di5CarLockedFromLockStates(it) }
+            val lockState = carLockedFrom(di5Locks) { invokeIntGetter(device, *runtimeMethodNames("m30")) }
             // Any door open: areas 1–6, only OPEN/CLOSED count (anyDoorOpenFromStates).
             val doorStateMethod = m29["doorState"].orEmpty()
             val doorStates = if (doorStateMethod.isNotEmpty()) {
