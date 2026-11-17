@@ -53,6 +53,7 @@ private val ENABLE_MODE_STATE_LOGS = BuildConfig.SENSITIVE_DIAGNOSTICS_ENABLED &
 private const val WIFI_SSID_TTL_MS = 30_000L
 private const val VEHICLE_STATE_CACHE = "vehicle_state_cache"
 private const val KEY_CHARGER_SIGNALS_UNRELIABLE = "charger_signals_unreliable"
+private const val KEY_BMS_SOC_DECIMAL = "bms_soc_decimal"
 // Bump this when the persisted value mapping changes so stale cached values are cleared.
 // v2: remapped an auxiliary housing sensor away from cellTempMin.
 // v3: persist last confirmed drive/regen modes so weak startup samples do not regress the UI.
@@ -145,6 +146,30 @@ internal fun isPlausibleDi5UsableKwh(kwh: Double): Boolean =
 // number equalled the panel's (so toTelemetry set it aside as a copy of the panel) that 0 won,
 // putting 0 % into 63 % of its trip points and SoC 0 → 60 % into its trip reports. A battery really
 // at 0 shows 0 on the panel too, so the panel fallback still says so.
+/** A SoC reading with a fractional part — which the panel's whole-percent figure never has. */
+internal fun isDecimalSoc(value: Double): Boolean = abs(value - Math.rint(value)) >= 0.05
+
+/**
+ * Whether the statistic BMS SoC ([candidate]) is the BMS reading, rather than the panel's figure under
+ * another name. When it isn't taken, the SoC derived from the remaining kWh stands in.
+ *
+ * A reading within 0.5 of the panel used to be rejected unless it was within 1.5 of the derived SoC,
+ * as a likely copy of the panel. On the dev Seal (DiLink 3) the panel is the BMS reading rounded down
+ * (70.6 and 70.9 → 70) and the derived SoC runs ~2 points below it (remaining kWh ÷ the 82.5 kWh of
+ * the car picked, not the car's own capacity basis). So the first half of every percent (x.0–x.5)
+ * was rejected and the second half taken: the recorded SoC jumped ~2 points twice per percent — 15 %
+ * of the charge curve's points (Nov 2026), and a charge that started or ended on one of them counted
+ * ~1.6 kWh too many or too few. [bmsReadsDecimal] (seen a fractional reading on this car) settles it:
+ * a copy of a whole-percent panel can't carry a fraction.
+ */
+internal fun acceptDirectBmsSoc(candidate: Double, derived: Double?, panel: Double?, bmsReadsDecimal: Boolean): Boolean =
+    when {
+        bmsReadsDecimal -> true
+        derived != null && abs(candidate - derived) <= 1.5 -> true
+        panel != null && abs(candidate - panel) <= 0.5 -> false
+        else -> true
+    }
+
 internal fun pickSocEstimate(bmsSoc: Double?, statisticSocPct: Double?, panelSoc: Double?): Double = when {
     bmsSoc != null -> bmsSoc
     statisticSocPct != null && statisticSocPct > 0.0 && statisticSocPct <= 100.0 -> statisticSocPct
@@ -512,6 +537,8 @@ data class VehicleTelemetrySnapshot(
     /** True only when SOH came from a non-confirmed source derived from car telemetry. */
     val sohEstimated: Boolean = false,
     val statisticSocBms: Double? = null,
+    /** This car's [statisticSocBms] has been seen with a fractional part — see [acceptDirectBmsSoc]. */
+    val statisticSocBmsDecimal: Boolean = false,
     val statisticAvailPower: Double? = null,
     val probeValues: Map<String, Double> = emptyMap(),
     // ── HVAC fields ──────────────────────────────────────────────────────────
@@ -598,15 +625,7 @@ data class VehicleTelemetrySnapshot(
             ?.takeIf { it in 0.0..100.0 }
         val directBmsSoc = statisticSocBms
             ?.takeIf { it in 0.0..100.0 }
-            ?.takeIf { candidate ->
-                when {
-                    derivedBmsSoc != null && abs(candidate - derivedBmsSoc) <= 1.5 -> true
-                    panelSoc != null && abs(candidate - panelSoc) <= 0.5 && derivedBmsSoc != null &&
-                        abs(derivedBmsSoc - panelSoc) >= 1.5 -> false
-                    panelSoc != null && abs(candidate - panelSoc) <= 0.5 -> false
-                    else -> true
-                }
-            }
+            ?.takeIf { acceptDirectBmsSoc(it, derivedBmsSoc, panelSoc, statisticSocBmsDecimal) }
         // On DiLink-5 the derived usable-kWh SoC is the intended (decimal) BMS source. statisticSocBms
         // can still be set live on CI builds — the raw-signal statistic decode that feeds it is gated by
         // private-telemetry, which a contributor's local build lacks — and being an integer within 1.5 of
@@ -1228,6 +1247,10 @@ class BydVehicleDataSource(context: Context) {
     // bare work=1. See computeChargingActive.
     @Volatile private var chargerSignalsUnreliable =
         runCatching { statCache.getBoolean(KEY_CHARGER_SIGNALS_UNRELIABLE, false) }.getOrDefault(false)
+    // Latched (and persisted) the first time this car's BMS SoC reads with a fractional part — then it
+    // is the BMS reading, never a copy of the panel. See acceptDirectBmsSoc.
+    @Volatile private var bmsSocReadsDecimal =
+        runCatching { statCache.getBoolean(KEY_BMS_SOC_DECIMAL, false) }.getOrDefault(false)
     private var lastChargingPowerCandidateElapsedMs: Long = 0L
     private var lastPackChargingPowerElapsedMs: Long = 0L
     private var lastChargingDiagMs: Long = 0L
@@ -1282,6 +1305,11 @@ class BydVehicleDataSource(context: Context) {
     private var lastSocBmsGlitchDiagMs = 0L
 
     private fun filterBmsSocGlitch(candidate: Double): Double {
+        if (!bmsSocReadsDecimal && candidate > 0.0 && candidate < 100.0 && isDecimalSoc(candidate)) {
+            bmsSocReadsDecimal = true
+            runCatching { statCache.edit().putBoolean(KEY_BMS_SOC_DECIMAL, true).apply() }
+            runCatching { DiagLog.event(appContext, TAG, "🔋 BMS SoC reads in decimals on this car ($candidate) — taken as the SoC however close it sits to the panel") }
+        }
         val last = lastSocBmsFiltered
         // A 0.0 baseline is the BMS not reporting yet (seen at every DiLink-5 wake), not a
         // reading — treat it as no baseline, or the first real value is suppressed as a jump.
@@ -6485,6 +6513,7 @@ class BydVehicleDataSource(context: Context) {
             statisticCellTempAvg    = validatePackTemp(_statisticCellTempAvg.value),
             statisticBatterySoh     = _statisticBatterySoh.value,
             statisticSocBms         = _statisticSocBms.value,
+            statisticSocBmsDecimal  = bmsSocReadsDecimal,
             statisticAvailPower     = _statisticAvailPower.value,
             probeValues             = _vehicleSnapshot.value.probeValues,
             roadSlopeDeg            = _vehicleSnapshot.value.roadSlopeDeg,
@@ -8128,6 +8157,7 @@ class BydVehicleDataSource(context: Context) {
                     statisticBatteryCurrent = _statisticBatteryCurrent.value,
                     statisticBatterySoh = _statisticBatterySoh.value,
                     statisticSocBms = _statisticSocBms.value,
+                    statisticSocBmsDecimal = bmsSocReadsDecimal,
                     statisticAvailPower = _statisticAvailPower.value,
                     statisticSocBatteryPct = snap.statisticSocBatteryPct,
                 )
