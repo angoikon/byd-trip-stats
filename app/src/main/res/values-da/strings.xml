@@ -349,7 +349,8 @@
     <string name="current_power_estimate">%1$s kW nuværende estimat</string>
     <string name="live_chart_notice">Det live-diagram vises, så snart der er registreret tilstrækkeligt med opladningseffektprøver.</string>
     <string name="reconstructed_session_label">Rekonstrueret session</string>
-    <string name="reconstructed_session_desc">Denne session blev registreret, mens bilen var slukket — live-telemetrigrafer er kun tilgængelige for sessioner startet, mens du er i bilen med den tændt.</string>
+    <string name="reconstructed_session_desc">Denne session blev genskabt bagefter ud fra ændringen i ladeniveau, fordi appen ikke kørte, mens bilen ladede — så der er ingen målinger at tegne disse grafer ud fra. Opladning med bilen slukket registreres også live, inklusive grafer, så længe appen bliver ved med at køre.</string>
+    <string name="reconstructed_session_deep_sleep_hint">Appen er sat til Dyb dvale, som stopper den 5 minutter efter, at du slukker bilen. For at registrere opladning med bilen slukket skal du vælge Altid tændt under Indstillinger → App → Strøm &amp; baggrund.</string>
     <string name="not_enough_data_label">Ikke nok data</string>
     <string name="charging_legend">● Oplader</string>
     <string name="reconstructed_badge">⚡ Rekonstrueret</string>

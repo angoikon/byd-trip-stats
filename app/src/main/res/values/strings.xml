@@ -358,7 +358,8 @@
     <string name="current_power_estimate">%1$s kW current estimate</string>
     <string name="live_chart_notice">The live chart will appear as soon as enough charging-power samples are recorded.</string>
     <string name="reconstructed_session_label">Reconstructed session</string>
-    <string name="reconstructed_session_desc">This session was recorded while the car was off — live telemetry charts are only available for sessions started while you are in the car with it powered on.</string>
+    <string name="reconstructed_session_desc">This session was rebuilt afterwards from the change in charge level, because the app wasn\'t running while the car charged — so there are no readings to draw these charts from. Charging with the car switched off is recorded live too, charts included, as long as the app keeps running.</string>
+    <string name="reconstructed_session_deep_sleep_hint">The app is set to Deep Sleep, which stops it 5 minutes after you switch the car off. To record charging with the car switched off, choose Always On under Settings → App → Power &amp; background.</string>
     <string name="not_enough_data_label">Not enough data</string>
     <string name="charging_legend">● Charging</string>
     <string name="reconstructed_badge">⚡ Reconstructed</string>

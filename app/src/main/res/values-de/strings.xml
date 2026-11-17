@@ -316,7 +316,8 @@
     <string name="current_power_estimate">%1$s kW aktuelle Schätzung</string>
     <string name="live_chart_notice">Das Live-Diagramm erscheint, sobald genügend Ladeleistungsproben aufgezeichnet wurden.</string>
     <string name="reconstructed_session_label">Rekonstruierte Sitzung</string>
-    <string name="reconstructed_session_desc">Diese Sitzung wurde aufgezeichnet, während das Auto aus war — Live-Telemetriediagramme sind nur für Sitzungen verfügbar, die gestartet wurden, während Sie im eingeschalteten Auto sitzen.</string>
+    <string name="reconstructed_session_desc">Diese Sitzung wurde nachträglich aus der Änderung des Ladestands rekonstruiert, weil die App während des Ladens nicht lief — daher gibt es keine Messwerte für diese Diagramme. Auch Laden bei ausgeschaltetem Auto wird live aufgezeichnet, samt Diagrammen, solange die App weiterläuft.</string>
+    <string name="reconstructed_session_deep_sleep_hint">Die App steht auf Tief-Schlaf und beendet sich damit 5 Minuten nach dem Ausschalten des Autos. Damit auch Laden bei ausgeschaltetem Auto aufgezeichnet wird, wählen Sie Immer An unter Einstellungen → App → Energie &amp; Hintergrund.</string>
     <string name="not_enough_data_label">Nicht genügend Daten</string>
     <string name="charging_legend">● Laden</string>
     <string name="reconstructed_badge">⚡ Rekonstruiert</string>

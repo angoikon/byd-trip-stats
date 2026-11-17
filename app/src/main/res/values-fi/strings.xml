@@ -349,7 +349,8 @@
     <string name="current_power_estimate">%1$s kW nykyinen arvio</string>
     <string name="live_chart_notice">Live-kaavio ilmestyy heti kun riittävästi lataustilanäytteitä on tallennettu.</string>
     <string name="reconstructed_session_label">Rekonstruoitu istunto</string>
-    <string name="reconstructed_session_desc">Tämä istunto tallennettiin kun auto oli sammutettu — live-telemetriakaaviot ovat saatavilla vain istunnoille, jotka aloitettiin kun olet autossa moottorin ollessa käynnissä.</string>
+    <string name="reconstructed_session_desc">Tämä istunto koottiin jälkikäteen varaustason muutoksesta, koska sovellus ei ollut käynnissä auton latautuessa — siksi näille kaavioille ei ole mittaustietoja. Myös lataus auton ollessa sammutettuna tallennetaan reaaliajassa kaavioineen, kunhan sovellus pysyy käynnissä.</string>
+    <string name="reconstructed_session_deep_sleep_hint">Sovellus on asetettu tilaan Syvä lepo, joka pysäyttää sen 5 minuuttia auton sammuttamisen jälkeen. Jos haluat tallentaa myös lataukset auton ollessa sammutettuna, valitse Aina päällä kohdassa Asetukset → Sovellus → Virta &amp; tausta.</string>
     <string name="not_enough_data_label">Ei tarpeeksi dataa</string>
     <string name="charging_legend">● Ladataan</string>
     <string name="reconstructed_badge">⚡ Rekonstruoitu</string>

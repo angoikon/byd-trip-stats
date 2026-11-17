@@ -346,7 +346,8 @@
     <string name="current_power_estimate">%1$s kW perkiraan saat ini</string>
     <string name="live_chart_notice">Grafik langsung akan muncul segera setelah cukup sampel daya pengisian terekam.</string>
     <string name="reconstructed_session_label">Sesi direkonstruksi</string>
-    <string name="reconstructed_session_desc">Sesi ini direkam saat mobil mati — grafik telemetri langsung hanya tersedia untuk sesi yang dimulai saat Anda di mobil dengan mesin menyala.</string>
+    <string name="reconstructed_session_desc">Sesi ini disusun ulang setelahnya dari perubahan tingkat daya baterai, karena aplikasi tidak berjalan saat mobil mengisi daya — jadi tidak ada data untuk menggambar grafik ini. Pengisian daya saat mobil mati juga direkam langsung, lengkap dengan grafik, selama aplikasi tetap berjalan.</string>
+    <string name="reconstructed_session_deep_sleep_hint">Aplikasi diatur ke Tidur Nyenyak, yang menghentikannya 5 menit setelah mobil dimatikan. Untuk merekam pengisian daya saat mobil mati, pilih Selalu Aktif di Pengaturan → Aplikasi → Daya &amp; latar belakang.</string>
     <string name="not_enough_data_label">Data tidak cukup</string>
     <string name="charging_legend">● Mengisi</string>
     <string name="reconstructed_badge">⚡ Direkonstruksi</string>

@@ -346,7 +346,8 @@
     <string name="current_power_estimate">%1$s kW — bieżący szacunek</string>
     <string name="live_chart_notice">Wykres na żywo pojawi się, gdy tylko zostanie zarejestrowanych wystarczająco dużo próbek mocy ładowania.</string>
     <string name="reconstructed_session_label">Sesja zrekonstruowana</string>
-    <string name="reconstructed_session_desc">Ta sesja została zarejestrowana przy wyłączonym samochodzie — wykresy telemetrii na żywo są dostępne tylko dla sesji rozpoczętych, gdy jesteś w samochodzie z włączonym zasilaniem.</string>
+    <string name="reconstructed_session_desc">Ta sesja została odtworzona później na podstawie zmiany poziomu naładowania, ponieważ aplikacja nie działała podczas ładowania — dlatego nie ma odczytów, z których można narysować te wykresy. Ładowanie przy wyłączonym samochodzie również jest rejestrowane na żywo, razem z wykresami, o ile aplikacja nadal działa.</string>
+    <string name="reconstructed_session_deep_sleep_hint">Aplikacja jest ustawiona na Głęboki sen, który zatrzymuje ją 5 minut po wyłączeniu samochodu. Aby rejestrować ładowanie także przy wyłączonym samochodzie, wybierz Zawsze włączona w Ustawienia → Aplikacja → Zasilanie i tło.</string>
     <string name="not_enough_data_label">Za mało danych</string>
     <string name="charging_legend">● Ładowanie</string>
     <string name="reconstructed_badge">⚡ Zrekonstruowana</string>

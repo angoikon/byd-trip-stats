@@ -5,16 +5,20 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.tripstats.R
+import com.byd.tripstats.data.preferences.OffStateMode
+import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.data.preferences.SocSource
 
 /**
@@ -73,6 +77,21 @@ internal fun ChartEmptyState(isSynthetic: Boolean) {
                     color     = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
+                // A charge is reconstructed because the app wasn't running through it, not because
+                // the car was off: with Always On a parked charge is recorded live. Only Deep Sleep
+                // (DiLink-3; DiLink-5 always runs Always On) is worth pointing at.
+                val context = LocalContext.current
+                val deepSleep = remember {
+                    PreferencesManager(context).getCachedOffStateMode() == OffStateMode.DEEP_SLEEP
+                }
+                if (deepSleep) {
+                    Text(
+                        stringResource(R.string.reconstructed_session_deep_sleep_hint),
+                        style     = MaterialTheme.typography.bodyMedium,
+                        color     = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                }
             } else {
                 Text(
                     stringResource(R.string.not_enough_data_label),

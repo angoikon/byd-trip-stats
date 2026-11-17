@@ -349,7 +349,8 @@
     <string name="current_power_estimate">estimativa atual de %1$s kW</string>
     <string name="live_chart_notice">O gráfico ao vivo aparecerá assim que amostras suficientes de potência de carregamento forem gravadas.</string>
     <string name="reconstructed_session_label">Sessão reconstruída</string>
-    <string name="reconstructed_session_desc">Esta sessão foi gravada enquanto o carro estava desligado — os gráficos de telemetria ao vivo só estão disponíveis para sessões iniciadas enquanto você está no carro com ele ligado.</string>
+    <string name="reconstructed_session_desc">Esta sessão foi reconstruída depois a partir da variação do nível de carga, porque o aplicativo não estava em execução enquanto o carro carregava — por isso não há leituras para desenhar estes gráficos. O carregamento com o carro desligado também é gravado ao vivo, com gráficos, desde que o aplicativo continue em execução.</string>
+    <string name="reconstructed_session_deep_sleep_hint">O aplicativo está configurado como Suspensão profunda, que o encerra 5 minutos depois que você desliga o carro. Para gravar também os carregamentos com o carro desligado, escolha Sempre ativo em Configurações → Aplicativo → Energia &amp; segundo plano.</string>
     <string name="not_enough_data_label">Dados insuficientes</string>
     <string name="charging_legend">● Carregamento</string>
     <string name="reconstructed_badge">⚡ Reconstruída</string>

@@ -349,7 +349,8 @@
     <string name="current_power_estimate">%1$s kW huidige schatting</string>
     <string name="live_chart_notice">De live grafiek verschijnt zodra er voldoende laadvermogenmonsters zijn opgenomen.</string>
     <string name="reconstructed_session_label">Gereconstrueerde sessie</string>
-    <string name="reconstructed_session_desc">Deze sessie is opgenomen terwijl de auto uit stond — live telemetiegrafieken zijn alleen beschikbaar voor sessies die zijn gestart terwijl je in de auto zit met de motor aan.</string>
+    <string name="reconstructed_session_desc">Deze sessie is achteraf gereconstrueerd uit de verandering in het laadniveau, omdat de app niet draaide terwijl de auto laadde — er zijn dus geen meetwaarden om deze grafieken mee te tekenen. Ook laden met de auto uit wordt live vastgelegd, inclusief grafieken, zolang de app blijft draaien.</string>
+    <string name="reconstructed_session_deep_sleep_hint">De app staat op Diepe slaap, waardoor hij 5 minuten nadat je de auto uitzet stopt. Kies Altijd aan onder Instellingen → App → Energie &amp; achtergrond om ook laden met de auto uit vast te leggen.</string>
     <string name="not_enough_data_label">Onvoldoende gegevens</string>
     <string name="charging_legend">● Laden</string>
     <string name="reconstructed_badge">⚡ Gereconstrueerd</string>

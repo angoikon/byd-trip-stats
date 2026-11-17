@@ -346,7 +346,8 @@
     <string name="current_power_estimate">%1$s kW estimare curentă</string>
     <string name="live_chart_notice">Graficul live va apărea imediat ce se înregistrează suficiente mostre de putere de încărcare.</string>
     <string name="reconstructed_session_label">Sesiune reconstruită</string>
-    <string name="reconstructed_session_desc">Această sesiune a fost înregistrată cu mașina oprită — graficele de telemetrie live sunt disponibile doar pentru sesiunile începute când sunteți în mașină cu contactul pus.</string>
+    <string name="reconstructed_session_desc">Această sesiune a fost reconstituită ulterior din variația nivelului de încărcare, deoarece aplicația nu rula în timp ce mașina se încărca — de aceea nu există citiri pentru aceste grafice. Și încărcarea cu mașina oprită se înregistrează live, cu grafice, atâta timp cât aplicația continuă să ruleze.</string>
+    <string name="reconstructed_session_deep_sleep_hint">Aplicația este setată pe Somn profund, care o oprește la 5 minute după ce opriți mașina. Pentru a înregistra și încărcările cu mașina oprită, alegeți Mereu pornit în Setări → Aplicație → Alimentare și fundal.</string>
     <string name="not_enough_data_label">Date insuficiente</string>
     <string name="charging_legend">● Încărcare</string>
     <string name="reconstructed_badge">⚡ Reconstruită</string>

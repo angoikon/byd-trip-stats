@@ -349,7 +349,8 @@
     <string name="current_power_estimate">当前估算 %1$s kW</string>
     <string name="live_chart_notice">当积累了足够的充电功率样本后，实时图表将显示。</string>
     <string name="reconstructed_session_label">重建的充电记录</string>
-    <string name="reconstructed_session_desc">此充电记录是在车辆关闭时记录的 — 实时遥测图表仅适用于您在车内且车辆开启时开始的充电记录。</string>
+    <string name="reconstructed_session_desc">由于车辆充电时应用未在运行，此充电记录是事后根据电量变化重建的 — 因此没有可用于绘制这些图表的读数。只要应用保持运行，车辆关闭时的充电同样会实时记录，并包含图表。</string>
+    <string name="reconstructed_session_deep_sleep_hint">应用当前设为深度休眠，会在车辆关闭 5 分钟后停止运行。若要在车辆关闭时也记录充电，请在 设置 → 应用 → 电源 &amp; 后台 中选择始终开启。</string>
     <string name="not_enough_data_label">数据不足</string>
     <string name="charging_legend">● 充电中</string>
     <string name="reconstructed_badge">⚡ 重建数据</string>

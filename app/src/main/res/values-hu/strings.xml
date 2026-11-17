@@ -346,7 +346,8 @@
     <string name="current_power_estimate">%1$s kW jelenlegi becslés</string>
     <string name="live_chart_notice">Az élő grafikon megjelenik, amint elég töltési teljesítményminta gyűlik össze.</string>
     <string name="reconstructed_session_label">Rekonstruált munkamenet</string>
-    <string name="reconstructed_session_desc">Ez a munkamenet kikapcsolt autónál lett rögzítve — élő telemetriagrafikonok csak akkor érhetők el, ha a munkamenet bekapcsolt autóban, Önnel az autóban indult.</string>
+    <string name="reconstructed_session_desc">Ez a munkamenet utólag, a töltöttségi szint változásából lett összeállítva, mert az alkalmazás nem futott, amíg az autó töltött — ezért nincsenek mérések ezekhez a grafikonokhoz. Kikapcsolt autónál is élőben, grafikonokkal együtt rögzül a töltés, amíg az alkalmazás fut.</string>
+    <string name="reconstructed_session_deep_sleep_hint">Az alkalmazás Mély alvás módra van állítva, amely az autó kikapcsolása után 5 perccel leállítja. Ha kikapcsolt autónál is rögzíteni szeretné a töltést, válassza a Mindig be lehetőséget a Beállítások → Alkalmazás → Energia és háttér menüben.</string>
     <string name="not_enough_data_label">Nincs elég adat</string>
     <string name="charging_legend">● Töltés</string>
     <string name="reconstructed_badge">⚡ Rekonstruált</string>

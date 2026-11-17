@@ -316,7 +316,8 @@
     <string name="current_power_estimate">%1$s kW การประมาณปัจจุบัน</string>
     <string name="live_chart_notice">กราฟแบบเรียลไทม์จะปรากฏเมื่อบันทึกตัวอย่างกำลังการชาร์จเพียงพอ</string>
     <string name="reconstructed_session_label">เซสชันที่สร้างใหม่</string>
-    <string name="reconstructed_session_desc">เซสชันนี้บันทึกขณะที่รถดับ — กราฟเทเลเมทรีแบบเรียลไทม์ใช้ได้เฉพาะกับเซสชันที่เริ่มต้นขณะรถติดเครื่อง</string>
+    <string name="reconstructed_session_desc">เซสชันนี้สร้างขึ้นใหม่ภายหลังจากการเปลี่ยนแปลงของระดับการชาร์จ เพราะแอปไม่ได้ทำงานขณะที่รถชาร์จ — จึงไม่มีค่าที่วัดได้สำหรับวาดกราฟเหล่านี้ การชาร์จขณะรถดับก็จะถูกบันทึกแบบเรียลไทม์พร้อมกราฟเช่นกัน ตราบใดที่แอปยังทำงานอยู่</string>
+    <string name="reconstructed_session_deep_sleep_hint">แอปตั้งค่าเป็นโหมดหลับลึก ซึ่งจะหยุดแอป 5 นาทีหลังจากดับรถ หากต้องการบันทึกการชาร์จขณะรถดับด้วย ให้เลือกเปิดตลอดเวลาใน การตั้งค่า → แอป → พลังงาน &amp; พื้นหลัง</string>
     <string name="not_enough_data_label">ข้อมูลไม่เพียงพอ</string>
     <string name="charging_legend">● การชาร์จ</string>
     <string name="reconstructed_badge">⚡ สร้างใหม่</string>

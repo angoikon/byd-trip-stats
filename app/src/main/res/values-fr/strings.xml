@@ -316,7 +316,8 @@
     <string name="current_power_estimate">%1$s kW estimation actuelle</string>
     <string name="live_chart_notice">Le graphique en direct apparaîtra dès que suffisamment d\'échantillons de puissance de charge seront enregistrés.</string>
     <string name="reconstructed_session_label">Session reconstruite</string>
-    <string name="reconstructed_session_desc">Cette session a été enregistrée pendant que la voiture était éteinte — les graphiques de télémétrie en direct ne sont disponibles que pour les sessions démarrées avec la voiture allumée.</string>
+    <string name="reconstructed_session_desc">Cette session a été reconstituée après coup à partir de la variation du niveau de charge, car l\'application ne tournait pas pendant la recharge — il n\'y a donc aucune mesure pour tracer ces graphiques. La recharge voiture éteinte est elle aussi enregistrée en direct, graphiques compris, tant que l\'application continue de tourner.</string>
+    <string name="reconstructed_session_deep_sleep_hint">L\'application est réglée sur Veille profonde, qui l\'arrête 5 minutes après l\'extinction de la voiture. Pour enregistrer aussi les recharges voiture éteinte, choisissez Toujours actif dans Paramètres → App → Énergie &amp; arrière-plan.</string>
     <string name="not_enough_data_label">Données insuffisantes</string>
     <string name="charging_legend">● Charge</string>
     <string name="reconstructed_badge">⚡ Reconstruit</string>

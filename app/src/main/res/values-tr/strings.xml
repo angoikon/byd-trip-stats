@@ -349,7 +349,8 @@
     <string name="current_power_estimate">Mevcut tahmin %1$s kW</string>
     <string name="live_chart_notice">Yeterli şarj gücü örneği kaydedildiğinde canlı grafik görünecektir.</string>
     <string name="reconstructed_session_label">Yeniden oluşturulmuş oturum</string>
-    <string name="reconstructed_session_desc">Bu oturum araç kapalıyken kaydedildi — canlı telemetri grafikleri yalnızca araç açıkken başlatılan oturumlar için kullanılabilir.</string>
+    <string name="reconstructed_session_desc">Bu oturum, araç şarj olurken uygulama çalışmadığı için sonradan şarj seviyesindeki değişimden yeniden oluşturuldu — bu yüzden bu grafikleri çizecek ölçüm yok. Araç kapalıyken yapılan şarj da, uygulama çalışmaya devam ettiği sürece grafikleriyle birlikte canlı kaydedilir.</string>
+    <string name="reconstructed_session_deep_sleep_hint">Uygulama Derin Uyku olarak ayarlı; bu mod uygulamayı aracı kapattıktan 5 dakika sonra durdurur. Araç kapalıyken yapılan şarjı da kaydetmek için Ayarlar → Uygulama → Güç &amp; arka plan bölümünden Her Zaman Açık seçeneğini seçin.</string>
     <string name="not_enough_data_label">Yeterli veri yok</string>
     <string name="charging_legend">● Şarj oluyor</string>
     <string name="reconstructed_badge">⚡ Yeniden Oluşturuldu</string>

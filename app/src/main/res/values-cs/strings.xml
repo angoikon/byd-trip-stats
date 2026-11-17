@@ -346,7 +346,8 @@
     <string name="current_power_estimate">%1$s kW — aktuální odhad</string>
     <string name="live_chart_notice">Živý graf se zobrazí, jakmile bude zaznamenáno dost vzorků nabíjecího výkonu.</string>
     <string name="reconstructed_session_label">Rekonstruovaná relace</string>
-    <string name="reconstructed_session_desc">Tato relace byla zaznamenána při vypnutém voze — živé telemetrické grafy jsou dostupné jen u relací zahájených, když jste ve voze se zapnutým napájením.</string>
+    <string name="reconstructed_session_desc">Tato relace byla dodatečně sestavena ze změny stavu nabití, protože aplikace během nabíjení neběžela — proto nejsou k dispozici žádná data pro tyto grafy. Nabíjení při vypnutém voze se také zaznamenává živě, včetně grafů, pokud aplikace zůstane spuštěná.</string>
+    <string name="reconstructed_session_deep_sleep_hint">Aplikace je nastavena na Hluboký spánek, který ji zastaví 5 minut po vypnutí vozu. Chcete-li zaznamenávat nabíjení i při vypnutém voze, zvolte Vždy zapnuto v Nastavení → Aplikace → Napájení a pozadí.</string>
     <string name="not_enough_data_label">Nedostatek dat</string>
     <string name="charging_legend">● Nabíjení</string>
     <string name="reconstructed_badge">⚡ Rekonstruováno</string>

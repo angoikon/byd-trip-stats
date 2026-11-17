@@ -346,7 +346,8 @@
     <string name="current_power_estimate">%1$s kW ước tính hiện tại</string>
     <string name="live_chart_notice">Biểu đồ trực tiếp sẽ xuất hiện ngay khi đủ mẫu công suất sạc được ghi.</string>
     <string name="reconstructed_session_label">Phiên tái tạo</string>
-    <string name="reconstructed_session_desc">Phiên này được ghi khi xe tắt — biểu đồ đo từ xa trực tiếp chỉ có cho các phiên bắt đầu khi bạn ở trong xe với xe đang bật.</string>
+    <string name="reconstructed_session_desc">Phiên này được tái tạo sau đó từ sự thay đổi mức sạc, vì ứng dụng không chạy trong lúc xe sạc — nên không có số liệu để vẽ các biểu đồ này. Việc sạc khi xe đã tắt cũng được ghi trực tiếp, kèm biểu đồ, miễn là ứng dụng vẫn tiếp tục chạy.</string>
+    <string name="reconstructed_session_deep_sleep_hint">Ứng dụng đang đặt ở chế độ Ngủ sâu, chế độ này dừng ứng dụng 5 phút sau khi bạn tắt xe. Để ghi cả việc sạc khi xe đã tắt, hãy chọn Luôn bật trong Cài đặt → Ứng dụng → Nguồn &amp; nền.</string>
     <string name="not_enough_data_label">Không đủ dữ liệu</string>
     <string name="charging_legend">● Đang sạc</string>
     <string name="reconstructed_badge">⚡ Đã tái tạo</string>

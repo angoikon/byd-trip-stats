@@ -346,7 +346,8 @@
     <string name="current_power_estimate">%1$s kW הערכה נוכחית</string>
     <string name="live_chart_notice">הגרף החי יופיע ברגע שיוקלטו מספיק דגימות הספק טעינה.</string>
     <string name="reconstructed_session_label">מפגש משוחזר</string>
-    <string name="reconstructed_session_desc">מפגש זה הוקלט כשהרכב היה כבוי — גרפי טלמטריה חיים זמינים רק למפגשים שהתחילו כשאתם ברכב והוא דלוק.</string>
+    <string name="reconstructed_session_desc">מפגש זה שוחזר בדיעבד משינוי רמת הטעינה, כי האפליקציה לא פעלה בזמן שהרכב נטען — ולכן אין מדידות לשרטוט הגרפים האלה. גם טעינה כשהרכב כבוי מוקלטת בזמן אמת, כולל גרפים, כל עוד האפליקציה ממשיכה לפעול.</string>
+    <string name="reconstructed_session_deep_sleep_hint">האפליקציה מוגדרת למצב שינה עמוקה, שעוצר אותה 5 דקות אחרי כיבוי הרכב. כדי להקליט טעינה גם כשהרכב כבוי, בחרו תמיד פעיל בהגדרות → אפליקציה → חשמל ורקע.</string>
     <string name="not_enough_data_label">אין מספיק נתונים</string>
     <string name="charging_legend">● טעינה</string>
     <string name="reconstructed_badge">⚡ משוחזר</string>

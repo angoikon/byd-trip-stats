@@ -349,7 +349,8 @@
     <string name="current_power_estimate">%1$s kW estimación actual</string>
     <string name="live_chart_notice">El gráfico en vivo aparecerá en cuanto se graben suficientes muestras de potencia de carga.</string>
     <string name="reconstructed_session_label">Sesión reconstruida</string>
-    <string name="reconstructed_session_desc">Esta sesión se grabó mientras el coche estaba apagado — los gráficos de telemetría en vivo solo están disponibles para sesiones iniciadas mientras estás en el coche con él encendido.</string>
+    <string name="reconstructed_session_desc">Esta sesión se reconstruyó después a partir del cambio en el nivel de carga, porque la app no estaba en marcha mientras el coche cargaba — así que no hay lecturas con las que dibujar estos gráficos. La carga con el coche apagado también se registra en vivo, con gráficos, siempre que la app siga en marcha.</string>
+    <string name="reconstructed_session_deep_sleep_hint">La app está en Suspensión profunda, que la detiene 5 minutos después de apagar el coche. Para registrar también las cargas con el coche apagado, elige Siempre activo en Ajustes → App → Alimentación &amp; segundo plano.</string>
     <string name="not_enough_data_label">Datos insuficientes</string>
     <string name="charging_legend">● Cargando</string>
     <string name="reconstructed_badge">⚡ Reconstruida</string>

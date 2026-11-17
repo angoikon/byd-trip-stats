@@ -316,7 +316,8 @@
     <string name="current_power_estimate">%1$s kW वर्तमान अनुमान</string>
     <string name="live_chart_notice">लाइव चार्ट तब दिखाई देगा जब पर्याप्त चार्जिंग पावर नमूने रिकॉर्ड हो जाएंगे।</string>
     <string name="reconstructed_session_label">पुनर्निर्मित सत्र</string>
-    <string name="reconstructed_session_desc">यह सत्र कार बंद होने पर रिकॉर्ड हुआ — लाइव टेलीमेट्री चार्ट केवल उन सत्रों के लिए उपलब्ध है जो कार चालू होने पर शुरू हुए।</string>
+    <string name="reconstructed_session_desc">यह सत्र बाद में चार्ज स्तर में हुए बदलाव से दोबारा बनाया गया, क्योंकि कार चार्ज होते समय ऐप नहीं चल रहा था — इसलिए इन चार्ट के लिए कोई रीडिंग नहीं है। कार बंद होने पर चार्जिंग भी चार्ट सहित लाइव रिकॉर्ड होती है, बशर्ते ऐप चलता रहे।</string>
+    <string name="reconstructed_session_deep_sleep_hint">ऐप गहरी नींद पर सेट है, जो कार बंद करने के 5 मिनट बाद इसे रोक देता है। कार बंद होने पर भी चार्जिंग रिकॉर्ड करने के लिए सेटिंग → ऐप → शक्ति &amp; पृष्ठभूमि में हमेशा चालू चुनें।</string>
     <string name="not_enough_data_label">पर्याप्त डेटा नहीं</string>
     <string name="charging_legend">● चार्जिंग</string>
     <string name="reconstructed_badge">⚡ पुनर्निर्मित</string>

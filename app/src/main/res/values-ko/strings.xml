@@ -316,7 +316,8 @@
     <string name="current_power_estimate">%1$s kW 현재 추정값</string>
     <string name="live_chart_notice">충전 출력 샘플이 충분히 기록되면 실시간 차트가 표시됩니다.</string>
     <string name="reconstructed_session_label">재구성된 세션</string>
-    <string name="reconstructed_session_desc">이 세션은 차량이 꺼진 상태에서 기록되었습니다 — 실시간 텔레메트리 차트는 차량이 켜진 상태에서 시작된 세션에서만 사용 가능합니다.</string>
+    <string name="reconstructed_session_desc">이 세션은 충전 중에 앱이 실행되고 있지 않아 충전량 변화로부터 나중에 재구성되었습니다 — 그래서 이 차트를 그릴 측정값이 없습니다. 앱이 계속 실행 중이면 차량이 꺼진 상태의 충전도 차트와 함께 실시간으로 기록됩니다.</string>
+    <string name="reconstructed_session_deep_sleep_hint">앱이 딥 슬립으로 설정되어 있어 차량 전원을 끄고 5분 후에 중지됩니다. 차량이 꺼진 상태의 충전도 기록하려면 설정 → 앱 → 전력 &amp; 백그라운드에서 항상 켜짐을 선택하세요.</string>
     <string name="not_enough_data_label">데이터 부족</string>
     <string name="charging_legend">● 충전</string>
     <string name="reconstructed_badge">⚡ 재구성됨</string>

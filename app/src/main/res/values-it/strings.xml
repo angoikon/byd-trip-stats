@@ -349,7 +349,8 @@
     <string name="current_power_estimate">%1$s kW stima attuale</string>
     <string name="live_chart_notice">Il grafico live apparirà non appena saranno registrati abbastanza campioni di potenza di ricarica.</string>
     <string name="reconstructed_session_label">Sessione ricostruita</string>
-    <string name="reconstructed_session_desc">Questa sessione è stata registrata mentre l\'auto era spenta — i grafici di telemetria live sono disponibili solo per sessioni avviate mentre sei in auto con il veicolo acceso.</string>
+    <string name="reconstructed_session_desc">Questa sessione è stata ricostruita a posteriori dalla variazione del livello di carica, perché l\'app non era in esecuzione mentre l\'auto si ricaricava — quindi non ci sono letture con cui tracciare questi grafici. Anche la ricarica ad auto spenta viene registrata in tempo reale, grafici compresi, purché l\'app resti in esecuzione.</string>
+    <string name="reconstructed_session_deep_sleep_hint">L\'app è impostata su Sospensione profonda, che la arresta 5 minuti dopo lo spegnimento dell\'auto. Per registrare anche le ricariche ad auto spenta, scegli Sempre attivo in Impostazioni → App → Alimentazione &amp; background.</string>
     <string name="not_enough_data_label">Dati insufficienti</string>
     <string name="charging_legend">● In ricarica</string>
     <string name="reconstructed_badge">⚡ Ricostruita</string>

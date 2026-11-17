@@ -349,7 +349,8 @@
     <string name="current_power_estimate">%1$s kW 現在推定値</string>
     <string name="live_chart_notice">十分な充電電力サンプルが記録されたらライブチャートが表示されます。</string>
     <string name="reconstructed_session_label">再構築セッション</string>
-    <string name="reconstructed_session_desc">このセッションは車がオフの間に記録されました。ライブテレメトリーチャートは、車の電源がオンの状態で開始されたセッションのみ利用可能です。</string>
+    <string name="reconstructed_session_desc">このセッションは、充電中にアプリが動作していなかったため、充電レベルの変化から後で再構築されました。そのため、これらのチャートを描くための測定値がありません。アプリが動作し続けていれば、車の電源がオフの間の充電もチャートを含めてリアルタイムで記録されます。</string>
+    <string name="reconstructed_session_deep_sleep_hint">アプリはディープスリープに設定されており、車の電源を切ってから5分後に停止します。車の電源がオフの間の充電も記録するには、設定 → アプリ → 電源 &amp; バックグラウンドで常時起動を選択してください。</string>
     <string name="not_enough_data_label">データ不足</string>
     <string name="charging_legend">● 充電中</string>
     <string name="reconstructed_badge">⚡ 再構築済み</string>

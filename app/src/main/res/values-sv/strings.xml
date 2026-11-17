@@ -349,7 +349,8 @@
     <string name="current_power_estimate">%1$s kW aktuell uppskattning</string>
     <string name="live_chart_notice">Livediagrammet visas så fort tillräckligt många laddningseffektprover registrerats.</string>
     <string name="reconstructed_session_label">Rekonstruerad session</string>
-    <string name="reconstructed_session_desc">Den här sessionen spelades in medan bilen var av — livediagrammen är bara tillgängliga för sessioner som startade medan du är i bilen med den påslagen.</string>
+    <string name="reconstructed_session_desc">Den här sessionen återskapades i efterhand utifrån förändringen i laddnivå, eftersom appen inte körde medan bilen laddade — därför finns det inga mätvärden att rita de här diagrammen från. Laddning med bilen avstängd registreras också live, med diagram, så länge appen fortsätter att köras.</string>
+    <string name="reconstructed_session_deep_sleep_hint">Appen är inställd på Djupsömn, som stoppar den 5 minuter efter att du stänger av bilen. Välj Alltid på under Inställningar → App → Effekt &amp; bakgrund för att även registrera laddning med bilen avstängd.</string>
     <string name="not_enough_data_label">Inte tillräckligt med data</string>
     <string name="charging_legend">● Laddar</string>
     <string name="reconstructed_badge">⚡ Rekonstruerad</string>
