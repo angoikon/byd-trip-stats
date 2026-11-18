@@ -73,7 +73,6 @@
     <string name="awd_tap_hint">Полный привод AWD — нажмите, чтобы сменить единицу давления</string>
     <string name="change_drive_mode_hint">Смените режим вождения для инициализации дисплея</string>
     <string name="slope_value">Уклон: %1$s°</string>
-    <string name="altitude_value">Высота: %1$s</string>
     <string name="ambient_temp_value">Снаружи: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s мкг/м³</string>
     <string name="cells_awaiting">Ячейки: ожидание данных…</string>
@@ -1317,6 +1316,8 @@
     <string name="power_state_charging">Зарядка</string>
     <string name="speed_state_parked">Стоит</string>
     <string name="speed_state_driving">Движение</string>
+    <string name="stat_altitude">Высота</string>
+    <string name="altitude_subtitle_sea_level">Над уровнем моря</string>
     <string name="soc_subtitle_usable">Доступный заряд</string>
     <string name="range_subtitle_window">Последние %1$s</string>
     <string name="range_window_dialog_note">Действует с этого момента — уже построенная часть графика запаса хода не меняется.</string>

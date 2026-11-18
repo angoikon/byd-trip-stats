@@ -65,7 +65,6 @@
     <string name="awd_tap_hint">ขับเคลื่อน 4 ล้อ — แตะเพื่อเปลี่ยนหน่วยความดัน</string>
     <string name="change_drive_mode_hint">เปลี่ยนโหมดขับขี่เพื่อเริ่มต้นการแสดงผล</string>
     <string name="slope_value">ความชัน: %1$s°</string>
-    <string name="altitude_value">ความสูง: %1$s</string>
     <string name="ambient_temp_value">อุณหภูมิอากาศ: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">เซลล์: รอข้อมูล…</string>
@@ -1220,6 +1219,8 @@
     <string name="power_state_charging">กำลังชาร์จ</string>
     <string name="speed_state_parked">อยู่กับที่</string>
     <string name="speed_state_driving">กำลังขับ</string>
+    <string name="stat_altitude">ความสูง</string>
+    <string name="altitude_subtitle_sea_level">เหนือระดับน้ำทะเล</string>
     <string name="soc_subtitle_usable">ประจุที่ใช้ได้</string>
     <string name="range_subtitle_window">%1$s ล่าสุด</string>
     <string name="range_window_dialog_note">มีผลตั้งแต่ตอนนี้ — ส่วนที่กราฟระยะทางวิ่งวาดไว้แล้วจะคงเดิม</string>

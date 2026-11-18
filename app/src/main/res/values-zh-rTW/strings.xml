@@ -76,7 +76,6 @@
     <string name="awd_tap_hint">四輪傳動系統 — 點擊以變更氣壓單位</string>
     <string name="change_drive_mode_hint">切換駕駛模式以初始化顯示</string>
     <string name="slope_value">坡度：%1$s°</string>
-    <string name="altitude_value">海拔：%1$s</string>
     <string name="ambient_temp_value">環境溫度：%1$s °C</string>
     <string name="pm25_value">PM2.5：%1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">電芯：等待資料…</string>
@@ -1321,6 +1320,8 @@
     <string name="power_state_charging">充電中</string>
     <string name="speed_state_parked">靜止</string>
     <string name="speed_state_driving">行駛中</string>
+    <string name="stat_altitude">海拔</string>
+    <string name="altitude_subtitle_sea_level">海平面以上</string>
     <string name="soc_subtitle_usable">可用電量</string>
     <string name="range_subtitle_window">最近 %1$s</string>
     <string name="range_window_dialog_note">從現在起生效——續航圖表已繪製的部分保持不變。</string>

@@ -73,7 +73,6 @@
     <string name="awd_tap_hint">Hệ dẫn động AWD — chạm để đổi đơn vị áp suất</string>
     <string name="change_drive_mode_hint">Đổi chế độ lái để khởi tạo màn hình</string>
     <string name="slope_value">Độ dốc: %1$s°</string>
-    <string name="altitude_value">Độ cao: %1$s</string>
     <string name="ambient_temp_value">Môi trường: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">Cell: đang chờ dữ liệu…</string>
@@ -1317,6 +1316,8 @@
     <string name="power_state_charging">Đang sạc</string>
     <string name="speed_state_parked">Đứng yên</string>
     <string name="speed_state_driving">Đang lái</string>
+    <string name="stat_altitude">Độ cao</string>
+    <string name="altitude_subtitle_sea_level">Trên mực nước biển</string>
     <string name="soc_subtitle_usable">Điện tích khả dụng</string>
     <string name="range_subtitle_window">%1$s gần nhất</string>
     <string name="range_window_dialog_note">Áp dụng từ bây giờ — phần biểu đồ quãng đường đã vẽ vẫn giữ nguyên.</string>

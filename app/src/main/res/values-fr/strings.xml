@@ -65,7 +65,6 @@
     <string name="awd_tap_hint">Transmission intégrale — appuyer pour changer l\'unité de pression</string>
     <string name="change_drive_mode_hint">Changer le mode de conduite pour initialiser l\'affichage</string>
     <string name="slope_value">Pente: %1$s°</string>
-    <string name="altitude_value">Altitude: %1$s</string>
     <string name="ambient_temp_value">Ambiant: %1$s °C</string>
     <string name="pm25_value">PM2,5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">Cellules: en attente de données…</string>
@@ -1220,6 +1219,8 @@
     <string name="power_state_charging">Charge</string>
     <string name="speed_state_parked">À l\'arrêt</string>
     <string name="speed_state_driving">En conduite</string>
+    <string name="stat_altitude">Altitude</string>
+    <string name="altitude_subtitle_sea_level">Au-dessus de la mer</string>
     <string name="soc_subtitle_usable">Charge utilisable</string>
     <string name="range_subtitle_window">Derniers %1$s</string>
     <string name="range_window_dialog_note">S\'applique dès maintenant — ce que le graphique d\'autonomie a déjà tracé reste inchangé.</string>

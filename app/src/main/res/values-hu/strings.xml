@@ -73,7 +73,6 @@
     <string name="awd_tap_hint">AWD hajtáslánc — koppintson a nyomás mértékegységének módosításához</string>
     <string name="change_drive_mode_hint">Váltson vezetési módot a kijelző inicializálásához</string>
     <string name="slope_value">Lejtés: %1$s°</string>
-    <string name="altitude_value">Magasság: %1$s</string>
     <string name="ambient_temp_value">Környezet: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">Cellák: adatokra várva…</string>
@@ -1317,6 +1316,8 @@
     <string name="power_state_charging">Töltés</string>
     <string name="speed_state_parked">Álló</string>
     <string name="speed_state_driving">Vezetés</string>
+    <string name="stat_altitude">Magasság</string>
+    <string name="altitude_subtitle_sea_level">Tengerszint felett</string>
     <string name="soc_subtitle_usable">Használható töltés</string>
     <string name="range_subtitle_window">Utolsó %1$s</string>
     <string name="range_window_dialog_note">Mostantól érvényes — amit a hatótáv-diagram már megrajzolt, az változatlan marad.</string>

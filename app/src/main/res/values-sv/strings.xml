@@ -76,7 +76,6 @@
     <string name="awd_tap_hint">AWD-drivlina — tryck för att ändra tryckenhet</string>
     <string name="change_drive_mode_hint">Byt körläge för att initiera visningen</string>
     <string name="slope_value">Lutning: %1$s°</string>
-    <string name="altitude_value">Höjd: %1$s</string>
     <string name="ambient_temp_value">Omgivning: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">Celler: väntar på data…</string>
@@ -1321,6 +1320,8 @@
     <string name="power_state_charging">Laddar</string>
     <string name="speed_state_parked">Stillastående</string>
     <string name="speed_state_driving">Kör</string>
+    <string name="stat_altitude">Höjd</string>
+    <string name="altitude_subtitle_sea_level">Över havet</string>
     <string name="soc_subtitle_usable">Användbar laddning</string>
     <string name="range_subtitle_window">Senaste %1$s</string>
     <string name="range_window_dialog_note">Gäller från och med nu — det räckviddsdiagrammet redan har ritat förblir oförändrat.</string>

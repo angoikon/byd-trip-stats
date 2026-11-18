@@ -73,7 +73,6 @@
     <string name="awd_tap_hint">Penggerak AWD — ketuk untuk mengubah satuan tekanan</string>
     <string name="change_drive_mode_hint">Ubah mode berkendara untuk menginisialisasi tampilan</string>
     <string name="slope_value">Kemiringan: %1$s°</string>
-    <string name="altitude_value">Ketinggian: %1$s</string>
     <string name="ambient_temp_value">Sekitar: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">Sel: menunggu data…</string>
@@ -1317,6 +1316,8 @@
     <string name="power_state_charging">Mengisi</string>
     <string name="speed_state_parked">Diam</string>
     <string name="speed_state_driving">Berkendara</string>
+    <string name="stat_altitude">Ketinggian</string>
+    <string name="altitude_subtitle_sea_level">Di atas permukaan laut</string>
     <string name="soc_subtitle_usable">Daya yang dapat digunakan</string>
     <string name="range_subtitle_window">%1$s terakhir</string>
     <string name="range_window_dialog_note">Berlaku mulai sekarang — bagian grafik jarak tempuh yang sudah tergambar tetap seperti semula.</string>

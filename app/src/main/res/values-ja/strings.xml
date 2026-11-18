@@ -76,7 +76,6 @@
     <string name="awd_tap_hint">AWD駆動系 — タップして空気圧単位を変更</string>
     <string name="change_drive_mode_hint">ドライブモードを変更してディスプレイを初期化</string>
     <string name="slope_value">傾斜：%1$s°</string>
-    <string name="altitude_value">標高：%1$s</string>
     <string name="ambient_temp_value">外気温：%1$s °C</string>
     <string name="pm25_value">PM2.5：%1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">セル：データ待機中…</string>
@@ -1321,6 +1320,8 @@
     <string name="power_state_charging">充電中</string>
     <string name="speed_state_parked">停止中</string>
     <string name="speed_state_driving">走行中</string>
+    <string name="stat_altitude">標高</string>
+    <string name="altitude_subtitle_sea_level">海抜</string>
     <string name="soc_subtitle_usable">使用可能な充電量</string>
     <string name="range_subtitle_window">直近 %1$s</string>
     <string name="range_window_dialog_note">今後から適用されます。航続距離グラフにすでに描かれた部分はそのままです。</string>

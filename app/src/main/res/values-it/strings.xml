@@ -76,7 +76,6 @@
     <string name="awd_tap_hint">Trazione integrale AWD — tocca per cambiare unità di pressione</string>
     <string name="change_drive_mode_hint">Cambia la modalità di guida per inizializzare il display</string>
     <string name="slope_value">Pendenza: %1$s°</string>
-    <string name="altitude_value">Quota: %1$s</string>
     <string name="ambient_temp_value">Ambiente: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">Celle: in attesa di dati…</string>
@@ -1321,6 +1320,8 @@
     <string name="power_state_charging">In carica</string>
     <string name="speed_state_parked">Fermo</string>
     <string name="speed_state_driving">In marcia</string>
+    <string name="stat_altitude">Quota</string>
+    <string name="altitude_subtitle_sea_level">Sul livello del mare</string>
     <string name="soc_subtitle_usable">Carica utilizzabile</string>
     <string name="range_subtitle_window">Ultimi %1$s</string>
     <string name="range_window_dialog_note">Si applica da ora in poi — ciò che il grafico dell\'autonomia ha già disegnato resta invariato.</string>

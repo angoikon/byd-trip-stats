@@ -73,7 +73,6 @@
     <string name="awd_tap_hint">Pohon AWD — klepnutím změníte jednotku tlaku</string>
     <string name="change_drive_mode_hint">Změňte jízdní režim pro inicializaci displeje</string>
     <string name="slope_value">Sklon: %1$s°</string>
-    <string name="altitude_value">Výška: %1$s</string>
     <string name="ambient_temp_value">Okolí: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">Články: čekání na data…</string>
@@ -1317,6 +1316,8 @@
     <string name="power_state_charging">Nabíjení</string>
     <string name="speed_state_parked">Stojící</string>
     <string name="speed_state_driving">Jízda</string>
+    <string name="stat_altitude">Výška</string>
+    <string name="altitude_subtitle_sea_level">Nad mořem</string>
     <string name="soc_subtitle_usable">Využitelná kapacita</string>
     <string name="range_subtitle_window">Posledních %1$s</string>
     <string name="range_window_dialog_note">Platí od této chvíle — co graf dojezdu už vykreslil, zůstane beze změny.</string>

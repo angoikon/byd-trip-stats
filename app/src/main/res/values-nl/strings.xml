@@ -76,7 +76,6 @@
     <string name="awd_tap_hint">AWD-aandrijflijn — tik om de drukeenheid te wijzigen</string>
     <string name="change_drive_mode_hint">Wijzig de rijmodus om het scherm te initialiseren</string>
     <string name="slope_value">Helling: %1$s°</string>
-    <string name="altitude_value">Hoogte: %1$s</string>
     <string name="ambient_temp_value">Omgeving: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">Cellen: wachten op gegevens…</string>
@@ -1321,6 +1320,8 @@
     <string name="power_state_charging">Opladen</string>
     <string name="speed_state_parked">Stilstaand</string>
     <string name="speed_state_driving">Rijden</string>
+    <string name="stat_altitude">Hoogte</string>
+    <string name="altitude_subtitle_sea_level">Boven zeeniveau</string>
     <string name="soc_subtitle_usable">Bruikbare lading</string>
     <string name="range_subtitle_window">Laatste %1$s</string>
     <string name="range_window_dialog_note">Geldt vanaf nu — wat de bereikgrafiek al heeft getekend, blijft ongewijzigd.</string>

@@ -65,7 +65,6 @@
     <string name="awd_tap_hint">AWD — दबाव इकाई बदलने के लिए टैप करें</string>
     <string name="change_drive_mode_hint">डिस्प्ले आरंभ करने के लिए ड्राइव मोड बदलें</string>
     <string name="slope_value">ढलान: %1$s°</string>
-    <string name="altitude_value">ऊंचाई: %1$s</string>
     <string name="ambient_temp_value">परिवेश तापमान: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">सेल: प्रतीक्षा में…</string>
@@ -1220,6 +1219,8 @@
     <string name="power_state_charging">चार्ज हो रहा है</string>
     <string name="speed_state_parked">स्थिर</string>
     <string name="speed_state_driving">चल रहा है</string>
+    <string name="stat_altitude">ऊंचाई</string>
+    <string name="altitude_subtitle_sea_level">समुद्र तल से ऊपर</string>
     <string name="soc_subtitle_usable">उपयोग योग्य चार्ज</string>
     <string name="range_subtitle_window">पिछले %1$s</string>
     <string name="range_window_dialog_note">अभी से लागू होता है — रेंज चार्ट ने जो पहले ही बना दिया है, वह वैसा ही रहता है।</string>

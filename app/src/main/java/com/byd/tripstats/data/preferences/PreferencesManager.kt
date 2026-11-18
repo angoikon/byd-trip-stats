@@ -53,6 +53,7 @@ private val RANGE_WINDOW                 = stringPreferencesKey("range_window")
 private val DASHBOARD_SHOW_REMAINING_KWH = booleanPreferencesKey("dashboard_show_remaining_kwh")
 private val DASHBOARD_SHOW_DISTANCE_SINCE_CHARGE = booleanPreferencesKey("dashboard_show_distance_since_charge")
 private val DASHBOARD_SHOW_INSTANT_CONSUMPTION = booleanPreferencesKey("dashboard_show_instant_consumption")
+private val DASHBOARD_SHOW_ALTITUDE      = booleanPreferencesKey("dashboard_show_altitude")
 private val CAR_OFF_TIMEOUT_MINUTES      = intPreferencesKey("car_off_timeout_minutes")
 private val CONFIRM_BEFORE_AUTO_STOP     = booleanPreferencesKey("confirm_before_auto_stop")
 private val MIN_TRIP_DISTANCE_KM         = doublePreferencesKey("min_trip_distance_km")
@@ -490,6 +491,22 @@ class PreferencesManager(private val context: Context) {
     suspend fun saveDashboardShowInstantConsumption(show: Boolean) {
         context.dataStore.edit { it[DASHBOARD_SHOW_INSTANT_CONSUMPTION] = show }
         cache.edit().putBoolean("dashboard_show_instant_consumption", show).apply()
+    }
+
+    // ── Dashboard speed readout: altitude above sea level ─────────────────────
+    // Dashboard-only view flag on the Speed tile, like [dashboardShowInstantConsumption] on the
+    // Power tile. When true the tile shows the GPS altitude above sea level instead of the speed;
+    // tapping the tile toggles it. Nothing recorded depends on it.
+    val dashboardShowAltitude: Flow<Boolean> = context.dataStore.data
+        .map { it[DASHBOARD_SHOW_ALTITUDE] ?: false }
+        .onEach { cache.edit().putBoolean("dashboard_show_altitude", it).apply() }
+
+    fun getCachedDashboardShowAltitude(): Boolean =
+        cache.getBoolean("dashboard_show_altitude", false)
+
+    suspend fun saveDashboardShowAltitude(show: Boolean) {
+        context.dataStore.edit { it[DASHBOARD_SHOW_ALTITUDE] = show }
+        cache.edit().putBoolean("dashboard_show_altitude", show).apply()
     }
 
     // ── Engine-off timeout (trip auto-end) ────────────────────────────────────

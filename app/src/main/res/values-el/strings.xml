@@ -65,7 +65,6 @@
     <string name="awd_tap_hint">Τετρακίνηση — πατήστε για αλλαγή μονάδας πίεσης</string>
     <string name="change_drive_mode_hint">Αλλάξτε λειτουργία οδήγησης για αρχικοποίηση της εμφάνισης</string>
     <string name="slope_value">Κλίση: %1$s°</string>
-    <string name="altitude_value">Υψόμετρο: %1$s</string>
     <string name="ambient_temp_value">Θερμοκρασία: %1$s °C</string>
     <string name="pm25_value">PM2,5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">Κελιά: αναμονή δεδομένων…</string>
@@ -1220,6 +1219,8 @@
     <string name="power_state_charging">Φόρτιση</string>
     <string name="speed_state_parked">Στάσιμο</string>
     <string name="speed_state_driving">Οδήγηση</string>
+    <string name="stat_altitude">Υψόμετρο</string>
+    <string name="altitude_subtitle_sea_level">Πάνω από τη θάλασσα</string>
     <string name="soc_subtitle_usable">Χρησιμοποιήσιμη φόρτιση</string>
     <string name="range_subtitle_window">Τελευταία %1$s</string>
     <string name="range_window_dialog_note">Ισχύει από εδώ και πέρα — ό,τι έχει ήδη σχεδιάσει το γράφημα αυτονομίας μένει ως έχει.</string>

@@ -76,7 +76,6 @@
     <string name="awd_tap_hint">四驱系统 — 点击更改气压单位</string>
     <string name="change_drive_mode_hint">切换驾驶模式以初始化显示</string>
     <string name="slope_value">坡度：%1$s°</string>
-    <string name="altitude_value">海拔：%1$s</string>
     <string name="ambient_temp_value">环境温度：%1$s °C</string>
     <string name="pm25_value">PM2.5：%1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">电芯：等待数据…</string>
@@ -1321,6 +1320,8 @@
     <string name="power_state_charging">充电中</string>
     <string name="speed_state_parked">静止</string>
     <string name="speed_state_driving">行驶中</string>
+    <string name="stat_altitude">海拔</string>
+    <string name="altitude_subtitle_sea_level">海平面以上</string>
     <string name="soc_subtitle_usable">可用电量</string>
     <string name="range_subtitle_window">最近 %1$s</string>
     <string name="range_window_dialog_note">从现在起生效——续航图表已绘制的部分保持不变。</string>

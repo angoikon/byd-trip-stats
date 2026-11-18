@@ -82,7 +82,6 @@ Typical cards include:
 - **Temperature** (ambient + battery)
 - **HV / 12V**
 - **Front / Rear Motors** (RPM + power split)
-- **Driving Dynamics** — drive and regen mode, with your altitude above sea level and the road slope below (DiLink-5 has no slope reading)
 - **Odometer**
 - **Total Discharge** — the car's lifetime counter of energy taken from the battery; tap it to see what it counts, the lifetime average it gives, and your recorded trips' average beside it
 
@@ -93,7 +92,7 @@ Notes:
 ### Bottom Metrics
 
 - **Power** — live motor output or regen. Tap to switch it to your **instant consumption** (*Consumption*, in kWh/100 km) and back: shown above 10 km/h, negative while regenerating, a dash when stopped
-- **Speed**
+- **Speed** — tap to switch it to your **altitude** above sea level (from the GPS, in metres or feet) and back; a dash while the GPS has no altitude, and expect the last digit to wander by a few metres
 - **Battery (SoC)** — tap to switch between the state of charge and the energy left in kWh
 - **Range** — the projected range; tap to choose the distance it is taken over (10 / 100 / 500 km). On the Cards layout the tile names that distance underneath (*Last 100 km*), or *BMS estimate* while it shows the car's own figure before a projection exists, and a long press opens the range chart
 - **Distance** — current engine-on segment distance; when a trip survives a brief stop the cumulative trip distance is shown alongside it. Tap to switch to the distance driven since your last charge

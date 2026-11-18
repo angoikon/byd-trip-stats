@@ -73,7 +73,6 @@
     <string name="awd_tap_hint">Tracțiune AWD — atingeți pentru a schimba unitatea de presiune</string>
     <string name="change_drive_mode_hint">Schimbați modul de condus pentru a inițializa afișajul</string>
     <string name="slope_value">Pantă: %1$s°</string>
-    <string name="altitude_value">Altitudine: %1$s</string>
     <string name="ambient_temp_value">Ambient: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">Celule: se așteaptă date…</string>
@@ -1317,6 +1316,8 @@
     <string name="power_state_charging">Se încarcă</string>
     <string name="speed_state_parked">Staționar</string>
     <string name="speed_state_driving">În mers</string>
+    <string name="stat_altitude">Altitudine</string>
+    <string name="altitude_subtitle_sea_level">Peste nivelul mării</string>
     <string name="soc_subtitle_usable">Încărcare utilizabilă</string>
     <string name="range_subtitle_window">Ultimii %1$s</string>
     <string name="range_window_dialog_note">Se aplică de acum înainte — ce a desenat deja graficul de autonomie rămâne neschimbat.</string>

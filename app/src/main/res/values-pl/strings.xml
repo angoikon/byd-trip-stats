@@ -73,7 +73,6 @@
     <string name="awd_tap_hint">Napęd AWD — dotknij, aby zmienić jednostkę ciśnienia</string>
     <string name="change_drive_mode_hint">Zmień tryb jazdy, aby zainicjować wyświetlacz</string>
     <string name="slope_value">Nachylenie: %1$s°</string>
-    <string name="altitude_value">Wysokość: %1$s</string>
     <string name="ambient_temp_value">Otoczenie: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">Ogniwa: oczekiwanie na dane…</string>
@@ -1317,6 +1316,8 @@
     <string name="power_state_charging">Ładowanie</string>
     <string name="speed_state_parked">Nieruchomo</string>
     <string name="speed_state_driving">Jazda</string>
+    <string name="stat_altitude">Wysokość</string>
+    <string name="altitude_subtitle_sea_level">Nad poziomem morza</string>
     <string name="soc_subtitle_usable">Użyteczny ładunek</string>
     <string name="range_subtitle_window">Ostatnie %1$s</string>
     <string name="range_window_dialog_note">Obowiązuje od teraz — to, co wykres zasięgu już narysował, pozostaje bez zmian.</string>

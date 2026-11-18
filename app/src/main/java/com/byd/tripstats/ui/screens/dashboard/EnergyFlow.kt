@@ -30,6 +30,7 @@ import com.byd.tripstats.R
 import com.byd.tripstats.data.model.VehicleTelemetry
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.data.preferences.SocSource
+import com.byd.tripstats.data.preferences.altitudeUnit
 import com.byd.tripstats.data.preferences.consumptionUnit
 import com.byd.tripstats.data.preferences.convertDistance
 import com.byd.tripstats.data.preferences.convertSpeed
@@ -145,6 +146,15 @@ fun EnergyFlowDiagram(
     )
     val togglePowerReadout: () -> Unit = {
         scope.launch { appPrefs.saveDashboardShowInstantConsumption(!showInstantConsumption) }
+    }
+
+    // Speed readout: a tap toggles between the speed and the altitude above sea level (the same
+    // view flag as the CARDS layout's Speed tile).
+    val showAltitude by appPrefs.dashboardShowAltitude.collectAsState(
+        initial = appPrefs.getCachedDashboardShowAltitude()
+    )
+    val toggleSpeedReadout: () -> Unit = {
+        scope.launch { appPrefs.saveDashboardShowAltitude(!showAltitude) }
     }
 
     // Range readout: a tap opens the choice of the range estimate's window, as on the CARDS
@@ -355,10 +365,16 @@ fun EnergyFlowDiagram(
                         onClick = togglePowerReadout
                     )
                     PowerMetric(
-                        label = stringResource(R.string.stat_speed),
-                        value = "${unitSystem.convertSpeed(displaySpeedKmh.toDouble()).toInt()}",
-                        unit = speedUnit,
-                        color = BydEcoTealDim
+                        label = stringResource(if (showAltitude) R.string.stat_altitude else R.string.stat_speed),
+                        value = if (showAltitude) {
+                            formatAltitudeAboveSeaLevel(
+                                telemetry.locationAltitude, telemetry.locationLatitude,
+                                telemetry.locationLongitude, unitSystem
+                            )
+                        } else "${unitSystem.convertSpeed(displaySpeedKmh.toDouble()).toInt()}",
+                        unit = if (showAltitude) unitSystem.altitudeUnit else speedUnit,
+                        color = BydEcoTealDim,
+                        onClick = toggleSpeedReadout
                     )
                     PowerMetric(
                         label = batteryReadoutLabel(batteryMode),

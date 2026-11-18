@@ -76,7 +76,6 @@
     <string name="awd_tap_hint">AWD drivverk — trykk for å bytte trykksenhet</string>
     <string name="change_drive_mode_hint">Bytt kjøremodus for å initialisere visningen</string>
     <string name="slope_value">Helling: %1$s°</string>
-    <string name="altitude_value">Høyde: %1$s</string>
     <string name="ambient_temp_value">Omgivelser: %1$s °C</string>
     <string name="pm25_value">PM2.5: %1$s/%2$s μg/m³</string>
     <string name="cells_awaiting">Celler: venter på data…</string>
@@ -1321,6 +1320,8 @@
     <string name="power_state_charging">Lader</string>
     <string name="speed_state_parked">Stillestående</string>
     <string name="speed_state_driving">Kjører</string>
+    <string name="stat_altitude">Høyde</string>
+    <string name="altitude_subtitle_sea_level">Over havet</string>
     <string name="soc_subtitle_usable">Brukbar lading</string>
     <string name="range_subtitle_window">Siste %1$s</string>
     <string name="range_window_dialog_note">Gjelder fra nå av — det rekkeviddegrafen allerede har tegnet, forblir uendret.</string>

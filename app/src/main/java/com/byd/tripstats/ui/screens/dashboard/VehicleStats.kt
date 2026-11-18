@@ -23,13 +23,9 @@ import com.byd.tripstats.R
 import com.byd.tripstats.data.config.Drivetrain
 import com.byd.tripstats.data.model.VehicleTelemetry
 import com.byd.tripstats.data.preferences.PreferencesManager
-import com.byd.tripstats.data.preferences.UnitSystem
-import com.byd.tripstats.data.preferences.altitudeUnit
-import com.byd.tripstats.data.preferences.convertAltitude
 import com.byd.tripstats.data.preferences.distanceUnit
 import com.byd.tripstats.sdk.DiLink5Platform
 import com.byd.tripstats.sdk.VehicleTelemetrySnapshot
-import com.byd.tripstats.util.Geoid
 import com.byd.tripstats.ui.components.energyModeLabel
 import com.byd.tripstats.ui.theme.AccelerationOrange
 import com.byd.tripstats.ui.theme.BatteryBlue
@@ -37,7 +33,6 @@ import com.byd.tripstats.ui.theme.BydEcoTealDim
 import com.byd.tripstats.ui.theme.BydElectricBlue
 import com.byd.tripstats.ui.theme.RegenGreen
 import com.byd.tripstats.ui.theme.isNeon
-import kotlin.math.roundToInt
 
 @Composable
 fun VehicleStats(
@@ -245,7 +240,15 @@ fun VehicleStats(
                     telemetry.driveModeName.takeIf { telemetry.driveMode != 0 },
                 ).joinToString(" / ").ifEmpty { "—" }
             },
-            subtitle = drivingDynamicsSubtitle(telemetry, vehicleSnapshot, unitSystem),
+            subtitle = run {
+                val slope = vehicleSnapshot?.roadSlopeDeg
+                val needsInit = telemetry.isCarOn && telemetry.driveMode == 0
+                when {
+                    needsInit -> stringResource(R.string.change_drive_mode_hint)
+                    slope != null -> stringResource(R.string.slope_value, String.format("%.1f", slope))
+                    else -> null
+                }
+            },
             icon     = Icons.Filled.DirectionsCar,
             color    = BydElectricBlue,
             compact  = fillHeight,
@@ -375,40 +378,4 @@ fun StatCard(
             }
         }
     }
-}
-
-/**
- * The Driving Dynamics card's second line, shared by the Classic and Cards layouts: altitude above
- * sea level, then the road slope, or on DiLink-3 the hint to change drive mode while the mode is
- * unknown. The line is cut to one line, so altitude leads: it is what's left when space runs out.
- */
-@Composable
-internal fun drivingDynamicsSubtitle(
-    telemetry: VehicleTelemetry,
-    vehicleSnapshot: VehicleTelemetrySnapshot?,
-    unitSystem: UnitSystem,
-): String? {
-    val altitude = dashboardAltitudeText(
-        telemetry.locationAltitude, telemetry.locationLatitude, telemetry.locationLongitude, unitSystem
-    )?.let { stringResource(R.string.altitude_value, it) }
-    val slope = vehicleSnapshot?.roadSlopeDeg
-    val needsInit = telemetry.isCarOn && telemetry.driveMode == 0
-    val slopeOrHint = when {
-        needsInit -> stringResource(R.string.change_drive_mode_hint)
-        slope != null -> stringResource(R.string.slope_value, String.format("%.1f", slope))
-        else -> null
-    }
-    return listOfNotNull(altitude, slopeOrHint).joinToString(" · ").ifEmpty { null }
-}
-
-/** The GPS altitude as height above sea level in whole display units, e.g. "218 m"; null without one. */
-internal fun dashboardAltitudeText(
-    altitudeM: Double,
-    latitude: Double,
-    longitude: Double,
-    unitSystem: UnitSystem,
-): String? {
-    if (altitudeM == 0.0 || !altitudeM.isFinite()) return null
-    val aboveSeaLevelM = Geoid.aboveSeaLevel(altitudeM, latitude, longitude)
-    return "${unitSystem.convertAltitude(aboveSeaLevelM).roundToInt()} ${unitSystem.altitudeUnit}"
 }

@@ -42,7 +42,9 @@ import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.data.preferences.RangeWindow
 import com.byd.tripstats.data.preferences.SocSource
 import com.byd.tripstats.data.preferences.UnitSystem
+import com.byd.tripstats.data.preferences.altitudeUnit
 import com.byd.tripstats.data.preferences.consumptionUnit
+import com.byd.tripstats.data.preferences.convertAltitude
 import com.byd.tripstats.data.preferences.convertDistance
 import com.byd.tripstats.data.preferences.convertEfficiency
 import com.byd.tripstats.data.preferences.convertSpeed
@@ -57,6 +59,7 @@ import com.byd.tripstats.ui.theme.BydEcoTealDim
 import com.byd.tripstats.ui.theme.RegenGreen
 import com.byd.tripstats.ui.theme.extendedColors
 import com.byd.tripstats.ui.theme.isNeon
+import com.byd.tripstats.util.Geoid
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -68,9 +71,10 @@ private val PowerTileHeight = 150.dp
  * large tiles for the CARDS layout. Each tile has a static, thin accent stripe flush
  * to its left edge and a dynamic subtitle. A tap on the Range tile opens the choice of the range
  * estimate's window (10 / 100 / 500 km, the Settings → Preferences → Battery and range estimate
- * setting) and a long press opens the range-projection chart; the Power, battery and Distance
- * tiles toggle their readout on a tap — the Power tile between the motor power and the instant
- * consumption (InstantConsumptionEstimator).
+ * setting) and a long press opens the range-projection chart; the Power, Speed, battery and
+ * Distance tiles toggle their readout on a tap — the Power tile between the motor power and the
+ * instant consumption (InstantConsumptionEstimator), the Speed tile between the speed and the
+ * altitude above sea level.
  */
 @Composable
 fun PowerMetricsRow(
@@ -164,6 +168,15 @@ fun PowerMetricsRow(
         { scope.launch { prefs.saveDashboardShowDistanceSinceCharge(!showDistanceSinceCharge) } }
     }
 
+    // Speed tile: a tap toggles the view between the speed and the GPS altitude above sea level —
+    // the same kind of view flag as the battery tile's.
+    val showAltitude by prefs.dashboardShowAltitude.collectAsState(
+        initial = prefs.getCachedDashboardShowAltitude()
+    )
+    val toggleSpeedReadout: () -> Unit = remember(showAltitude) {
+        { scope.launch { prefs.saveDashboardShowAltitude(!showAltitude) } }
+    }
+
     // PHEV: the tile keeps the EV projection as its headline figure, and the
     // subtitle carries the petrol + combined range instead of the generic hint.
     val fuelRangeKm = phevFuelRangeKm(telemetry, selectedCar)
@@ -194,10 +207,18 @@ fun PowerMetricsRow(
             },
             onClick = togglePowerReadout
         ),
-        PowerMetricId.SPEED to PowerTileData(
+        PowerMetricId.SPEED to if (showAltitude) PowerTileData(
+            label = stringResource(R.string.stat_altitude),
+            value = formatAltitudeAboveSeaLevel(
+                telemetry.locationAltitude, telemetry.locationLatitude, telemetry.locationLongitude, unitSystem
+            ),
+            unit = unitSystem.altitudeUnit,
+            subtitle = stringResource(R.string.altitude_subtitle_sea_level),
+            accent = BydEcoTealDim, onClick = toggleSpeedReadout
+        ) else PowerTileData(
             label = stringResource(R.string.stat_speed),
             value = "${unitSystem.convertSpeed(displaySpeedKmh.toDouble()).toInt()}",
-            unit = speedUnit, subtitle = speedSubtitle, accent = BydEcoTealDim, onClick = null
+            unit = speedUnit, subtitle = speedSubtitle, accent = BydEcoTealDim, onClick = toggleSpeedReadout
         ),
         PowerMetricId.SOC to PowerTileData(
             label = batteryReadoutLabel(batteryMode),
@@ -293,6 +314,22 @@ fun PowerMetricsRow(
 internal fun formatInstantConsumption(kwhPer100km: Double?, unitSystem: UnitSystem): String {
     val v = kwhPer100km?.let { unitSystem.convertEfficiency(it) } ?: return "—"
     return v.roundToInt().toString()
+}
+
+/**
+ * The GPS altitude as the Speed readout's second view shows it: height above sea level (the car
+ * reports height above the WGS84 ellipsoid, see [Geoid]) in whole metres, or feet for imperial.
+ * An em dash while the GPS has no altitude, which the car reports as exactly 0.
+ */
+internal fun formatAltitudeAboveSeaLevel(
+    altitudeM: Double,
+    latitude: Double,
+    longitude: Double,
+    unitSystem: UnitSystem,
+): String {
+    if (altitudeM == 0.0 || !altitudeM.isFinite()) return "—"
+    val aboveSeaLevelM = Geoid.aboveSeaLevel(altitudeM, latitude, longitude)
+    return unitSystem.convertAltitude(aboveSeaLevelM).roundToInt().toString()
 }
 
 /**
