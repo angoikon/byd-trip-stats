@@ -37,6 +37,7 @@ fun BatteryDegradationScreen(
     onNavigateToSettings: () -> Unit = {}
 ) {
     val data by viewModel.batteryDegradationData.collectAsState()
+    val liveSoh by viewModel.liveStatisticSoh.collectAsState()
     val sohExclusion by viewModel.sohExclusion.collectAsState()
     val excludedTripCount by viewModel.sohExcludedTripCount.collectAsState()
     // Decline rate, 80% projection and the exportable report are Pro features.
@@ -125,6 +126,10 @@ fun BatteryDegradationScreen(
             return@Scaffold
         }
 
+        // The car's live statistic SoH, so this agrees with the dashboard tile at once; the chart
+        // and its trend stay per-trip history. Without a live value, the last trip's average.
+        val currentSoh = liveSoh ?: data.last().avgSoh
+
         // ── Compute regression + projection ───────────────────────────────────
         val regression  = computeLinearRegression(data)
         val stats       = buildDegradationScreenStats(regression)
@@ -145,7 +150,7 @@ fun BatteryDegradationScreen(
                 vehicleName = selectedCar?.displayName ?: "BYD vehicle",
                 batteryKwh = selectedCar?.batteryKwh,
                 appVersion = com.byd.tripstats.BuildConfig.VERSION_NAME,
-                currentSoh = data.last().avgSoh,
+                currentSoh = currentSoh,
                 declinePerYearLabel = declineLabel,
                 projectedAt80Label = stats.projectedAt80Label,
                 firstDate = df.format(Date(data.first().timestamp)),
@@ -208,9 +213,9 @@ fun BatteryDegradationScreen(
                 DegradationStatCard(
                     modifier  = Modifier.weight(1f),
                     label     = stringResource(R.string.current_soh_label),
-                    value     = "${"%.1f".format(data.last().avgSoh)}%",
+                    value     = "${"%.1f".format(currentSoh)}%",
                     icon      = Icons.Filled.BatteryChargingFull,
-                    color     = sohColor(data.last().avgSoh)
+                    color     = sohColor(currentSoh)
                 )
                 DegradationStatCard(
                     modifier  = Modifier.weight(1f),

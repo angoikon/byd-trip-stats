@@ -3611,6 +3611,20 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     // ── Battery degradation ──────────────────────────────────────────────────
 
     /**
+     * The statistic SoH the car reports right now: the same source and range check as the
+     * dashboard's Battery tile. The degradation screen's "Current SoH" prefers it to the last
+     * trip's average, which only moves when a trip closes (a battery calibration while parked
+     * changed the tile at once and left the page on the old value). Null when the car reports
+     * none. Distinct, so the screen doesn't recompose at the snapshot rate.
+     */
+    val liveStatisticSoh: StateFlow<Double?> =
+        combine(displayVehicleSnapshot, displayTelemetry) { snapshot, telemetry ->
+            (snapshot?.statisticBatterySoh ?: telemetry?.statisticBatterySoh)
+                ?.takeIf { it in 50.0..110.0 }
+        }.distinctUntilChanged()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /**
      * One entry per completed trip that has SoH data recorded.
      * Sorted chronologically — ready for the degradation chart to consume directly.
      */

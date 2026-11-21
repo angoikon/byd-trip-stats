@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.byd.tripstats.R
@@ -264,7 +265,11 @@ fun RangeProjectionChart(
                     .padding(horizontal = 16.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.Bottom
             ) {
-                Column {
+                // Weighted, so the right rail is measured first and its badge keeps its one line
+                // ("● Last 10 km · 11.7 kWh/100km"); the longer texts here wrap instead. Measured
+                // first itself, the capped "Value above WLTP average…" line took the width and
+                // folded the badge into a column that pushed the chart down the Cards tile.
+                Column(modifier = Modifier.weight(1f)) {
                     // BMS-sourced values (currentBms, currentProjected, deltaKm) already
                     // arrive in the car's native unit — UK-market BMSes report in miles
                     // natively, so no conversion is applied here, only the unit label.
@@ -308,7 +313,7 @@ fun RangeProjectionChart(
                         )
                     }
                 }
-                Spacer(Modifier.weight(1f))
+                Spacer(Modifier.width(12.dp))
                 // Right rail: holographic Δ chip + model badge
                 Column(horizontalAlignment = Alignment.End) {
                     if (isStabilised && !isSaturated && projectedPoints.isNotEmpty()) {
@@ -336,7 +341,8 @@ fun RangeProjectionChart(
                     Text(
                         text  = modelLabel,
                         style = MaterialTheme.typography.labelSmall,
-                        color = modelColor
+                        color = modelColor,
+                        textAlign = TextAlign.End
                     )
                 }
             }

@@ -249,6 +249,8 @@ Tap the **Battery Health** stat card on the dashboard.
 
 Shows SoH per trip over time with a least-squares trend line, a projected trajectory, and an estimated year when the pack will reach 80% — the typical EV warranty threshold.
 
+**Current SoH** is the figure the car reports right now, the same as the dashboard tile; on a car that doesn't report one, it is the last trip's average. The chart has one point per completed trip, so a change while parked, such as after a battery calibration, shows on the card at once and joins the chart after your next drive.
+
 ### Seasonal Analysis
 
 Accessible from the ☀️ icon in the Trip History toolbar.
