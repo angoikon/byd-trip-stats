@@ -992,7 +992,7 @@
     <string name="diagnostics_live_off_status">실시간 세부 정보 꺼짐</string>
     <string name="performance_overlay_on_status">성능 오버레이 켜짐</string>
     <string name="pref_appearance_title">모양</string>
-    <string name="pref_appearance_desc">테마, 대시보드 레이아웃, 주행 가능 거리 그래프 위치, 대시보드 아이콘 및 애니메이션.</string>
+    <string name="pref_appearance_desc">테마, 대시보드 레이아웃, 주행 가능 거리 그래프 위치, 차량 카드 열 수, 대시보드 아이콘 및 애니메이션.</string>
     <string name="pref_language_units_title">언어 &amp; 단위</string>
     <string name="pref_language_units_desc">앱 언어와 미터법 또는 야드파운드법 단위.</string>
     <string name="pref_trip_recording_title">주행 기록</string>
@@ -1215,6 +1215,10 @@
     <string name="chart_side_desc">클래식 레이아웃: 주행 가능 거리 그래프와 주행 추적이 놓이는 화면 쪽입니다. 차량 카드는 반대쪽을 채웁니다. 우핸들 차량에서 유용합니다.</string>
     <string name="chart_side_left">왼쪽</string>
     <string name="chart_side_right">오른쪽</string>
+    <string name="pref_card_columns">차량 카드</string>
+    <string name="card_columns_desc">전체 화면의 클래식 레이아웃: 차량 카드를 두 열로, 또는 주행 가능 거리 그래프에 공간을 더 주는 좁은 한 열로 표시합니다. 분할 화면에서는 항상 한 열입니다.</string>
+    <string name="card_columns_one">한 열</string>
+    <string name="card_columns_two">두 열</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">대기</string>

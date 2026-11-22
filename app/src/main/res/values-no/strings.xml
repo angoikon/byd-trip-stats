@@ -1075,7 +1075,7 @@
     <string name="diagnostics_live_off_status">Live-detaljer av</string>
     <string name="performance_overlay_on_status">Ytelsesoverlegg på</string>
     <string name="pref_appearance_title">Utseende</string>
-    <string name="pref_appearance_desc">Tema, dashbordoppsett, rekkeviddegrafens side, og dashbordikoner &amp; animasjoner.</string>
+    <string name="pref_appearance_desc">Tema, dashbordoppsett, rekkeviddegrafens side, bilkortenes kolonner, og dashbordikoner &amp; animasjoner.</string>
     <string name="pref_language_units_title">Språk &amp; enheter</string>
     <string name="pref_language_units_desc">Appens språk, og metriske eller britiske enheter.</string>
     <string name="pref_trip_recording_title">Turregistrering</string>
@@ -1316,6 +1316,10 @@
     <string name="chart_side_desc">Klassisk oppsett: siden av skjermen som rekkeviddegrafen og Tursporing tar. Bilkortene fyller den andre siden — nyttig i en høyrestyrt bil.</string>
     <string name="chart_side_left">Venstre</string>
     <string name="chart_side_right">Høyre</string>
+    <string name="pref_card_columns">Bilkort</string>
+    <string name="card_columns_desc">Klassisk oppsett i full bredde: bilkortene i to kolonner, eller i én smal kolonne som gir rekkeviddegrafen mer plass. Delt skjerm bruker alltid én kolonne.</string>
+    <string name="card_columns_one">Én kolonne</string>
+    <string name="card_columns_two">To kolonner</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Inaktiv</string>

@@ -1075,7 +1075,7 @@
     <string name="diagnostics_live_off_status">Canlı ayrıntılar kapalı</string>
     <string name="performance_overlay_on_status">Performans katmanı açık</string>
     <string name="pref_appearance_title">Görünüm</string>
-    <string name="pref_appearance_desc">Tema, gösterge paneli düzeni, menzil grafiğinin tarafı ve gösterge paneli simgeleri &amp; animasyonları.</string>
+    <string name="pref_appearance_desc">Tema, gösterge paneli düzeni, menzil grafiğinin tarafı, araç kartlarının sütunları ve gösterge paneli simgeleri &amp; animasyonları.</string>
     <string name="pref_language_units_title">Dil &amp; birimler</string>
     <string name="pref_language_units_desc">Uygulamanın dili ve metrik ya da emperyal birimler.</string>
     <string name="pref_trip_recording_title">Seyahat kaydı</string>
@@ -1316,6 +1316,10 @@
     <string name="chart_side_desc">Klasik düzen: ekranda menzil grafiğinin ve Seyahat Takibi\'nin bulunduğu taraf. Araç kartları diğer tarafı doldurur — sağdan direksiyonlu araçlarda kullanışlı.</string>
     <string name="chart_side_left">Sol</string>
     <string name="chart_side_right">Sağ</string>
+    <string name="pref_card_columns">Araç kartları</string>
+    <string name="card_columns_desc">Tam genişlikte klasik düzen: araç kartları iki sütunda ya da menzil grafiğine daha fazla yer bırakan tek dar sütunda. Bölünmüş ekranda her zaman tek sütun kullanılır.</string>
+    <string name="card_columns_one">Tek sütun</string>
+    <string name="card_columns_two">İki sütun</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Boşta</string>

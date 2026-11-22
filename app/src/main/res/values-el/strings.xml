@@ -992,7 +992,7 @@
     <string name="diagnostics_live_off_status">Ζωντανές λεπτομέρειες ανενεργές</string>
     <string name="performance_overlay_on_status">Επικάλυψη επιδόσεων ενεργή</string>
     <string name="pref_appearance_title">Εμφάνιση</string>
-    <string name="pref_appearance_desc">Θέμα, διάταξη πίνακα, πλευρά του γραφήματος αυτονομίας και εικονίδια &amp; κινούμενα γραφικά του πίνακα.</string>
+    <string name="pref_appearance_desc">Θέμα, διάταξη πίνακα, πλευρά του γραφήματος αυτονομίας, στήλες των καρτών οχήματος και εικονίδια &amp; κινούμενα γραφικά του πίνακα.</string>
     <string name="pref_language_units_title">Γλώσσα &amp; μονάδες</string>
     <string name="pref_language_units_desc">Η γλώσσα της εφαρμογής και μετρικές ή αγγλοσαξονικές μονάδες.</string>
     <string name="pref_trip_recording_title">Καταγραφή διαδρομών</string>
@@ -1215,6 +1215,10 @@
     <string name="chart_side_desc">Κλασική διάταξη: η πλευρά της οθόνης όπου βρίσκονται το γράφημα αυτονομίας και η Καταγραφή διαδρομής. Οι κάρτες του οχήματος γεμίζουν την άλλη πλευρά — βολικό σε δεξιοτίμονο αυτοκίνητο.</string>
     <string name="chart_side_left">Αριστερά</string>
     <string name="chart_side_right">Δεξιά</string>
+    <string name="pref_card_columns">Κάρτες οχήματος</string>
+    <string name="card_columns_desc">Κλασική διάταξη σε πλήρες πλάτος: οι κάρτες του οχήματος σε δύο στήλες ή σε μία στενή στήλη που αφήνει περισσότερο χώρο στο γράφημα αυτονομίας. Σε διαιρεμένη οθόνη χρησιμοποιείται πάντα μία στήλη.</string>
+    <string name="card_columns_one">Μία στήλη</string>
+    <string name="card_columns_two">Δύο στήλες</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Αδράνεια</string>

@@ -1072,7 +1072,7 @@
     <string name="diagnostics_live_off_status">Szczegóły na żywo wyłączone</string>
     <string name="performance_overlay_on_status">Nakładka wydajności włączona</string>
     <string name="pref_appearance_title">Wygląd</string>
-    <string name="pref_appearance_desc">Motyw, układ pulpitu, strona wykresu zasięgu oraz ikony i animacje pulpitu.</string>
+    <string name="pref_appearance_desc">Motyw, układ pulpitu, strona wykresu zasięgu, kolumny kart pojazdu oraz ikony i animacje pulpitu.</string>
     <string name="pref_language_units_title">Język i jednostki</string>
     <string name="pref_language_units_desc">Język aplikacji oraz jednostki metryczne lub imperialne.</string>
     <string name="pref_trip_recording_title">Rejestrowanie podróży</string>
@@ -1312,6 +1312,10 @@
     <string name="chart_side_desc">Układ klasyczny: strona ekranu zajmowana przez wykres zasięgu i Śledzenie podróży. Karty pojazdu wypełniają drugą stronę — przydatne w aucie z kierownicą po prawej.</string>
     <string name="chart_side_left">Lewa</string>
     <string name="chart_side_right">Prawa</string>
+    <string name="pref_card_columns">Karty pojazdu</string>
+    <string name="card_columns_desc">Układ klasyczny na pełnej szerokości: karty pojazdu w dwóch kolumnach albo w jednej wąskiej kolumnie, która zostawia wykresowi zasięgu więcej miejsca. Na podzielonym ekranie zawsze jedna kolumna.</string>
+    <string name="card_columns_one">Jedna kolumna</string>
+    <string name="card_columns_two">Dwie kolumny</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Bezczynny</string>

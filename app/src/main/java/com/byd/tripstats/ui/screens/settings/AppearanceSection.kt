@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.byd.tripstats.R
 import com.byd.tripstats.data.entitlement.EntitlementManager
+import com.byd.tripstats.data.preferences.ClassicCardColumns
 import com.byd.tripstats.data.preferences.ClassicChartSide
 import com.byd.tripstats.data.preferences.DashboardLayout
 import com.byd.tripstats.data.preferences.PreferencesManager
@@ -22,7 +23,10 @@ import com.byd.tripstats.data.preferences.ThemeMode
 import com.byd.tripstats.ui.components.BrandSwitch
 import kotlinx.coroutines.launch
 
-/** Preferences → Appearance: theme, dashboard layout, Classic's chart side, and the dashboard's icons & animations. */
+/**
+ * Preferences → Appearance: theme, dashboard layout, Classic's chart side and card columns, and the
+ * dashboard's icons & animations.
+ */
 @Composable
 internal fun AppearanceSection(
     preferencesManager: PreferencesManager,
@@ -40,6 +44,9 @@ internal fun AppearanceSection(
     )
     val classicChartSide by preferencesManager.classicChartSide.collectAsState(
         initial = preferencesManager.getCachedClassicChartSide()
+    )
+    val classicCardColumns by preferencesManager.classicCardColumns.collectAsState(
+        initial = preferencesManager.getCachedClassicCardColumns()
     )
     val isPro by EntitlementManager.isPro.collectAsState()
 
@@ -215,33 +222,35 @@ internal fun AppearanceSection(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    listOf(
+                ChoiceButtons(
+                    options = listOf(
                         ClassicChartSide.START to if (rtl) right else left,
                         ClassicChartSide.END to if (rtl) left else right,
-                    ).forEach { (side, label) ->
-                        val selected = classicChartSide == side
-                        Button(
-                            onClick = { scope.launch { preferencesManager.saveClassicChartSide(side) } },
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (selected)
-                                    MaterialTheme.colorScheme.primary
-                                else
-                                    MaterialTheme.colorScheme.surfaceVariant,
-                                contentColor = if (selected)
-                                    MaterialTheme.colorScheme.onPrimary
-                                else
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        ) {
-                            Text(label, fontWeight = FontWeight.Bold, maxLines = 1)
-                        }
-                    }
-                }
+                    ),
+                    selected = classicChartSide,
+                    onSelect = { side -> scope.launch { preferencesManager.saveClassicChartSide(side) } }
+                )
+
+                // Full width only: split screen and a phone always stack the cards in one column.
+                HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f))
+                Text(
+                    stringResource(R.string.pref_card_columns),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    stringResource(R.string.card_columns_desc),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                ChoiceButtons(
+                    options = listOf(
+                        ClassicCardColumns.ONE to stringResource(R.string.card_columns_one),
+                        ClassicCardColumns.TWO to stringResource(R.string.card_columns_two),
+                    ),
+                    selected = classicCardColumns,
+                    onSelect = { columns -> scope.launch { preferencesManager.saveClassicCardColumns(columns) } }
+                )
             }
         }
     }
@@ -283,6 +292,35 @@ internal fun AppearanceSection(
                         }
                     },
                 )
+            }
+        }
+    }
+}
+
+/** A row of equal-width buttons, one per option, the selected one in the primary colour. */
+@Composable
+private fun <T> ChoiceButtons(options: List<Pair<T, String>>, selected: T, onSelect: (T) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        options.forEach { (option, label) ->
+            val isSelected = selected == option
+            Button(
+                onClick = { onSelect(option) },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isSelected)
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = if (isSelected)
+                        MaterialTheme.colorScheme.onPrimary
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            ) {
+                Text(label, fontWeight = FontWeight.Bold, maxLines = 1)
             }
         }
     }

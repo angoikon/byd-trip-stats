@@ -1072,7 +1072,7 @@
     <string name="diagnostics_live_off_status">Detail langsung mati</string>
     <string name="performance_overlay_on_status">Overlay performa nyala</string>
     <string name="pref_appearance_title">Tampilan</string>
-    <string name="pref_appearance_desc">Tema, tata letak dasbor, sisi grafik jarak tempuh, serta ikon &amp; animasi dasbor.</string>
+    <string name="pref_appearance_desc">Tema, tata letak dasbor, sisi grafik jarak tempuh, kolom kartu kendaraan, serta ikon &amp; animasi dasbor.</string>
     <string name="pref_language_units_title">Bahasa &amp; satuan</string>
     <string name="pref_language_units_desc">Bahasa aplikasi, dan satuan metrik atau imperial.</string>
     <string name="pref_trip_recording_title">Perekaman perjalanan</string>
@@ -1312,6 +1312,10 @@
     <string name="chart_side_desc">Tata letak Klasik: sisi layar yang ditempati grafik jarak tempuh dan Pelacakan perjalanan. Kartu kendaraan mengisi sisi lainnya — berguna pada mobil setir kanan.</string>
     <string name="chart_side_left">Kiri</string>
     <string name="chart_side_right">Kanan</string>
+    <string name="pref_card_columns">Kartu kendaraan</string>
+    <string name="card_columns_desc">Tata letak Klasik dengan lebar penuh: kartu kendaraan dalam dua kolom, atau dalam satu kolom sempit yang memberi grafik jarak tempuh lebih banyak ruang. Layar terpisah selalu memakai satu kolom.</string>
+    <string name="card_columns_one">Satu kolom</string>
+    <string name="card_columns_two">Dua kolom</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Diam</string>

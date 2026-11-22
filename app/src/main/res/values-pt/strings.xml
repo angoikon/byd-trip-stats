@@ -1075,7 +1075,7 @@
     <string name="diagnostics_live_off_status">Detalhes em tempo real desligados</string>
     <string name="performance_overlay_on_status">Sobreposição de desempenho ligada</string>
     <string name="pref_appearance_title">Aspeto</string>
-    <string name="pref_appearance_desc">Tema, esquema do painel, lado do gráfico de autonomia, e ícones &amp; animações do painel.</string>
+    <string name="pref_appearance_desc">Tema, esquema do painel, lado do gráfico de autonomia, colunas dos cartões do veículo, e ícones &amp; animações do painel.</string>
     <string name="pref_language_units_title">Idioma &amp; unidades</string>
     <string name="pref_language_units_desc">O idioma da aplicação, e unidades métricas ou imperiais.</string>
     <string name="pref_trip_recording_title">Registo de viagens</string>
@@ -1316,6 +1316,10 @@
     <string name="chart_side_desc">Esquema clássico: o lado do ecrã ocupado pelo gráfico de autonomia e pelo Registo de viagem. Os cartões do veículo preenchem o outro lado — útil num carro com volante à direita.</string>
     <string name="chart_side_left">Esquerda</string>
     <string name="chart_side_right">Direita</string>
+    <string name="pref_card_columns">Cartões do veículo</string>
+    <string name="card_columns_desc">Esquema clássico em largura total: os cartões do veículo em duas colunas, ou numa coluna estreita que deixa mais espaço ao gráfico de autonomia. O ecrã dividido usa sempre uma coluna.</string>
+    <string name="card_columns_one">Uma coluna</string>
+    <string name="card_columns_two">Duas colunas</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Inativo</string>

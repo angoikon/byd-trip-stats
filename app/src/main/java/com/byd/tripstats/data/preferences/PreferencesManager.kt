@@ -45,6 +45,7 @@ private val UNIT_SYSTEM                  = stringPreferencesKey("unit_system")
 private val THEME_MODE                   = stringPreferencesKey("theme_mode")
 private val DASHBOARD_LAYOUT             = stringPreferencesKey("dashboard_layout")
 private val CLASSIC_CHART_SIDE           = stringPreferencesKey("classic_chart_side")
+private val CLASSIC_CARD_COLUMNS         = stringPreferencesKey("classic_card_columns")
 private val DASHBOARD_CARD_ORDER         = stringPreferencesKey("dashboard_card_order")
 private val DASHBOARD_HIDDEN_CARDS       = stringPreferencesKey("dashboard_hidden_cards")
 private val DASHBOARD_CHART_HIDDEN       = booleanPreferencesKey("dashboard_chart_hidden")
@@ -162,6 +163,26 @@ class PreferencesManager(private val context: Context) {
     suspend fun saveClassicChartSide(side: ClassicChartSide) {
         context.dataStore.edit { it[CLASSIC_CHART_SIDE] = side.name }
         cache.edit().putString("classic_chart_side", side.name).apply()
+    }
+
+    // ── Classic layout: one or two columns of vehicle cards at full width ─────
+    // Mirrored into the startup cache, as the chart's side is, for the first frame.
+
+    val classicCardColumns: Flow<ClassicCardColumns> = context.dataStore.data
+        .map {
+            it[CLASSIC_CARD_COLUMNS]?.let { name -> runCatching { ClassicCardColumns.valueOf(name) }.getOrNull() }
+                ?: ClassicCardColumns.TWO
+        }
+        .onEach { cache.edit().putString("classic_card_columns", it.name).apply() }
+
+    fun getCachedClassicCardColumns(): ClassicCardColumns =
+        cache.getString("classic_card_columns", null)
+            ?.let { runCatching { ClassicCardColumns.valueOf(it) }.getOrNull() }
+            ?: ClassicCardColumns.TWO
+
+    suspend fun saveClassicCardColumns(columns: ClassicCardColumns) {
+        context.dataStore.edit { it[CLASSIC_CARD_COLUMNS] = columns.name }
+        cache.edit().putString("classic_card_columns", columns.name).apply()
     }
 
     // All three are mirrored into the startup cache so the CARDS layout renders the

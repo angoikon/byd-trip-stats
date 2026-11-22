@@ -1075,7 +1075,7 @@
     <string name="diagnostics_live_off_status">Livedetails uit</string>
     <string name="performance_overlay_on_status">Prestatie-overlay aan</string>
     <string name="pref_appearance_title">Weergave</string>
-    <string name="pref_appearance_desc">Thema, dashboardindeling, kant van de bereikgrafiek, en dashboardpictogrammen &amp; animaties.</string>
+    <string name="pref_appearance_desc">Thema, dashboardindeling, kant van de bereikgrafiek, kolommen van de voertuigkaarten, en dashboardpictogrammen &amp; animaties.</string>
     <string name="pref_language_units_title">Taal &amp; eenheden</string>
     <string name="pref_language_units_desc">De taal van de app, en metrische of imperiale eenheden.</string>
     <string name="pref_trip_recording_title">Ritregistratie</string>
@@ -1316,6 +1316,10 @@
     <string name="chart_side_desc">Klassieke indeling: de kant van het scherm waar de bereikgrafiek en Ritregistratie staan. De voertuigkaarten vullen de andere kant — handig in een auto met het stuur rechts.</string>
     <string name="chart_side_left">Links</string>
     <string name="chart_side_right">Rechts</string>
+    <string name="pref_card_columns">Voertuigkaarten</string>
+    <string name="card_columns_desc">Klassieke indeling op volle breedte: de voertuigkaarten in twee kolommen, of in één smalle kolom die de bereikgrafiek meer ruimte geeft. Gesplitst scherm gebruikt altijd één kolom.</string>
+    <string name="card_columns_one">Eén kolom</string>
+    <string name="card_columns_two">Twee kolommen</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Inactief</string>

@@ -992,7 +992,7 @@
     <string name="diagnostics_live_off_status">รายละเอียดสด: ปิด</string>
     <string name="performance_overlay_on_status">โอเวอร์เลย์ประสิทธิภาพ: เปิด</string>
     <string name="pref_appearance_title">รูปลักษณ์</string>
-    <string name="pref_appearance_desc">ธีม เค้าโครงแดชบอร์ด ด้านของกราฟระยะทางวิ่ง และไอคอน &amp; แอนิเมชันของแดชบอร์ด</string>
+    <string name="pref_appearance_desc">ธีม เค้าโครงแดชบอร์ด ด้านของกราฟระยะทางวิ่ง คอลัมน์ของการ์ดข้อมูลรถ และไอคอน &amp; แอนิเมชันของแดชบอร์ด</string>
     <string name="pref_language_units_title">ภาษา &amp; หน่วย</string>
     <string name="pref_language_units_desc">ภาษาของแอป และหน่วยเมตริกหรืออิมพีเรียล</string>
     <string name="pref_trip_recording_title">การบันทึกการเดินทาง</string>
@@ -1215,6 +1215,10 @@
     <string name="chart_side_desc">เค้าโครงคลาสสิก: ด้านของหน้าจอที่กราฟระยะทางวิ่งและการติดตามการเดินทางอยู่ การ์ดข้อมูลรถจะอยู่อีกด้าน — สะดวกสำหรับรถพวงมาลัยขวา</string>
     <string name="chart_side_left">ซ้าย</string>
     <string name="chart_side_right">ขวา</string>
+    <string name="pref_card_columns">การ์ดข้อมูลรถ</string>
+    <string name="card_columns_desc">เค้าโครงคลาสสิกแบบเต็มความกว้าง: การ์ดข้อมูลรถแบบสองคอลัมน์ หรือแบบคอลัมน์แคบคอลัมน์เดียวที่ให้กราฟระยะทางวิ่งมีพื้นที่มากขึ้น หน้าจอแยกใช้คอลัมน์เดียวเสมอ</string>
+    <string name="card_columns_one">คอลัมน์เดียว</string>
+    <string name="card_columns_two">สองคอลัมน์</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">ว่าง</string>

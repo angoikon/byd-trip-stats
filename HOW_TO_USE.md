@@ -78,7 +78,7 @@ The projection uses your consumption over your **last 10, 100 or 500 km** of dri
 
 ### Vehicle Stat Cards
 
-On the car's full-width screen these sit in two columns of four; in split screen they stack in one column. They sit to the right of the range chart unless **Settings → Preferences → Appearance → Range chart side** is set to **Right**, which swaps the two: the cards on the left, the chart and Trip Tracking on the right, as some prefer on a right-hand-drive car. Typical cards include:
+On the car's full-width screen these sit in two columns of four; in split screen they stack in one column. If you'd rather give the range chart more of the width, **Settings → Preferences → Appearance → Vehicle cards → One column** keeps them in one narrow column at full width too, as before 2.21. They sit to the right of the range chart unless **Settings → Preferences → Appearance → Range chart side** is set to **Right**, which swaps the two: the cards on the left, the chart and Trip Tracking on the right, as some prefer on a right-hand-drive car. Typical cards include:
 
 - **Estimated SoH / Battery health**
 - **Temperature** (ambient + battery)
@@ -304,7 +304,7 @@ no effect on local trip recording or the dashboard.
 
 | Card | What's inside |
 |---|---|
-| **Appearance** | Theme (System / Light / Dark / Neon *Pro*), dashboard layout (Classic / Cards *Pro*), range chart side (Classic: Left / Right), dashboard icons & animations — off moves the icons into the top bar and lowers CPU use on older firmware |
+| **Appearance** | Theme (System / Light / Dark / Neon *Pro*), dashboard layout (Classic / Cards *Pro*), range chart side (Classic: Left / Right), vehicle cards (Classic, full width: One column / Two columns), dashboard icons & animations — off moves the icons into the top bar and lowers CPU use on older firmware |
 | **Language & units** | App language (overrides the head unit's for this app only), metric or imperial |
 | **Trip recording** | Engine-off trip timeout (default 3 minutes), ask before auto-stopping, minimum trip distance (shorter trips are discarded; 0 keeps every trip) |
 | **Battery and range estimate** | SoC source (dashboard **Panel** percentage or the **BMS** reading), the **range estimate** window (last 10 / 100 / 500 km of driving), and the cell-imbalance alert *(Pro)* |

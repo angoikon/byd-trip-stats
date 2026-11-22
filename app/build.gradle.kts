@@ -43,7 +43,7 @@ android {
     val versionMajor    = 2
     val versionMinor    = 21
     val versionPatch    = 0
-    val versionPre      = 18 // 99 = stable; 1–98 = beta (e.g. 1 → "beta01")
+    val versionPre      = 19 // 99 = stable; 1–98 = beta (e.g. 1 → "beta01")
     // Hotfix revision for the SAME versionName. Bumps versionCode ONLY — the in-app
     // updater compares the GitHub tag against versionName (UpdateRepository.isNewerVersion),
     // NOT versionCode, so this does NOT auto-trigger an update, yet it lets us rebuild the

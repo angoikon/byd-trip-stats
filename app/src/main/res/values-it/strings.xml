@@ -1075,7 +1075,7 @@
     <string name="diagnostics_live_off_status">Dettagli live disattivati</string>
     <string name="performance_overlay_on_status">Overlay prestazioni attivo</string>
     <string name="pref_appearance_title">Aspetto</string>
-    <string name="pref_appearance_desc">Tema, layout del cruscotto, lato del grafico dell\'autonomia, e icone &amp; animazioni del cruscotto.</string>
+    <string name="pref_appearance_desc">Tema, layout del cruscotto, lato del grafico dell\'autonomia, colonne delle schede del veicolo, e icone &amp; animazioni del cruscotto.</string>
     <string name="pref_language_units_title">Lingua &amp; unità</string>
     <string name="pref_language_units_desc">La lingua dell\'app, e unità metriche o imperiali.</string>
     <string name="pref_trip_recording_title">Registrazione viaggi</string>
@@ -1316,6 +1316,10 @@
     <string name="chart_side_desc">Layout classico: il lato dello schermo occupato dal grafico dell\'autonomia e dal Tracciamento viaggio. Le schede del veicolo riempiono l\'altro lato — utile su un\'auto con guida a destra.</string>
     <string name="chart_side_left">Sinistra</string>
     <string name="chart_side_right">Destra</string>
+    <string name="pref_card_columns">Schede del veicolo</string>
+    <string name="card_columns_desc">Layout classico a schermo intero: le schede del veicolo su due colonne, o su una colonna stretta che lascia più spazio al grafico dell\'autonomia. Lo schermo diviso usa sempre una colonna.</string>
+    <string name="card_columns_one">Una colonna</string>
+    <string name="card_columns_two">Due colonne</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Inattivo</string>

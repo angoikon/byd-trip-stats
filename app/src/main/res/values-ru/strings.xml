@@ -1072,7 +1072,7 @@
     <string name="diagnostics_live_off_status">Подробности в реальном времени выключены</string>
     <string name="performance_overlay_on_status">Оверлей производительности включён</string>
     <string name="pref_appearance_title">Оформление</string>
-    <string name="pref_appearance_desc">Тема, макет панели, сторона графика запаса хода, а также значки и анимации панели.</string>
+    <string name="pref_appearance_desc">Тема, макет панели, сторона графика запаса хода, столбцы карточек автомобиля, а также значки и анимации панели.</string>
     <string name="pref_language_units_title">Язык и единицы</string>
     <string name="pref_language_units_desc">Язык приложения и метрические или имперские единицы.</string>
     <string name="pref_trip_recording_title">Запись поездок</string>
@@ -1312,6 +1312,10 @@
     <string name="chart_side_desc">Классический макет: сторона экрана, которую занимают график запаса хода и Отслеживание поездок. Карточки автомобиля заполняют другую сторону — удобно в праворульном автомобиле.</string>
     <string name="chart_side_left">Слева</string>
     <string name="chart_side_right">Справа</string>
+    <string name="pref_card_columns">Карточки автомобиля</string>
+    <string name="card_columns_desc">Классический макет во всю ширину: карточки автомобиля в два столбца или в один узкий столбец, оставляющий графику запаса хода больше места. На разделённом экране всегда один столбец.</string>
+    <string name="card_columns_one">Один столбец</string>
+    <string name="card_columns_two">Два столбца</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Простой</string>

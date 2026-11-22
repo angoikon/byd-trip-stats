@@ -992,7 +992,7 @@
     <string name="diagnostics_live_off_status">Live-Details aus</string>
     <string name="performance_overlay_on_status">Leistungs-Overlay an</string>
     <string name="pref_appearance_title">Darstellung</string>
-    <string name="pref_appearance_desc">Design, Dashboard-Layout, Seite des Reichweitendiagramms sowie Dashboard-Symbole &amp; Animationen.</string>
+    <string name="pref_appearance_desc">Design, Dashboard-Layout, Seite des Reichweitendiagramms, Spalten der Fahrzeugkarten sowie Dashboard-Symbole &amp; Animationen.</string>
     <string name="pref_language_units_title">Sprache &amp; Einheiten</string>
     <string name="pref_language_units_desc">Die Sprache der App und metrische oder imperiale Einheiten.</string>
     <string name="pref_trip_recording_title">Fahrtaufzeichnung</string>
@@ -1215,6 +1215,10 @@
     <string name="chart_side_desc">Klassisches Layout: die Bildschirmseite, die das Reichweitendiagramm und die Fahrtenaufzeichnung einnehmen. Die Fahrzeugkarten füllen die andere Seite — praktisch bei Rechtslenkern.</string>
     <string name="chart_side_left">Links</string>
     <string name="chart_side_right">Rechts</string>
+    <string name="pref_card_columns">Fahrzeugkarten</string>
+    <string name="card_columns_desc">Klassisches Layout in voller Breite: die Fahrzeugkarten in zwei Spalten oder in einer schmalen Spalte, die dem Reichweitendiagramm mehr Platz lässt. Im geteilten Bildschirm immer eine Spalte.</string>
+    <string name="card_columns_one">Eine Spalte</string>
+    <string name="card_columns_two">Zwei Spalten</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Leerlauf</string>

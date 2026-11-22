@@ -1072,7 +1072,7 @@
     <string name="diagnostics_live_off_status">Élő részletek ki</string>
     <string name="performance_overlay_on_status">Teljesítmény-átfedés be</string>
     <string name="pref_appearance_title">Megjelenés</string>
-    <string name="pref_appearance_desc">Téma, műszerfal elrendezése, a hatótáv-diagram oldala, valamint a műszerfal ikonjai és animációi.</string>
+    <string name="pref_appearance_desc">Téma, műszerfal elrendezése, a hatótáv-diagram oldala, a járműkártyák oszlopai, valamint a műszerfal ikonjai és animációi.</string>
     <string name="pref_language_units_title">Nyelv és mértékegységek</string>
     <string name="pref_language_units_desc">Az alkalmazás nyelve, valamint metrikus vagy angolszász mértékegységek.</string>
     <string name="pref_trip_recording_title">Utak rögzítése</string>
@@ -1312,6 +1312,10 @@
     <string name="chart_side_desc">Klasszikus elrendezés: a képernyőnek az az oldala, amelyet a hatótáv-diagram és az Útkövetés foglal el. A járműkártyák a másik oldalt töltik ki — jobbkormányos autóban hasznos.</string>
     <string name="chart_side_left">Bal</string>
     <string name="chart_side_right">Jobb</string>
+    <string name="pref_card_columns">Járműkártyák</string>
+    <string name="card_columns_desc">Klasszikus elrendezés teljes szélességben: a járműkártyák két oszlopban, vagy egy keskeny oszlopban, amely több helyet hagy a hatótáv-diagramnak. Osztott képernyőn mindig egy oszlop.</string>
+    <string name="card_columns_one">Egy oszlop</string>
+    <string name="card_columns_two">Két oszlop</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Tétlen</string>

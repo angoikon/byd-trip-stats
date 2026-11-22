@@ -1075,7 +1075,7 @@
     <string name="diagnostics_live_off_status">Livedetaljer av</string>
     <string name="performance_overlay_on_status">Prestandaöverlägg på</string>
     <string name="pref_appearance_title">Utseende</string>
-    <string name="pref_appearance_desc">Tema, instrumentpanelens layout, räckviddsdiagrammets sida samt instrumentpanelens ikoner &amp; animationer.</string>
+    <string name="pref_appearance_desc">Tema, instrumentpanelens layout, räckviddsdiagrammets sida, fordonskortens kolumner samt instrumentpanelens ikoner &amp; animationer.</string>
     <string name="pref_language_units_title">Språk &amp; enheter</string>
     <string name="pref_language_units_desc">Appens språk och metriska eller brittiska enheter.</string>
     <string name="pref_trip_recording_title">Resregistrering</string>
@@ -1316,6 +1316,10 @@
     <string name="chart_side_desc">Klassisk layout: den sida av skärmen som räckviddsdiagrammet och Resespårning tar. Fordonskorten fyller den andra sidan — praktiskt i en högerstyrd bil.</string>
     <string name="chart_side_left">Vänster</string>
     <string name="chart_side_right">Höger</string>
+    <string name="pref_card_columns">Fordonskort</string>
+    <string name="card_columns_desc">Klassisk layout i full bredd: fordonskorten i två kolumner, eller i en smal kolumn som ger räckviddsdiagrammet mer plats. Delad skärm använder alltid en kolumn.</string>
+    <string name="card_columns_one">En kolumn</string>
+    <string name="card_columns_two">Två kolumner</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Inaktiv</string>

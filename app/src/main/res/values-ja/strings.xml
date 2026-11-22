@@ -1075,7 +1075,7 @@
     <string name="diagnostics_live_off_status">ライブ詳細オフ</string>
     <string name="performance_overlay_on_status">パフォーマンスオーバーレイオン</string>
     <string name="pref_appearance_title">外観</string>
-    <string name="pref_appearance_desc">テーマ、ダッシュボードのレイアウト、航続距離グラフの位置、ダッシュボードのアイコンとアニメーション。</string>
+    <string name="pref_appearance_desc">テーマ、ダッシュボードのレイアウト、航続距離グラフの位置、車両カードの列数、ダッシュボードのアイコンとアニメーション。</string>
     <string name="pref_language_units_title">言語 &amp; 単位</string>
     <string name="pref_language_units_desc">アプリの言語と、メートル法またはヤード・ポンド法の単位。</string>
     <string name="pref_trip_recording_title">トリップ記録</string>
@@ -1316,6 +1316,10 @@
     <string name="chart_side_desc">クラシックレイアウト：航続距離グラフと走行トラッキングを表示する画面の側。車両カードは反対側に表示されます。右ハンドル車で便利です。</string>
     <string name="chart_side_left">左</string>
     <string name="chart_side_right">右</string>
+    <string name="pref_card_columns">車両カード</string>
+    <string name="card_columns_desc">クラシックレイアウト（全画面時）：車両カードを2列、または航続距離グラフを広く取れる細い1列で表示します。分割画面では常に1列です。</string>
+    <string name="card_columns_one">1列</string>
+    <string name="card_columns_two">2列</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">アイドル</string>

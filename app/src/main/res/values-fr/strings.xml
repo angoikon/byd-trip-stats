@@ -992,7 +992,7 @@
     <string name="diagnostics_live_off_status">Détails en direct désactivés</string>
     <string name="performance_overlay_on_status">Superposition des performances activée</string>
     <string name="pref_appearance_title">Apparence</string>
-    <string name="pref_appearance_desc">Thème, disposition du tableau de bord, côté du graphique d\'autonomie, et icônes &amp; animations du tableau de bord.</string>
+    <string name="pref_appearance_desc">Thème, disposition du tableau de bord, côté du graphique d\'autonomie, colonnes des cartes du véhicule, et icônes &amp; animations du tableau de bord.</string>
     <string name="pref_language_units_title">Langue &amp; unités</string>
     <string name="pref_language_units_desc">La langue de l\'app, et les unités métriques ou impériales.</string>
     <string name="pref_trip_recording_title">Enregistrement des trajets</string>
@@ -1215,6 +1215,10 @@
     <string name="chart_side_desc">Disposition classique : le côté de l\'écran occupé par le graphique d\'autonomie et le Suivi des trajets. Les cartes du véhicule remplissent l\'autre côté — pratique sur une voiture à conduite à droite.</string>
     <string name="chart_side_left">Gauche</string>
     <string name="chart_side_right">Droite</string>
+    <string name="pref_card_columns">Cartes du véhicule</string>
+    <string name="card_columns_desc">Disposition classique en pleine largeur : les cartes du véhicule sur deux colonnes, ou sur une colonne étroite qui laisse plus de place au graphique d\'autonomie. L\'écran partagé utilise toujours une colonne.</string>
+    <string name="card_columns_one">Une colonne</string>
+    <string name="card_columns_two">Deux colonnes</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Au repos</string>

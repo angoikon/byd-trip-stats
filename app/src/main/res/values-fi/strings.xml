@@ -1075,7 +1075,7 @@
     <string name="diagnostics_live_off_status">Reaaliaikaiset tiedot pois</string>
     <string name="performance_overlay_on_status">Suorituskykypeite päällä</string>
     <string name="pref_appearance_title">Ulkoasu</string>
-    <string name="pref_appearance_desc">Teema, kojelaudan asettelu, toimintamatkakaavion puoli sekä kojelaudan kuvakkeet ja animaatiot.</string>
+    <string name="pref_appearance_desc">Teema, kojelaudan asettelu, toimintamatkakaavion puoli, ajoneuvokorttien sarakkeet sekä kojelaudan kuvakkeet ja animaatiot.</string>
     <string name="pref_language_units_title">Kieli &amp; yksiköt</string>
     <string name="pref_language_units_desc">Sovelluksen kieli sekä metriset tai brittiläiset yksiköt.</string>
     <string name="pref_trip_recording_title">Matkojen tallennus</string>
@@ -1316,6 +1316,10 @@
     <string name="chart_side_desc">Klassinen asettelu: näytön puoli, jolla toimintamatkakaavio ja Matkan seuranta ovat. Ajoneuvokortit täyttävät toisen puolen — kätevä oikealta ohjattavassa autossa.</string>
     <string name="chart_side_left">Vasen</string>
     <string name="chart_side_right">Oikea</string>
+    <string name="pref_card_columns">Ajoneuvokortit</string>
+    <string name="card_columns_desc">Klassinen asettelu koko leveydellä: ajoneuvokortit kahdessa sarakkeessa tai yhdessä kapeassa sarakkeessa, joka jättää toimintamatkakaaviolle enemmän tilaa. Jaetussa näytössä käytetään aina yhtä saraketta.</string>
+    <string name="card_columns_one">Yksi sarake</string>
+    <string name="card_columns_two">Kaksi saraketta</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Joutilaana</string>

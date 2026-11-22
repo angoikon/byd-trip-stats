@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.byd.tripstats.R
 import com.byd.tripstats.data.config.CarCatalog
 import com.byd.tripstats.data.model.VehicleTelemetry
+import com.byd.tripstats.data.preferences.ClassicCardColumns
 import com.byd.tripstats.data.preferences.ClassicChartSide
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.data.preferences.SocSource
@@ -89,6 +90,7 @@ fun DashboardScreen(
     val dashboardLayout by prefs.dashboardLayout.collectAsState(initial = prefs.getCachedDashboardLayout())
     val useCardsLayout = isPro && dashboardLayout == com.byd.tripstats.data.preferences.DashboardLayout.CARDS
     val classicChartSide by prefs.classicChartSide.collectAsState(initial = prefs.getCachedClassicChartSide())
+    val classicCardColumns by prefs.classicCardColumns.collectAsState(initial = prefs.getCachedClassicCardColumns())
     // Editing the CARDS grid is a full-screen action; in a narrow split-screen window the
     // grid reflows to a compact read-only view, so the edit (pencil) affordance is hidden.
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
@@ -301,6 +303,7 @@ fun DashboardScreen(
                 useCardsLayout = useCardsLayout,
                 cardsEditMode = cardsEditMode,
                 classicChartSide = classicChartSide,
+                classicCardColumns = classicCardColumns,
                 modifier = Modifier.padding(paddingValues)
             )
             if (currentTelemetry.speedGetterWedged) {
@@ -505,6 +508,7 @@ fun DashboardContent(
     useCardsLayout: Boolean = false,
     cardsEditMode: Boolean = false,
     classicChartSide: ClassicChartSide = ClassicChartSide.START,
+    classicCardColumns: ClassicCardColumns = ClassicCardColumns.TWO,
 ) {
     val context = LocalContext.current
     val prefs = remember { PreferencesManager(context.applicationContext) }
@@ -641,7 +645,11 @@ fun DashboardContent(
             // Stacked eight high in a 15 % column (~190 dp on a 1280 dp head unit) each had ~60 dp
             // and only room for its compact type; two columns give each card the same width and
             // twice the height. The chart keeps ~800 dp, plenty for a curve that is nearly flat.
+            // Settings → Appearance can keep the one column instead (ClassicCardColumns.ONE), for
+            // those who'd rather have the chart's width: 16 % (~199 dp), the split-screen column's
+            // width, so its cards fit as they do there; 2.20's 15 % would be ~187 dp.
             val fullWidth = widthSizeClass != WindowWidthSizeClass.Medium
+            val twoColumns = fullWidth && classicCardColumns == ClassicCardColumns.TWO
 
             @Composable
             fun ChartColumn(columnModifier: Modifier) {
@@ -708,7 +716,7 @@ fun DashboardContent(
                         vehicleSnapshot = vehicleSnapshot,
                         modifier   = Modifier.fillMaxWidth(),
                         fillHeight = true,
-                        columns    = if (fullWidth) 2 else 1,
+                        columns    = if (twoColumns) 2 else 1,
                         onNavigateToBatteryDegradation = onNavigateToBatteryDegradation,
                         onShowBattery12vHistory = onShowBattery12vHistory,
                         onShowLifetimeEnergy = onShowLifetimeEnergy,
@@ -725,8 +733,13 @@ fun DashboardContent(
                     .padding(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                val chartModifier = Modifier.weight(if (fullWidth) 0.64f else 0.68f)
-                val cardsModifier = Modifier.weight(if (fullWidth) 0.36f else 0.32f)
+                val cardsShare = when {
+                    twoColumns -> 0.36f
+                    fullWidth  -> 0.16f
+                    else       -> 0.32f
+                }
+                val chartModifier = Modifier.weight(1f - cardsShare)
+                val cardsModifier = Modifier.weight(cardsShare)
                 if (classicChartSide == ClassicChartSide.START) {
                     ChartColumn(chartModifier)
                     CardsColumn(cardsModifier)

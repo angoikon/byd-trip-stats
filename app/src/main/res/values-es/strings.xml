@@ -1075,7 +1075,7 @@
     <string name="diagnostics_live_off_status">Detalles en vivo desactivados</string>
     <string name="performance_overlay_on_status">Superposición de rendimiento activada</string>
     <string name="pref_appearance_title">Apariencia</string>
-    <string name="pref_appearance_desc">Tema, diseño del panel, lado del gráfico de autonomía e iconos y animaciones del panel.</string>
+    <string name="pref_appearance_desc">Tema, diseño del panel, lado del gráfico de autonomía, columnas de las tarjetas del vehículo e iconos y animaciones del panel.</string>
     <string name="pref_language_units_title">Idioma y unidades</string>
     <string name="pref_language_units_desc">El idioma de la app y unidades métricas o imperiales.</string>
     <string name="pref_trip_recording_title">Registro de viajes</string>
@@ -1316,6 +1316,10 @@
     <string name="chart_side_desc">Diseño clásico: el lado de la pantalla que ocupan el gráfico de autonomía y el Seguimiento de viaje. Las tarjetas del vehículo llenan el otro lado; útil en un coche con el volante a la derecha.</string>
     <string name="chart_side_left">Izquierda</string>
     <string name="chart_side_right">Derecha</string>
+    <string name="pref_card_columns">Tarjetas del vehículo</string>
+    <string name="card_columns_desc">Diseño clásico a pantalla completa: las tarjetas del vehículo en dos columnas, o en una columna estrecha que deja más espacio al gráfico de autonomía. En pantalla dividida siempre se usa una columna.</string>
+    <string name="card_columns_one">Una columna</string>
+    <string name="card_columns_two">Dos columnas</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Inactivo</string>

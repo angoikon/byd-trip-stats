@@ -1098,7 +1098,7 @@
     <string name="diagnostics_live_off_status">Live details off</string>
     <string name="performance_overlay_on_status">Performance overlay on</string>
     <string name="pref_appearance_title">Appearance</string>
-    <string name="pref_appearance_desc">Theme, dashboard layout, the range chart\'s side, and dashboard icons &amp; animations.</string>
+    <string name="pref_appearance_desc">Theme, dashboard layout, the range chart\'s side, the vehicle cards\' columns, and dashboard icons &amp; animations.</string>
     <string name="pref_language_units_title">Language &amp; units</string>
     <string name="pref_language_units_desc">The app\'s language, and metric or imperial units.</string>
     <string name="pref_trip_recording_title">Trip recording</string>
@@ -1339,6 +1339,10 @@
     <string name="chart_side_desc">Classic layout: the side of the screen the range chart and Trip Tracking take. The vehicle cards fill the other side — handy on a right-hand-drive car.</string>
     <string name="chart_side_left">Left</string>
     <string name="chart_side_right">Right</string>
+    <string name="pref_card_columns">Vehicle cards</string>
+    <string name="card_columns_desc">Classic layout at full width: the vehicle cards in two columns, or in one narrow column that gives the range chart more room. Split screen always uses one column.</string>
+    <string name="card_columns_one">One column</string>
+    <string name="card_columns_two">Two columns</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Idle</string>

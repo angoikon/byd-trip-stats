@@ -1075,7 +1075,7 @@
     <string name="diagnostics_live_off_status">实时详情：关闭</string>
     <string name="performance_overlay_on_status">性能悬浮层：开启</string>
     <string name="pref_appearance_title">外观</string>
-    <string name="pref_appearance_desc">主题、仪表板布局、续航图表位置，以及仪表板图标和动画。</string>
+    <string name="pref_appearance_desc">主题、仪表板布局、续航图表位置、车辆卡片列数，以及仪表板图标和动画。</string>
     <string name="pref_language_units_title">语言 &amp; 单位</string>
     <string name="pref_language_units_desc">应用语言，以及公制或英制单位。</string>
     <string name="pref_trip_recording_title">行程记录</string>
@@ -1316,6 +1316,10 @@
     <string name="chart_side_desc">经典布局：续航图表和行程追踪所在的屏幕一侧，车辆卡片占据另一侧。适合右舵车。</string>
     <string name="chart_side_left">左侧</string>
     <string name="chart_side_right">右侧</string>
+    <string name="pref_card_columns">车辆卡片</string>
+    <string name="card_columns_desc">经典布局（全宽时）：车辆卡片分两列显示，或以一列窄栏显示，为续航图表留出更多空间。分屏时始终为一列。</string>
+    <string name="card_columns_one">一列</string>
+    <string name="card_columns_two">两列</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">空闲</string>

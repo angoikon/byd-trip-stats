@@ -8,6 +8,7 @@ import com.byd.tripstats.connections.MqttConnectionStore
 import com.byd.tripstats.data.config.CarCatalog
 import com.byd.tripstats.data.entitlement.EntitlementManager
 import com.byd.tripstats.data.notify.TelegramNotifier
+import com.byd.tripstats.data.preferences.ClassicCardColumns
 import com.byd.tripstats.data.preferences.ClassicChartSide
 import com.byd.tripstats.data.preferences.DashboardCardId
 import com.byd.tripstats.data.preferences.DashboardLayout
@@ -121,6 +122,7 @@ object SettingsBackup {
                 put("dashboardAnimations",       pm.dashboardAnimationsEnabled.first())
                 put("dashboardLayout",           pm.dashboardLayout.first().name)
                 put("classicChartSide",          pm.classicChartSide.first().name)
+                put("classicCardColumns",        pm.classicCardColumns.first().name)
                 put("dashboardCardOrder",        JSONArray(pm.dashboardCardOrder.first().map { it.name }))
                 put("dashboardHiddenCards",      JSONArray(pm.dashboardHiddenCards.first().map { it.name }))
                 put("dashboardPowerOrder",       JSONArray(pm.dashboardPowerOrder.first().map { it.name }))
@@ -383,6 +385,7 @@ object SettingsBackup {
         }
         p.enumOrNull<DashboardLayout>("dashboardLayout")?.let { pm.saveDashboardLayout(it) }
         p.enumOrNull<ClassicChartSide>("classicChartSide")?.let { pm.saveClassicChartSide(it) }
+        p.enumOrNull<ClassicCardColumns>("classicCardColumns")?.let { pm.saveClassicCardColumns(it) }
 
         if (p.has("dashboardAnimations")) pm.saveDashboardAnimationsEnabled(p.getBoolean("dashboardAnimations"))
         if (p.has("dashboardChartHidden")) pm.saveDashboardChartHidden(p.getBoolean("dashboardChartHidden"))
