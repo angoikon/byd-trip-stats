@@ -18,9 +18,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import com.byd.tripstats.R
 import com.byd.tripstats.data.config.Drivetrain
 import com.byd.tripstats.data.model.VehicleTelemetry
@@ -358,6 +363,72 @@ fun VehicleStats(
 internal fun accentTextColor(color: Color): Color =
     if (MaterialTheme.colorScheme.surface.luminance() > 0.5f) lerp(color, Color.Black, 0.45f) else color
 
+/** What each stretch of a card's reading is, for [readingParts]. */
+internal enum class ReadingPart {
+    /** The figure itself, or the "—" standing in for one: full size. */
+    FIGURE,
+    /** A unit, a label before the figure ("SoH:") or a source tag ("(stat)"): smaller and grey. */
+    UNIT,
+    /** The "/" between two figures: full size, grey. */
+    SEPARATOR,
+}
+
+/**
+ * Splits a card's formatted reading so the figures lead and the rest recedes: "571 V / 13.70 V" is
+ * 571, " V ", "/", " ", 13.70, " V". It reads the finished, translated string, so no translation
+ * has to be cut into pieces: no label in any of them holds a digit. A reading with no figure at
+ * all ("Standard / Normal") keeps its words full size and only greys the slashes.
+ */
+internal fun readingParts(value: String): List<Pair<String, ReadingPart>> {
+    val hasFigure = value.any { it.isDigit() || it == '—' }
+    fun partAt(i: Int): ReadingPart {
+        val c = value[i]
+        val next = value.getOrNull(i + 1)
+        return when {
+            c == '/' -> ReadingPart.SEPARATOR
+            !hasFigure -> ReadingPart.FIGURE
+            c.isDigit() || c == '—' -> ReadingPart.FIGURE
+            // A decimal point or comma inside a number: 13.70, or 13,70 where the locale writes it so.
+            (c == '.' || c == ',') && value.getOrNull(i - 1)?.isDigit() == true && next?.isDigit() == true ->
+                ReadingPart.FIGURE
+            // A minus sign that starts a number: -5 °C.
+            (c == '-' || c == '−') && next?.isDigit() == true && value.getOrNull(i - 1)?.isDigit() != true ->
+                ReadingPart.FIGURE
+            else -> ReadingPart.UNIT
+        }
+    }
+    val kinds = List(value.length) { partAt(it) }
+    val parts = mutableListOf<Pair<String, ReadingPart>>()
+    var start = 0
+    for (i in 1..value.length) {
+        if (i == value.length || kinds[i] != kinds[start]) {
+            parts += value.substring(start, i) to kinds[start]
+            start = i
+        }
+    }
+    return parts
+}
+
+/**
+ * [readingParts] as styled text: figures in the reading's own style, the rest [unitScale] of its size
+ * and grey. Split screen's 14 sp readings keep their units at 80 %, as 70 % of 14 sp is under 10 sp.
+ */
+@Composable
+private fun styledReading(value: String, unitScale: Float = 0.7f): AnnotatedString {
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
+    return remember(value, muted, unitScale) {
+        buildAnnotatedString {
+            readingParts(value).forEach { (text, part) ->
+                when (part) {
+                    ReadingPart.FIGURE -> append(text)
+                    ReadingPart.UNIT -> withStyle(SpanStyle(color = muted, fontSize = unitScale.em, fontWeight = FontWeight.Medium)) { append(text) }
+                    ReadingPart.SEPARATOR -> withStyle(SpanStyle(color = muted, fontWeight = FontWeight.Normal)) { append(text) }
+                }
+            }
+        }
+    }
+}
+
 /**
  * The title line of a card in Classic's grid ([StatCard] and [TyreStatCard] `stacked`): the card's
  * icon, then the title in the accent colour, 16 sp. Beside the whole card, as in the single column,
@@ -424,7 +495,10 @@ fun StatCard(
     ) {
         if (stacked) {
             // Sized to be read at a glance while driving: 16 sp title and subtitle around a 22 sp
-            // value, ~82 dp of text in a ~120 dp card on a 1280 × 600 dp head unit.
+            // value, ~82 dp of text in a ~120 dp card on a 1280 × 600 dp head unit. The figures are
+            // semibold in the theme's main text colour, white on the dark themes and deep navy on
+            // the light one, and their units smaller and grey. The single column below (split
+            // screen, phones) takes the same colours.
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -434,9 +508,10 @@ fun StatCard(
                 StackedCardHeader(title, color, icon as? ImageVector, iconRes)
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text       = value,
+                    text       = styledReading(value),
                     style      = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.SemiBold,
+                    color      = MaterialTheme.colorScheme.onSurface,
                     maxLines   = 1,
                     overflow   = TextOverflow.Ellipsis
                 )
@@ -457,42 +532,49 @@ fun StatCard(
                 .padding(pad),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val accent = accentTextColor(color)
             when {
                 icon is ImageVector -> Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = color,
+                    tint = accent,
                     modifier = Modifier.size(iconSize)
                 )
                 iconRes != null -> Icon(
                     painter = painterResource(id = iconRes),
                     contentDescription = null,
-                    tint = color,
+                    tint = accent,
                     modifier = Modifier.size(iconSize)
                 )
             }
             Spacer(modifier = Modifier.width(spacerW))
             Column {
                 Text(
-                    text     = title,
-                    style    = if (compact) MaterialTheme.typography.labelMedium
+                    text       = title,
+                    style      = if (compact) MaterialTheme.typography.labelMedium
                     else MaterialTheme.typography.bodyMedium,
-                    color    = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    fontWeight = FontWeight.SemiBold,
+                    color      = accent,
+                    maxLines   = 1,
+                    overflow   = TextOverflow.Ellipsis
                 )
                 Text(
-                    text       = value,
+                    text       = styledReading(value, unitScale = if (compact) 0.8f else 0.7f),
                     style      = if (compact) MaterialTheme.typography.titleSmall
                     else MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.SemiBold,
+                    color      = MaterialTheme.colorScheme.onSurface
                 )
                 subtitle?.let {
+                    // One line in split screen: a second one (a long hint such as "Change drive
+                    // mode to initialise") was cut through the middle by the card's height.
                     Text(
-                        text  = it,
-                        style = if (compact) MaterialTheme.typography.labelSmall
+                        text     = it,
+                        style    = if (compact) MaterialTheme.typography.labelSmall
                         else MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color    = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = if (compact) 1 else Int.MAX_VALUE,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }

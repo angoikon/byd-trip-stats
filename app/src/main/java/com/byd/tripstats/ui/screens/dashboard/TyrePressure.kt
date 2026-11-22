@@ -179,6 +179,10 @@ internal fun TyreStatCard(
                 StackedTyreCell("RR", telemetry.tyreTempRR.takeIf { it > 0 }, telemetry.tyrePressureRR, tyreUnit, rearBar, Modifier.weight(1f))
             }
         } else Row(
+            // The single column (split screen, phones): the grid's cells, smaller, beside the icon.
+            // The boxed cells it had (TyreCell, still the Cards layout's) cost ~10 dp each in
+            // padding, and in split screen's ~170 dp cards they cut the pressures off; the cards
+            // there are ~190 dp now.
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(pad),
@@ -187,25 +191,25 @@ internal fun TyreStatCard(
             Icon(
                 imageVector = Icons.Filled.TireRepair,
                 contentDescription = null,
-                tint = BydElectricBlue,
+                tint = accentTextColor(BydElectricBlue),
                 modifier = Modifier.size(iconSize)
             )
             Spacer(modifier = Modifier.width(spacerW))
             Column(modifier = Modifier.fillMaxWidth()) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(cellSpacing)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    TyreCell("FL", telemetry.tyreTempLF.takeIf { it > 0 }, telemetry.tyrePressureLF, tyreUnit, frontBar, modifier = Modifier.weight(1f))
-                    TyreCell("FR", telemetry.tyreTempRF.takeIf { it > 0 }, telemetry.tyrePressureRF, tyreUnit, frontBar, modifier = Modifier.weight(1f))
+                    StackedTyreCell("FL", telemetry.tyreTempLF.takeIf { it > 0 }, telemetry.tyrePressureLF, tyreUnit, frontBar, Modifier.weight(1f), dense = compact)
+                    StackedTyreCell("FR", telemetry.tyreTempRF.takeIf { it > 0 }, telemetry.tyrePressureRF, tyreUnit, frontBar, Modifier.weight(1f), dense = compact)
                 }
                 Spacer(modifier = Modifier.height(cellSpacing))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(cellSpacing)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    TyreCell("RL", telemetry.tyreTempLR.takeIf { it > 0 }, telemetry.tyrePressureLR, tyreUnit, rearBar, modifier = Modifier.weight(1f))
-                    TyreCell("RR", telemetry.tyreTempRR.takeIf { it > 0 }, telemetry.tyrePressureRR, tyreUnit, rearBar, modifier = Modifier.weight(1f))
+                    StackedTyreCell("RL", telemetry.tyreTempLR.takeIf { it > 0 }, telemetry.tyrePressureLR, tyreUnit, rearBar, Modifier.weight(1f), dense = compact)
+                    StackedTyreCell("RR", telemetry.tyreTempRR.takeIf { it > 0 }, telemetry.tyrePressureRR, tyreUnit, rearBar, Modifier.weight(1f), dense = compact)
                 }
             }
         }
@@ -217,7 +221,8 @@ internal fun TyreStatCard(
  * while driving. The pressure comes first and largest, coloured by its status (darkened on the light
  * theme, where the plain colours are too faint to read), and it is measured before the temperature,
  * so a narrow cell cuts the temperature, never the pressure. No box: at ~90 dp a cell has no room
- * for one. "FL 2.47 16°" at 13/18/15 sp is ~72 dp.
+ * for one. "FL 2.47 16°" at 13/18/14 sp is ~72 dp; [dense] (split screen) at 11/14/11 sp is ~66 dp,
+ * inside the ~70 dp a cell gets there.
  */
 @Composable
 private fun StackedTyreCell(
@@ -227,6 +232,7 @@ private fun StackedTyreCell(
     unit: TyrePressureUnit,
     recommendedBar: Double?,
     modifier: Modifier = Modifier,
+    dense: Boolean = false,
 ) {
     val pressureColor = when (recommendedBar?.let { tyrePressureStatus(pressurePsi, it) }) {
         TyrePressureStatus.LOW    -> accentTextColor(AccelerationOrange)
@@ -237,26 +243,28 @@ private fun StackedTyreCell(
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = label,
-            fontSize = 13.sp,
+            fontSize = if (dense) 11.sp else 13.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
             softWrap = false
         )
-        Spacer(modifier = Modifier.width(6.dp))
+        Spacer(modifier = Modifier.width(if (dense) 3.dp else 6.dp))
         Text(
             text = unit.formatValue(pressurePsi),
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
+            fontSize = if (dense) 14.sp else 18.sp,
+            fontWeight = FontWeight.SemiBold,
             color = pressureColor,
             maxLines = 1,
             softWrap = false
         )
         Spacer(modifier = Modifier.weight(1f))
+        // Secondary to the pressure, as a unit is to its figure on the other cards: smaller and grey.
         if (tempC != null) {
             Text(
                 text = "${tempC}°",
-                fontSize = 15.sp,
-                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = if (dense) 11.sp else 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 softWrap = false
             )

@@ -632,7 +632,10 @@ fun DashboardContent(
         else -> {
             // Side by side: the chart and trip bar on one side, the vehicle cards on the other,
             // in the order Settings → Appearance picks (START is the left in a left-to-right
-            // language). Split screen (Medium) keeps the cards in one column of 28 %.
+            // language). Split screen (Medium) keeps the cards in one column, of 32 %: at 28 % a
+            // half-screen window (~635 dp) gave them ~170 dp and cut the tyre pressures off. Not
+            // more: the chart's row of figures under it needs ~370 dp on a BEV showing its
+            // consumption, and 68 % leaves it ~380.
             //
             // Full width: the vehicle cards get about a third of the width as a two-column grid.
             // Stacked eight high in a 15 % column (~190 dp on a 1280 dp head unit) each had ~60 dp
@@ -722,8 +725,8 @@ fun DashboardContent(
                     .padding(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                val chartModifier = Modifier.weight(if (fullWidth) 0.64f else 0.72f)
-                val cardsModifier = Modifier.weight(if (fullWidth) 0.36f else 0.28f)
+                val chartModifier = Modifier.weight(if (fullWidth) 0.64f else 0.68f)
+                val cardsModifier = Modifier.weight(if (fullWidth) 0.36f else 0.32f)
                 if (classicChartSide == ClassicChartSide.START) {
                     ChartColumn(chartModifier)
                     CardsColumn(cardsModifier)
