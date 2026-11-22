@@ -20,10 +20,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.byd.tripstats.R
@@ -410,23 +412,56 @@ internal fun readingParts(value: String): List<Pair<String, ReadingPart>> {
 }
 
 /**
- * [readingParts] as styled text: figures in the reading's own style, the rest [unitScale] of its size
- * and grey. Split screen's 14 sp readings keep their units at 80 %, as 70 % of 14 sp is under 10 sp.
+ * [readingParts] as styled text: the figures [figureScale] times the reading's own size, the rest
+ * [unitScale] of it and grey. Split screen's 14 sp readings keep their units at 80 %, as 70 % of 14 sp
+ * is under 10 sp. Only numbers grow: a reading of words ("Standard / Normal") keeps the base size,
+ * where it already fills the card. The Cards layout's tiles use it too.
  */
 @Composable
-private fun styledReading(value: String, unitScale: Float = 0.7f): AnnotatedString {
+internal fun styledReading(value: String, unitScale: Float = 0.7f, figureScale: Float = 1f): AnnotatedString {
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
-    return remember(value, muted, unitScale) {
+    return remember(value, muted, unitScale, figureScale) {
+        val figureStyle = SpanStyle(fontSize = figureScale.em).takeIf { figureScale != 1f && value.any { it.isDigit() } }
         buildAnnotatedString {
             readingParts(value).forEach { (text, part) ->
                 when (part) {
-                    ReadingPart.FIGURE -> append(text)
+                    ReadingPart.FIGURE -> if (figureStyle != null) withStyle(figureStyle) { append(text) } else append(text)
                     ReadingPart.UNIT -> withStyle(SpanStyle(color = muted, fontSize = unitScale.em, fontWeight = FontWeight.Medium)) { append(text) }
                     ReadingPart.SEPARATOR -> withStyle(SpanStyle(color = muted, fontWeight = FontWeight.Normal)) { append(text) }
                 }
             }
         }
     }
+}
+
+/**
+ * A card's reading on one line, semibold in the theme's main text colour, its figures [figureScale]
+ * times the base size so they stand out from the title and subtitle. When the larger figures don't
+ * fit (two five-digit motor speeds in a ~190 dp card) it falls back to the base size rather than
+ * cutting the reading short. That is tried again only when the reading's length changes, so the
+ * updates of up to 5 a second don't each lay it out twice.
+ */
+@Composable
+internal fun ReadingText(
+    value: String,
+    style: TextStyle,
+    unitScale: Float,
+    figureScale: Float,
+    modifier: Modifier = Modifier,
+    fontSize: TextUnit = TextUnit.Unspecified,
+) {
+    var enlarged by remember(value.length) { mutableStateOf(true) }
+    Text(
+        text         = styledReading(value, unitScale, if (enlarged) figureScale else 1f),
+        style        = style,
+        fontSize     = fontSize,
+        fontWeight   = FontWeight.SemiBold,
+        color        = MaterialTheme.colorScheme.onSurface,
+        maxLines     = 1,
+        overflow     = TextOverflow.Ellipsis,
+        modifier     = modifier,
+        onTextLayout = { if (enlarged && it.hasVisualOverflow) enlarged = false },
+    )
 }
 
 /**
@@ -507,14 +542,8 @@ fun StatCard(
             ) {
                 StackedCardHeader(title, color, icon as? ImageVector, iconRes)
                 Spacer(Modifier.height(4.dp))
-                Text(
-                    text       = styledReading(value),
-                    style      = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color      = MaterialTheme.colorScheme.onSurface,
-                    maxLines   = 1,
-                    overflow   = TextOverflow.Ellipsis
-                )
+                // Figures 26 sp, units 15 sp.
+                ReadingText(value, MaterialTheme.typography.titleLarge, unitScale = 0.7f, figureScale = 1.18f)
                 subtitle?.let {
                     Spacer(Modifier.height(2.dp))
                     Text(
@@ -558,12 +587,12 @@ fun StatCard(
                     maxLines   = 1,
                     overflow   = TextOverflow.Ellipsis
                 )
-                Text(
-                    text       = styledReading(value, unitScale = if (compact) 0.8f else 0.7f),
-                    style      = if (compact) MaterialTheme.typography.titleSmall
-                    else MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color      = MaterialTheme.colorScheme.onSurface
+                // Split screen: figures 16 sp, units 11 sp.
+                ReadingText(
+                    value,
+                    if (compact) MaterialTheme.typography.titleSmall else MaterialTheme.typography.titleLarge,
+                    unitScale   = if (compact) 0.8f else 0.7f,
+                    figureScale = if (compact) 1.15f else 1.18f
                 )
                 subtitle?.let {
                     // One line in split screen: a second one (a long hint such as "Change drive

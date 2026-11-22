@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,7 +20,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -356,10 +356,10 @@ private fun CardTile(
         shape = RoundedCornerShape(14.dp)
     ) {
         val dense = LocalDashboardCardDense.current
-        val isLight = MaterialTheme.colorScheme.surface.luminance() > 0.5f
-        val valueColor = if (isLight) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.80f)
-            else MaterialTheme.colorScheme.onSurface
-        val valueWeight = if (isLight) FontWeight.Medium else FontWeight.Bold
+        // The reading as Classic's cards set it (ReadingText): figures larger and semibold in the
+        // theme's main text colour (white on the dark themes, navy on the light one), units and
+        // labels smaller and grey. The light theme had the whole reading at 80 % navy, medium
+        // weight, number and unit alike, and at 18 sp beside a 16 sp subtitle it barely stood out.
         if (dense) {
             // Split-screen: one line — icon + title on the left, value pushed to the end.
             Row(
@@ -380,14 +380,8 @@ private fun CardTile(
                     modifier = Modifier.weight(1f)
                 )
                 Spacer(Modifier.width(8.dp))
-                Text(
-                    text = value,
-                    fontSize = 16.sp,
-                    fontWeight = valueWeight,
-                    color = valueColor,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                // Figures 18 sp, units 13 sp.
+                ReadingText(value, LocalTextStyle.current, unitScale = 0.8f, figureScale = 1.15f, fontSize = 16.sp)
             }
         } else {
             Column(
@@ -408,14 +402,13 @@ private fun CardTile(
                     )
                 }
                 Spacer(Modifier.height(8.dp))
-                Text(
-                    text = value,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontSize = if (LocalDashboardCardCompact.current) 18.sp else TextUnit.Unspecified,
-                    fontWeight = valueWeight,
-                    color = valueColor,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                // On the car (compact): figures 22.5 sp, units 12.6 sp.
+                ReadingText(
+                    value,
+                    MaterialTheme.typography.headlineSmall,
+                    unitScale = 0.7f,
+                    figureScale = 1.25f,
+                    fontSize = if (LocalDashboardCardCompact.current) 18.sp else TextUnit.Unspecified
                 )
                 Spacer(Modifier.weight(1f))
                 Text(
@@ -549,11 +542,12 @@ private fun TyreCardTile(
 @Composable
 private fun TyreMini(pressurePsi: Double, unit: TyrePressureUnit, recommendedBar: Double?) {
     val status = recommendedBar?.let { tyrePressureStatus(pressurePsi, it) }
+    // Darkened on the light theme, where the plain status colours are too faint to read.
     val col = when (status) {
-        TyrePressureStatus.LOW -> AccelerationOrange
-        TyrePressureStatus.HIGH -> BydErrorRed
-        TyrePressureStatus.NORMAL -> RegenGreen
+        TyrePressureStatus.LOW -> accentTextColor(AccelerationOrange)
+        TyrePressureStatus.HIGH -> accentTextColor(BydErrorRed)
+        TyrePressureStatus.NORMAL -> accentTextColor(RegenGreen)
         else -> MaterialTheme.colorScheme.onSurface
     }
-    Text(unit.formatValue(pressurePsi), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = col, maxLines = 1)
+    Text(unit.formatValue(pressurePsi), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = col, maxLines = 1)
 }

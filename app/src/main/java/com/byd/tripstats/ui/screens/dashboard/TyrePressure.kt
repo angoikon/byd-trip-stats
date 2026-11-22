@@ -283,18 +283,22 @@ internal fun TyreCell(
     large: Boolean = false,
     compact: Boolean = false
 ) {
+    // The pressure is the reading, the temperature secondary, as on Classic's cards: the pressure
+    // semibold in its status colour (darkened on the light theme, where the plain colours are too
+    // faint), the temperature smaller and grey. It was the other way round, the temperature bold
+    // and dark beside a pale pressure.
     val status = recommendedBar?.let { tyrePressureStatus(pressurePsi, it) }
     val pressureColor = when (status) {
-        TyrePressureStatus.LOW    -> AccelerationOrange
-        TyrePressureStatus.HIGH   -> BydErrorRed
-        TyrePressureStatus.NORMAL -> RegenGreen
+        TyrePressureStatus.LOW    -> accentTextColor(AccelerationOrange)
+        TyrePressureStatus.HIGH   -> accentTextColor(BydErrorRed)
+        TyrePressureStatus.NORMAL -> accentTextColor(RegenGreen)
         else                      -> MaterialTheme.colorScheme.onSurface
     }
     val isAlarm = status == TyrePressureStatus.LOW || status == TyrePressureStatus.HIGH
 
     val labelSize = if (large) (if (compact) 12.sp else 14.sp) else 10.sp
-    val tempSize = if (large) (if (compact) 14.sp else 16.sp) else 11.sp
-    val pressureSize = if (large) (if (compact) 13.sp else 16.sp) else 10.sp
+    val tempSize = if (large) (if (compact) 12.sp else 14.sp) else 10.sp
+    val pressureSize = if (large) (if (compact) 15.sp else 18.sp) else 11.sp
 
     Surface(
         modifier = modifier,
@@ -318,15 +322,15 @@ internal fun TyreCell(
                 Text(
                     text = "${tempC}°",
                     fontSize = tempSize,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1
                 )
             }
             Text(
                 text = unit.formatValue(pressurePsi),
                 fontSize = pressureSize,
-                fontWeight = if (isAlarm) FontWeight.Bold else FontWeight.Normal,
+                fontWeight = if (isAlarm) FontWeight.Bold else FontWeight.SemiBold,
                 color = pressureColor,
                 maxLines = 1,
                 softWrap = false
