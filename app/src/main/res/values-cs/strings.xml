@@ -1072,7 +1072,7 @@
     <string name="diagnostics_live_off_status">Živé detaily vypnuty</string>
     <string name="performance_overlay_on_status">Překryv výkonu zapnut</string>
     <string name="pref_appearance_title">Vzhled</string>
-    <string name="pref_appearance_desc">Motiv, rozvržení přehledu a ikony a animace přehledu.</string>
+    <string name="pref_appearance_desc">Motiv, rozvržení přehledu, strana grafu dojezdu a ikony a animace přehledu.</string>
     <string name="pref_language_units_title">Jazyk a jednotky</string>
     <string name="pref_language_units_desc">Jazyk aplikace a metrické nebo imperiální jednotky.</string>
     <string name="pref_trip_recording_title">Záznam jízd</string>
@@ -1308,6 +1308,10 @@
     <string name="dashboard_layout_desc">Zvolte, jak je přehled uspořádán. Karty jsou větší, přizpůsobitelné rozvržení — klepnutím na tužku v přehledu zobrazíte, skryjete a přeuspořádáte dlaždice.</string>
     <string name="dashboard_layout_classic">Klasické</string>
     <string name="dashboard_layout_cards">Karty</string>
+    <string name="pref_chart_side">Strana grafu dojezdu</string>
+    <string name="chart_side_desc">Klasické rozvržení: strana obrazovky, kterou zabírá graf dojezdu a Sledování jízd. Karty vozidla vyplní druhou stranu — hodí se u vozu s pravostranným řízením.</string>
+    <string name="chart_side_left">Vlevo</string>
+    <string name="chart_side_right">Vpravo</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Nečinné</string>

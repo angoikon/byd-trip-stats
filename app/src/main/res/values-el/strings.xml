@@ -992,7 +992,7 @@
     <string name="diagnostics_live_off_status">Ζωντανές λεπτομέρειες ανενεργές</string>
     <string name="performance_overlay_on_status">Επικάλυψη επιδόσεων ενεργή</string>
     <string name="pref_appearance_title">Εμφάνιση</string>
-    <string name="pref_appearance_desc">Θέμα, διάταξη πίνακα και εικονίδια &amp; κινούμενα γραφικά του πίνακα.</string>
+    <string name="pref_appearance_desc">Θέμα, διάταξη πίνακα, πλευρά του γραφήματος αυτονομίας και εικονίδια &amp; κινούμενα γραφικά του πίνακα.</string>
     <string name="pref_language_units_title">Γλώσσα &amp; μονάδες</string>
     <string name="pref_language_units_desc">Η γλώσσα της εφαρμογής και μετρικές ή αγγλοσαξονικές μονάδες.</string>
     <string name="pref_trip_recording_title">Καταγραφή διαδρομών</string>
@@ -1211,6 +1211,10 @@
     <string name="dashboard_layout_desc">Επιλέξτε πώς είναι διατεταγμένος ο πίνακας. Οι Κάρτες είναι μια μεγαλύτερη, προσαρμόσιμη διάταξη — πατήστε το μολύβι στον πίνακα για να εμφανίσετε, να αποκρύψετε και να αναδιατάξετε τα πλακίδια.</string>
     <string name="dashboard_layout_classic">Κλασικό</string>
     <string name="dashboard_layout_cards">Κάρτες</string>
+    <string name="pref_chart_side">Πλευρά γραφήματος αυτονομίας</string>
+    <string name="chart_side_desc">Κλασική διάταξη: η πλευρά της οθόνης όπου βρίσκονται το γράφημα αυτονομίας και η Καταγραφή διαδρομής. Οι κάρτες του οχήματος γεμίζουν την άλλη πλευρά — βολικό σε δεξιοτίμονο αυτοκίνητο.</string>
+    <string name="chart_side_left">Αριστερά</string>
+    <string name="chart_side_right">Δεξιά</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Αδράνεια</string>

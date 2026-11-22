@@ -1075,7 +1075,7 @@
     <string name="diagnostics_live_off_status">Dettagli live disattivati</string>
     <string name="performance_overlay_on_status">Overlay prestazioni attivo</string>
     <string name="pref_appearance_title">Aspetto</string>
-    <string name="pref_appearance_desc">Tema, layout del cruscotto, e icone &amp; animazioni del cruscotto.</string>
+    <string name="pref_appearance_desc">Tema, layout del cruscotto, lato del grafico dell\'autonomia, e icone &amp; animazioni del cruscotto.</string>
     <string name="pref_language_units_title">Lingua &amp; unità</string>
     <string name="pref_language_units_desc">La lingua dell\'app, e unità metriche o imperiali.</string>
     <string name="pref_trip_recording_title">Registrazione viaggi</string>
@@ -1312,6 +1312,10 @@
     <string name="dashboard_layout_desc">Scegli come è disposto il cruscotto. Schede è un layout più grande e personalizzabile — tocca la matita sul cruscotto per mostrare, nascondere e riordinare i riquadri.</string>
     <string name="dashboard_layout_classic">Classico</string>
     <string name="dashboard_layout_cards">Schede</string>
+    <string name="pref_chart_side">Lato del grafico dell\'autonomia</string>
+    <string name="chart_side_desc">Layout classico: il lato dello schermo occupato dal grafico dell\'autonomia e dal Tracciamento viaggio. Le schede del veicolo riempiono l\'altro lato — utile su un\'auto con guida a destra.</string>
+    <string name="chart_side_left">Sinistra</string>
+    <string name="chart_side_right">Destra</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Inattivo</string>

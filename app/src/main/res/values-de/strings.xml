@@ -992,7 +992,7 @@
     <string name="diagnostics_live_off_status">Live-Details aus</string>
     <string name="performance_overlay_on_status">Leistungs-Overlay an</string>
     <string name="pref_appearance_title">Darstellung</string>
-    <string name="pref_appearance_desc">Design, Dashboard-Layout sowie Dashboard-Symbole &amp; Animationen.</string>
+    <string name="pref_appearance_desc">Design, Dashboard-Layout, Seite des Reichweitendiagramms sowie Dashboard-Symbole &amp; Animationen.</string>
     <string name="pref_language_units_title">Sprache &amp; Einheiten</string>
     <string name="pref_language_units_desc">Die Sprache der App und metrische oder imperiale Einheiten.</string>
     <string name="pref_trip_recording_title">Fahrtaufzeichnung</string>
@@ -1211,6 +1211,10 @@
     <string name="dashboard_layout_desc">Wählen Sie, wie das Dashboard angeordnet ist. Karten ist ein größeres, anpassbares Layout — tippen Sie auf den Stift im Dashboard, um Kacheln ein-/auszublenden und neu anzuordnen.</string>
     <string name="dashboard_layout_classic">Klassisch</string>
     <string name="dashboard_layout_cards">Karten</string>
+    <string name="pref_chart_side">Seite des Reichweitendiagramms</string>
+    <string name="chart_side_desc">Klassisches Layout: die Bildschirmseite, die das Reichweitendiagramm und die Fahrtenaufzeichnung einnehmen. Die Fahrzeugkarten füllen die andere Seite — praktisch bei Rechtslenkern.</string>
+    <string name="chart_side_left">Links</string>
+    <string name="chart_side_right">Rechts</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Leerlauf</string>

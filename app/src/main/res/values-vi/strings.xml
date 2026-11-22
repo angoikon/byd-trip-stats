@@ -1072,7 +1072,7 @@
     <string name="diagnostics_live_off_status">Chi tiết trực tiếp: tắt</string>
     <string name="performance_overlay_on_status">Lớp phủ hiệu năng: bật</string>
     <string name="pref_appearance_title">Hiển thị</string>
-    <string name="pref_appearance_desc">Giao diện, bố cục bảng điều khiển, và biểu tượng &amp; hiệu ứng của bảng điều khiển.</string>
+    <string name="pref_appearance_desc">Giao diện, bố cục bảng điều khiển, phía của biểu đồ quãng đường, và biểu tượng &amp; hiệu ứng của bảng điều khiển.</string>
     <string name="pref_language_units_title">Ngôn ngữ &amp; đơn vị</string>
     <string name="pref_language_units_desc">Ngôn ngữ của ứng dụng, và đơn vị hệ mét hoặc hệ Anh.</string>
     <string name="pref_trip_recording_title">Ghi chuyến đi</string>
@@ -1308,6 +1308,10 @@
     <string name="dashboard_layout_desc">Chọn cách sắp xếp bảng điều khiển. Thẻ là bố cục lớn hơn, tùy chỉnh được — chạm bút chì trên bảng điều khiển để hiện, ẩn và sắp xếp lại các ô.</string>
     <string name="dashboard_layout_classic">Cổ điển</string>
     <string name="dashboard_layout_cards">Thẻ</string>
+    <string name="pref_chart_side">Phía của biểu đồ quãng đường</string>
+    <string name="chart_side_desc">Bố cục cổ điển: phía màn hình đặt biểu đồ quãng đường và Theo dõi chuyến đi. Các thẻ xe lấp đầy phía còn lại — tiện cho xe tay lái bên phải.</string>
+    <string name="chart_side_left">Trái</string>
+    <string name="chart_side_right">Phải</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Nhàn rỗi</string>

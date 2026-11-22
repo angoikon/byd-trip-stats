@@ -11,9 +11,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.byd.tripstats.R
 import com.byd.tripstats.data.model.VehicleTelemetry
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.ui.theme.AccelerationOrange
@@ -119,6 +121,8 @@ internal fun TyreStatCard(
     telemetry: VehicleTelemetry,
     tyreUnit: TyrePressureUnit,
     compact: Boolean = false,
+    /** Classic's grid form, as [StatCard]'s: the icon and the title in the accent colour on top. */
+    stacked: Boolean = false,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
@@ -150,7 +154,31 @@ internal fun TyreStatCard(
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
-        Row(
+        // Centred like the other grid cards: the title, then two lines of two tyres.
+        if (stacked) Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.Center
+        ) {
+            StackedCardHeader("${stringResource(R.string.stat_tyres)} · ${tyreUnit.label()}", BydElectricBlue, Icons.Filled.TireRepair)
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                StackedTyreCell("FL", telemetry.tyreTempLF.takeIf { it > 0 }, telemetry.tyrePressureLF, tyreUnit, frontBar, Modifier.weight(1f))
+                StackedTyreCell("FR", telemetry.tyreTempRF.takeIf { it > 0 }, telemetry.tyrePressureRF, tyreUnit, frontBar, Modifier.weight(1f))
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                StackedTyreCell("RL", telemetry.tyreTempLR.takeIf { it > 0 }, telemetry.tyrePressureLR, tyreUnit, rearBar, Modifier.weight(1f))
+                StackedTyreCell("RR", telemetry.tyreTempRR.takeIf { it > 0 }, telemetry.tyrePressureRR, tyreUnit, rearBar, Modifier.weight(1f))
+            }
+        } else Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(pad),
@@ -180,6 +208,58 @@ internal fun TyreStatCard(
                     TyreCell("RR", telemetry.tyreTempRR.takeIf { it > 0 }, telemetry.tyrePressureRR, tyreUnit, rearBar, modifier = Modifier.weight(1f))
                 }
             }
+        }
+    }
+}
+
+/**
+ * One tyre in Classic's grid card: wheel, pressure, temperature on one line, sized for a glance
+ * while driving. The pressure comes first and largest, coloured by its status (darkened on the light
+ * theme, where the plain colours are too faint to read), and it is measured before the temperature,
+ * so a narrow cell cuts the temperature, never the pressure. No box: at ~90 dp a cell has no room
+ * for one. "FL 2.47 16°" at 13/18/15 sp is ~72 dp.
+ */
+@Composable
+private fun StackedTyreCell(
+    label: String,
+    tempC: Int?,
+    pressurePsi: Double,
+    unit: TyrePressureUnit,
+    recommendedBar: Double?,
+    modifier: Modifier = Modifier,
+) {
+    val pressureColor = when (recommendedBar?.let { tyrePressureStatus(pressurePsi, it) }) {
+        TyrePressureStatus.LOW    -> accentTextColor(AccelerationOrange)
+        TyrePressureStatus.HIGH   -> accentTextColor(BydErrorRed)
+        TyrePressureStatus.NORMAL -> accentTextColor(RegenGreen)
+        else                      -> MaterialTheme.colorScheme.onSurface
+    }
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = label,
+            fontSize = 13.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            softWrap = false
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+            text = unit.formatValue(pressurePsi),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = pressureColor,
+            maxLines = 1,
+            softWrap = false
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        if (tempC != null) {
+            Text(
+                text = "${tempC}°",
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                softWrap = false
+            )
         }
     }
 }

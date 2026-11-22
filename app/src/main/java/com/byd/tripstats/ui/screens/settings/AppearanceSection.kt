@@ -8,18 +8,21 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.byd.tripstats.R
 import com.byd.tripstats.data.entitlement.EntitlementManager
+import com.byd.tripstats.data.preferences.ClassicChartSide
 import com.byd.tripstats.data.preferences.DashboardLayout
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.data.preferences.ThemeMode
 import com.byd.tripstats.ui.components.BrandSwitch
 import kotlinx.coroutines.launch
 
-/** Preferences → Appearance: theme, dashboard layout, and the dashboard's icons & animations. */
+/** Preferences → Appearance: theme, dashboard layout, Classic's chart side, and the dashboard's icons & animations. */
 @Composable
 internal fun AppearanceSection(
     preferencesManager: PreferencesManager,
@@ -34,6 +37,9 @@ internal fun AppearanceSection(
     )
     val dashboardLayout by preferencesManager.dashboardLayout.collectAsState(
         initial = preferencesManager.getCachedDashboardLayout()
+    )
+    val classicChartSide by preferencesManager.classicChartSide.collectAsState(
+        initial = preferencesManager.getCachedClassicChartSide()
     )
     val isPro by EntitlementManager.isPro.collectAsState()
 
@@ -178,6 +184,62 @@ internal fun AppearanceSection(
                             Spacer(Modifier.width(4.dp))
                         }
                         Text(label, fontWeight = FontWeight.Bold, maxLines = 1)
+                    }
+                }
+            }
+        }
+    }
+
+    // Only while Classic is the layout in use; Cards arranges its own tiles.
+    if (!(isPro && dashboardLayout == DashboardLayout.CARDS)) {
+        // The buttons follow the Row's reading direction, as the dashboard does, so the one on
+        // the left of the screen is always labelled Left (START in English, END in Hebrew).
+        val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+        val left = stringResource(R.string.chart_side_left)
+        val right = stringResource(R.string.chart_side_right)
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    stringResource(R.string.pref_chart_side),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    stringResource(R.string.chart_side_desc),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf(
+                        ClassicChartSide.START to if (rtl) right else left,
+                        ClassicChartSide.END to if (rtl) left else right,
+                    ).forEach { (side, label) ->
+                        val selected = classicChartSide == side
+                        Button(
+                            onClick = { scope.launch { preferencesManager.saveClassicChartSide(side) } },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (selected)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    MaterialTheme.colorScheme.surfaceVariant,
+                                contentColor = if (selected)
+                                    MaterialTheme.colorScheme.onPrimary
+                                else
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        ) {
+                            Text(label, fontWeight = FontWeight.Bold, maxLines = 1)
+                        }
                     }
                 }
             }

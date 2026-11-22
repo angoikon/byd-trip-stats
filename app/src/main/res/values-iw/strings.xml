@@ -1072,7 +1072,7 @@
     <string name="diagnostics_live_off_status">פרטים חיים כבויים</string>
     <string name="performance_overlay_on_status">שכבת ביצועים פעילה</string>
     <string name="pref_appearance_title">מראה</string>
-    <string name="pref_appearance_desc">ערכת נושא, פריסת לוח המחוונים, וסמלים ואנימציות בלוח המחוונים.</string>
+    <string name="pref_appearance_desc">ערכת נושא, פריסת לוח המחוונים, צד גרף הטווח, וסמלים ואנימציות בלוח המחוונים.</string>
     <string name="pref_language_units_title">שפה ויחידות</string>
     <string name="pref_language_units_desc">שפת האפליקציה, ויחידות מטריות או אימפריאליות.</string>
     <string name="pref_trip_recording_title">הקלטת נסיעות</string>
@@ -1308,6 +1308,10 @@
     <string name="dashboard_layout_desc">בחרו כיצד לוח המחוונים מסודר. כרטיסים היא פריסה גדולה יותר וניתנת להתאמה — הקישו על העיפרון בלוח המחוונים כדי להציג, להסתיר ולסדר מחדש את האריחים.</string>
     <string name="dashboard_layout_classic">קלאסי</string>
     <string name="dashboard_layout_cards">כרטיסים</string>
+    <string name="pref_chart_side">צד גרף הטווח</string>
+    <string name="chart_side_desc">פריסה קלאסית: צד המסך שבו נמצאים גרף הטווח ומעקב הנסיעות. כרטיסי הרכב ממלאים את הצד השני — שימושי ברכב עם הגה ימני.</string>
+    <string name="chart_side_left">שמאל</string>
+    <string name="chart_side_right">ימין</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">במנוחה</string>

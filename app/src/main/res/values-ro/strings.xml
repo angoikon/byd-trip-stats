@@ -1072,7 +1072,7 @@
     <string name="diagnostics_live_off_status">Detalii live dezactivate</string>
     <string name="performance_overlay_on_status">Suprapunere performanță activată</string>
     <string name="pref_appearance_title">Afișare</string>
-    <string name="pref_appearance_desc">Temă, aspectul bordului, și pictogramele &amp; animațiile bordului.</string>
+    <string name="pref_appearance_desc">Temă, aspectul bordului, partea graficului de autonomie, și pictogramele &amp; animațiile bordului.</string>
     <string name="pref_language_units_title">Limbă și unități</string>
     <string name="pref_language_units_desc">Limba aplicației și unitățile metrice sau imperiale.</string>
     <string name="pref_trip_recording_title">Înregistrarea călătoriilor</string>
@@ -1308,6 +1308,10 @@
     <string name="dashboard_layout_desc">Alegeți cum este aranjat bordul. Carduri este un aspect mai mare, personalizabil — atingeți creionul de pe bord pentru a afișa, ascunde și reordona plăcile.</string>
     <string name="dashboard_layout_classic">Clasic</string>
     <string name="dashboard_layout_cards">Carduri</string>
+    <string name="pref_chart_side">Partea graficului de autonomie</string>
+    <string name="chart_side_desc">Aspect clasic: partea ecranului ocupată de graficul de autonomie și de Urmărirea călătoriilor. Cardurile vehiculului o umplu pe cealaltă — util la o mașină cu volanul pe dreapta.</string>
+    <string name="chart_side_left">Stânga</string>
+    <string name="chart_side_right">Dreapta</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Inactiv</string>

@@ -44,6 +44,7 @@ private val SOH_CUSTOM_CUTOFF_MS         = longPreferencesKey("soh_custom_cutoff
 private val UNIT_SYSTEM                  = stringPreferencesKey("unit_system")
 private val THEME_MODE                   = stringPreferencesKey("theme_mode")
 private val DASHBOARD_LAYOUT             = stringPreferencesKey("dashboard_layout")
+private val CLASSIC_CHART_SIDE           = stringPreferencesKey("classic_chart_side")
 private val DASHBOARD_CARD_ORDER         = stringPreferencesKey("dashboard_card_order")
 private val DASHBOARD_HIDDEN_CARDS       = stringPreferencesKey("dashboard_hidden_cards")
 private val DASHBOARD_CHART_HIDDEN       = booleanPreferencesKey("dashboard_chart_hidden")
@@ -140,6 +141,27 @@ class PreferencesManager(private val context: Context) {
     suspend fun saveDashboardLayout(layout: DashboardLayout) {
         context.dataStore.edit { it[DASHBOARD_LAYOUT] = layout.name }
         cache.edit().putString("dashboard_layout", layout.name).apply()
+    }
+
+    // ── Classic layout: the range chart's side ────────────────────────────────
+    // Mirrored into the startup cache so the dashboard opens with the chart on its side,
+    // without a first frame on the default one.
+
+    val classicChartSide: Flow<ClassicChartSide> = context.dataStore.data
+        .map {
+            it[CLASSIC_CHART_SIDE]?.let { name -> runCatching { ClassicChartSide.valueOf(name) }.getOrNull() }
+                ?: ClassicChartSide.START
+        }
+        .onEach { cache.edit().putString("classic_chart_side", it.name).apply() }
+
+    fun getCachedClassicChartSide(): ClassicChartSide =
+        cache.getString("classic_chart_side", null)
+            ?.let { runCatching { ClassicChartSide.valueOf(it) }.getOrNull() }
+            ?: ClassicChartSide.START
+
+    suspend fun saveClassicChartSide(side: ClassicChartSide) {
+        context.dataStore.edit { it[CLASSIC_CHART_SIDE] = side.name }
+        cache.edit().putString("classic_chart_side", side.name).apply()
     }
 
     // All three are mirrored into the startup cache so the CARDS layout renders the

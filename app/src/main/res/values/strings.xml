@@ -1098,7 +1098,7 @@
     <string name="diagnostics_live_off_status">Live details off</string>
     <string name="performance_overlay_on_status">Performance overlay on</string>
     <string name="pref_appearance_title">Appearance</string>
-    <string name="pref_appearance_desc">Theme, dashboard layout, and dashboard icons &amp; animations.</string>
+    <string name="pref_appearance_desc">Theme, dashboard layout, the range chart\'s side, and dashboard icons &amp; animations.</string>
     <string name="pref_language_units_title">Language &amp; units</string>
     <string name="pref_language_units_desc">The app\'s language, and metric or imperial units.</string>
     <string name="pref_trip_recording_title">Trip recording</string>
@@ -1335,6 +1335,10 @@
     <string name="dashboard_layout_desc">Choose how the dashboard is arranged. Cards is a larger, customisable layout — tap the pencil on the dashboard to show, hide and reorder tiles.</string>
     <string name="dashboard_layout_classic">Classic</string>
     <string name="dashboard_layout_cards">Cards</string>
+    <string name="pref_chart_side">Range chart side</string>
+    <string name="chart_side_desc">Classic layout: the side of the screen the range chart and Trip Tracking take. The vehicle cards fill the other side — handy on a right-hand-drive car.</string>
+    <string name="chart_side_left">Left</string>
+    <string name="chart_side_right">Right</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Idle</string>

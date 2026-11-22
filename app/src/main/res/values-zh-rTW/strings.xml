@@ -1075,7 +1075,7 @@
     <string name="diagnostics_live_off_status">即時詳情：關閉</string>
     <string name="performance_overlay_on_status">效能疊加層：開啟</string>
     <string name="pref_appearance_title">外觀</string>
-    <string name="pref_appearance_desc">主題、儀表板版面配置，以及儀表板圖示和動畫。</string>
+    <string name="pref_appearance_desc">主題、儀表板版面配置、續航圖表位置，以及儀表板圖示和動畫。</string>
     <string name="pref_language_units_title">語言 &amp; 單位</string>
     <string name="pref_language_units_desc">應用程式語言，以及公制或英制單位。</string>
     <string name="pref_trip_recording_title">行程記錄</string>
@@ -1312,6 +1312,10 @@
     <string name="dashboard_layout_desc">選擇儀表板的排列方式。卡片是更大、可自訂的版面配置 — 點擊儀表板上的鉛筆可顯示、隱藏和重新排序磚。</string>
     <string name="dashboard_layout_classic">經典</string>
     <string name="dashboard_layout_cards">卡片</string>
+    <string name="pref_chart_side">續航圖表位置</string>
+    <string name="chart_side_desc">經典版面配置：續航圖表與行程追蹤所在的螢幕一側，車輛卡片佔據另一側。適合右駕車。</string>
+    <string name="chart_side_left">左側</string>
+    <string name="chart_side_right">右側</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">閒置</string>

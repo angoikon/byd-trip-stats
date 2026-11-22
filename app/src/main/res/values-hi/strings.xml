@@ -992,7 +992,7 @@
     <string name="diagnostics_live_off_status">लाइव विवरण बंद</string>
     <string name="performance_overlay_on_status">प्रदर्शन ओवरले चालू</string>
     <string name="pref_appearance_title">रूप-रंग</string>
-    <string name="pref_appearance_desc">थीम, डैशबोर्ड लेआउट, और डैशबोर्ड आइकन &amp; एनिमेशन।</string>
+    <string name="pref_appearance_desc">थीम, डैशबोर्ड लेआउट, रेंज चार्ट की तरफ़, और डैशबोर्ड आइकन &amp; एनिमेशन।</string>
     <string name="pref_language_units_title">भाषा &amp; इकाइयां</string>
     <string name="pref_language_units_desc">ऐप की भाषा, और मीट्रिक या इंपीरियल इकाइयां।</string>
     <string name="pref_trip_recording_title">यात्रा रिकॉर्डिंग</string>
@@ -1211,6 +1211,10 @@
     <string name="dashboard_layout_desc">चुनें कि डैशबोर्ड कैसे व्यवस्थित है। कार्ड एक बड़ा, अनुकूलन योग्य लेआउट है — टाइल दिखाने, छिपाने और पुन: क्रमित करने के लिए डैशबोर्ड पर पेंसिल टैप करें।</string>
     <string name="dashboard_layout_classic">क्लासिक</string>
     <string name="dashboard_layout_cards">कार्ड</string>
+    <string name="pref_chart_side">रेंज चार्ट की तरफ़</string>
+    <string name="chart_side_desc">क्लासिक लेआउट: स्क्रीन की वह तरफ़ जहाँ रेंज चार्ट और यात्रा ट्रैकिंग रहते हैं। वाहन कार्ड दूसरी तरफ़ भरते हैं — राइट-हैंड-ड्राइव कार में उपयोगी।</string>
+    <string name="chart_side_left">बाएँ</string>
+    <string name="chart_side_right">दाएँ</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">निष्क्रिय</string>

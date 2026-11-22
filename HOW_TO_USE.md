@@ -72,11 +72,13 @@ The main chart compares:
 - **Dashed line** — the car's own BMS estimate
 - **Solid line** — BYD Trip Stats projection from your actual driving
 
+The chart's scale covers the range the two lines span rather than starting at 0, so the gap between them fills the chart. During a trip it stays put until a line comes near its edge, and then only grows.
+
 The projection uses your consumption over your **last 10, 100 or 500 km** of driving (**Settings → Preferences → Battery and range estimate**, or tap the dashboard's **Range** tile to choose; 100 km by default). That distance runs back across your earlier trips, so the projected range (above the chart, and on the **Range** tile) is there as soon as you switch on — it doesn't have to re-learn your driving each time. The chart itself shows a **SCANNING…** placeholder until you move off and it has a line to draw. Once a trip is longer than the window, it's that trip's own last 10 / 100 / 500 km. A small badge shows what the projection is based on — **Last 100 km** (or whichever you chose), or **Baseline** (the car's catalog consumption) on a fresh install until there's about 3 km of driving to go on. Next to it is the consumption the projection is working from (e.g. *Last 100 km · 17.4 kWh/100km*): the energy left divided by that figure is the projected range. It can read differently from your trips' consumption over the same distance, because it is smoothed, leaves hills out on a BEV and is held to no more than about a third below your last 500 km.
 
-### Right-side Stat Cards
+### Vehicle Stat Cards
 
-Typical cards include:
+On the car's full-width screen these sit in two columns of four; in split screen they stack in one column. They sit to the right of the range chart unless **Settings → Preferences → Appearance → Range chart side** is set to **Right**, which swaps the two: the cards on the left, the chart and Trip Tracking on the right, as some prefer on a right-hand-drive car. Typical cards include:
 
 - **Estimated SoH / Battery health**
 - **Temperature** (ambient + battery)
@@ -302,7 +304,7 @@ no effect on local trip recording or the dashboard.
 
 | Card | What's inside |
 |---|---|
-| **Appearance** | Theme (System / Light / Dark / Neon *Pro*), dashboard layout (Classic / Cards *Pro*), dashboard icons & animations — off moves the icons into the top bar and lowers CPU use on older firmware |
+| **Appearance** | Theme (System / Light / Dark / Neon *Pro*), dashboard layout (Classic / Cards *Pro*), range chart side (Classic: Left / Right), dashboard icons & animations — off moves the icons into the top bar and lowers CPU use on older firmware |
 | **Language & units** | App language (overrides the head unit's for this app only), metric or imperial |
 | **Trip recording** | Engine-off trip timeout (default 3 minutes), ask before auto-stopping, minimum trip distance (shorter trips are discarded; 0 keeps every trip) |
 | **Battery and range estimate** | SoC source (dashboard **Panel** percentage or the **BMS** reading), the **range estimate** window (last 10 / 100 / 500 km of driving), and the cell-imbalance alert *(Pro)* |

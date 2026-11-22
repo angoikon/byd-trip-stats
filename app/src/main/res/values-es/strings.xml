@@ -1075,7 +1075,7 @@
     <string name="diagnostics_live_off_status">Detalles en vivo desactivados</string>
     <string name="performance_overlay_on_status">Superposición de rendimiento activada</string>
     <string name="pref_appearance_title">Apariencia</string>
-    <string name="pref_appearance_desc">Tema, diseño del panel e iconos y animaciones del panel.</string>
+    <string name="pref_appearance_desc">Tema, diseño del panel, lado del gráfico de autonomía e iconos y animaciones del panel.</string>
     <string name="pref_language_units_title">Idioma y unidades</string>
     <string name="pref_language_units_desc">El idioma de la app y unidades métricas o imperiales.</string>
     <string name="pref_trip_recording_title">Registro de viajes</string>
@@ -1312,6 +1312,10 @@
     <string name="dashboard_layout_desc">Elige cómo se organiza el panel. Tarjetas es un diseño más grande y personalizable — toca el lápiz en el panel para mostrar, ocultar y reordenar las fichas.</string>
     <string name="dashboard_layout_classic">Clásico</string>
     <string name="dashboard_layout_cards">Tarjetas</string>
+    <string name="pref_chart_side">Lado del gráfico de autonomía</string>
+    <string name="chart_side_desc">Diseño clásico: el lado de la pantalla que ocupan el gráfico de autonomía y el Seguimiento de viaje. Las tarjetas del vehículo llenan el otro lado; útil en un coche con el volante a la derecha.</string>
+    <string name="chart_side_left">Izquierda</string>
+    <string name="chart_side_right">Derecha</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Inactivo</string>

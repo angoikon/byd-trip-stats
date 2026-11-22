@@ -1072,7 +1072,7 @@
     <string name="diagnostics_live_off_status">Élő részletek ki</string>
     <string name="performance_overlay_on_status">Teljesítmény-átfedés be</string>
     <string name="pref_appearance_title">Megjelenés</string>
-    <string name="pref_appearance_desc">Téma, műszerfal elrendezése, valamint a műszerfal ikonjai és animációi.</string>
+    <string name="pref_appearance_desc">Téma, műszerfal elrendezése, a hatótáv-diagram oldala, valamint a műszerfal ikonjai és animációi.</string>
     <string name="pref_language_units_title">Nyelv és mértékegységek</string>
     <string name="pref_language_units_desc">Az alkalmazás nyelve, valamint metrikus vagy angolszász mértékegységek.</string>
     <string name="pref_trip_recording_title">Utak rögzítése</string>
@@ -1308,6 +1308,10 @@
     <string name="dashboard_layout_desc">Válassza ki, hogyan legyen elrendezve a műszerfal. A Kártyák egy nagyobb, testreszabható elrendezés — koppintson a ceruzára a műszerfalon a csempék megjelenítéséhez, elrejtéséhez és átrendezéséhez.</string>
     <string name="dashboard_layout_classic">Klasszikus</string>
     <string name="dashboard_layout_cards">Kártyák</string>
+    <string name="pref_chart_side">A hatótáv-diagram oldala</string>
+    <string name="chart_side_desc">Klasszikus elrendezés: a képernyőnek az az oldala, amelyet a hatótáv-diagram és az Útkövetés foglal el. A járműkártyák a másik oldalt töltik ki — jobbkormányos autóban hasznos.</string>
+    <string name="chart_side_left">Bal</string>
+    <string name="chart_side_right">Jobb</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Tétlen</string>

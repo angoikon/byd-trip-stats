@@ -1075,7 +1075,7 @@
     <string name="diagnostics_live_off_status">Live-detaljer av</string>
     <string name="performance_overlay_on_status">Ytelsesoverlegg på</string>
     <string name="pref_appearance_title">Utseende</string>
-    <string name="pref_appearance_desc">Tema, dashbordoppsett, og dashbordikoner &amp; animasjoner.</string>
+    <string name="pref_appearance_desc">Tema, dashbordoppsett, rekkeviddegrafens side, og dashbordikoner &amp; animasjoner.</string>
     <string name="pref_language_units_title">Språk &amp; enheter</string>
     <string name="pref_language_units_desc">Appens språk, og metriske eller britiske enheter.</string>
     <string name="pref_trip_recording_title">Turregistrering</string>
@@ -1312,6 +1312,10 @@
     <string name="dashboard_layout_desc">Velg hvordan dashbordet er ordnet. Kort er et større, tilpassbart oppsett — trykk på blyanten på dashbordet for å vise, skjule og endre rekkefølge på rutene.</string>
     <string name="dashboard_layout_classic">Klassisk</string>
     <string name="dashboard_layout_cards">Kort</string>
+    <string name="pref_chart_side">Side for rekkeviddegrafen</string>
+    <string name="chart_side_desc">Klassisk oppsett: siden av skjermen som rekkeviddegrafen og Tursporing tar. Bilkortene fyller den andre siden — nyttig i en høyrestyrt bil.</string>
+    <string name="chart_side_left">Venstre</string>
+    <string name="chart_side_right">Høyre</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Inaktiv</string>

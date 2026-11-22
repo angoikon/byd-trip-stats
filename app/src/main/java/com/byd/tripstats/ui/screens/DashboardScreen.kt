@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.byd.tripstats.R
 import com.byd.tripstats.data.config.CarCatalog
 import com.byd.tripstats.data.model.VehicleTelemetry
+import com.byd.tripstats.data.preferences.ClassicChartSide
 import com.byd.tripstats.data.preferences.PreferencesManager
 import com.byd.tripstats.data.preferences.SocSource
 import com.byd.tripstats.data.preferences.UnitSystem
@@ -87,6 +88,7 @@ fun DashboardScreen(
     val isPro by com.byd.tripstats.data.entitlement.EntitlementManager.isPro.collectAsState()
     val dashboardLayout by prefs.dashboardLayout.collectAsState(initial = prefs.getCachedDashboardLayout())
     val useCardsLayout = isPro && dashboardLayout == com.byd.tripstats.data.preferences.DashboardLayout.CARDS
+    val classicChartSide by prefs.classicChartSide.collectAsState(initial = prefs.getCachedClassicChartSide())
     // Editing the CARDS grid is a full-screen action; in a narrow split-screen window the
     // grid reflows to a compact read-only view, so the edit (pencil) affordance is hidden.
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
@@ -298,6 +300,7 @@ fun DashboardScreen(
                 activeRangeModel = activeRangeModel,
                 useCardsLayout = useCardsLayout,
                 cardsEditMode = cardsEditMode,
+                classicChartSide = classicChartSide,
                 modifier = Modifier.padding(paddingValues)
             )
             if (currentTelemetry.speedGetterWedged) {
@@ -501,6 +504,7 @@ fun DashboardContent(
     activeRangeModel: DashboardViewModel.RangeModel = DashboardViewModel.RangeModel.BASELINE,
     useCardsLayout: Boolean = false,
     cardsEditMode: Boolean = false,
+    classicChartSide: ClassicChartSide = ClassicChartSide.START,
 ) {
     val context = LocalContext.current
     val prefs = remember { PreferencesManager(context.applicationContext) }
@@ -625,17 +629,21 @@ fun DashboardContent(
             }
         }
 
-        WindowWidthSizeClass.Medium -> {
-            Row(
-                modifier = styledModifier
-                    .fillMaxSize()
-                    .padding(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+        else -> {
+            // Side by side: the chart and trip bar on one side, the vehicle cards on the other,
+            // in the order Settings → Appearance picks (START is the left in a left-to-right
+            // language). Split screen (Medium) keeps the cards in one column of 28 %.
+            //
+            // Full width: the vehicle cards get about a third of the width as a two-column grid.
+            // Stacked eight high in a 15 % column (~190 dp on a 1280 dp head unit) each had ~60 dp
+            // and only room for its compact type; two columns give each card the same width and
+            // twice the height. The chart keeps ~800 dp, plenty for a curve that is nearly flat.
+            val fullWidth = widthSizeClass != WindowWidthSizeClass.Medium
+
+            @Composable
+            fun ChartColumn(columnModifier: Modifier) {
                 Column(
-                    modifier = Modifier
-                        .weight(0.72f)
-                        .fillMaxHeight(),
+                    modifier = columnModifier.fillMaxHeight(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     EnergyFlowDiagram(
@@ -684,11 +692,12 @@ fun DashboardContent(
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
+            }
 
+            @Composable
+            fun CardsColumn(columnModifier: Modifier) {
                 Column(
-                    modifier = Modifier
-                        .weight(0.28f)
-                        .fillMaxHeight(),
+                    modifier = columnModifier.fillMaxHeight(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     VehicleStats(
@@ -696,6 +705,7 @@ fun DashboardContent(
                         vehicleSnapshot = vehicleSnapshot,
                         modifier   = Modifier.fillMaxWidth(),
                         fillHeight = true,
+                        columns    = if (fullWidth) 2 else 1,
                         onNavigateToBatteryDegradation = onNavigateToBatteryDegradation,
                         onShowBattery12vHistory = onShowBattery12vHistory,
                         onShowLifetimeEnergy = onShowLifetimeEnergy,
@@ -705,86 +715,21 @@ fun DashboardContent(
                     )
                 }
             }
-        }
 
-        else -> {
             Row(
                 modifier = styledModifier
                     .fillMaxSize()
                     .padding(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .weight(0.85f)
-                        .fillMaxHeight(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    EnergyFlowDiagram(
-                        telemetry = telemetry,
-                        liveSpeedKmh = vehicleSnapshot?.directSpeedKmh,
-                        livePowerKw = vehicleSnapshot?.enginePower,
-                        tripDataPoints = tripDataPoints,
-                        usageCharts = usageCharts,
-                        onCustomUsageRange = onCustomUsageRange,
-                        sessionDistanceKm = sessionDistanceKm,
-                        tripDistanceKm = tripDistanceKm,
-                        distanceSinceChargeKm = distanceSinceChargeKm,
-                        instantConsumptionKwhPer100km = instantConsumptionKwhPer100km,
-                        consumptionExpanded = consumptionExpanded,
-                        onConsumptionExpand = onConsumptionExpand,
-                        onConsumptionClose = onConsumptionClose,
-                        dashboardIconsEnabled = dashboardIconsEnabled,
-                        socSource = socSource,
-                        activeRangeModel = activeRangeModel,
-                        onNavigateToCharging = onNavigateToCharging,
-                        onShowTyreDialog = onShowTyreDialog,
-                        tyreUnit = tyreUnit,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .border(
-                                width = 1.dp,
-                                color = MaterialTheme.colorScheme.outlineVariant,
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                    )
-                    TripControls(
-                        telemetry = telemetry,
-                        liveGear = vehicleSnapshot?.gear,
-                        isInTrip = isInTrip,
-                        autoTripDetection = autoTripDetection,
-                        onStartTrip = onStartTrip,
-                        onEndTrip = onEndTrip,
-                        onToggleAutoDetection = onToggleAutoDetection,
-                        liveSessionStartMs = liveSessionStartMs,
-                        liveOffStateMs = liveOffStateMs,
-                        liveDistanceKm = tripDistanceKm,
-                        liveOdometerDistanceKm = liveOdometerDistanceKm,
-                        liveAccumulatedKwh = liveAccumulatedKwh,
-                        unitSystem = unitSystem,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                Column(
-                    modifier = Modifier
-                        .weight(0.15f)
-                        .fillMaxHeight(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    VehicleStats(
-                        telemetry  = telemetry,
-                        vehicleSnapshot = vehicleSnapshot,
-                        modifier   = Modifier.fillMaxWidth(),
-                        fillHeight = true,
-                        onNavigateToBatteryDegradation = onNavigateToBatteryDegradation,
-                        onShowBattery12vHistory = onShowBattery12vHistory,
-                        onShowLifetimeEnergy = onShowLifetimeEnergy,
-                        tyreUnit = tyreUnit,
-                        onShowTyreDialog = onShowTyreDialog,
-                        dashboardIconsEnabled = dashboardIconsEnabled
-                    )
+                val chartModifier = Modifier.weight(if (fullWidth) 0.64f else 0.72f)
+                val cardsModifier = Modifier.weight(if (fullWidth) 0.36f else 0.28f)
+                if (classicChartSide == ClassicChartSide.START) {
+                    ChartColumn(chartModifier)
+                    CardsColumn(cardsModifier)
+                } else {
+                    CardsColumn(cardsModifier)
+                    ChartColumn(chartModifier)
                 }
             }
         }

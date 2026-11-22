@@ -1075,7 +1075,7 @@
     <string name="diagnostics_live_off_status">Canlı ayrıntılar kapalı</string>
     <string name="performance_overlay_on_status">Performans katmanı açık</string>
     <string name="pref_appearance_title">Görünüm</string>
-    <string name="pref_appearance_desc">Tema, gösterge paneli düzeni ve gösterge paneli simgeleri &amp; animasyonları.</string>
+    <string name="pref_appearance_desc">Tema, gösterge paneli düzeni, menzil grafiğinin tarafı ve gösterge paneli simgeleri &amp; animasyonları.</string>
     <string name="pref_language_units_title">Dil &amp; birimler</string>
     <string name="pref_language_units_desc">Uygulamanın dili ve metrik ya da emperyal birimler.</string>
     <string name="pref_trip_recording_title">Seyahat kaydı</string>
@@ -1312,6 +1312,10 @@
     <string name="dashboard_layout_desc">Gösterge panelinin nasıl düzenleneceğini seçin. Kartlar daha büyük, özelleştirilebilir bir düzendir — döşemeleri göstermek, gizlemek ve yeniden sıralamak için gösterge panelindeki kaleme dokunun.</string>
     <string name="dashboard_layout_classic">Klasik</string>
     <string name="dashboard_layout_cards">Kartlar</string>
+    <string name="pref_chart_side">Menzil grafiğinin tarafı</string>
+    <string name="chart_side_desc">Klasik düzen: ekranda menzil grafiğinin ve Seyahat Takibi\'nin bulunduğu taraf. Araç kartları diğer tarafı doldurur — sağdan direksiyonlu araçlarda kullanışlı.</string>
+    <string name="chart_side_left">Sol</string>
+    <string name="chart_side_right">Sağ</string>
 
     <!-- CARDS layout power-metric subtitles -->
     <string name="power_state_idle">Boşta</string>
