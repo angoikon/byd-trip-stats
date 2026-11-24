@@ -18,6 +18,16 @@ python3 tools/geoid_grid.py package/dist/egm96-universal.esm.js app/src/main/res
 # sha256 6e0094d5712c27fc0230ce9db5a651deb132ca3819400a1cbb677f6591b36e15
 ```
 
+## Lucide icons (`docs/pwa/index.html`)
+
+The web companion's line icons (the tabs, the bell, the star, the file actions and the rest) are
+drawn from Lucide's SVG path data, inlined into the page. A few are simplified or drawn to match.
+
+- Upstream: <https://github.com/lucide-icons/lucide>
+- License: **ISC** — Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part
+  of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2022.
+- Full text: <https://github.com/lucide-icons/lucide/blob/main/LICENSE>
+
 ## Tailscale (`app/src/main/jniLibs/arm64-v8a/libtailscale.so`)
 
 BYD Trip Stats bundles a build of the Tailscale client daemon, used to put the head unit on the

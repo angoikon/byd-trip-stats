@@ -360,12 +360,24 @@ summaries, finished charges, the Pro cell-imbalance alert — it works with no T
 the **battery history** chart and a **Files** tab (both below). Away from home, use
 [Tailscale](#remote-access-tailscale).
 
+**Trips** and **Charging** open on a summary of a period — **Today**, **7 days**, **30 days**,
+**90 days** or **All time** — with a chart of distance (or energy added) per hour, day, week or month; tap a bar to jump
+to that day in the list. The list below is grouped by day with each day's totals. A trip's
+efficiency is green when it used noticeably less energy than your average for the period (on
+**Today**, your 7-day average), amber when it used noticeably more. Sort by tapping a column heading (on a phone, the **Date** control),
+show only your **Favourites**, or narrow the list with the filter button. On a wide screen a tap on a
+row shows its details beside the list, odometer included; **Open trip** (or a double-click) opens the
+map and charts. On a phone a tap opens the trip straight away, and the tabs sit at the bottom of the
+screen.
+
+**Load DB** opens a backup file (`.db` or `.db.gz`) in the browser instead of the car's data.
+
 ---
 
 ## Battery history in the web companion
 
-The 🔋 button beside the notification bell opens the same **48-hour HV / 12V chart** as the
-dashboard card: **12V** on the left axis, **SoC** on the right, charging periods shaded green, and
+The battery button beside the notification bell, which shows the battery level and odometer as of
+the last trip or charge, opens the same **48-hour HV / 12V chart** as the dashboard card: **12V** on the left axis, **SoC** on the right, charging periods shaded green, and
 Latest / Min / Max / Δ above it along with the current HV pack voltage.
 
 Gaps in the line are stretches where the app wasn't running, so nothing was sampled. On a DiLink-3

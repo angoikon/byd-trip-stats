@@ -2,12 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<!-- viewport-fit=cover: the installed iPhone app draws under the home indicator, so the bottom tab
+     bar pads itself by the safe-area inset (and the header too, should iOS ever put the page under
+     the status bar). The status bar itself is opaque ("black"), so the page starts below it: with
+     "black-translucent" the page ran under it, and iOS blurs whatever sits there, fading out
+     down to the header's buttons (seen on an iPhone, 2026-11-22). -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>BYD Trip Stats</title>
 <link rel="manifest" href="manifest.json" />
-<meta name="theme-color" content="#0f1115" />
+<meta name="theme-color" content="#0c0e11" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
 <meta name="apple-mobile-web-app-title" content="BYD Stats" />
 <link rel="apple-touch-icon" href="icons/icon-192.png" />
 <link rel="icon" href="icons/icon-192.png" />
@@ -22,476 +27,688 @@
 <script src="https://cdn.jsdelivr.net/npm/@maplibre/maplibre-gl-leaflet@0.1.4/leaflet-maplibre-gl.js"></script>
 <style>
 :root {
-  --bg:       #0f1115;
-  --panel:    #181b22;
-  --panel-2:  #20242d;
-  --text:     #e6e8ec;
-  --muted:    #9aa3b2;
-  --accent:   #4cc9f0;
-  --green:    #06d6a0;
-  --amber:    #ffd166;
-  --pink:     #f72585;
-  --border:   #262b36;
-  --radius:   12px;
+  --bg:        #0c0e11;
+  --panel:     #13161b;
+  --panel-2:   #181c22;
+  --panel-3:   #20252d;
+  --line:      #232831;
+  --line-2:    #2e3440;
+  --line-soft: #1b1f26;
+  --track:     #262b34;
+  --text:      #e9ebef;
+  --text-2:    #c3c8d1;
+  --muted:     #8a92a0;
+  --faint:     #5d6573;
+  --accent:    #4cc9f0;
+  --accent-ink:#062431;
+  --accent-soft: rgba(76,201,240,0.11);
+  --accent-dim:  #275a75;
+  --sel:       #112029;
+  --good:      #3dd68c;
+  --good-soft: rgba(61,214,140,0.13);
+  --warn:      #f5a524;
+  --warn-soft: rgba(245,165,36,0.13);
+  --star:      #f7b928;
+  --danger:    #f2577c;
+  --radius:    14px;
+  --header-h:  64px;
+  --gutter:    32px;
+  --maxw:      1480px;
 }
+/* One rule for every element the script shows and hides, so a class that sets display can never
+   beat the hidden attribute. */
+[hidden] { display: none !important; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: var(--bg);
-  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px; line-height: 1.45;
+  background: var(--bg); color: var(--text);
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
+button, select, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+svg.i {
+  width: 18px; height: 18px; flex: none;
+  fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+.n, .num { font-variant-numeric: tabular-nums; }
+.u { color: var(--muted); font-size: 0.82em; margin-left: 3px; font-weight: 400; }
+.dash { color: var(--faint); }
+@media (max-width: 759px)  { .d-only { display: none !important; } }
+@media (min-width: 760px)  { .m-only { display: none !important; } }
 
 /* ── Header ─────────────────────────────────────────────────────────────── */
-header {
+.topbar {
   position: sticky; top: 0; z-index: 100;
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 20px;
-  background: var(--panel);
-  border-bottom: 1px solid var(--border);
+  background: rgba(12,14,17,0.9);
+  -webkit-backdrop-filter: blur(14px) saturate(150%); backdrop-filter: blur(14px) saturate(150%);
+  border-bottom: 1px solid var(--line);
+  padding-top: env(safe-area-inset-top);
 }
-.brand { display: flex; align-items: center; gap: 10px; }
-.brand img { width: 28px; height: 28px; border-radius: 6px; }
-.brand span { font-size: 16px; font-weight: 600; white-space: nowrap; }
-nav { display: flex; gap: 4px; flex: 1; justify-content: center; }
-nav button {
-  background: none; border: none; color: var(--muted);
-  padding: 6px 14px; border-radius: 8px; font-size: 14px; cursor: pointer;
+.topbar-inner {
+  max-width: var(--maxw); margin: 0 auto; height: var(--header-h);
+  display: flex; align-items: center; gap: 28px;
+  padding: 0 max(var(--gutter), env(safe-area-inset-right)) 0 max(var(--gutter), env(safe-area-inset-left));
+}
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.brand img { width: 30px; height: 30px; border-radius: 8px; }
+.brand span { font-size: 15px; font-weight: 650; letter-spacing: -0.01em; white-space: nowrap; }
+.tabs { display: flex; gap: 4px; }
+.tab {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 36px; padding: 0 12px; border: none; border-radius: 9px;
+  background: none; color: var(--muted); font-size: 14px; font-weight: 500;
   transition: background 0.15s, color 0.15s;
 }
-nav button:hover { background: var(--panel-2); color: var(--text); }
-nav button.active { background: var(--panel-2); color: var(--accent); }
+.tab svg.i { width: 16px; height: 16px; }
+.tab:hover { color: var(--text); background: var(--panel-2); }
+.tab.active { color: var(--accent); background: var(--accent-soft); }
+.top-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 36px; padding: 0 14px; border-radius: 9px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--text);
+  font-size: 13px; font-weight: 500; white-space: nowrap; text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn:hover { background: var(--panel-2); border-color: var(--line-2); }
+.btn:disabled { opacity: 0.6; cursor: default; }
+.btn svg.i { width: 16px; height: 16px; }
+.btn-sm { height: 30px; padding: 0 10px; font-size: 12px; gap: 6px; }
+.btn-sm svg.i { width: 14px; height: 14px; }
+.btn.danger { color: var(--danger); }
+.btn.danger:hover { border-color: rgba(242,87,124,0.45); }
+.icon-btn { width: 36px; padding: 0; position: relative; }
+.batt-chip { gap: 10px; padding: 0 12px; }
+.batt-chip .soc { font-weight: 650; font-variant-numeric: tabular-nums; }
+.batt-chip .vsep { width: 1px; height: 16px; background: var(--line-2); }
+.batt-chip .odo { color: var(--muted); font-variant-numeric: tabular-nums; }
+.batt-chip:disabled { opacity: 1; }
+.batt-chip:disabled:hover { background: var(--panel); border-color: var(--line); }
+.batt-ico { width: 24px; height: 13px; flex: none; color: var(--muted); }
+#file-input, #file-upload-input { display: none; }
+
 /* ── Notifications (live mode only) ───────────────────────────────────────── */
 .bell-wrap { position: relative; }
-.bell-btn {
-  background: var(--panel-2); color: var(--text);
-  border: 1px solid var(--border); padding: 7px 11px;
-  border-radius: 8px; font-size: 15px; cursor: pointer; line-height: 1;
-}
-.bell-btn:hover { background: var(--border); }
 .bell-badge {
   position: absolute; top: -6px; right: -6px;
-  min-width: 17px; height: 17px; padding: 0 4px;
-  border-radius: 9px; background: var(--accent); color: #fff;
-  font-size: 11px; font-weight: 700; line-height: 17px; text-align: center;
+  min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 9px; background: var(--accent); color: var(--accent-ink);
+  border: 2px solid var(--bg);
+  font-size: 10px; font-weight: 700; line-height: 14px; text-align: center;
 }
 .notif-panel {
-  position: absolute; top: 44px; right: 0; width: 330px; max-width: 86vw;
+  position: absolute; top: 46px; right: 0; width: 340px; max-width: 86vw;
   max-height: 60vh; overflow-y: auto; z-index: 300;
-  background: var(--panel); border: 1px solid var(--border);
-  border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  background: var(--panel); border: 1px solid var(--line-2);
+  border-radius: var(--radius); box-shadow: 0 16px 40px rgba(0,0,0,0.45);
 }
 .notif-head {
+  position: sticky; top: 0; background: var(--panel);
   display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 14px; border-bottom: 1px solid var(--border);
+  padding: 12px 14px; border-bottom: 1px solid var(--line);
   font-size: 13px; font-weight: 600;
 }
 .notif-head button {
-  background: none; border: none; color: var(--muted);
-  font-size: 12px; cursor: pointer; padding: 2px 4px;
+  background: none; border: none; color: var(--accent);
+  font-size: 12px; padding: 2px 4px;
 }
-.notif-actions { display: flex; gap: 6px; }
-.notif-head button:disabled { opacity: .4; cursor: default; }
+.notif-head button:disabled { color: var(--faint); cursor: default; }
+.notif-actions { display: flex; gap: 8px; }
 /* Right padding leaves room for the delete button, so a long title never runs under it. */
-.notif-item { position: relative; padding: 10px 44px 10px 14px; border-bottom: 1px solid var(--border); }
-.notif-del {
-  position: absolute; top: 6px; right: 8px; width: 32px; height: 32px;
-  background: none; border: none; border-radius: 6px;
-  color: var(--muted); font-size: 14px; line-height: 1; cursor: pointer;
-}
-.notif-del:hover { background: var(--border); color: var(--text); }
+.notif-item { position: relative; padding: 11px 46px 11px 14px; border-bottom: 1px solid var(--line-soft); }
 .notif-item:last-child { border-bottom: none; }
 .notif-item.unseen { background: var(--panel-2); }
+.notif-item.unseen::before {
+  content: ''; position: absolute; left: 5px; top: 17px;
+  width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
+}
+.notif-del {
+  position: absolute; top: 7px; right: 8px; width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none; border-radius: 8px; color: var(--muted);
+}
+.notif-del svg.i { width: 15px; height: 15px; }
+.notif-del:hover { background: var(--panel-3); color: var(--text); }
 .notif-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
 .notif-body { font-size: 12px; color: var(--muted); white-space: pre-line; line-height: 1.45; }
-.notif-time { font-size: 11px; color: var(--muted); margin-top: 4px; }
-.notif-empty { padding: 18px 14px; font-size: 12px; color: var(--muted); text-align: center; }
-/* On a phone the bell sits mid-header, so a panel anchored to it runs off the left edge.
-   Below this width it detaches from the bell and spans the viewport with a margin instead. */
-@media (max-width: 640px) {
-  .notif-panel {
-    /* Clears the two-row phone header below, not the single-row one this used to sit under. */
-    position: fixed; top: 102px; left: 10px; right: 10px;
-    width: auto; max-width: none; max-height: 70vh;
-  }
+.notif-time { font-size: 11px; color: var(--faint); margin-top: 4px; }
+.notif-empty { padding: 20px 14px; font-size: 12px; color: var(--muted); text-align: center; }
+
+/* ── Bottom tab bar (phones) ─────────────────────────────────────────────── */
+.tabbar { display: none; }
+
+/* ── Main ────────────────────────────────────────────────────────────────── */
+main {
+  max-width: var(--maxw); margin: 0 auto;
+  padding: 28px max(var(--gutter), env(safe-area-inset-right)) 56px max(var(--gutter), env(safe-area-inset-left));
 }
-/* Phone header: the brand, the bell and the Load DB button together already fill a phone's
-   width, and the three nav tabs used to push Load DB off the right edge entirely. Below this
-   width the nav drops onto its own full-width row underneath them. */
-@media (max-width: 640px) {
-  header { flex-wrap: wrap; row-gap: 10px; padding: 12px 14px; gap: 10px; }
-  .brand { flex: 1; min-width: 0; }
-  .brand span { overflow: hidden; text-overflow: ellipsis; }
-  /* The tabs get the full row to themselves and share it evenly, rather than bunching at the
-     left of an otherwise empty line. */
-  nav { order: 3; flex: 0 0 100%; gap: 6px; }
-  nav button { flex: 1; padding: 8px 0; }
-  .load-btn { padding: 6px 10px; font-size: 12px; }
+/* View toggling is class-based; the active view is the only one displayed. */
+.view { display: none; }
+.view.active { display: block; }
+#view-drop.active { display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 160px); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+.eyebrow {
+  font-size: 11px; font-weight: 650; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
 }
-/* Narrower still: the wordmark goes, the icon carries the branding. */
-@media (max-width: 420px) {
-  .brand span { display: none; }
-}
-/* ── Files (live mode only) ────────────────────────────────────────────────── */
-.file-crumbs {
-  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-  font-size: 13px; color: var(--muted); margin-bottom: 14px;
-}
-.file-crumbs button {
-  background: none; border: none; color: var(--accent);
-  font-size: 13px; cursor: pointer; padding: 0;
-}
-.file-path {
-  font-family: ui-monospace, Menlo, Consolas, monospace;
-  font-size: 11px; color: var(--muted); word-break: break-all;
-  margin-bottom: 14px;
-}
-.file-list { display: flex; flex-direction: column; gap: 1px; }
-.file-row {
-  display: flex; align-items: center; gap: 12px;
-  background: var(--panel); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 12px 14px;
-}
-.file-row:hover { border-color: var(--accent); background: var(--panel-2); }
-.file-icon { font-size: 18px; line-height: 1; flex-shrink: 0; }
-.file-main { flex: 1; min-width: 0; }
-.file-name { font-size: 14px; word-break: break-all; }
-.file-name.link { color: var(--accent); cursor: pointer; }
-.file-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
-.file-actions { display: flex; gap: 6px; flex-shrink: 0; }
-.file-actions a, .file-actions button {
-  background: var(--panel-2); border: 1px solid var(--border);
-  color: var(--text); padding: 5px 12px; border-radius: 20px;
-  font-size: 12px; cursor: pointer; text-decoration: none; white-space: nowrap;
-}
-.file-actions a:hover, .file-actions button:hover { border-color: var(--accent); }
-.file-actions .danger { color: var(--pink); }
-.file-actions .danger:hover { border-color: var(--pink); }
-/* ── Text-file viewer ──────────────────────────────────────────────────────── */
-.viewer {
-  position: fixed; inset: 0; z-index: 500;
-  background: var(--bg); display: flex; flex-direction: column;
-}
-.viewer[hidden] { display: none; }
-.viewer-bar {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 14px; background: var(--panel);
-  border-bottom: 1px solid var(--border); flex-shrink: 0;
-}
-.viewer-close {
-  background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
-  padding: 7px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; white-space: nowrap;
-}
-.viewer-close:hover { border-color: var(--accent); }
-.viewer-name {
-  flex: 1; min-width: 0;
-  font-size: 13px; color: var(--muted);
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.viewer-copy.done { color: var(--green); border-color: rgba(6,214,160,0.4); }
-.viewer-copy.failed { color: var(--pink); border-color: rgba(247,37,133,0.4); }
-/* ── 12V / HV history ──────────────────────────────────────────────────────── */
-.battery-body {
-  flex: 1; min-height: 0; overflow: auto;
-  display: flex; flex-direction: column; gap: 12px; padding: 14px;
-}
-.battery-chips { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 8px; }
-.battery-chip {
-  background: var(--panel); border: 1px solid var(--border);
-  border-radius: 10px; padding: 8px 10px; min-width: 0;
-}
-.battery-chip .lbl { font-size: 11px; color: var(--muted); }
-.battery-chip .val { font-size: 15px; font-weight: 700; white-space: nowrap; }
-.battery-chart { flex: 1; min-height: 260px; position: relative; }
-.battery-note { font-size: 12px; color: var(--muted); }
-.viewer-scroll { flex: 1; overflow: auto; padding: 14px; }
-.viewer-scroll pre {
-  margin: 0; font-family: ui-monospace, Menlo, Consolas, monospace;
-  font-size: 11px; line-height: 1.5; color: var(--text);
-  white-space: pre-wrap; word-break: break-word;
-}
-.viewer-image {
-  display: block; margin: 0 auto; max-width: 100%;
-  border: 1px solid var(--border); border-radius: 8px;
-}
-.viewer-image[hidden], .viewer-scroll pre[hidden] { display: none; }
-.file-readonly {
-  background: rgba(255,209,102,0.08); border: 1px solid rgba(255,209,102,0.3);
-  border-radius: 10px; padding: 10px 12px; margin: 0 0 14px;
-  font-size: 12px; color: var(--amber); line-height: 1.5;
-}
-.file-readonly[hidden] { display: none; }
-.upload-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
-.upload-status { font-size: 12px; color: var(--muted); }
-.upload-status.error { color: var(--pink); }
-.upload-status.ok { color: var(--green); }
-/* On a phone the action buttons would squeeze a long file name to nothing, so they drop
-   onto their own line instead. */
-@media (max-width: 640px) {
-  .file-row { flex-wrap: wrap; }
-  .file-actions { width: 100%; justify-content: flex-end; }
-}
-.load-btn {
-  background: var(--panel-2); color: var(--text);
-  border: 1px solid var(--border); padding: 7px 14px;
-  border-radius: 8px; font-size: 13px; cursor: pointer;
-  white-space: nowrap; transition: background 0.15s;
-}
-.load-btn:hover { background: #2a2f3b; }
-#file-input, #file-upload-input { display: none; }
+.empty { color: var(--muted); padding: 44px 16px; text-align: center; line-height: 1.6; }
+.empty .btn { margin: 14px 4px 0; }
+.empty.error { color: var(--danger); }
 
 /* ── Loading overlay ─────────────────────────────────────────────────────── */
 #loading {
-  display: none;  /* JS-managed via style.display — never rely on [hidden] vs display:flex */
-  position: fixed; inset: 0; z-index: 200;
-  background: rgba(15, 17, 21, 0.85);
+  display: none;  /* JS-managed via style.display */
+  position: fixed; inset: 0; z-index: 600;
+  background: rgba(12,14,17,0.86);
   flex-direction: column; align-items: center; justify-content: center;
   gap: 16px; font-size: 15px; color: var(--muted);
 }
 .spinner {
   width: 36px; height: 36px;
-  border: 3px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
+  border: 3px solid var(--line-2); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Main ────────────────────────────────────────────────────────────────── */
-main { padding: 24px 20px; max-width: 1200px; margin: 0 auto; }
-
-/* ── View toggling — class-based to avoid [hidden] vs display:X cascade conflicts ── */
-.view { display: none; }
-.view.active { display: block; }
-#view-drop.active { display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 100px); }
+/* ── Drop zone / reaching the car ────────────────────────────────────────── */
 .dropzone {
-  border: 2px dashed var(--border);
-  border-radius: 16px;
-  padding: 64px 40px;
-  text-align: center;
-  max-width: 480px; width: 100%;
-  background: var(--panel);
+  border: 1.5px dashed var(--line-2); border-radius: 18px;
+  padding: 56px 40px; text-align: center;
+  max-width: 480px; width: 100%; background: var(--panel);
   transition: border-color 0.15s, background 0.15s;
 }
-.dropzone.drag { border-color: var(--accent); background: rgba(76,201,240,0.06); }
-.drop-icon { font-size: 48px; margin-bottom: 16px; }
-.dropzone strong { font-size: 18px; }
-.drop-hint { font-size: 13px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
-.drop-hint.small { font-size: 12px; margin-top: 12px; }
-.inline-link { color: var(--accent); cursor: pointer; text-decoration: underline; }
-/* The same panel when the page comes from the car: connecting, or the car didn't answer. */
-.reach .load-btn { margin-top: 18px; font-size: 14px; padding: 9px 18px; }
-.reach .load-btn:disabled { opacity: 0.6; cursor: default; }
+.dropzone.drag { border-color: var(--accent); background: var(--accent-soft); }
+.drop-icon {
+  width: 56px; height: 56px; margin: 0 auto 18px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent-soft); color: var(--accent);
+}
+.drop-icon svg.i { width: 26px; height: 26px; }
+.dropzone strong { font-size: 18px; font-weight: 650; }
+.drop-hint { font-size: 13px; color: var(--muted); margin-top: 8px; line-height: 1.55; }
+.drop-hint.small { font-size: 12px; margin-top: 14px; }
+.inline-link { color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.reach .btn { margin-top: 18px; }
 
-/* ── List views ──────────────────────────────────────────────────────────── */
-/* Title above, totals on one line of their own beneath it. Sharing a row meant the totals were
-   the first thing to wrap once there were three of them. */
-.list-header { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
-.list-header h2 { font-size: 22px; font-weight: 600; }
-.summary-row {
-  display: flex; gap: 8px; font-size: 13px; color: var(--muted);
-  white-space: nowrap; overflow-x: auto; scrollbar-width: none;
+/* ── Page head, segmented controls ───────────────────────────────────────── */
+.page-head {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
+  margin-bottom: 20px;
 }
-.summary-row::-webkit-scrollbar { display: none; }
-.summary-row .sep { opacity: 0.45; }
-.summary-row span strong { color: var(--text); }
-.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
-.empty { color: var(--muted); padding: 40px 0; text-align: center; }
+.page-head h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+.page-sub { margin-top: 7px; color: var(--muted); font-size: 13px; }
+.page-sub strong { color: var(--text-2); font-weight: 600; font-variant-numeric: tabular-nums; }
+.seg {
+  display: inline-flex; padding: 3px; gap: 2px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 11px;
+}
+.seg button {
+  height: 30px; padding: 0 13px; border: none; border-radius: 8px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  background: none; color: var(--muted); font-size: 13px; font-weight: 500; white-space: nowrap;
+}
+.seg button:hover { color: var(--text); }
+.seg button.on { background: var(--panel-3); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,0.35); }
+.seg button svg.i { width: 14px; height: 14px; }
+.seg button.on svg.star-ico { color: var(--star); fill: var(--star); }
+.seg .cnt { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
 
-/* ── Card ────────────────────────────────────────────────────────────────── */
-.card {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+/* ── Period summary ──────────────────────────────────────────────────────── */
+.period-card {
+  display: grid; grid-template-columns: minmax(250px, 0.85fr) minmax(0, 1.6fr); gap: 40px;
+  padding: 24px 26px; margin-bottom: 20px;
 }
-.card:hover { border-color: var(--accent); background: var(--panel-2); }
-.card-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 14px;
+.hero { display: flex; align-items: baseline; gap: 2px; margin-top: 10px; }
+.hero .v { font-size: 56px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+.hero .u { font-size: 20px; margin-left: 6px; font-weight: 500; }
+.hero-md .v { font-size: 44px; }
+.hero-md .u { font-size: 18px; }
+.hero-sub { margin-top: 10px; color: var(--muted); font-size: 13px; }
+.kpis {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line);
 }
-.card-date { font-size: 13px; color: var(--muted); }
-.badge {
-  font-size: 11px; padding: 2px 8px;
-  border-radius: 20px; background: var(--panel-2);
-  color: var(--muted); border: 1px solid var(--border);
+.kpi .v { font-size: 20px; font-weight: 650; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.kpi .l { font-size: 12px; color: var(--muted); margin-top: 1px; }
+.pc-chart { display: flex; flex-direction: column; min-width: 0; }
+.chart-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+.chart-head .t { font-size: 13px; font-weight: 600; color: var(--text-2); }
+.chart-head .s { font-size: 12px; color: var(--muted); white-space: nowrap; }
+/* The bar chart is plain HTML: a column per day (or week, or month), the bar growing from a
+   shared baseline, its label underneath. Single series, so no legend — the heading names it. */
+.bars { flex: 1; display: flex; align-items: stretch; gap: var(--bar-gap, 12px); min-height: 150px; padding: 0 4px; }
+.bar-col {
+  flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  background: none; border: none; padding: 0; border-radius: 6px;
 }
-.charge-badge { color: var(--amber); border-color: rgba(255,209,102,0.3); }
-.dc-badge { color: var(--accent); border-color: rgba(76,201,240,0.35); font-weight: 700; }
-.card-head-right { display: flex; align-items: center; gap: 8px; }
-.star {
-  background: none; border: none; cursor: pointer; padding: 0 2px;
-  font-size: 18px; line-height: 1; color: var(--muted);
-  transition: color 0.15s, transform 0.1s;
+.bar-track {
+  flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center;
+  border-bottom: 1px solid var(--line-2);
 }
-.star:hover { transform: scale(1.15); }
-.star.on { color: var(--amber); }
-span.star { cursor: default; }
-.fav-filter {
-  background: var(--panel-2); border: 1px solid var(--border);
-  color: var(--muted); padding: 5px 12px; border-radius: 20px;
-  font-size: 13px; cursor: pointer; transition: all 0.15s;
+.bar {
+  width: 100%; max-width: 76px; min-height: 2px;
+  background: var(--accent-dim); border-radius: 4px 4px 0 0;
+  transition: background 0.15s;
 }
-.fav-filter:hover { color: var(--text); border-color: var(--accent); }
-.fav-filter.active { color: var(--amber); border-color: rgba(255,209,102,0.4); background: rgba(255,209,102,0.08); }
+.bar.zero { background: var(--line-2); border-radius: 1px; }
+.bar.now { background: var(--accent); }
+.bar-col:hover .bar, .bar-col:focus-visible .bar { background: #3a7fa3; }
+.bar-col:hover .bar.now, .bar-col:focus-visible .bar.now { background: #86dbf6; }
+.bar-lbl { height: 14px; font-size: 11px; line-height: 14px; color: var(--muted); white-space: nowrap; }
+.bar-lbl.now { color: var(--text-2); font-weight: 600; }
+.chart-tip {
+  position: fixed; z-index: 700; pointer-events: none;
+  background: var(--panel-3); border: 1px solid var(--line-2); border-radius: 8px;
+  padding: 6px 9px; font-size: 12px; color: var(--text); white-space: nowrap;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
 
-/* ── List controls (sort / filter) ──────────────────────────────────────────── */
-/* Two groups — sorting held left, filtering pushed to the right edge so the filter icons aren't
-   crowding the sort-direction icon. Grouping also means that when the row runs out of width it
-   breaks *between* them rather than orphaning whichever control happened to be last; a wrapped
-   line has a single item, which space-between aligns to the start. */
-.controls {
-  display: flex; flex-wrap: wrap; align-items: center;
-  gap: 10px 20px; justify-content: space-between;
-  margin-bottom: 16px;
+/* ── Toolbar, legend, filters ────────────────────────────────────────────── */
+.toolbar {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  gap: 10px 16px; margin-bottom: 12px;
 }
-.ctl-group { display: flex; align-items: center; gap: 8px; }
-.controls .lbl-inline { font-size: 12px; color: var(--muted); }
-.controls select, .ctl-btn {
-  background: var(--panel-2); border: 1px solid var(--border);
-  color: var(--text); padding: 0 12px; border-radius: 20px;
-  font-size: 13px; cursor: pointer; transition: all 0.15s;
-}
-.controls select { padding: 0 6px; }
-/* One explicit height across all three, so the native select can't sit a pixel or two proud of
-   the pills beside it. Kept apart from the rules above so .fav-filter keeps its muted colour. */
-.controls select, .ctl-btn, .fav-filter {
-  height: 32px; line-height: 1; box-sizing: border-box;
-  padding-top: 0; padding-bottom: 0;
-}
-/* Icon-only controls: square, so a row of them reads as a set of buttons rather than as pills of
-   random width. The label they lost lives in the title/aria-label. */
-.icon-btn {
-  position: relative;
-  width: 34px; padding: 0;
-  display: inline-flex; align-items: center; justify-content: center;
-  font-size: 15px;
-}
-.ctl-btn.filtered { color: var(--accent); border-color: rgba(76,201,240,0.4); }
+.tool-group { display: flex; align-items: center; gap: 8px; }
 .ctl-badge {
   position: absolute; top: -5px; right: -5px;
-  min-width: 16px; height: 16px; padding: 0 4px; box-sizing: border-box;
+  min-width: 16px; height: 16px; padding: 0 4px;
   display: flex; align-items: center; justify-content: center;
-  background: var(--accent); color: #05202b;
+  background: var(--accent); color: var(--accent-ink);
   border-radius: 8px; font-size: 10px; font-weight: 700; line-height: 1;
 }
-.ctl-btn:hover, .controls select:hover { border-color: var(--accent); }
-.ctl-btn.active { color: var(--accent); border-color: rgba(76,201,240,0.4); background: rgba(76,201,240,0.08); }
-.filter-panel {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 12px; margin-bottom: 18px;
-  background: var(--panel); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 16px;
+.btn.filtered, .btn.open { color: var(--accent); border-color: rgba(76,201,240,0.4); }
+.legend { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); }
+.legend .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+.legend .dot.good { background: var(--good); }
+.legend .dot.warn { background: var(--warn); }
+.legend strong { color: var(--text-2); font-weight: 600; font-variant-numeric: tabular-nums; }
+.sort-ctl {
+  display: inline-flex; align-items: center; height: 38px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 11px; overflow: hidden;
 }
-/* Each filter is its own bordered box so neighbouring rows never run together. */
+.sort-sel { display: inline-flex; align-items: center; gap: 6px; padding: 0 4px 0 10px; color: var(--muted); }
+.sort-sel svg.i { width: 14px; height: 14px; }
+.sort-sel select {
+  -webkit-appearance: none; appearance: none; background: none; border: none;
+  color: var(--text); font-size: 13px; font-weight: 500; padding: 0 6px 0 0; height: 36px;
+}
+.sort-ctl .vsep { width: 1px; height: 18px; background: var(--line-2); }
+.sort-dir { width: 36px; height: 36px; border: none; background: none; color: var(--accent); display: flex; align-items: center; justify-content: center; }
+.sort-dir svg.i { width: 16px; height: 16px; }
+.filter-panel {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px; margin-bottom: 14px; padding: 14px;
+}
 .filter-row {
   display: flex; align-items: center; gap: 8px;
-  background: var(--panel-2); border: 1px solid var(--border);
-  border-radius: 8px; padding: 8px 12px;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px;
 }
 .filter-row .frl { font-size: 12px; color: var(--muted); flex: 1; min-width: 0; }
 .filter-row input {
-  width: 58px; flex: none; background: var(--bg); border: 1px solid var(--border);
-  color: var(--text); border-radius: 6px; padding: 4px 6px; font-size: 12px;
+  width: 62px; flex: none; background: var(--bg); border: 1px solid var(--line-2);
+  color: var(--text); border-radius: 7px; padding: 5px 7px; font-size: 12px;
 }
 .filter-row input:focus { outline: none; border-color: var(--accent); }
 .filter-clear {
   grid-column: 1 / -1; justify-self: start;
-  background: none; border: none; color: var(--accent);
-  font-size: 12px; cursor: pointer; padding: 2px 0;
+  background: none; border: none; color: var(--accent); font-size: 12px; padding: 2px 0;
 }
-.card-stats {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
-}
-.stat { display: flex; flex-direction: column; gap: 2px; }
-.stat .val { font-size: 14px; font-weight: 600; color: var(--text); }
-.stat .lbl { font-size: 11px; color: var(--muted); }
 
-/* ── Detail views ────────────────────────────────────────────────────────── */
-.detail-header {
-  display: flex; align-items: center; gap: 16px;
-  margin-bottom: 20px;
+/* ── Split: list + detail panel ─────────────────────────────────────────── */
+.split { display: grid; grid-template-columns: minmax(0, 1fr) 372px; gap: 24px; align-items: start; }
+.split-side { position: sticky; top: calc(var(--header-h) + env(safe-area-inset-top) + 20px); }
+.split-side .panel { max-height: calc(100vh - var(--header-h) - env(safe-area-inset-top) - 40px); overflow-y: auto; }
+@media (max-width: 1199px) {
+  .split { grid-template-columns: minmax(0, 1fr); }
+  .split-side { display: none; }
 }
-.back-btn {
-  background: var(--panel-2); border: 1px solid var(--border);
-  color: var(--muted); padding: 7px 12px;
-  border-radius: 8px; font-size: 13px; cursor: pointer;
-  transition: background 0.15s, color 0.15s; white-space: nowrap;
-}
-.back-btn:hover { background: #2a2f3b; color: var(--text); }
-#trip-detail-header, #charge-detail-header {
-  font-size: 15px; color: var(--muted);
-}
-.stats-row {
-  display: flex; flex-wrap: wrap; gap: 8px;
-  margin-bottom: 20px;
-}
-.stats-row .stat {
-  background: var(--panel); border: 1px solid var(--border);
-  border-radius: 10px; padding: 12px 16px; min-width: 100px;
-}
-.stats-row .stat .val { font-size: 16px; }
 
-/* ── Map ─────────────────────────────────────────────────────────────────── */
+/* ── The list: one grid per row, so the same markup is a dense table on a wide screen and a
+   two-line card row on a phone (see the phone media query) ─────────────────── */
+.list { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.list.trips  { --cols: minmax(60px,.8fr) minmax(70px,1fr) minmax(64px,.9fr) minmax(70px,.9fr) minmax(118px,1.4fr) minmax(76px,1fr) minmax(156px,1.7fr) 32px; }
+.list.trips.flat  { --cols: minmax(128px,1.4fr) minmax(70px,1fr) minmax(64px,.9fr) minmax(70px,.9fr) minmax(118px,1.4fr) minmax(76px,1fr) minmax(156px,1.7fr) 32px; }
+.list.charges { --cols: minmax(60px,.8fr) minmax(70px,.9fr) minmax(86px,1fr) minmax(70px,.9fr) minmax(70px,.9fr) minmax(156px,1.7fr) 44px 32px; }
+.list.charges.flat { --cols: minmax(128px,1.4fr) minmax(70px,.9fr) minmax(86px,1fr) minmax(70px,.9fr) minmax(70px,.9fr) minmax(156px,1.7fr) 44px 32px; }
+.list-head, .row {
+  display: grid; grid-template-columns: var(--cols); align-items: center; column-gap: 12px;
+  padding: 0 20px;
+}
+.list-head {
+  height: 42px; border-bottom: 1px solid var(--line);
+  font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted);
+}
+.list-head .h {
+  display: inline-flex; align-items: center; gap: 4px; height: 30px; padding: 0;
+  background: none; border: none; color: inherit;
+  font: inherit; letter-spacing: inherit; text-transform: inherit; white-space: nowrap;
+}
+.list-head button.h:hover, .list-head .h.on { color: var(--text-2); }
+.list-head .h svg.i { width: 12px; height: 12px; stroke-width: 2.5; }
+.group {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  padding: 18px 20px 9px; font-size: 13px; font-weight: 600;
+  scroll-margin-top: calc(var(--header-h) + env(safe-area-inset-top) + 12px);
+}
+.day + .day .group { border-top: 1px solid var(--line); }
+.group .sum { font-size: 12px; font-weight: 400; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rows .row { border-top: 1px solid var(--line-soft); }
+.row {
+  position: relative; min-height: 52px; cursor: pointer;
+  transition: background 0.12s;
+  scroll-margin-top: calc(var(--header-h) + env(safe-area-inset-top) + 12px);
+}
+.row:hover { background: var(--panel-2); }
+.row:focus-visible { outline-offset: -2px; }
+/* The selection only means something where the panel beside the list shows it. */
+@media (min-width: 1200px) {
+  .row.selected { background: var(--sel); }
+  .row.selected::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--accent); }
+  .row.selected .t-main { color: var(--accent); }
+}
+.row.flash { animation: flash 1.2s ease-out; }
+@keyframes flash { from { background: rgba(76,201,240,0.22); } }
+.c { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.row .c-time, .row .c-dist, .row .c-add { color: var(--text); }
+.c-dist .n, .c-add .n { font-weight: 650; }
+.t-main { font-weight: 600; }
+.t-sub { display: none; }
+.tag {
+  display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 5px;
+  background: var(--panel-3); color: var(--muted); font-size: 10.5px; font-weight: 600; vertical-align: 1px;
+}
+.chip {
+  display: inline-block; padding: 2px 7px; border-radius: 6px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.03em;
+  background: var(--panel-3); color: var(--text-2);
+}
+.chip.dc { background: var(--accent-soft); color: var(--accent); }
+.eff { display: inline-flex; align-items: center; gap: 10px; color: var(--text); }
+.eff.good { color: var(--good); }
+.eff.warn { color: var(--warn); }
+.eff-val { font-weight: 650; min-width: 34px; font-variant-numeric: tabular-nums; }
+.eff-unit { display: none; }
+.eff-bar { width: 60px; height: 4px; border-radius: 2px; background: var(--track); overflow: hidden; }
+.eff-bar i { display: block; height: 100%; border-radius: 2px; background: currentColor; }
+.batt { display: flex; align-items: center; gap: 12px; }
+.batt-txt { min-width: 88px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.socbar { position: relative; flex: none; width: 72px; height: 4px; border-radius: 2px; background: var(--track); overflow: hidden; }
+.socbar i { position: absolute; top: 0; bottom: 0; }
+.socbar .lvl { left: 0; background: #48515f; }
+.socbar .use { background: var(--accent); }
+.socbar .add { background: var(--good); }
+.star {
+  width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;
+  border: none; background: none; color: var(--faint); border-radius: 8px;
+  transition: color 0.15s, background 0.15s, transform 0.1s;
+}
+.star svg.i { width: 17px; height: 17px; }
+button.star:hover { color: var(--text-2); background: var(--panel-3); }
+button.star:active { transform: scale(0.9); }
+.star.on { color: var(--star); }
+.star.on svg.i { fill: currentColor; }
+span.star { cursor: default; }
+.c-star { overflow: visible; display: flex; justify-content: flex-end; }
+
+/* ── Detail panel (beside the list) and summary card (top of a detail page) ── */
+.panel { padding: 22px 22px 20px; }
+.panel-empty { padding: 24px 0; color: var(--muted); text-align: center; font-size: 13px; }
+.p-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.p-head .star { margin: -4px -6px 0 0; }
+.p-title { font-size: 15px; font-weight: 650; margin-top: 6px; }
+.p-time { color: var(--muted); font-size: 13px; margin-top: 1px; font-variant-numeric: tabular-nums; }
+.p-hero { margin-top: 20px; }
+.p-hero .hero { margin-top: 0; }
+.p-sec { border-top: 1px solid var(--line); margin-top: 20px; padding-top: 18px; }
+.p-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.p-row + .p-row { margin-top: 8px; }
+.p-row .l { color: var(--text-2); font-size: 13px; }
+.p-row .v { font-weight: 650; font-variant-numeric: tabular-nums; }
+.p-row .v.good { color: var(--good); }
+.p-row .v.warn { color: var(--warn); }
+.p-note { margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+.gauge { position: relative; height: 34px; margin-top: 14px; }
+.gauge-track {
+  position: absolute; left: 0; right: 0; top: 6px; height: 4px; border-radius: 2px; opacity: 0.75;
+  background: linear-gradient(90deg, var(--good) 0 26%, #3a414c 40% 60%, var(--warn) 74% 100%);
+}
+.gauge-tick { position: absolute; top: 0; left: 50%; width: 2px; height: 16px; margin-left: -1px; border-radius: 1px; background: var(--text-2); }
+.gauge-avg { position: absolute; top: 19px; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--muted); white-space: nowrap; }
+.gauge-dot {
+  position: absolute; top: 2px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%;
+  background: var(--text); box-shadow: 0 0 0 2.5px var(--panel);
+}
+.gauge-dot.good { background: var(--good); }
+.gauge-dot.warn { background: var(--warn); }
+.bigbar { position: relative; height: 10px; margin-top: 12px; border-radius: 5px; background: var(--track); overflow: hidden; }
+.bigbar i { position: absolute; top: 0; bottom: 0; }
+.bigbar .lvl { left: 0; background: var(--accent); }
+.bigbar .hatch { background: repeating-linear-gradient(135deg, rgba(76,201,240,0.7) 0 3px, rgba(76,201,240,0.22) 3px 6px); }
+.bigbar .hatch.add { background: repeating-linear-gradient(135deg, rgba(61,214,140,0.8) 0 3px, rgba(61,214,140,0.25) 3px 6px); }
+.odo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.odo-grid .l { font-size: 12px; color: var(--muted); }
+.odo-grid .v { font-weight: 600; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.p-open { width: 100%; margin-top: 20px; }
+
+/* ── Detail pages ────────────────────────────────────────────────────────── */
+.detail-head { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.detail-head .grow { flex: 1; min-width: 0; }
+.detail-head h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+.detail-head p { color: var(--muted); font-size: 13px; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.detail-top { display: grid; grid-template-columns: 372px minmax(0, 1fr); gap: 20px; margin-bottom: 20px; align-items: stretch; }
+.detail-top > .map-container { height: auto; min-height: 440px; margin: 0; }
+.detail-top > .chart-panel { margin: 0; display: flex; flex-direction: column; }
+.detail-top > .chart-panel .chart-wrap { flex: 1; min-height: 300px; }
+@media (max-width: 999px) {
+  .detail-top { grid-template-columns: minmax(0, 1fr); }
+  .detail-top > .map-container { min-height: 300px; }
+}
 .map-container {
-  height: 280px; border-radius: var(--radius);
-  overflow: hidden; margin-bottom: 20px;
-  background: var(--panel); border: 1px solid var(--border);
+  height: 300px; border-radius: var(--radius); overflow: hidden; margin-bottom: 20px;
+  background: var(--panel); border: 1px solid var(--line);
 }
-.map-placeholder {
-  height: 100%; display: flex; align-items: center; justify-content: center;
-  color: var(--muted); font-size: 13px;
-}
-
-/* ── Charts ──────────────────────────────────────────────────────────────── */
-.charts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 16px;
-}
-.chart-panel {
-  background: var(--panel); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 16px;
-}
+.map-placeholder { height: 100%; min-height: 200px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 13px; }
+.section-title { font-size: 13px; font-weight: 600; color: var(--text-2); margin: 28px 0 12px; }
+.charts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 16px; }
+.chart-panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 16px 12px; }
 .chart-panel.full-width { grid-column: 1 / -1; }
-/* ── Report panels (Overview + analyses, live mode only) ────────────────────── */
-.report-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 16px;
-  margin-bottom: 18px;
-}
-.report-panel {
-  background: var(--panel); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 16px;
-}
+.chart-title { font-size: 11px; font-weight: 650; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+.chart-wrap { position: relative; height: 210px; }
+.chart-wrap.tall { height: 300px; }
+.chart-wrap canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
+.chart-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--muted); font-size: 12px; text-align: center; padding: 8px; }
+/* ── Report panels (Overview + analyses, live mode only) ────────────────── */
+.report-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; align-items: start; }
+.report-grid:empty { display: none; }
+.report-panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
 .report-note { font-size: 12px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; }
 .report-row {
   display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
-  padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 13px;
+  padding: 7px 0; border-bottom: 1px solid var(--line-soft); font-size: 13px;
 }
 .report-row:last-child { border-bottom: none; }
 .report-row .lbl { color: var(--muted); }
-.report-row .val { font-weight: 600; text-align: right; }
+.report-row .val { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
 .report-row.sub .lbl { padding-left: 12px; }
-.report-bar {
-  height: 6px; border-radius: 3px; margin: 8px 0 12px;
-  background: rgba(255,209,102,0.25); overflow: hidden;
-}
-.report-bar > div { height: 100%; background: var(--green, #4cc9f0); }
-.chart-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
-.chart-wrap { position: relative; height: 200px; }
-.chart-wrap.tall { height: 280px; }
-.chart-wrap canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
+.report-bar { height: 6px; border-radius: 3px; margin: 8px 0 12px; background: var(--warn-soft); overflow: hidden; }
+.report-bar > div { height: 100%; background: var(--good); }
 
-@media (max-width: 600px) {
-  header { padding: 10px 14px; }
-  .brand span { display: none; }
-  main { padding: 16px 12px; }
-  .charts-grid { grid-template-columns: 1fr; }
+/* ── Files (live mode only) ────────────────────────────────────────────────── */
+.file-crumbs { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+.file-crumbs button { background: none; border: none; color: var(--accent); font-size: 13px; padding: 0; }
+.file-crumbs .btn { color: var(--text); }
+.file-path { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; color: var(--faint); word-break: break-all; margin-bottom: 14px; }
+.file-list { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.file-list:empty { display: none; }
+.file-row { display: flex; align-items: center; gap: 14px; padding: 12px 16px; }
+.file-row + .file-row { border-top: 1px solid var(--line-soft); }
+.file-row:hover { background: var(--panel-2); }
+.file-icon {
+  width: 36px; height: 36px; flex: none; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--panel-3); color: var(--muted);
 }
+.file-icon.dir { background: var(--accent-soft); color: var(--accent); }
+.file-main { flex: 1; min-width: 0; }
+.file-name { font-size: 14px; word-break: break-all; }
+.file-name.link { color: var(--text); font-weight: 600; cursor: pointer; }
+.file-name.link:hover { color: var(--accent); }
+.file-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.file-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.file-readonly {
+  background: var(--warn-soft); border: 1px solid rgba(245,165,36,0.3);
+  border-radius: 10px; padding: 10px 12px; margin: 0 0 14px;
+  font-size: 12px; color: var(--warn); line-height: 1.5;
+}
+.upload-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.upload-status { font-size: 12px; color: var(--muted); }
+.upload-status.error { color: var(--danger); }
+.upload-status.ok { color: var(--good); }
+
+/* ── Full-page overlays: text viewer and the 12V / HV history ─────────────── */
+.viewer { position: fixed; inset: 0; z-index: 500; background: var(--bg); display: flex; flex-direction: column; }
+.viewer-bar {
+  display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+  padding: calc(12px + env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 12px max(16px, env(safe-area-inset-left));
+  background: var(--panel); border-bottom: 1px solid var(--line);
+}
+.viewer-name { flex: 1; min-width: 0; font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.viewer-copy.done { color: var(--good); border-color: rgba(61,214,140,0.4); }
+.viewer-copy.failed { color: var(--danger); border-color: rgba(242,87,124,0.4); }
+.viewer-scroll { flex: 1; overflow: auto; padding: 14px max(14px, env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); }
+.viewer-scroll pre {
+  margin: 0; font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 11px; line-height: 1.5; color: var(--text); white-space: pre-wrap; word-break: break-word;
+}
+.viewer-image { display: block; margin: 0 auto; max-width: 100%; border: 1px solid var(--line); border-radius: 8px; }
+.battery-body {
+  flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 12px;
+  padding: 16px max(16px, env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+.battery-chips { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+.battery-chip { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; min-width: 0; }
+.battery-chip .lbl { font-size: 11px; color: var(--muted); }
+.battery-chip .val { font-size: 16px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.battery-chart { flex: 1; min-height: 260px; position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; }
+.battery-chart canvas { position: absolute; inset: 12px; width: calc(100% - 24px) !important; height: calc(100% - 24px) !important; }
+.battery-note { font-size: 12px; color: var(--muted); }
+
+/* ── Tablet: the table loses its least-used column before it gets cramped ── */
+@media (max-width: 1199px) { :root { --gutter: 24px; } }
+@media (min-width: 760px) and (max-width: 979px) {
+  .list.trips        { --cols: minmax(56px,.8fr) minmax(66px,1fr) minmax(60px,.9fr) minmax(112px,1.4fr) minmax(70px,1fr) minmax(146px,1.7fr) 32px; }
+  .list.trips.flat   { --cols: minmax(118px,1.4fr) minmax(66px,1fr) minmax(60px,.9fr) minmax(112px,1.4fr) minmax(70px,1fr) minmax(146px,1.7fr) 32px; }
+  .list.charges      { --cols: minmax(56px,.8fr) minmax(66px,.9fr) minmax(80px,1fr) minmax(66px,.9fr) minmax(146px,1.7fr) 44px 32px; }
+  .list.charges.flat { --cols: minmax(118px,1.4fr) minmax(66px,.9fr) minmax(80px,1fr) minmax(66px,.9fr) minmax(146px,1.7fr) 44px 32px; }
+  .c-spd, .c-avg { display: none; }
+  .period-card { grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.4fr); gap: 28px; }
+}
+
+/* ── Phone ───────────────────────────────────────────────────────────────── */
+@media (max-width: 759px) {
+  :root { --header-h: 56px; --gutter: 16px; }
+  .topbar-inner { gap: 12px; }
+  .brand span, .topbar .tabs { display: none; }
+  .top-actions { gap: 8px; }
+  .load-btn { width: 36px; padding: 0; }
+  .load-btn span { display: none; }
+  .batt-chip { padding: 0 10px; gap: 7px; }
+  .batt-chip .vsep, .batt-chip .odo { display: none; }
+  .notif-panel {
+    position: fixed; top: calc(var(--header-h) + env(safe-area-inset-top) + 8px);
+    left: 10px; right: 10px; width: auto; max-width: none; max-height: 70vh;
+  }
+  /* Tabs move to the bottom of the screen, where a thumb reaches them. */
+  .tabbar {
+    display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 100;
+    background: rgba(12,14,17,0.94);
+    -webkit-backdrop-filter: blur(14px) saturate(150%); backdrop-filter: blur(14px) saturate(150%);
+    border-top: 1px solid var(--line);
+    padding: 6px max(8px, env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  }
+  .tabbar .tab { flex-direction: column; justify-content: center; gap: 3px; height: 50px; font-size: 11px; background: none; }
+  .tabbar .tab svg.i { width: 22px; height: 22px; }
+  .tabbar .tab.active { background: none; }
+  main { padding-top: 16px; padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
+  #view-drop.active { min-height: calc(100vh - 200px); }
+  .dropzone { padding: 40px 22px; }
+
+  .page-head { margin-bottom: 14px; }
+  .page-head h1 { font-size: 28px; }
+  .page-sub { margin-top: 4px; }
+
+  .period-card { display: flex; flex-direction: column; gap: 0; padding: 12px 14px 16px; margin-bottom: 16px; }
+  .period-card .pc-left { display: contents; }
+  .period-card .seg { display: flex; width: 100%; margin-bottom: 14px; }
+  .period-card .seg button { flex: 1; padding: 0 4px; }
+  .hero-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .hero .v { font-size: 40px; }
+  .hero .u { font-size: 17px; }
+  .hero-row .hero-sub { margin-top: 0; white-space: nowrap; }
+  .pc-chart { order: 4; margin-top: 14px; }
+  .period-card .kpis { order: 5; margin-top: 16px; padding-top: 14px; gap: 0; }
+  .kpi + .kpi { border-left: 1px solid var(--line); padding-left: 14px; }
+  .kpi .v { font-size: 18px; }
+  .chart-head { display: none; }
+  .bars { min-height: 96px; gap: var(--bar-gap-m, 8px); padding: 0; }
+  .bar-lbl { font-size: 10px; }
+
+  .toolbar { margin-bottom: 8px; gap: 10px 8px; }
+  .toolbar .seg button { padding: 0 10px; }
+  .legend { order: 3; width: 100%; gap: 4px 12px; font-size: 11.5px; }
+  .filter-panel { grid-template-columns: 1fr; }
+
+  /* The list sheds its table: day headings sit outside, each day's rows in a card of their own. */
+  .list { background: none; border: none; border-radius: 0; overflow: visible; }
+  .list-head { display: none; }
+  .day + .day .group { border-top: none; }
+  .group { padding: 14px 4px 8px; }
+  .group .sum .kwh { display: none; }
+  .rows { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .rows .row:first-child { border-top: none; }
+  .row {
+    grid-template-columns: 56px minmax(0, 1fr) auto 30px;
+    grid-template-areas: "time a batt star" "time b batt star";
+    column-gap: 10px; row-gap: 5px; padding: 11px 10px 11px 14px; min-height: 0;
+  }
+  .c-time { grid-area: time; align-self: center; }
+  .t-sub { display: block; font-size: 12px; color: var(--muted); font-weight: 400; margin-top: 1px; }
+  .tag { display: none; }
+  .c-dist, .c-add { grid-area: a; }
+  .c-eff, .c-type { grid-area: b; }
+  .c-batt { grid-area: batt; align-self: center; }
+  .c-star { grid-area: star; align-self: center; }
+  .c-dur, .c-spd, .c-energy, .c-avg, .c-peak { display: none; }
+  .eff { gap: 0; padding: 2px 7px; border-radius: 6px; background: rgba(255,255,255,0.06); font-size: 11.5px; }
+  .eff.good { background: var(--good-soft); }
+  .eff.warn { background: var(--warn-soft); }
+  .eff-val { min-width: 0; }
+  .eff-unit { display: inline; margin-left: 3px; font-weight: 600; }
+  .eff-bar { display: none; }
+  .c-type { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); }
+  .batt { flex-direction: column; align-items: flex-end; gap: 6px; }
+  .batt-txt { min-width: 0; font-size: 12.5px; }
+  .batt-txt .pct1 { display: none; }
+  .socbar { width: 80px; }
+
+  .detail-head { gap: 12px; margin-bottom: 14px; align-items: flex-start; }
+  .detail-head h1 { font-size: 19px; }
+  .detail-head .back-btn span { display: none; }
+  .detail-head .back-btn { width: 36px; padding: 0; flex: none; }
+  .panel { padding: 18px 16px; }
+  .hero-md .v { font-size: 38px; }
+  .charts-grid, .report-grid { grid-template-columns: minmax(0, 1fr); }
+  .chart-wrap { height: 200px; }
+
+  .file-row { flex-wrap: wrap; }
+  .file-actions { width: 100%; justify-content: flex-end; }
+}
+@media (max-width: 380px) { .sort-sel svg.i { display: none; } }
 </style>
 </head>
 <body>
@@ -500,48 +717,63 @@ span.star { cursor: default; }
   <div class="spinner"></div>
   <span id="loading-msg">Loading…</span>
 </div>
+<div class="chart-tip" id="chart-tip" role="tooltip" hidden></div>
 
-<header>
-  <div class="brand">
-    <img src="icons/icon-192.png" alt="" onerror="this.style.display='none'" />
-    <span>BYD Trip Stats</span>
-  </div>
-  <nav id="nav" style="display:none">
-    <button id="nav-trips"    onclick="navigate('trips')">Trips</button>
-    <button id="nav-charges"  onclick="navigate('charges')">Charging</button>
-    <!-- Live mode only: there are no car files to browse when a .db was loaded by hand. -->
-    <button id="nav-files"    onclick="navigate('files')" style="display:none">Files</button>
-  </nav>
-  <!-- Live mode only: the car is the source of these, so there is nothing to show
-       when the page was opened with a .db file instead. -->
-  <!-- Live mode only, like the bell: the 48 h voltage history is the car's own, not the .db's. -->
-  <button class="bell-btn" id="battery-btn" title="12V / HV battery — last 48 hours"
-          onclick="openBattery()" style="display:none">🔋</button>
-  <div class="bell-wrap" id="bell-wrap" style="display:none">
-    <button class="bell-btn" id="bell-btn" title="Notifications" onclick="toggleNotifications()">🔔<span id="bell-badge" class="bell-badge" style="display:none"></span></button>
-    <div class="notif-panel" id="notif-panel" style="display:none">
-      <div class="notif-head">
-        <span>Notifications</span>
-        <div class="notif-actions">
-          <button onclick="markNotificationsSeen()">Mark all read</button>
-          <button id="notif-clear" onclick="clearNotifications()" disabled>Clear all</button>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <img src="icons/icon-192.png" alt="" onerror="this.style.display='none'" />
+      <span>BYD Trip Stats</span>
+    </div>
+    <nav class="tabs" id="nav" hidden>
+      <button class="tab" data-nav="trips"   data-icon="route"  onclick="navigate('trips')"><span>Trips</span></button>
+      <button class="tab" data-nav="charges" data-icon="zap"    onclick="navigate('charges')"><span>Charging</span></button>
+      <!-- Live mode only: there are no car files to browse when a .db was loaded by hand. -->
+      <button class="tab live-only" data-nav="files" data-icon="folder" onclick="navigate('files')" hidden><span>Files</span></button>
+    </nav>
+    <div class="top-actions">
+      <!-- Battery level and odometer as of the last trip or charge. In live mode it also opens the
+           48 h HV / 12V history, which is the car's own record, not the .db's. -->
+      <button class="btn batt-chip" id="batt-chip" onclick="openBattery()" hidden>
+        <span id="batt-ico"></span><span class="soc" id="batt-soc"></span><span class="vsep"></span><span class="odo" id="batt-odo"></span>
+      </button>
+      <!-- Live mode only: the car is the source of these, so there is nothing to show
+           when the page was opened with a .db file instead. -->
+      <div class="bell-wrap live-only" id="bell-wrap" hidden>
+        <button class="btn icon-btn" id="bell-btn" data-icon="bell" title="Notifications" aria-label="Notifications"
+                onclick="toggleNotifications()"><span id="bell-badge" class="bell-badge" hidden></span></button>
+        <div class="notif-panel" id="notif-panel" hidden>
+          <div class="notif-head">
+            <span>Notifications</span>
+            <div class="notif-actions">
+              <button onclick="markNotificationsSeen()">Mark all read</button>
+              <button id="notif-clear" onclick="clearNotifications()" disabled>Clear all</button>
+            </div>
+          </div>
+          <div id="notif-list"></div>
         </div>
       </div>
-      <div id="notif-list"></div>
+      <label class="btn load-btn" data-icon="db" title="Load a .db or .db.gz backup file">
+        <span>Load DB</span>
+        <input id="file-input" type="file" accept=".db,.gz" />
+      </label>
     </div>
   </div>
-  <label class="load-btn" title="Load a .db or .db.gz backup file">
-    Load DB
-    <input id="file-input" type="file" accept=".db,.gz" />
-  </label>
 </header>
+
+<!-- Phones: the same tabs, at the bottom of the screen. -->
+<nav class="tabbar" id="tabbar" hidden>
+  <button class="tab" data-nav="trips"   data-icon="route"  onclick="navigate('trips')"><span>Trips</span></button>
+  <button class="tab" data-nav="charges" data-icon="zap"    onclick="navigate('charges')"><span>Charging</span></button>
+  <button class="tab live-only" data-nav="files" data-icon="folder" onclick="navigate('files')" hidden><span>Files</span></button>
+</nav>
 
 <main>
 
   <!-- ── Drop zone ────────────────────────────────────────────── -->
   <section class="view active" id="view-drop">
     <div class="dropzone" id="dropzone">
-      <div class="drop-icon">📂</div>
+      <div class="drop-icon" data-icon="folderOpen"></div>
       <strong>Drop your backup here</strong>
       <p class="drop-hint">or <label for="file-input" class="inline-link">click to browse</label></p>
       <p class="drop-hint small">
@@ -550,17 +782,17 @@ span.star { cursor: default; }
       </p>
     </div>
     <!-- Shown instead of the drop zone when this page was served by the car (see probeCar). -->
-    <div class="dropzone reach" id="reach" style="display:none">
-      <div class="drop-icon">📡</div>
+    <div class="dropzone reach" id="reach" hidden>
+      <div class="drop-icon" data-icon="wifi"></div>
       <strong id="reach-title">Connecting to the car…</strong>
-      <div id="reach-detail" style="display:none">
+      <div id="reach-detail" hidden>
         <p class="drop-hint">The car didn't answer just now.</p>
         <p class="drop-hint small">
           Check that this device is online. Over Tailscale, check that Tailscale is connected here
           and that no DNS app or profile (NextDNS, an ad blocker) is overriding it. A car that has
           been parked for a while may also have switched its Wi-Fi off.
         </p>
-        <button class="load-btn" id="reach-retry" onclick="probeCar()">Try again</button>
+        <button class="btn" id="reach-retry" onclick="probeCar()">Try again</button>
         <p class="drop-hint small">or <label for="file-input" class="inline-link">open a backup file</label> instead</p>
       </div>
     </div>
@@ -568,118 +800,140 @@ span.star { cursor: default; }
 
   <!-- ── Trip list ─────────────────────────────────────────────── -->
   <section class="view" id="view-trips">
-    <div class="list-header">
-      <h2>Trips</h2>
-      <div id="trip-summary" class="summary-row"></div>
-    </div>
-    <div class="controls">
-      <div class="ctl-group">
-        <span class="lbl-inline">Sort</span>
-        <select id="trip-sort" onchange="tripSort.field=this.value; renderTripList()">
-          <option value="date">Date</option>
-          <option value="dist">Distance</option>
-          <option value="dur">Duration</option>
-          <option value="avgSpd">Avg Speed</option>
-          <option value="eff">Consumption</option>
-          <option value="energy">Energy</option>
-        </select>
-        <button class="ctl-btn icon-btn" id="trip-dir" onclick="toggleSortDir('trip')" title="Newest first — tap to reverse" aria-label="Sort direction">↓</button>
+    <div class="split">
+      <div class="split-main">
+        <div class="page-head">
+          <div><h1>Trips</h1><p class="page-sub" id="trip-sub"></p></div>
+          <div class="d-only" id="trip-period-seg"></div>
+        </div>
+        <div class="card period-card" id="trip-period"></div>
+        <div class="toolbar">
+          <div class="tool-group">
+            <span id="trip-favseg"></span>
+            <button class="btn icon-btn" id="trip-filter-btn" data-icon="filter" onclick="toggleFilterPanel('trip')"
+                    title="Filters" aria-label="Filters"><span class="ctl-badge" id="trip-filter-badge" hidden></span></button>
+          </div>
+          <div class="legend" id="trip-legend"></div>
+          <div class="sort-ctl m-only">
+            <label class="sort-sel" data-icon="updown">
+              <select id="trip-sort" aria-label="Sort by" onchange="sortBy('trip', this.value, true)">
+                <option value="date">Date</option>
+                <option value="dist">Distance</option>
+                <option value="dur">Duration</option>
+                <option value="avgSpd">Avg speed</option>
+                <option value="eff">Efficiency</option>
+                <option value="energy">Energy</option>
+              </select>
+            </label>
+            <span class="vsep"></span>
+            <button class="sort-dir" id="trip-dir" onclick="toggleSortDir('trip')" aria-label="Sort direction"></button>
+          </div>
+        </div>
+        <div class="card filter-panel" id="trip-filters" hidden>
+          <div class="filter-row"><span class="frl">Distance (km)</span>
+            <input type="number" inputmode="decimal" placeholder="min" oninput="setFilter('trip','distMin',this.value)">
+            <input type="number" inputmode="decimal" placeholder="max" oninput="setFilter('trip','distMax',this.value)"></div>
+          <div class="filter-row"><span class="frl">Duration (min)</span>
+            <input type="number" inputmode="decimal" placeholder="min" oninput="setFilter('trip','durMin',this.value)">
+            <input type="number" inputmode="decimal" placeholder="max" oninput="setFilter('trip','durMax',this.value)"></div>
+          <div class="filter-row"><span class="frl">Avg speed (km/h)</span>
+            <input type="number" inputmode="decimal" placeholder="min" oninput="setFilter('trip','spdMin',this.value)">
+            <input type="number" inputmode="decimal" placeholder="max" oninput="setFilter('trip','spdMax',this.value)"></div>
+          <div class="filter-row"><span class="frl">Efficiency (kWh/100km)</span>
+            <input type="number" inputmode="decimal" placeholder="min" oninput="setFilter('trip','effMin',this.value)">
+            <input type="number" inputmode="decimal" placeholder="max" oninput="setFilter('trip','effMax',this.value)"></div>
+          <button class="filter-clear" onclick="clearFilters('trip')">Clear filters</button>
+        </div>
+        <div class="list trips" id="trip-list"></div>
       </div>
-      <div class="ctl-group">
-        <button class="fav-filter icon-btn" onclick="toggleFavFilter()" title="Show favourites only" aria-label="Favourites">☆</button>
-        <button class="ctl-btn icon-btn" id="trip-filter-btn" onclick="toggleFilterPanel('trip')" title="Filters" aria-label="Filters">⚲<span class="ctl-badge" id="trip-filter-badge" style="display:none"></span></button>
-      </div>
+      <aside class="split-side"><div class="card panel" id="trip-side"></div></aside>
     </div>
-    <div class="filter-panel" id="trip-filters" style="display:none">
-      <div class="filter-row"><span class="frl">Distance (km)</span>
-        <input type="number" inputmode="decimal" placeholder="min" oninput="setTripFilter('distMin',this.value)">
-        <input type="number" inputmode="decimal" placeholder="max" oninput="setTripFilter('distMax',this.value)"></div>
-      <div class="filter-row"><span class="frl">Duration (min)</span>
-        <input type="number" inputmode="decimal" placeholder="min" oninput="setTripFilter('durMin',this.value)">
-        <input type="number" inputmode="decimal" placeholder="max" oninput="setTripFilter('durMax',this.value)"></div>
-      <div class="filter-row"><span class="frl">Avg Speed (km/h)</span>
-        <input type="number" inputmode="decimal" placeholder="min" oninput="setTripFilter('spdMin',this.value)">
-        <input type="number" inputmode="decimal" placeholder="max" oninput="setTripFilter('spdMax',this.value)"></div>
-      <div class="filter-row"><span class="frl">Consumption (kWh/100km)</span>
-        <input type="number" inputmode="decimal" placeholder="min" oninput="setTripFilter('effMin',this.value)">
-        <input type="number" inputmode="decimal" placeholder="max" oninput="setTripFilter('effMax',this.value)"></div>
-      <button class="filter-clear" onclick="clearFilters('trip')">Clear filters</button>
-    </div>
-    <div id="trip-cards" class="card-grid"></div>
   </section>
 
   <!-- ── Trip detail ───────────────────────────────────────────── -->
   <section class="view" id="view-trip">
-    <div class="detail-header">
-      <button class="back-btn" onclick="navigate('trips')">← Trips</button>
-      <span id="trip-detail-header"></span>
+    <div class="detail-head">
+      <button class="btn back-btn" data-icon="left" onclick="navigate('trips')" aria-label="Back to trips"><span>Trips</span></button>
+      <div class="grow"><h1 id="trip-detail-title"></h1><p id="trip-detail-sub"></p></div>
       <span id="trip-detail-fav"></span>
     </div>
-    <div id="trip-detail-stats" class="stats-row"></div>
+    <div class="detail-top">
+      <div class="card panel" id="trip-detail-card"></div>
+      <div id="trip-map" class="map-container"></div>
+    </div>
     <div id="trip-report" class="report-grid"></div>
-    <div id="trip-map" class="map-container"></div>
+    <div class="section-title">Charts</div>
     <div class="charts-grid">
-      <div class="chart-panel"><div class="chart-title">Speed Profile</div><div class="chart-wrap"><canvas id="chart-speed"></canvas></div></div>
+      <div class="chart-panel"><div class="chart-title">Speed profile</div><div class="chart-wrap"><canvas id="chart-speed"></canvas></div></div>
       <div class="chart-panel"><div class="chart-title">Motor RPM</div><div class="chart-wrap"><canvas id="chart-rpm"></canvas></div></div>
-      <div class="chart-panel"><div class="chart-title">Power Profile</div><div class="chart-wrap"><canvas id="chart-power"></canvas></div></div>
-      <div class="chart-panel"><div class="chart-title">Energy Consumed (kWh)</div><div class="chart-wrap"><canvas id="chart-energy"></canvas></div></div>
-      <div class="chart-panel"><div class="chart-title">State of Charge</div><div class="chart-wrap"><canvas id="chart-soc"></canvas></div></div>
-      <div class="chart-panel"><div class="chart-title" id="altitude-title">Elevation Profile</div><div class="chart-wrap"><canvas id="chart-altitude"></canvas></div></div>
-      <div class="chart-panel"><div class="chart-title">Battery Voltage</div><div class="chart-wrap"><canvas id="chart-voltage"></canvas></div></div>
-      <div class="chart-panel"><div class="chart-title">Tyre Pressures (PSI)</div><div class="chart-wrap"><canvas id="chart-tyre"></canvas></div></div>
-      <div class="chart-panel"><div class="chart-title">Instantaneous Consumption</div><div class="chart-wrap"><canvas id="chart-instant"></canvas></div></div>
+      <div class="chart-panel"><div class="chart-title">Power profile</div><div class="chart-wrap"><canvas id="chart-power"></canvas></div></div>
+      <div class="chart-panel"><div class="chart-title">Energy consumed (kWh)</div><div class="chart-wrap"><canvas id="chart-energy"></canvas></div></div>
+      <div class="chart-panel"><div class="chart-title">State of charge</div><div class="chart-wrap"><canvas id="chart-soc"></canvas></div></div>
+      <div class="chart-panel"><div class="chart-title" id="altitude-title">Elevation profile</div><div class="chart-wrap"><canvas id="chart-altitude"></canvas></div></div>
+      <div class="chart-panel"><div class="chart-title">Battery voltage</div><div class="chart-wrap"><canvas id="chart-voltage"></canvas></div></div>
+      <div class="chart-panel"><div class="chart-title">Tyre pressures (PSI)</div><div class="chart-wrap"><canvas id="chart-tyre"></canvas></div></div>
+      <div class="chart-panel"><div class="chart-title">Instantaneous consumption</div><div class="chart-wrap"><canvas id="chart-instant"></canvas></div></div>
     </div>
   </section>
 
   <!-- ── Charging list ─────────────────────────────────────────── -->
   <section class="view" id="view-charges">
-    <div class="list-header">
-      <h2>Charging Sessions</h2>
-      <div id="charge-summary" class="summary-row"></div>
-    </div>
-    <div class="controls">
-      <div class="ctl-group">
-        <span class="lbl-inline">Sort</span>
-        <select id="charge-sort" onchange="chargeSort.field=this.value; renderChargeList()">
-          <option value="date">Date</option>
-          <option value="dur">Duration</option>
-          <option value="kwh">kWh Added</option>
-          <option value="peak">Peak kW</option>
-          <option value="avg">Avg kW</option>
-        </select>
-        <button class="ctl-btn icon-btn" id="charge-dir" onclick="toggleSortDir('charge')" title="Newest first — tap to reverse" aria-label="Sort direction">↓</button>
+    <div class="split">
+      <div class="split-main">
+        <div class="page-head">
+          <div><h1>Charging</h1><p class="page-sub" id="charge-sub"></p></div>
+          <div class="d-only" id="charge-period-seg"></div>
+        </div>
+        <div class="card period-card" id="charge-period"></div>
+        <div class="toolbar">
+          <div class="tool-group">
+            <span id="charge-favseg"></span>
+            <button class="btn icon-btn" id="charge-filter-btn" data-icon="filter" onclick="toggleFilterPanel('charge')"
+                    title="Filters" aria-label="Filters"><span class="ctl-badge" id="charge-filter-badge" hidden></span></button>
+          </div>
+          <div class="sort-ctl m-only">
+            <label class="sort-sel" data-icon="updown">
+              <select id="charge-sort" aria-label="Sort by" onchange="sortBy('charge', this.value, true)">
+                <option value="date">Date</option>
+                <option value="dur">Duration</option>
+                <option value="kwh">kWh added</option>
+                <option value="peak">Peak kW</option>
+                <option value="avg">Avg kW</option>
+              </select>
+            </label>
+            <span class="vsep"></span>
+            <button class="sort-dir" id="charge-dir" onclick="toggleSortDir('charge')" aria-label="Sort direction"></button>
+          </div>
+        </div>
+        <div class="card filter-panel" id="charge-filters" hidden>
+          <div class="filter-row"><span class="frl">kWh added</span>
+            <input type="number" inputmode="decimal" placeholder="min" oninput="setFilter('charge','kwhMin',this.value)">
+            <input type="number" inputmode="decimal" placeholder="max" oninput="setFilter('charge','kwhMax',this.value)"></div>
+          <div class="filter-row"><span class="frl">Peak kW</span>
+            <input type="number" inputmode="decimal" placeholder="min" oninput="setFilter('charge','peakMin',this.value)">
+            <input type="number" inputmode="decimal" placeholder="max" oninput="setFilter('charge','peakMax',this.value)"></div>
+          <div class="filter-row"><span class="frl">Duration (min)</span>
+            <input type="number" inputmode="decimal" placeholder="min" oninput="setFilter('charge','durMin',this.value)">
+            <input type="number" inputmode="decimal" placeholder="max" oninput="setFilter('charge','durMax',this.value)"></div>
+          <button class="filter-clear" onclick="clearFilters('charge')">Clear filters</button>
+        </div>
+        <div class="list charges" id="charge-list"></div>
       </div>
-      <div class="ctl-group">
-        <button class="fav-filter icon-btn" onclick="toggleFavFilter()" title="Show favourites only" aria-label="Favourites">☆</button>
-        <button class="ctl-btn icon-btn" id="charge-filter-btn" onclick="toggleFilterPanel('charge')" title="Filters" aria-label="Filters">⚲<span class="ctl-badge" id="charge-filter-badge" style="display:none"></span></button>
-      </div>
+      <aside class="split-side"><div class="card panel" id="charge-side"></div></aside>
     </div>
-    <div class="filter-panel" id="charge-filters" style="display:none">
-      <div class="filter-row"><span class="frl">kWh added</span>
-        <input type="number" inputmode="decimal" placeholder="min" oninput="setChargeFilter('kwhMin',this.value)">
-        <input type="number" inputmode="decimal" placeholder="max" oninput="setChargeFilter('kwhMax',this.value)"></div>
-      <div class="filter-row"><span class="frl">Peak kW</span>
-        <input type="number" inputmode="decimal" placeholder="min" oninput="setChargeFilter('peakMin',this.value)">
-        <input type="number" inputmode="decimal" placeholder="max" oninput="setChargeFilter('peakMax',this.value)"></div>
-      <div class="filter-row"><span class="frl">Duration (min)</span>
-        <input type="number" inputmode="decimal" placeholder="min" oninput="setChargeFilter('durMin',this.value)">
-        <input type="number" inputmode="decimal" placeholder="max" oninput="setChargeFilter('durMax',this.value)"></div>
-      <button class="filter-clear" onclick="clearFilters('charge')">Clear filters</button>
-    </div>
-    <div id="charge-cards" class="card-grid"></div>
   </section>
 
   <!-- ── Charging detail ───────────────────────────────────────── -->
   <section class="view" id="view-charge">
-    <div class="detail-header">
-      <button class="back-btn" onclick="navigate('charges')">← Charging</button>
-      <span id="charge-detail-header"></span>
+    <div class="detail-head">
+      <button class="btn back-btn" data-icon="left" onclick="navigate('charges')" aria-label="Back to charging"><span>Charging</span></button>
+      <div class="grow"><h1 id="charge-detail-title"></h1><p id="charge-detail-sub"></p></div>
       <span id="charge-detail-fav"></span>
     </div>
-    <div id="charge-detail-stats" class="stats-row"></div>
-    <div class="charts-grid">
-      <div class="chart-panel full-width">
-        <div class="chart-title">Charging Power &amp; SoC</div>
+    <div class="detail-top">
+      <div class="card panel" id="charge-detail-card"></div>
+      <div class="chart-panel">
+        <div class="chart-title">Charging power &amp; SoC</div>
         <div class="chart-wrap tall"><canvas id="chart-charge"></canvas></div>
       </div>
     </div>
@@ -687,15 +941,14 @@ span.star { cursor: default; }
 
   <!-- ── Files (live mode only) ────────────────────────────────────── -->
   <section class="view" id="view-files">
-    <div class="list-header">
-      <h2>Files</h2>
-      <div class="summary-row"><span id="file-summary"></span></div>
+    <div class="page-head">
+      <div><h1>Files</h1><p class="page-sub" id="file-summary"></p></div>
     </div>
     <div class="file-crumbs" id="file-crumbs"></div>
     <div class="file-path" id="file-location"></div>
     <p class="file-readonly" id="file-readonly" hidden></p>
-    <div class="upload-row" id="file-upload-row" style="display:none">
-      <label class="load-btn" title="Copy a file from this device to the car">
+    <div class="upload-row" id="file-upload-row" hidden>
+      <label class="btn" data-icon="upload" title="Copy a file from this device to the car">
         Upload file
         <input id="file-upload-input" type="file" onchange="uploadFile(this)" />
       </label>
@@ -710,8 +963,8 @@ span.star { cursor: default; }
      the room, and a dropdown under the header wouldn't give it any. -->
 <div class="viewer" id="battery-view" hidden>
   <div class="viewer-bar">
-    <button class="viewer-close" onclick="closeBattery()">← Back</button>
-    <span class="viewer-name">HV / 12V Batteries — last 48 hours</span>
+    <button class="btn" data-icon="left" onclick="closeBattery()">Back</button>
+    <span class="viewer-name">HV / 12V batteries — last 48 hours</span>
   </div>
   <div class="battery-body">
     <div class="battery-chips" id="battery-chips"></div>
@@ -723,10 +976,10 @@ span.star { cursor: default; }
 <!-- Text-file viewer. Lives outside <main> because it covers the whole page. -->
 <div class="viewer" id="viewer" hidden>
   <div class="viewer-bar">
-    <button class="viewer-close" onclick="closeViewer()">← Back</button>
+    <button class="btn" data-icon="left" onclick="closeViewer()">Back</button>
     <span class="viewer-name" id="viewer-name"></span>
-    <button class="viewer-close viewer-copy" id="viewer-copy" onclick="copyViewer()"
-            title="Copy what's shown to the clipboard">⧉ Copy</button>
+    <button class="btn viewer-copy" id="viewer-copy" onclick="copyViewer()"
+            title="Copy what's shown to the clipboard"></button>
   </div>
   <div class="viewer-scroll" id="viewer-scroll">
     <pre id="viewer-body"></pre>
@@ -737,6 +990,53 @@ span.star { cursor: default; }
 <script>
 'use strict';
 
+// ── Icons ──────────────────────────────────────────────────────────────────────
+// Line icons drawn on a 24-unit grid. Most paths are Lucide's (ISC licence, see
+// THIRD_PARTY_NOTICES.md); inline so the page needs no icon font or extra request.
+const ICONS = {
+  route:  '<circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/>',
+  zap:    '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+  folder: '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+  folderOpen: '<path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/>',
+  bell:   '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+  db:     '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/>',
+  star:   '<path d="M12 2.5l2.94 5.96 6.58.96-4.76 4.64 1.12 6.55L12 17.52l-5.88 3.09 1.12-6.55L2.48 9.42l6.58-.96z"/>',
+  down:   '<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>',
+  up:     '<path d="M12 19V5"/><path d="m5 12 7-7 7 7"/>',
+  updown: '<path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/>',
+  filter: '<path d="M22 3H2l8 9.46V19l4 2v-8.54z"/>',
+  left:   '<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>',
+  right:  '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+  chevUp: '<path d="m18 15-6-6-6 6"/>',
+  x:      '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>',
+  upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/>',
+  eye:    '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+  trash:  '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  file:   '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>',
+  image:  '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"/>',
+  copy:   '<rect x="8" y="8" width="14" height="14" rx="2"/><path d="M4 16a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"/>',
+  check:  '<path d="M20 6 9 17l-5-5"/>',
+  wifi:   '<path d="M12 20h.01"/><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.86a10 10 0 0 1 14 0"/><path d="M8.5 16.43a5 5 0 0 1 7 0"/>',
+};
+function icon(name, cls = '') {
+  return `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ''}</svg>`;
+}
+// Static markup names its icon in data-icon; it is drawn in once, at start-up.
+document.querySelectorAll('[data-icon]').forEach(el => el.insertAdjacentHTML('afterbegin', icon(el.dataset.icon)));
+
+/** The header's battery glyph, filled to the level it shows. */
+function battIcon(pct) {
+  const w = (Math.max(0, Math.min(100, pct)) / 100 * 17).toFixed(1);
+  const fill = pct <= 20 ? 'var(--warn)' : 'var(--good)';
+  return `<svg class="batt-ico" viewBox="0 0 26 14" aria-hidden="true">
+    <rect x="0.75" y="0.75" width="21.5" height="12.5" rx="3" style="fill:none;stroke:currentColor;stroke-width:1.5"/>
+    <rect x="23.4" y="4.5" width="2.1" height="5" rx="1" style="fill:currentColor"/>
+    <rect x="2.75" y="2.75" width="${w}" height="8.5" rx="1.5" style="fill:${fill}"/></svg>`;
+}
+
+const $ = id => document.getElementById(id);
+
 // ── State ──────────────────────────────────────────────────────────────────────
 let db = null;
 let SQL = null;
@@ -744,8 +1044,7 @@ const charts = {};
 let leafletMap = null;
 const schema = {};       // table -> Set<columnName>
 let liveMode = false;    // true when served by the car's embedded HTTP server
-let favOnly = false;     // favourites-only list filter
-let currentListView = 'trips';  // which list ('trips'|'charges') is currently shown
+let currentView = 'drop';
 
 // Detect which columns actually exist — handles DBs from any schema version.
 function loadSchema() {
@@ -798,12 +1097,11 @@ let probing = false;
 
 function setReachState(state) {
   reachState = state;
-  document.getElementById('dropzone').style.display = state === 'drop' ? '' : 'none';
-  document.getElementById('reach').style.display    = state === 'drop' ? 'none' : '';
-  document.getElementById('reach-title').textContent =
-    state === 'unreachable' ? "Can't reach the car" : 'Connecting to the car…';
-  document.getElementById('reach-detail').style.display = state === 'unreachable' ? '' : 'none';
-  const retry = document.getElementById('reach-retry');
+  $('dropzone').hidden = state !== 'drop';
+  $('reach').hidden    = state === 'drop';
+  $('reach-title').textContent = state === 'unreachable' ? "Can't reach the car" : 'Connecting to the car…';
+  $('reach-detail').hidden = state !== 'unreachable';
+  const retry = $('reach-retry');
   retry.disabled = false;
   retry.textContent = 'Try again';
 }
@@ -812,22 +1110,29 @@ function goToLogin() {
   location.replace('/login');
 }
 
+/** Shows the tabs, and the controls that only make sense with the car behind the page. */
+function setChrome() {
+  $('nav').hidden = false;
+  $('tabbar').hidden = false;
+  document.querySelectorAll('.live-only').forEach(el => { el.hidden = !liveMode; });
+}
+
 function enterLiveMode() {
   liveMode = true;
   setReachState('drop');
-  document.getElementById('nav').style.display = 'flex';
-  document.getElementById('nav-files').style.display = '';
-  document.getElementById('battery-btn').style.display = '';
-  document.getElementById('bell-wrap').style.display = 'block';
+  setChrome();
   startNotifications();
-  showView('trips');
+  // Both lists feed the header's battery chip, whichever tab opens first.
+  fetchTrips().catch(() => {});
+  fetchCharges().catch(() => {});
+  parseHash();
 }
 
 async function probeCar() {
   if (liveMode || db || probing || location.protocol === 'file:') return;
   probing = true;
   if (reachState === 'unreachable') {
-    const retry = document.getElementById('reach-retry');
+    const retry = $('reach-retry');
     retry.disabled = true;
     retry.textContent = 'Connecting…';
   } else if (servedByCar) {
@@ -852,6 +1157,7 @@ async function probeCar() {
 // would otherwise stand until the app is swiped away. Coming back to the page asks again: a car
 // that was out of reach gets another try, and a live page whose login the car no longer knows
 // (logged out elsewhere, PIN changed) goes to the PIN screen instead of failing call by call.
+// A live list that is on screen is refreshed too, so trips finished meanwhile show up.
 async function onResume() {
   if (db) return;   // a backup loaded by hand — nothing to do with the car
   if (!liveMode) {
@@ -860,15 +1166,15 @@ async function onResume() {
   }
   try {
     const r = await fetch('/api/status', { cache: 'no-store' });
-    if (r.status === 401) goToLogin();
+    if (r.status === 401) { goToLogin(); return; }
+    if (currentView === 'trips')   refreshList('trip');
+    if (currentView === 'charges') refreshList('charge');
   } catch (_) { /* out of reach for a moment — the next call says so */ }
 }
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') onResume();
 });
 window.addEventListener('pageshow', e => { if (e.persisted) onResume(); });
-
-probeCar();
 
 // ── Notifications ──────────────────────────────────────────────────────────────
 // The car records what it does — a trip finished, a charge finished, a battery alert —
@@ -881,7 +1187,7 @@ probeCar();
 // served securely — a tunnel, or the GitHub Pages copy pointed at the car — a real system
 // notification is raised too, which is strictly extra rather than something to rely on.
 let notifications   = [];
-let notifSeenTs     = +(localStorage.getItem('notifSeenTs') || 0);
+let notifSeenTs     = +(lsGet('notifSeenTs') || 0);
 let notifPollTimer  = null;
 let notifKnownKeys  = new Set();
 
@@ -889,13 +1195,19 @@ function startNotifications() {
   loadNotifications(true);
   clearInterval(notifPollTimer);
   notifPollTimer = setInterval(() => loadNotifications(false), 60000);
-  document.addEventListener('click', e => {
-    const wrap = document.getElementById('bell-wrap');
-    if (wrap && !wrap.contains(e.target)) document.getElementById('notif-panel').style.display = 'none';
-  });
 }
+function stopNotifications() {
+  clearInterval(notifPollTimer);
+  notifPollTimer = null;
+  $('notif-panel').hidden = true;
+}
+document.addEventListener('click', e => {
+  const wrap = $('bell-wrap');
+  if (wrap && !wrap.contains(e.target)) $('notif-panel').hidden = true;
+});
 
 async function loadNotifications(first) {
+  if (!liveMode) return;
   try {
     const list = await fetchJson('/api/notifications');
     const fresh = list.filter(n => !notifKnownKeys.has(n.key));
@@ -909,13 +1221,13 @@ async function loadNotifications(first) {
 
 function renderNotifications() {
   const unseen = notifications.filter(n => n.timestamp > notifSeenTs).length;
-  const badge  = document.getElementById('bell-badge');
-  badge.textContent   = unseen > 9 ? '9+' : String(unseen);
-  badge.style.display = unseen ? 'block' : 'none';
+  const badge  = $('bell-badge');
+  badge.textContent = unseen > 9 ? '9+' : String(unseen);
+  badge.hidden = !unseen;
 
-  document.getElementById('notif-clear').disabled = !notifications.length;
+  $('notif-clear').disabled = !notifications.length;
 
-  const list = document.getElementById('notif-list');
+  const list = $('notif-list');
   if (!notifications.length) {
     list.innerHTML = '<div class="notif-empty">Nothing yet. Finished trips, charges and battery alerts show up here.</div>';
     return;
@@ -923,7 +1235,7 @@ function renderNotifications() {
   list.innerHTML = notifications.map(n => `
     <div class="notif-item${n.timestamp > notifSeenTs ? ' unseen' : ''}">
       <button class="notif-del" title="Delete" aria-label="Delete notification"
-              data-key="${esc(n.key)}" onclick="deleteNotification(event, this.dataset.key)">✕</button>
+              data-key="${esc(n.key)}" onclick="deleteNotification(event, this.dataset.key)">${icon('x')}</button>
       <div class="notif-title">${esc(n.title)}</div>
       <div class="notif-body">${esc(n.body)}</div>
       <div class="notif-time">${fmtDate(n.timestamp)}</div>
@@ -931,10 +1243,9 @@ function renderNotifications() {
 }
 
 function toggleNotifications() {
-  const panel = document.getElementById('notif-panel');
-  const open  = panel.style.display !== 'block';
-  panel.style.display = open ? 'block' : 'none';
-  if (open) {
+  const panel = $('notif-panel');
+  panel.hidden = !panel.hidden;
+  if (!panel.hidden) {
     loadNotifications(false);
     requestSystemNotifications();
   }
@@ -942,7 +1253,7 @@ function toggleNotifications() {
 
 function markNotificationsSeen() {
   notifSeenTs = Date.now();
-  localStorage.setItem('notifSeenTs', String(notifSeenTs));
+  lsSet('notifSeenTs', String(notifSeenTs));
   renderNotifications();
 }
 
@@ -950,7 +1261,7 @@ function markNotificationsSeen() {
 // that opens the companion reads the same one, so hiding an entry locally would bring it back on
 // the next device or after the site data is cleared. The page shows the change at once and
 // resyncs from the car if the car didn't confirm it.
-async function postNotificationAction(url) {
+async function postAction(url) {
   const r = await fetch(url, { method: 'POST' });
   if (r.status === 401 && liveMode) {
     goToLogin();
@@ -966,7 +1277,7 @@ async function deleteNotification(ev, key) {
   notifications = notifications.filter(n => n.key !== key);
   renderNotifications();
   try {
-    await postNotificationAction('/api/notifications/delete?key=' + encodeURIComponent(key));
+    await postAction('/api/notifications/delete?key=' + encodeURIComponent(key));
   } catch (e) { console.error('deleteNotification:', e); loadNotifications(false); }
 }
 
@@ -978,7 +1289,7 @@ async function clearNotifications() {
   notifications = [];
   renderNotifications();
   try {
-    await postNotificationAction('/api/notifications/clear');
+    await postAction('/api/notifications/clear');
   } catch (e) { console.error('clearNotifications:', e); loadNotifications(false); }
 }
 
@@ -993,6 +1304,43 @@ function raiseSystemNotification(n) {
   if (Notification.permission !== 'granted') return;
   try { new Notification(n.title, { body: n.body, tag: n.key }); } catch (_) {}
 }
+
+// ── Small helpers ──────────────────────────────────────────────────────────────
+// Browser storage only remembers per-viewer conveniences (period, sort); it can be missing or
+// throw (private windows, blocked site data), and the page works the same without it.
+function lsGet(k) { try { return localStorage.getItem(k); } catch (_) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (_) {} }
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+async function fetchJson(url) {
+  const r = await fetch(url, { cache: 'no-store' });
+  if (r.status === 401 && liveMode) {
+    goToLogin();
+    throw new Error('Logged out — opening the PIN screen');
+  }
+  if (!r.ok) throw new Error(`Server returned ${r.status} for ${url}`);
+  return r.json();
+}
+
+function fmtBytes(n) {
+  if (!n) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let i = 0, v = n;
+  while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
+  return `${v < 10 && i > 0 ? v.toFixed(1) : Math.round(v)} ${units[i]}`;
+}
+
+// ── DB helpers ─────────────────────────────────────────────────────────────────
+function rows(sql, params = []) {
+  const res = db.exec(sql, params);
+  if (!res.length) return [];
+  const { columns, values } = res[0];
+  return values.map(row => Object.fromEntries(columns.map((c, i) => [c, row[i]])));
+}
+function one(sql, params = []) { return rows(sql, params)[0] ?? null; }
 
 // ── Files (live mode only) ─────────────────────────────────────────────────────
 // A small browser over the folders the car is willing to show — app files, backups on
@@ -1015,43 +1363,43 @@ function rootReadOnlyNote(root) {
 }
 
 async function loadFiles(path = '') {
-  const listEl = document.getElementById('file-list');
+  const listEl = $('file-list');
   listEl.innerHTML = '<div class="empty">Loading…</div>';
   setUploadStatus('');
   try {
     fileState = await fetchJson('/api/files?p=' + encodeURIComponent(path));
     renderFiles();
   } catch (err) {
-    listEl.innerHTML = `<div class="empty">Could not read the car's files — ${esc(err.message)}</div>`;
+    listEl.innerHTML = `<div class="empty error">Could not read the car's files — ${esc(err.message)}</div>`;
   }
 }
 
 function renderFiles() {
   const atRoot = !fileState.path;
-  const crumbs = document.getElementById('file-crumbs');
-  const listEl = document.getElementById('file-list');
+  const crumbs = $('file-crumbs');
+  const listEl = $('file-list');
 
   crumbs.innerHTML = atRoot
     ? '<span>Choose a folder</span>'
     : `<button onclick="navigate('files','')">All folders</button><span>›</span>` +
       `<span>${esc(fileState.path.split('/').join(' › '))}</span>` +
       (fileState.parent
-        ? ` <button onclick="navigate('files','${encodeURIComponent(fileState.parent)}')">↑ Up</button>` : '');
+        ? ` <button class="btn btn-sm" onclick="navigate('files','${encodeURIComponent(fileState.parent)}')">${icon('chevUp')}Up</button>` : '');
 
-  document.getElementById('file-location').textContent = atRoot ? '' : (fileState.location || '');
-  document.getElementById('file-upload-row').style.display = (!atRoot && fileState.writable) ? 'flex' : 'none';
+  $('file-location').textContent = atRoot ? '' : (fileState.location || '');
+  $('file-upload-row').hidden = atRoot || !fileState.writable;
   // A folder the car can't write to says why, rather than silently losing Upload and Delete.
-  const blocked = document.getElementById('file-readonly');
+  const blocked = $('file-readonly');
   blocked.textContent = (!atRoot && fileState.writeBlocked)
     ? 'This folder is read-only: the app needs the Storage permission on the car. Grant it in Android Settings → Apps → BYD Trip Stats → Permissions, or re-run the ADB setup in Settings → App Management.'
     : '';
   blocked.hidden = !blocked.textContent;
 
   if (atRoot) {
-    document.getElementById('file-summary').textContent = '';
+    $('file-summary').textContent = 'Backups, exports and the diagnostics log on the car';
     listEl.innerHTML = (fileState.roots || []).map(r => `
       <div class="file-row">
-        <div class="file-icon">📁</div>
+        <div class="file-icon dir">${icon('folder')}</div>
         <div class="file-main">
           <div class="file-name link" onclick="navigate('files','${encodeURIComponent(r.id)}')">${esc(r.label)}</div>
           <div class="file-meta">${esc(r.hint)}${rootReadOnlyNote(r)}</div>
@@ -1062,7 +1410,7 @@ function renderFiles() {
 
   const entries = fileState.entries || [];
   const files = entries.filter(e => !e.dir);
-  document.getElementById('file-summary').innerHTML =
+  $('file-summary').innerHTML =
     `<strong>${files.length}</strong> file${files.length === 1 ? '' : 's'}` +
     (files.length ? ` · <strong>${fmtBytes(files.reduce((a, e) => a + e.size, 0))}</strong>` : '');
 
@@ -1074,13 +1422,13 @@ function renderFiles() {
     const meta = e.dir ? 'Folder' : `${fmtBytes(e.size)} · ${fmtDate(e.modified)}`;
     const actions = e.dir ? '' : `
       <div class="file-actions">
-        ${e.viewable ? `<button onclick="viewFile('${p}')">View</button>` : ''}
-        <a href="/files/download?p=${p}">Download</a>
-        ${fileState.writable ? `<button class="danger" onclick="deleteFile('${p}')">Delete</button>` : ''}
+        ${e.viewable ? `<button class="btn btn-sm" onclick="viewFile('${p}')">${icon('eye')}View</button>` : ''}
+        <a class="btn btn-sm" href="/files/download?p=${p}">${icon('download')}Download</a>
+        ${fileState.writable ? `<button class="btn btn-sm danger" onclick="deleteFile('${p}')">${icon('trash')}Delete</button>` : ''}
       </div>`;
-    const icon = e.dir ? '📁' : (e.viewKind === 'image' ? '🖼️' : '📄');
+    const ic = e.dir ? icon('folder') : icon(e.viewKind === 'image' ? 'image' : 'file');
     return `<div class="file-row">
-      <div class="file-icon">${icon}</div>
+      <div class="file-icon${e.dir ? ' dir' : ''}">${ic}</div>
       <div class="file-main">${name}<div class="file-meta">${esc(meta)}</div></div>
       ${actions}
     </div>`;
@@ -1107,34 +1455,61 @@ async function uploadFile(input) {
   }
 }
 
+// The path comes back through the DOM already encoded, so the name is looked up from the loaded
+// listing rather than passed through the onclick attribute — no quoting to get wrong.
+async function deleteFile(encodedPath) {
+  const path  = decodeURIComponent(encodedPath);
+  const entry = (fileState.entries || []).find(e => e.path === path);
+  const name  = entry ? entry.name : path;
+  if (!confirm(`Delete ${name}?\n\nThis cannot be undone.`)) return;
+
+  setUploadStatus(`Deleting ${name}…`);
+  try {
+    const r   = await fetch('/api/files/delete?p=' + encodedPath, { method: 'POST' });
+    const res = await r.json().catch(() => ({}));
+    if (!r.ok || !res.ok) throw new Error(res.error || `Server returned ${r.status}`);
+    await loadFiles(fileState.path);
+    setUploadStatus(`Deleted ${name}`, 'ok');
+  } catch (err) {
+    setUploadStatus(err.message, 'error');
+  }
+}
+
+function setUploadStatus(text, kind = '') {
+  const el = $('file-upload-status');
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'upload-status' + (kind ? ' ' + kind : '');
+}
+
 // ── 12V / HV history (live mode only) ──────────────────────────────────────────
 // The same 48-hour window the app's HV / 12V card opens, plotting the same two series against
 // each other: 12V on the left axis, SoC on the right, with charging samples shaded. SoC is
 // resolved server-side against the Panel/BMS preference so the two screens agree.
 async function openBattery() {
-  document.getElementById('battery-view').hidden = false;
+  if (!liveMode) return;
+  $('battery-view').hidden = false;
   document.body.style.overflow = 'hidden';
-  document.getElementById('battery-note').textContent = 'Loading…';
+  $('battery-note').textContent = 'Loading…';
   try {
     renderBattery(await fetchJson('/api/battery'));
   } catch (err) {
-    document.getElementById('battery-chips').innerHTML = '';
+    $('battery-chips').innerHTML = '';
     destroyChart('chart-battery');
-    document.getElementById('battery-note').textContent =
-      `Could not read the battery history — ${err.message}`;
+    $('battery-note').textContent = `Could not read the battery history — ${err.message}`;
   }
 }
 
 function closeBattery() {
-  document.getElementById('battery-view').hidden = true;
+  $('battery-view').hidden = true;
   document.body.style.overflow = '';
   destroyChart('chart-battery');
 }
 
 function renderBattery(data) {
   const pts   = data.points || [];
-  const chips = document.getElementById('battery-chips');
-  const note  = document.getElementById('battery-note');
+  const chips = $('battery-chips');
+  const note  = $('battery-note');
 
   if (!pts.length) {
     chips.innerHTML = '';
@@ -1165,7 +1540,7 @@ function renderBattery(data) {
   const socLabel = 'SoC (%) — ' + (data.socSource === 'PANEL' ? 'panel' : 'BMS');
 
   note.textContent =
-    `${shown.length.toLocaleString()} samples over the last 48 hours. ` +
+    `${shown.length.toLocaleString(LOCALE)} samples over the last 48 hours. ` +
     `Gaps are stretches where the app wasn't running, so nothing was recorded.`;
 
   mkChart('chart-battery', {
@@ -1211,19 +1586,20 @@ async function viewFile(encodedPath) {
   const name  = entry ? entry.name : path;
   const isImage = entry && entry.viewKind === 'image';
 
-  const body = document.getElementById('viewer-body');
-  const img  = document.getElementById('viewer-image');
-  document.getElementById('viewer-name').textContent = name;
-  document.getElementById('viewer').hidden = false;
+  const body = $('viewer-body');
+  const img  = $('viewer-image');
+  $('viewer-name').textContent = name;
+  $('viewer').hidden = false;
   // Copying a screenshot as text would produce nothing worth pasting.
-  document.getElementById('viewer-copy').hidden = isImage;
+  $('viewer-copy').hidden = isImage;
+  resetCopyButton();
   document.body.style.overflow = 'hidden';
 
   if (isImage) {
     body.hidden = true;
     img.hidden = false;
     img.src = '/files/view?p=' + encodedPath;
-    document.getElementById('viewer-scroll').scrollTop = 0;
+    $('viewer-scroll').scrollTop = 0;
     return;
   }
 
@@ -1235,28 +1611,31 @@ async function viewFile(encodedPath) {
     const r = await fetch('/files/view?p=' + encodedPath);
     if (!r.ok) throw new Error(`Server returned ${r.status}`);
     body.textContent = await r.text();
-    document.getElementById('viewer-scroll').scrollTop = 0;
+    $('viewer-scroll').scrollTop = 0;
   } catch (err) {
     body.textContent = `Could not read the file — ${err.message}`;
   }
 }
 
 function closeViewer() {
-  document.getElementById('viewer').hidden = true;
-  document.getElementById('viewer-image').removeAttribute('src');
+  $('viewer').hidden = true;
+  $('viewer-image').removeAttribute('src');
   document.body.style.overflow = '';
 }
 
+function resetCopyButton() {
+  const btn = $('viewer-copy');
+  btn.innerHTML = icon('copy') + 'Copy';
+  btn.classList.remove('done', 'failed');
+}
+
 async function copyViewer() {
-  const btn = document.getElementById('viewer-copy');
-  const ok  = await copyText(document.getElementById('viewer-body').textContent);
-  btn.textContent = ok ? '✓ Copied' : '✕ Copy failed';
+  const btn = $('viewer-copy');
+  const ok  = await copyText($('viewer-body').textContent);
+  btn.innerHTML = ok ? icon('check') + 'Copied' : icon('x') + 'Copy failed';
   btn.classList.toggle('done', ok);
   btn.classList.toggle('failed', !ok);
-  setTimeout(() => {
-    btn.textContent = '⧉ Copy';
-    btn.classList.remove('done', 'failed');
-  }, 1800);
+  setTimeout(resetCopyButton, 1800);
 }
 
 /**
@@ -1299,74 +1678,10 @@ document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
   closeViewer();
   closeBattery();
+  $('notif-panel').hidden = true;
 });
 // Navigating away must not leave an overlay covering the page it lands on.
 window.addEventListener('hashchange', () => { closeViewer(); closeBattery(); });
-
-// The path comes back through the DOM already encoded, so the name is looked up from the loaded
-// listing rather than passed through the onclick attribute — no quoting to get wrong.
-async function deleteFile(encodedPath) {
-  const path  = decodeURIComponent(encodedPath);
-  const entry = (fileState.entries || []).find(e => e.path === path);
-  const name  = entry ? entry.name : path;
-  if (!confirm(`Delete ${name}?\n\nThis cannot be undone.`)) return;
-
-  setUploadStatus(`Deleting ${name}…`);
-  try {
-    const r   = await fetch('/api/files/delete?p=' + encodedPath, { method: 'POST' });
-    const res = await r.json().catch(() => ({}));
-    if (!r.ok || !res.ok) throw new Error(res.error || `Server returned ${r.status}`);
-    await loadFiles(fileState.path);
-    setUploadStatus(`Deleted ${name}`, 'ok');
-  } catch (err) {
-    setUploadStatus(err.message, 'error');
-  }
-}
-
-function setUploadStatus(text, kind = '') {
-  const el = document.getElementById('file-upload-status');
-  if (!el) return;
-  el.textContent = text;
-  el.className = 'upload-status' + (kind ? ' ' + kind : '');
-}
-
-/** "471 trips · 10,124 km · 1,954 kWh" — one line, dot-separated, values emphasised. */
-function summaryLine(parts) {
-  return parts
-    .map(([value, label]) => `<span><strong>${esc(value)}</strong> ${esc(label)}</span>`)
-    .join('<span class="sep">·</span>');
-}
-
-function fmtBytes(n) {
-  if (!n) return '0 B';
-  const units = ['B', 'KB', 'MB', 'GB'];
-  let i = 0, v = n;
-  while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
-  return `${v < 10 && i > 0 ? v.toFixed(1) : Math.round(v)} ${units[i]}`;
-}
-
-function esc(s) {
-  return String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-}
-
-async function fetchJson(url) {
-  const r = await fetch(url);
-  if (r.status === 401 && liveMode) {
-    goToLogin();
-    throw new Error('Logged out — opening the PIN screen');
-  }
-  if (!r.ok) throw new Error(`Server returned ${r.status} for ${url}`);
-  return r.json();
-}
-
-// ── DB helpers ─────────────────────────────────────────────────────────────────
-function rows(sql, params = []) {
-  const res = db.exec(sql, params);
-  if (!res.length) return [];
-  const { columns, values } = res[0];
-  return values.map(row => Object.fromEntries(columns.map((c, i) => [c, row[i]])));
-}
-function one(sql, params = []) { return rows(sql, params)[0] ?? null; }
 
 // ── File handling ──────────────────────────────────────────────────────────────
 // Backups are gzip-compressed (.db.gz) since 2.17; older ones are plain .db. Tell them
@@ -1380,6 +1695,12 @@ async function readBackup(file) {
   const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
   return new Uint8Array(await new Response(stream).arrayBuffer());
 }
+
+/**
+ * Opens a backup file. With the car behind the page this switches the page over to the backup:
+ * every list used to keep reading the car's API, so loading a file there changed nothing. The
+ * car's notifications, files and battery history leave with it; reloading the page goes back.
+ */
 async function loadFile(file) {
   const name = file?.name.toLowerCase() ?? '';
   if (!name.endsWith('.db') && !name.endsWith('.db.gz')) {
@@ -1390,11 +1711,20 @@ async function loadFile(file) {
   try {
     await ensureSql();
     showLoading('Reading database…');
-    db = new SQL.Database(await readBackup(file));
+    const next = new SQL.Database(await readBackup(file));
+    const prev = db;
+    db = next;
     const tables = rows("SELECT name FROM sqlite_master WHERE type='table'").map(r => r.name);
-    if (!tables.includes('trips')) throw new Error('Not a BYD Trip Stats database.');
+    if (!tables.includes('trips')) { db = prev; throw new Error('Not a BYD Trip Stats database.'); }
+    if (prev) prev.close();
     loadSchema();
-    document.getElementById('nav').style.display = 'flex';
+    if (liveMode) { liveMode = false; stopNotifications(); }
+    setReachState('drop');
+    setChrome();
+    store.trips = null; store.charges = null;
+    ui.trip.selected = null; ui.charge.selected = null;
+    fetchTrips().catch(() => {});
+    fetchCharges().catch(() => {});
     hideLoading();
     location.hash = 'trips';  // update URL for browser history
     showView('trips');         // direct call — don't rely on hashchange which won't fire if hash is already #trips
@@ -1404,162 +1734,967 @@ async function loadFile(file) {
   }
 }
 
-// ── Routing ────────────────────────────────────────────────────────────────────
-const VIEWS = ['drop', 'trips', 'trip', 'charges', 'charge', 'files'];
-const TRIP_CHARTS = ['chart-speed','chart-rpm','chart-power','chart-energy','chart-soc','chart-altitude','chart-voltage','chart-tyre','chart-instant'];
-
-function showView(view, id) {
-  if (!db && !liveMode && view !== 'drop') return;
-  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-  document.getElementById('view-' + view)?.classList.add('active');
-  // Update nav active state
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-  if (view === 'trips' || view === 'trip') document.getElementById('nav-trips')?.classList.add('active');
-  if (view === 'charges' || view === 'charge') document.getElementById('nav-charges')?.classList.add('active');
-  if (view === 'files') document.getElementById('nav-files')?.classList.add('active');
-  // Destroy charts when leaving detail views
-  if (view !== 'trip') TRIP_CHARTS.forEach(destroyChart);
-  if (view !== 'charge') destroyChart('chart-charge');
-  if (view !== 'trip' && leafletMap) { leafletMap.remove(); leafletMap = null; }
-
-  if (view === 'trips' || view === 'charges') currentListView = view;
-
-  if (view === 'trips')   renderTripList();
-  if (view === 'trip')    renderTripDetail(+id);
-  if (view === 'charges') renderChargeList();
-  if (view === 'charge')  renderChargeDetail(+id);
-  // Safari hands back an already-decoded location.hash, so a second decode has to be tolerated.
-  if (view === 'files')   loadFiles(id ? (() => { try { return decodeURIComponent(id); } catch (_) { return id; } })() : '');
+// ── Loading UI ─────────────────────────────────────────────────────────────────
+function showLoading(msg) {
+  $('loading-msg').textContent = msg;
+  $('loading').style.display = 'flex';
+}
+function hideLoading() {
+  $('loading').style.display = 'none';
 }
 
-// ── Favourites ───────────────────────────────────────────────────────────────────
-// Star markup for a card/detail header. Live mode → interactive toggle button;
-// file-upload mode → read-only indicator (only shown when favourited), since the
-// loaded .db is a detached copy and writes wouldn't persist anywhere.
-function favStar(kind, id, isFav) {
-  const on = +isFav ? 1 : 0;
-  if (liveMode) {
-    return `<button class="star ${on ? 'on' : ''}" title="${on ? 'Remove from favourites' : 'Mark as favourite (protects from trimming)'}"
-      onclick="toggleFav(event,'${kind}',${id},${on})">${on ? '★' : '☆'}</button>`;
-  }
-  return on ? `<span class="star on" title="Favourite">★</span>` : '';
-}
+// ── Formatters ─────────────────────────────────────────────────────────────────
+const LOCALE = 'en-GB';
+const DAY_MS = 86_400_000;
+const pad2  = n => String(n).padStart(2, '0');
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+const nf    = (v, d = 1) => (+v).toLocaleString(LOCALE, { minimumFractionDigits: d, maximumFractionDigits: d });
+const nu    = (num, unit) => `<span class="n">${num}</span><span class="u">${unit}</span>`;
+const DASH  = '<span class="dash">—</span>';
+const plural = (n, one, many) => `${n.toLocaleString(LOCALE)} ${n === 1 ? one : many}`;
 
-async function toggleFav(ev, kind, id, isFav) {
-  ev.stopPropagation();              // don't trigger the card's navigate()
-  if (!liveMode) return;
-  const next = +isFav ? 0 : 1;
-  const base = kind === 'trip' ? 'trips' : 'charges';
-  try {
-    const r = await fetch(`/api/${base}/${id}/favourite?favourite=${next}`, { method: 'POST' });
-    if (!r.ok) throw new Error(`Server returned ${r.status}`);
-    // Re-render whatever is on screen so the star + any active filter update.
-    const h = location.hash.slice(1);
-    if (h.startsWith('trip/'))        renderTripDetail(id);
-    else if (h.startsWith('charge/')) renderChargeDetail(id);
-    else if (kind === 'trip')         renderTripList();
-    else                              renderChargeList();
-  } catch (e) { console.error('toggleFav:', e); }
-}
-
-function toggleFavFilter() {
-  favOnly = !favOnly;
-  document.querySelectorAll('.fav-filter').forEach(b => {
-    b.classList.toggle('active', favOnly);
-    b.textContent = favOnly ? '★' : '☆';
-    b.title = favOnly ? 'Showing favourites only — tap to show all' : 'Show favourites only';
+function fmtDate(ms) {
+  if (!ms) return '—';
+  return new Date(+ms).toLocaleString(LOCALE, {
+    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
   });
-  if (currentListView === 'charges') renderChargeList(); else renderTripList();
+}
+const fmtTime     = ms => new Date(+ms).toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' });
+const monthShort  = ms => new Date(+ms).toLocaleDateString(LOCALE, { month: 'short' });
+const weekday     = (ms, w = 'short') => new Date(+ms).toLocaleDateString(LOCALE, { weekday: w });
+const fmtDayMonth = ms => `${new Date(+ms).getDate()} ${monthShort(ms)}`;          // 20 Nov
+const fmtShortDay = ms => `${weekday(ms)} ${fmtDayMonth(ms)}`;                     // Fri 20 Nov
+function fmtLongDate(ms) {                                                         // Friday, 20 November 2026
+  const d = new Date(+ms);
+  return `${weekday(ms, 'long')}, ${d.getDate()} ${d.toLocaleDateString(LOCALE, { month: 'long' })} ${d.getFullYear()}`;
+}
+/** 55 min · 1 h 06 · 7 h 08 — minutes rounded down, as the app does. */
+function fmtDur(ms) {
+  if (!(ms > 0)) return '—';
+  const m = Math.floor(ms / 60000);
+  return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${pad2(m % 60)}`;
+}
+function timeRange(x) {
+  if (!x.end) return `${fmtTime(x.start)} – in progress`;
+  const sameDay = dayKey(x.start) === dayKey(x.end);
+  return `${fmtTime(x.start)} – ${fmtTime(x.end)}${sameDay ? '' : ` (${fmtShortDay(x.end)})`}`;
+}
+function startOfDay(ms) { const d = new Date(ms); d.setHours(0, 0, 0, 0); return d.getTime(); }
+// By calendar, not by 24 h, so a period across a clock change still starts at midnight.
+function addDays(ms, n) { const d = new Date(ms); d.setDate(d.getDate() + n); return d.getTime(); }
+function dayKey(ms) { const d = new Date(ms); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; }
+function dayLabel(ms) {
+  const s = startOfDay(ms), today = startOfDay(Date.now());
+  if (s === today) return 'Today';
+  if (s === addDays(today, -1)) return 'Yesterday';
+  const label = `${weekday(ms, 'long')} ${fmtDayMonth(ms)}`;
+  return new Date(ms).getFullYear() === new Date().getFullYear() ? label : `${label} ${new Date(ms).getFullYear()}`;
 }
 
-// ── Sort & filter controls ───────────────────────────────────────────────────────
-const tripSort   = { field: 'date', dir: 'desc' };
-const chargeSort = { field: 'date', dir: 'desc' };
-const tripFilters   = {};   // distMin/Max, durMin/Max (min), spdMin/Max, effMin/Max
-const chargeFilters = {};   // kwhMin/Max, peakMin/Max, durMin/Max (min)
+// ── Data ───────────────────────────────────────────────────────────────────────
+// Each list is read once per visit to its tab (or once per backup) and kept here; sorting,
+// filtering, the period and selection all work on this copy, so they cost the car nothing.
+// The trip and charge rows arrive in two shapes (the car's API and a backup's SQL), and are
+// turned into one here so nothing downstream needs to care which.
+const store = { trips: null, charges: null };
+const inflight = {};
+
+/** Panel SoC (the figure the car's screen shows) where it was recorded, else the BMS one. */
+function socPair(startPanel, endPanel, start, end) {
+  if (+startPanel > 0) return [+startPanel, endPanel != null && +endPanel > 0 ? +endPanel : null];
+  return [+start > 0 ? +start : null, end != null && +end > 0 ? +end : null];
+}
+
+function normTrip(t) {
+  const [socStart, socEnd] = socPair(t.startSocPanel, t.endSocPanel, t.startSoc, t.endSoc);
+  return {
+    id: +t.id, start: +t.startTime, end: t.endTime ? +t.endTime : null,
+    durMs: t.endTime ? Math.max(0, +t.endTime - +t.startTime - (+t.offStateDurationMs || 0)) : 0,
+    dist:   +t.dist || 0,
+    avgSpd: +(t.avgSpd ?? t.avgSpeed) || 0,
+    eff:    +(t.eff ?? t.avgEfficiency) || 0,
+    energy: +(t.energy ?? t.totalEnergyConsumed) || 0,
+    socStart, socEnd,
+    odoStart: +t.startOdometer > 0 ? +t.startOdometer : null,
+    odoEnd:   +t.endOdometer   > 0 ? +t.endOdometer   : null,
+    fav: !!+t.isFavourite, manual: !!+t.isManual,
+  };
+}
+
+function normCharge(s) {
+  const [socStart, socEnd] = socPair(s.socStartPanel, s.socEndPanel, s.socStart, s.socEnd);
+  return {
+    id: +s.id, start: +s.startTime, end: s.endTime ? +s.endTime : null,
+    durMs: s.endTime ? Math.max(0, +s.endTime - +s.startTime) : 0,
+    kwh: +s.kwhAdded || 0, peak: +s.peakKw || 0, avg: +s.avgKw || 0,
+    socStart, socEnd,
+    tempStart: s.batteryTempStart ? +s.batteryTempStart : null,
+    tempEnd:   s.batteryTempEnd   ? +s.batteryTempEnd   : null,
+    odo: +s.startOdometer > 0 ? +s.startOdometer : null,
+    fav: !!+s.isFavourite,
+    dc: +s.peakKw > 22,
+  };
+}
+
+const TRIP_SQL = () => `
+  SELECT t.id, t.startTime, t.endTime,
+         ${col('trips', 'offStateDurationMs')},
+         ${col('trips', 'startSocPanel')},
+         ${col('trips', 'endSocPanel', 'NULL')},
+         ${col('trips', 'isFavourite')},
+         t.startSoc, t.endSoc, t.isManual,
+         t.startOdometer, t.endOdometer,
+         COALESCE(s.totalDistance,
+           MAX(0.0, COALESCE(CAST(t.endOdometer AS REAL), 0.0) - CAST(t.startOdometer AS REAL))
+         ) AS dist,
+         COALESCE(s.avgSpeed, 0)            AS avgSpd,
+         COALESCE(s.avgEfficiency, 0)       AS eff,
+         COALESCE(s.totalEnergyConsumed, 0) AS energy
+  FROM trips t LEFT JOIN trip_stats s ON t.id = s.tripId
+  WHERE t.isActive = 0 AND t.endTime IS NOT NULL
+  ORDER BY t.startTime DESC`;
+
+const CHARGE_SQL = () => `
+  SELECT id, startTime, endTime, socStart, socEnd,
+         ${col('charging_sessions', 'socStartPanel')},
+         ${col('charging_sessions', 'socEndPanel', 'NULL')},
+         ${col('charging_sessions', 'isFavourite')},
+         ${col('charging_sessions', 'startOdometer', 'NULL')},
+         ${col('charging_sessions', 'batteryTempEnd', 'NULL')},
+         kwhAdded, peakKw, avgKw, batteryTempStart
+  FROM charging_sessions
+  WHERE isActive = 0 AND endTime IS NOT NULL
+  ORDER BY startTime DESC`;
+
+function fetchTrips() {
+  if (inflight.trip) return inflight.trip;
+  inflight.trip = (async () => {
+    const list = liveMode ? await fetchJson('/api/trips') : rows(TRIP_SQL());
+    store.trips = list.map(normTrip);
+    updateBattChip();
+    return store.trips;
+  })().finally(() => { inflight.trip = null; });
+  return inflight.trip;
+}
+
+function fetchCharges() {
+  if (inflight.charge) return inflight.charge;
+  inflight.charge = (async () => {
+    const list = liveMode ? await fetchJson('/api/charges') : rows(CHARGE_SQL());
+    store.charges = list.map(normCharge);
+    updateBattChip();
+    return store.charges;
+  })().finally(() => { inflight.charge = null; });
+  return inflight.charge;
+}
 
 const numOrNull = v => { const n = parseFloat(v); return isNaN(n) ? null : n; };
 const inRange = (v, min, max) => (min == null || v >= min) && (max == null || v <= max);
-const tripDurMs   = t => t.endTime ? (+t.endTime - +t.startTime - (+t.offStateDurationMs || 0)) : 0;
-const chargeDurMs = s => s.endTime ? (+s.endTime - +s.startTime) : 0;
 
-function setTripFilter(k, v)   { tripFilters[k]   = numOrNull(v); updateFilterBadge('trip');   renderTripList(); }
-function setChargeFilter(k, v) { chargeFilters[k] = numOrNull(v); updateFilterBadge('charge'); renderChargeList(); }
+const KIND = {
+  trip: {
+    list: () => store.trips, fetch: fetchTrips, view: 'trips', detail: 'trip',
+    sortKeys: { date: t => t.start, dist: t => t.dist, dur: t => t.durMs, avgSpd: t => t.avgSpd, eff: t => t.eff, energy: t => t.energy },
+    match: (t, f) =>
+      inRange(t.dist,          f.distMin, f.distMax) &&
+      inRange(t.durMs / 60000, f.durMin,  f.durMax)  &&
+      inRange(t.avgSpd,        f.spdMin,  f.spdMax)  &&
+      inRange(t.eff,           f.effMin,  f.effMax),
+  },
+  charge: {
+    list: () => store.charges, fetch: fetchCharges, view: 'charges', detail: 'charge',
+    sortKeys: { date: s => s.start, dur: s => s.durMs, kwh: s => s.kwh, peak: s => s.peak, avg: s => s.avg },
+    match: (s, f) =>
+      inRange(s.kwh,           f.kwhMin,  f.kwhMax)  &&
+      inRange(s.peak,          f.peakMin, f.peakMax) &&
+      inRange(s.durMs / 60000, f.durMin,  f.durMax),
+  },
+};
 
-function toggleSortDir(kind) {
-  const s   = kind === 'trip' ? tripSort : chargeSort;
-  const btn = document.getElementById(kind + '-dir');
-  s.dir = s.dir === 'desc' ? 'asc' : 'desc';
-  // Icon only, so the direction has to live in the tooltip rather than a label beside it.
-  btn.textContent = s.dir === 'desc' ? '↓' : '↑';
-  btn.title = s.dir === 'desc' ? 'Descending — tap to reverse' : 'Ascending — tap to reverse';
-  if (kind === 'trip') renderTripList(); else renderChargeList();
+// ── View state ─────────────────────────────────────────────────────────────────
+const PERIODS = [['1', 'Today'], ['7', '7 days'], ['30', '30 days'], ['90', '90 days'], ['all', 'All']];
+const ui = {
+  period: '7',
+  trip:   { sort: 'date', dir: 'desc', favOnly: false, filters: {}, selected: null, scroll: 0 },
+  charge: { sort: 'date', dir: 'desc', favOnly: false, filters: {}, selected: null, scroll: 0 },
+};
+const PREFS_KEY = 'bydStatsView';
+(function restorePrefs() {
+  try {
+    const p = JSON.parse(lsGet(PREFS_KEY) || '{}');
+    if (PERIODS.some(([k]) => k === p.period)) ui.period = p.period;
+    ['trip', 'charge'].forEach(kind => {
+      if (p[kind] && KIND[kind].sortKeys[p[kind].sort]) ui[kind].sort = p[kind].sort;
+      if (p[kind] && (p[kind].dir === 'asc' || p[kind].dir === 'desc')) ui[kind].dir = p[kind].dir;
+    });
+  } catch (_) { /* defaults */ }
+})();
+function savePrefs() {
+  lsSet(PREFS_KEY, JSON.stringify({
+    period: ui.period,
+    trip:   { sort: ui.trip.sort,   dir: ui.trip.dir },
+    charge: { sort: ui.charge.sort, dir: ui.charge.dir },
+  }));
 }
 
+// ── Period ─────────────────────────────────────────────────────────────────────
+// With the car behind the page, "the last 7 days" ends today. A backup is a snapshot, so its
+// periods end on the day of its newest trip or charge — otherwise an old backup would open on
+// an empty week.
+function anchorDay() {
+  if (liveMode) return startOfDay(Date.now());
+  let latest = 0;
+  (store.trips || []).forEach(t => { if (t.start > latest) latest = t.start; });
+  (store.charges || []).forEach(s => { if (s.start > latest) latest = s.start; });
+  return startOfDay(latest || Date.now());
+}
+
+function periodRange(period = ui.period) {
+  const anchor = anchorDay();
+  const end = addDays(anchor, 1);
+  const isToday = anchor === startOfDay(Date.now());
+  if (period === 'all') {
+    let first = Infinity;
+    (store.trips || []).forEach(t => { if (t.start < first) first = t.start; });
+    (store.charges || []).forEach(s => { if (s.start < first) first = s.start; });
+    const from = isFinite(first) ? startOfDay(first) : anchor;
+    return {
+      from: -Infinity, to: Infinity, chartFrom: from, chartTo: end, all: true,
+      days: Math.max(1, Math.round((end - from) / DAY_MS)),
+      label: 'All time', avgText: 'your all-time average', inText: 'yet', isToday,
+    };
+  }
+  const n = +period;
+  const from = addDays(anchor, -(n - 1));
+  const base = { from, to: end, chartFrom: from, chartTo: end, all: false, days: n, isToday };
+  if (n === 1) {
+    return { ...base,
+      label:  isToday ? 'Today' : fmtShortDay(anchor),
+      inText: isToday ? 'today' : `on ${fmtShortDay(anchor)}`,
+      avgText: isToday ? "today's average" : "that day's average",
+    };
+  }
+  return { ...base,
+    label:  isToday ? `Last ${n} days` : `${n} days to ${fmtDayMonth(anchor)}`,
+    inText: isToday ? `in the last ${n} days` : `in the ${n} days to ${fmtDayMonth(anchor)}`,
+    avgText: `your ${n}-day average`,
+  };
+}
+
+// The average a trip's efficiency is coloured against: the period's own, except Today, whose two
+// or three trips are no baseline. Today compares with the last 7 days, so a trip keeps the colour
+// it has in the 7-day view.
+function refRange() { return periodRange(ui.period === '1' ? '7' : ui.period); }
+
+const inPeriodOf = (list, r) => list.filter(x => x.start >= r.from && x.start < r.to);
+
+/** kWh/100km over a set of trips, weighted by distance — not an average of averages. */
+function weightedEff(list) {
+  let e = 0, d = 0;
+  list.forEach(t => { if (t.dist > 0 && t.energy > 0) { e += t.energy; d += t.dist; } });
+  return d > 0 ? e / d * 100 : 0;
+}
+const currentAvgEff = () => store.trips ? weightedEff(inPeriodOf(store.trips, refRange())) : 0;
+
+// Efficiency is coloured against your own average (see refRange): within ±7.5 % reads as normal,
+// beyond it as better (green) or above (amber). The bar runs from 40 % to 160 % of the average,
+// so the average sits at its middle.
+const EFF_BAND = 0.075;
+function effClass(eff, avg) {
+  if (!(eff > 0) || !(avg > 0)) return 'neutral';
+  const r = eff / avg;
+  return r <= 1 - EFF_BAND ? 'good' : r >= 1 + EFF_BAND ? 'warn' : 'neutral';
+}
+const effPos = (eff, avg) => clamp((eff - avg * 0.4) / (avg * 1.2) * 100, 0, 100);
+
+// ── Period chart buckets: an hour each for Today, a day for 7 and 30 days, a week for 90, a
+// month for all ──
+function makeBuckets(r) {
+  const out = [];
+  if (ui.period === '1') {
+    // By the clock rather than by adding hours, so a day with a clock change still runs 00–24.
+    for (let h = 0; h < 24; h++) {
+      const a = new Date(r.chartFrom); a.setHours(h, 0, 0, 0);
+      const b = new Date(r.chartFrom); b.setHours(h + 1, 0, 0, 0);
+      out.push({ from: a.getTime(), to: b.getTime(), unit: 'hour', hour: h });
+    }
+  } else if (ui.period === '90') {
+    for (let to = r.chartTo; to > r.chartFrom;) {
+      const from = Math.max(r.chartFrom, addDays(to, -7));
+      out.unshift({ from, to, unit: 'week' });
+      to = from;
+    }
+  } else if (r.all) {
+    const d = new Date(r.chartFrom); d.setDate(1); d.setHours(0, 0, 0, 0);
+    while (d.getTime() < r.chartTo) {
+      const from = d.getTime();
+      d.setMonth(d.getMonth() + 1);
+      out.push({ from, to: d.getTime(), unit: 'month' });
+    }
+  } else {
+    for (let i = 0; i < r.days; i++) {
+      const from = addDays(r.chartFrom, i);
+      out.push({ from, to: addDays(from, 1), unit: 'day' });
+    }
+  }
+  return out;
+}
+
+function fillBuckets(bks, items, value) {
+  bks.forEach(b => { b.value = 0; b.count = 0; });
+  for (const it of items) {
+    let lo = 0, hi = bks.length - 1, idx = -1;
+    while (lo <= hi) {
+      const m = (lo + hi) >> 1;
+      if (bks[m].from <= it.start) { idx = m; lo = m + 1; } else hi = m - 1;
+    }
+    if (idx >= 0 && it.start < bks[idx].to) { bks[idx].value += value(it); bks[idx].count++; }
+  }
+}
+
+function labelBuckets(bks, r, kind) {
+  const n = bks.length;
+  const unit = kind === 'trip' ? 'km' : 'kWh';
+  const noun = kind === 'trip' ? ['trip', 'trips'] : ['session', 'sessions'];
+  const step = n <= 8 ? 1 : n <= 16 ? 2 : n <= 36 ? 3 : 6;
+  bks.forEach((b, i) => {
+    const fromEnd = n - 1 - i;
+    const lastIsToday = fromEnd === 0 && r.isToday;
+    let label = '', when;
+    if (b.unit === 'hour') {
+      when = `${pad2(b.hour)}:00–${pad2((b.hour + 1) % 24)}:00`;
+      if (b.hour % 6 === 0) label = `${pad2(b.hour)}:00`;
+    } else if (b.unit === 'day') {
+      when = fmtShortDay(b.from);
+      if (n <= 7) label = lastIsToday ? 'Today' : weekday(b.from);
+      else if (fromEnd % 7 === 0) label = lastIsToday ? 'Today' : fmtDayMonth(b.from);
+    } else if (b.unit === 'week') {
+      when = `${fmtDayMonth(b.from)} – ${fmtDayMonth(b.to - 1)}`;
+      if (fromEnd % 3 === 0) label = fmtDayMonth(b.from);
+    } else {
+      const d = new Date(b.from);
+      when = `${d.toLocaleDateString(LOCALE, { month: 'long' })} ${d.getFullYear()}`;
+      if (fromEnd % step === 0) label = monthShort(b.from) + (d.getMonth() === 0 || i < step ? ` ’${String(d.getFullYear()).slice(2)}` : '');
+    }
+    b.label = label;
+    b.tip = `${when} · ${nf(b.value, 1)} ${unit} · ${plural(b.count, ...noun)}`;
+  });
+}
+
+function barsHtml(kind, bks) {
+  const max = Math.max(0, ...bks.map(b => b.value));
+  const n = bks.length;
+  const gap  = n <= 7 ? 12 : n <= 14 ? 8 : n <= 31 ? 3 : 2;
+  const gapM = n <= 7 ? 8 : n <= 14 ? 5 : 2;
+  return `<div class="bars" style="--bar-gap:${gap}px;--bar-gap-m:${gapM}px">${bks.map((b, i) => {
+    // The bar holding "now": the current hour on Today, else the newest bar.
+    const now  = b.unit === 'hour' ? (b.from <= Date.now() && Date.now() < b.to) : i === n - 1;
+    const zero = !(b.value > 0);
+    const h = zero ? 0 : Math.max(1.5, b.value / max * 100);
+    return `<button type="button" class="bar-col" data-kind="${kind}" data-from="${b.from}" data-to="${b.to}"
+      data-tip="${esc(b.tip)}" aria-label="${esc(b.tip)}"><span class="bar-track"><span class="bar${now ? ' now' : ''}${zero ? ' zero' : ''}"
+      style="height:${h.toFixed(1)}%"></span></span><span class="bar-lbl${now ? ' now' : ''}">${esc(b.label)}</span></button>`;
+  }).join('')}</div>`;
+}
+
+function periodSegHtml(cls = '') {
+  return `<div class="seg ${cls}" role="group" aria-label="Period">${PERIODS.map(([k, label]) =>
+    `<button type="button" class="${ui.period === k ? 'on' : ''}" aria-pressed="${ui.period === k}"
+      onclick="setPeriod('${k}')">${label === 'All' ? '<span class="d-only">All time</span><span class="m-only">All</span>' : label}</button>`
+  ).join('')}</div>`;
+}
+
+function renderPeriodCard(kind, items, r) {
+  const isTrip = kind === 'trip';
+  const bks = makeBuckets(r);
+  fillBuckets(bks, items, isTrip ? t => t.dist : s => s.kwh);
+  labelBuckets(bks, r, kind);
+  const durMs = items.reduce((a, x) => a + x.durMs, 0);
+  const unitOf = bks[0]?.unit || 'day';
+  const per = { day: 'Daily', week: 'Weekly', month: 'Monthly' }[unitOf];
+  let eyebrow, hero, unit, subD, subM, kpis, chartTitle, perDay;
+  if (isTrip) {
+    const dist = items.reduce((a, t) => a + t.dist, 0);
+    const energy = items.reduce((a, t) => a + t.energy, 0);
+    eyebrow = 'Distance'; hero = nf(dist, 1); unit = 'km';
+    subD = items.length ? `${fmtDur(durMs)} behind the wheel` : 'No driving';
+    subM = items.length ? `${fmtDur(durMs)} driving` : '';
+    const eff = weightedEff(items);
+    kpis = [[nf(energy, 1), 'kWh used'], [eff > 0 ? nf(eff, 1) : '—', 'kWh/100km'], [items.length.toLocaleString(LOCALE), items.length === 1 ? 'trip' : 'trips']];
+    chartTitle = unitOf === 'hour' ? 'Distance by hour' : `${per} distance`;
+    perDay = unitOf === 'hour' ? '' : `${nf(dist / r.days, 1)} km/day avg`;
+  } else {
+    const kwh = items.reduce((a, s) => a + s.kwh, 0);
+    const hours = durMs / 3_600_000;
+    const peak = items.reduce((a, s) => Math.max(a, s.peak), 0);
+    eyebrow = 'Energy added'; hero = nf(kwh, 1); unit = 'kWh';
+    subD = items.length ? `${fmtDur(durMs)} plugged in` : 'No charging';
+    subM = items.length ? `${fmtDur(durMs)} plugged in` : '';
+    kpis = [[items.length.toLocaleString(LOCALE), items.length === 1 ? 'session' : 'sessions'],
+            [hours > 0 && kwh > 0 ? nf(kwh / hours, 1) : '—', 'kW average'],
+            [peak > 0 ? nf(peak, 1) : '—', 'kW peak']];
+    chartTitle = unitOf === 'hour' ? 'Energy added by hour' : `${per} energy added`;
+    perDay = unitOf === 'hour' ? '' : `${nf(kwh / r.days, 1)} kWh/day avg`;
+  }
+  $(kind + '-period').innerHTML = `
+    ${periodSegHtml('m-only')}
+    <div class="pc-left">
+      <div class="eyebrow">${eyebrow}<span class="d-only"> · ${esc(r.label)}</span></div>
+      <div class="hero-row">
+        <div class="hero"><span class="v">${hero}</span><span class="u">${unit}</span></div>
+        <div class="hero-sub"><span class="d-only">${subD}</span><span class="m-only">${subM}</span></div>
+      </div>
+      <div class="kpis">${kpis.map(([v, l]) => `<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('')}</div>
+    </div>
+    <div class="pc-chart">
+      <div class="chart-head"><span class="t">${chartTitle}</span><span class="s">${perDay}</span></div>
+      ${barsHtml(kind, bks)}
+    </div>`;
+}
+
+// ── Lists ──────────────────────────────────────────────────────────────────────
+const COLS = {
+  trip: [['c-time', 'Time', 'date'], ['c-dist', 'Distance', 'dist'], ['c-dur', 'Duration', 'dur'],
+         ['c-spd', 'Avg speed', 'avgSpd'], ['c-eff', 'Efficiency', 'eff'], ['c-energy', 'Energy', 'energy'],
+         ['c-batt', 'Battery'], ['c-star', '']],
+  charge: [['c-time', 'Time', 'date'], ['c-dur', 'Duration', 'dur'], ['c-add', 'Added', 'kwh'],
+           ['c-avg', 'Avg power', 'avg'], ['c-peak', 'Peak', 'peak'], ['c-batt', 'Battery'],
+           ['c-type', 'Type'], ['c-star', '']],
+};
+
+function listHeadHtml(kind) {
+  const s = ui[kind];
+  return `<div class="list-head">${COLS[kind].map(([cls, label, key]) => {
+    if (!key) return `<div class="${cls}"><span class="h">${label}</span></div>`;
+    const on = s.sort === key;
+    const dirTxt = on ? (s.dir === 'desc' ? ', descending' : ', ascending') : '';
+    return `<div class="${cls}"><button type="button" class="h${on ? ' on' : ''}" onclick="sortBy('${kind}','${key}')"
+      aria-label="Sort by ${label}${dirTxt}">${label}${on ? icon(s.dir === 'desc' ? 'down' : 'up') : ''}</button></div>`;
+  }).join('')}</div>`;
+}
+
+function starHtml(kind, x) {
+  if (liveMode) {
+    return `<button type="button" class="star${x.fav ? ' on' : ''}" data-kind="${kind}" data-id="${x.id}"
+      aria-pressed="${x.fav}" aria-label="Favourite"
+      title="${x.fav ? 'Remove from favourites' : 'Mark as favourite (protects from trimming)'}">${icon('star')}</button>`;
+  }
+  // A loaded .db is a detached copy and a write wouldn't persist anywhere, so it only shows.
+  return x.fav ? `<span class="star on" title="Favourite">${icon('star')}</span>` : '';
+}
+
+function effHtml(eff, avg) {
+  if (!(eff > 0)) return DASH;
+  const w = avg > 0 ? Math.max(4, effPos(eff, avg)) : 50;
+  return `<span class="eff ${effClass(eff, avg)}"><span class="eff-val">${nf(eff, 1)}</span><span class="eff-unit">kWh/100km</span><span class="eff-bar"><i style="width:${w.toFixed(0)}%"></i></span></span>`;
+}
+
+/** "61% → 55%" with a strip under it: the level kept, and the part used (or added) in colour. */
+function socHtml(a, b, mode) {
+  if (a == null) return DASH;
+  const A = Math.round(a), B = b != null ? Math.round(b) : null;
+  if (B == null) return `<div class="batt"><span class="batt-txt">${A}%</span></div>`;
+  const lo = clamp(Math.min(A, B), 0, 100), hi = clamp(Math.max(A, B), 0, 100);
+  return `<div class="batt"><span class="batt-txt">${A}<span class="pct1">%</span> → ${B}%</span><span class="socbar" aria-hidden="true"><i class="lvl" style="width:${lo}%"></i><i class="${mode}" style="left:${lo}%;width:${Math.max(hi - lo, 1.5)}%"></i></span></div>`;
+}
+
+function timeCell(x, flat, extra = '') {
+  const main = flat
+    ? `<span class="d-only">${fmtShortDay(x.start)}, ${fmtTime(x.start)}</span><span class="m-only">${fmtDayMonth(x.start)}</span>`
+    : fmtTime(x.start);
+  const sub = flat ? fmtTime(x.start) : fmtDur(x.durMs);
+  return `<div class="c c-time"><span class="t-main">${main}</span>${extra}<span class="t-sub">${sub}</span></div>`;
+}
+
+function rowOpen(kind, x, label) {
+  return `<div class="row${x.id === ui[kind].selected ? ' selected' : ''}" tabindex="0" role="button"
+    data-kind="${kind}" data-id="${x.id}" data-start="${x.start}" aria-label="${esc(label)}">`;
+}
+
+function tripRowHtml(t, avg, flat) {
+  return rowOpen('trip', t, `${fmtShortDay(t.start)} ${fmtTime(t.start)}, ${nf(t.dist, 1)} km`) + `
+    ${timeCell(t, flat, t.manual ? '<span class="tag">Manual</span>' : '')}
+    <div class="c c-dist">${nu(nf(t.dist, 1), 'km')}</div>
+    <div class="c c-dur">${fmtDur(t.durMs)}</div>
+    <div class="c c-spd">${t.avgSpd > 0 ? nu(Math.round(t.avgSpd), 'km/h') : DASH}</div>
+    <div class="c c-eff">${effHtml(t.eff, avg)}</div>
+    <div class="c c-energy">${t.energy > 0 ? nu(nf(t.energy, 2), 'kWh') : DASH}</div>
+    <div class="c c-batt">${socHtml(t.socStart, t.socEnd, 'use')}</div>
+    <div class="c c-star">${starHtml('trip', t)}</div>
+  </div>`;
+}
+
+function typeChip(s) {
+  return s.peak > 0 ? `<span class="chip${s.dc ? ' dc' : ''}">${s.dc ? 'DC' : 'AC'}</span>` : DASH;
+}
+
+function chargeRowHtml(s, flat) {
+  return rowOpen('charge', s, `${fmtShortDay(s.start)} ${fmtTime(s.start)}, ${nf(s.kwh, 2)} kWh added`) + `
+    ${timeCell(s, flat)}
+    <div class="c c-dur">${fmtDur(s.durMs)}</div>
+    <div class="c c-add">${s.kwh > 0 ? nu('+' + nf(s.kwh, 2), 'kWh') : DASH}</div>
+    <div class="c c-avg">${s.avg > 0 ? nu(nf(s.avg, 1), 'kW') : DASH}</div>
+    <div class="c c-peak">${s.peak > 0 ? nu(nf(s.peak, 1), 'kW') : DASH}</div>
+    <div class="c c-batt">${socHtml(s.socStart, s.socEnd, 'add')}</div>
+    <div class="c c-type">${typeChip(s)}<span class="m-only">${s.peak > 0 ? nf(s.peak, 1) + ' kW peak' : ''}</span></div>
+    <div class="c c-star">${starHtml('charge', s)}</div>
+  </div>`;
+}
+
+function groupSum(kind, items) {
+  if (kind === 'trip') {
+    const dist = items.reduce((a, t) => a + t.dist, 0), kwh = items.reduce((a, t) => a + t.energy, 0);
+    return `${plural(items.length, 'trip', 'trips')} · ${nf(dist, 1)} km<span class="kwh"> · ${nf(kwh, 1)} kWh</span>`;
+  }
+  return `${plural(items.length, 'session', 'sessions')} · +${nf(items.reduce((a, s) => a + s.kwh, 0), 1)} kWh`;
+}
+
+function favSegHtml(kind, total, favs) {
+  const s = ui[kind];
+  return `<div class="seg" role="group" aria-label="Show">
+    <button type="button" class="${!s.favOnly ? 'on' : ''}" aria-pressed="${!s.favOnly}" onclick="setFavOnly('${kind}', false)">All<span class="d-only">${kind === 'trip' ? 'trips' : 'sessions'}</span><span class="cnt d-only">${total}</span></button>
+    <button type="button" class="${s.favOnly ? 'on' : ''}" aria-pressed="${s.favOnly}" onclick="setFavOnly('${kind}', true)">${icon('star', 'star-ico')}Favourites<span class="cnt d-only">${favs}</span></button>
+  </div>`;
+}
+
+function renderSub(kind) {
+  const all = KIND[kind].list() || [];
+  const lead = `<span class="d-only">${liveMode ? 'All time' : 'Backup'} · </span>`;
+  if (kind === 'trip') {
+    const km = all.reduce((a, t) => a + t.dist, 0), kwh = all.reduce((a, t) => a + t.energy, 0);
+    $('trip-sub').innerHTML = `${lead}<strong>${all.length.toLocaleString(LOCALE)}</strong> trips · <strong>${Math.round(km).toLocaleString(LOCALE)}</strong> km · <strong>${Math.round(kwh).toLocaleString(LOCALE)}</strong> kWh`;
+  } else {
+    const kwh = all.reduce((a, s) => a + s.kwh, 0);
+    $('charge-sub').innerHTML = `${lead}<strong>${all.length.toLocaleString(LOCALE)}</strong> sessions · <strong>${Math.round(kwh).toLocaleString(LOCALE)}</strong> kWh added`;
+  }
+}
+
+function emptyHtml(kind, all, inPeriod, filtered, r) {
+  const noun = kind === 'trip' ? 'trips' : 'charging sessions';
+  if (!all.length) return `<div class="empty">No completed ${noun} found.</div>`;
+  if (!inPeriod.length) {
+    const next = { '1': ['7', '7 days'], '7': ['30', '30 days'] }[ui.period];
+    const wider = next ? `<button class="btn" onclick="setPeriod('${next[0]}')">Show ${next[1]}</button>` : '';
+    return `<div class="empty">No ${noun} ${r.inText}.<br>${wider}<button class="btn" onclick="setPeriod('all')">Show all time</button></div>`;
+  }
+  if (!filtered.length) return `<div class="empty">No ${noun} match the filters.<br><button class="btn" onclick="clearFilters('${kind}')">Clear filters</button></div>`;
+  return `<div class="empty">No favourite ${noun} in this period.${liveMode ? ' Tap a star to add one.' : ''}<br><button class="btn" onclick="setFavOnly('${kind}', false)">Show all</button></div>`;
+}
+
+function renderList(kind) {
+  const K = KIND[kind], s = ui[kind], listEl = $(kind + '-list');
+  renderSortControls(kind);
+  $(kind + '-period-seg').innerHTML = periodSegHtml();
+  const all = K.list();
+  if (!all) {
+    listEl.innerHTML = '<div class="empty">Loading…</div>';
+    renderSide(kind, null);
+    return;
+  }
+  const r = periodRange();
+  const inPeriod = inPeriodOf(all, r);
+  const avg = kind === 'trip' ? weightedEff(inPeriodOf(all, refRange())) : 0;
+  renderSub(kind);
+  renderPeriodCard(kind, inPeriod, r);
+
+  const filtered = inPeriod.filter(x => K.match(x, s.filters));
+  $(kind + '-favseg').innerHTML = favSegHtml(kind, filtered.length, filtered.filter(x => x.fav).length);
+  if (kind === 'trip') {
+    $('trip-legend').innerHTML = avg > 0
+      ? `<span><span class="dot good"></span>Better than avg</span><span><span class="dot warn"></span>Above avg</span>` +
+        `<span>${ui.period === '1' ? '7-day avg' : 'Avg'} <strong>${nf(avg, 1)}</strong> kWh/100km</span>`
+      : '';
+  }
+
+  const shown = sortItems(kind, s.favOnly ? filtered.filter(x => x.fav) : filtered);
+  const grouped = s.sort === 'date';
+  listEl.classList.toggle('flat', !grouped);
+  if (!shown.length) {
+    listEl.innerHTML = emptyHtml(kind, all, inPeriod, filtered, r);
+    renderSide(kind, null);
+    return;
+  }
+  if (!shown.some(x => x.id === s.selected)) s.selected = shown[0].id;
+
+  const rowHtml = kind === 'trip' ? t => tripRowHtml(t, avg, !grouped) : c => chargeRowHtml(c, !grouped);
+  let html = listHeadHtml(kind);
+  if (grouped) {
+    const groups = [];
+    for (const x of shown) {
+      const key = dayKey(x.start);
+      if (!groups.length || groups[groups.length - 1].key !== key) groups.push({ key, items: [] });
+      groups[groups.length - 1].items.push(x);
+    }
+    html += groups.map(g => `<section class="day"><div class="group"><span>${esc(dayLabel(g.items[0].start))}</span>` +
+      `<span class="sum">${groupSum(kind, g.items)}</span></div><div class="rows">${g.items.map(rowHtml).join('')}</div></section>`).join('');
+  } else {
+    html += `<section class="day"><div class="rows">${shown.map(rowHtml).join('')}</div></section>`;
+  }
+  listEl.innerHTML = html;
+  renderSide(kind, shown.find(x => x.id === s.selected));
+}
+
+function sortItems(kind, list) {
+  const s = ui[kind];
+  const key = KIND[kind].sortKeys[s.sort] || (x => x.start);
+  const out = list.slice().sort((a, b) => (key(a) - key(b)) || (a.start - b.start));
+  return s.dir === 'desc' ? out.reverse() : out;
+}
+
+function renderSortControls(kind) {
+  const s = ui[kind], dir = $(kind + '-dir');
+  $(kind + '-sort').value = s.sort;
+  dir.innerHTML = icon(s.dir === 'desc' ? 'down' : 'up');
+  // Icon only, so the direction has to live in the tooltip rather than a label beside it.
+  dir.title = s.dir === 'desc' ? 'Descending — tap to reverse' : 'Ascending — tap to reverse';
+}
+
+// Column headings: a tap sorts by that column, a second tap reverses it. The phone's select
+// always starts a new field from the top (largest / newest first).
+function sortBy(kind, key, fromSelect = false) {
+  const s = ui[kind];
+  if (s.sort === key && !fromSelect) s.dir = s.dir === 'desc' ? 'asc' : 'desc';
+  else { s.sort = key; s.dir = 'desc'; }
+  savePrefs();
+  renderList(kind);
+}
+function toggleSortDir(kind) {
+  ui[kind].dir = ui[kind].dir === 'desc' ? 'asc' : 'desc';
+  savePrefs();
+  renderList(kind);
+}
+function setPeriod(p) {
+  ui.period = p;
+  savePrefs();
+  renderList(currentView === 'charges' ? 'charge' : 'trip');
+}
+function setFavOnly(kind, on) {
+  ui[kind].favOnly = on;
+  renderList(kind);
+}
+
+function setFilter(kind, k, v) {
+  ui[kind].filters[k] = numOrNull(v);
+  updateFilterBadge(kind);
+  renderList(kind);
+}
 /**
  * How many filters are set, shown as a badge on the Filters button. Without the word "Filters"
  * next to it there is otherwise nothing to say a list is being filtered.
  */
 function updateFilterBadge(kind) {
-  const store = kind === 'trip' ? tripFilters : chargeFilters;
-  const count = Object.values(store).filter(v => v != null).length;
-  const badge = document.getElementById(kind + '-filter-badge');
-  if (!badge) return;
+  const count = Object.values(ui[kind].filters).filter(v => v != null).length;
+  const badge = $(kind + '-filter-badge');
   badge.textContent = count;
-  badge.style.display = count ? 'flex' : 'none';
-  document.getElementById(kind + '-filter-btn')?.classList.toggle('filtered', count > 0);
+  badge.hidden = !count;
+  $(kind + '-filter-btn').classList.toggle('filtered', count > 0);
 }
-
 function toggleFilterPanel(kind) {
-  const panel = document.getElementById(kind + '-filters');
-  const open  = panel.style.display === 'none';
-  panel.style.display = open ? 'grid' : 'none';
-  document.getElementById(kind + '-filter-btn').classList.toggle('active', open);
+  const panel = $(kind + '-filters');
+  panel.hidden = !panel.hidden;
+  $(kind + '-filter-btn').classList.toggle('open', !panel.hidden);
 }
-
 function clearFilters(kind) {
-  const store = kind === 'trip' ? tripFilters : chargeFilters;
-  Object.keys(store).forEach(k => delete store[k]);
-  document.querySelectorAll('#' + kind + '-filters input').forEach(i => i.value = '');
+  ui[kind].filters = {};
+  document.querySelectorAll('#' + kind + '-filters input').forEach(i => { i.value = ''; });
   updateFilterBadge(kind);
-  if (kind === 'trip') renderTripList(); else renderChargeList();
+  renderList(kind);
 }
 
-// Apply favourites filter + range filters + sort to a trip array.
-function applyTripControls(trips) {
-  const f = tripFilters;
-  let list = (favOnly ? trips.filter(t => +t.isFavourite) : trips).filter(t =>
-    inRange(+t.dist || 0,        f.distMin, f.distMax) &&
-    inRange(tripDurMs(t) / 60000, f.durMin,  f.durMax)  &&
-    inRange(+t.avgSpd || 0,      f.spdMin,  f.spdMax)  &&
-    inRange(+t.eff || 0,         f.effMin,  f.effMax)
-  );
-  const key = ({
-    date:   t => +t.startTime,  dist:   t => +t.dist   || 0, dur:    t => tripDurMs(t),
-    avgSpd: t => +t.avgSpd || 0, eff:    t => +t.eff    || 0, energy: t => +t.energy || 0,
-  })[tripSort.field] || (t => +t.startTime);
-  list = list.slice().sort((a, b) => key(a) - key(b));
-  return tripSort.dir === 'desc' ? list.reverse() : list;
+// ── Detail panel (beside the list on a wide screen; the summary card on a detail page) ──
+function bigBar(a, b, mode) {
+  const lo = clamp(Math.min(a, b), 0, 100), hi = clamp(Math.max(a, b), 0, 100);
+  return `<div class="bigbar" aria-hidden="true"><i class="lvl" style="width:${lo}%"></i>` +
+         `<i class="hatch${mode === 'add' ? ' add' : ''}" style="left:${lo}%;width:${Math.max(hi - lo, 0.8)}%"></i></div>`;
+}
+const signedPct = d => `${d >= 0 ? '+' : '−'}${Math.abs(d)}%`;
+
+function tripPanelHtml(t, avg, page = false) {
+  const cls = effClass(t.eff, avg);
+  const head = page ? '' : `<div class="p-head"><div>
+      <div class="eyebrow">Trip details</div>
+      <div class="p-title">${fmtLongDate(t.start)}</div>
+      <div class="p-time">${timeRange(t)}</div></div>${starHtml('trip', t)}</div>`;
+  const sub = [fmtDur(t.durMs), t.avgSpd > 0 ? `${Math.round(t.avgSpd)} km/h average` : ''].filter(Boolean).join(' · ');
+  const hero = `<div class="p-hero"${page ? ' style="margin-top:0"' : ''}><div class="hero hero-md"><span class="v">${nf(t.dist, 1)}</span><span class="u">km</span></div>
+    <div class="hero-sub">${sub}${t.manual ? ' · manual trip' : ''}</div></div>`;
+
+  let eff = '';
+  if (t.eff > 0) {
+    let gauge = '', note = '';
+    if (avg > 0) {
+      const d = (t.eff - avg) / avg, p = Math.round(Math.abs(d) * 100), than = refRange().avgText;
+      note = p < 2 ? `About the same as ${than}`
+                   : `${p}% ${d > 0 ? 'more' : 'less'} energy than ${than}`;
+      gauge = `<div class="gauge" aria-hidden="true"><div class="gauge-track"></div><div class="gauge-tick"></div>
+        <div class="gauge-avg">avg ${nf(avg, 1)}</div>
+        <div class="gauge-dot ${cls}" style="left:${clamp(effPos(t.eff, avg), 2, 98).toFixed(1)}%"></div></div>`;
+    }
+    eff = `<div class="p-sec"><div class="p-row"><span class="l">Efficiency</span>
+      <span class="v ${cls}">${nf(t.eff, 1)}<span class="u">kWh/100km</span></span></div>
+      ${gauge}${note ? `<div class="p-note">${note}</div>` : ''}</div>`;
+  }
+
+  let batt = '';
+  if (t.socStart != null) {
+    const A = Math.round(t.socStart), B = t.socEnd != null ? Math.round(t.socEnd) : null;
+    const note = [B != null ? signedPct(B - A) : '', t.energy > 0 ? `${nf(t.energy, 2)} kWh used` : ''].filter(Boolean).join(' · ');
+    batt = `<div class="p-sec"><div class="p-row"><span class="l">Battery</span>
+      <span class="v">${A}%${B != null ? ` → ${B}%` : ''}</span></div>
+      ${B != null ? bigBar(A, B, 'use') : ''}${note ? `<div class="p-note">${note}</div>` : ''}</div>`;
+  }
+
+  const odo = `<div class="p-sec odo-grid">
+    <div><div class="l">Odometer start</div><div class="v">${t.odoStart ? nf(t.odoStart, 1) + ' km' : '—'}</div></div>
+    <div><div class="l">Odometer end</div><div class="v">${t.odoEnd ? nf(t.odoEnd, 1) + ' km' : '—'}</div></div></div>`;
+  const open = page ? '' : `<button class="btn p-open" onclick="navigate('trip', ${t.id})">Open trip — map &amp; charts${icon('right')}</button>`;
+  return head + hero + eff + batt + odo + open;
 }
 
-// Apply favourites filter + range filters + sort to a charging-session array.
-function applyChargeControls(sessions) {
-  const f = chargeFilters;
-  let list = (favOnly ? sessions.filter(s => +s.isFavourite) : sessions).filter(s =>
-    inRange(+s.kwhAdded || 0,       f.kwhMin,  f.kwhMax)  &&
-    inRange(+s.peakKw || 0,         f.peakMin, f.peakMax) &&
-    inRange(chargeDurMs(s) / 60000, f.durMin,  f.durMax)
-  );
-  const key = ({
-    date: s => +s.startTime, dur:  s => chargeDurMs(s), kwh: s => +s.kwhAdded || 0,
-    peak: s => +s.peakKw || 0, avg: s => +s.avgKw || 0,
-  })[chargeSort.field] || (s => +s.startTime);
-  list = list.slice().sort((a, b) => key(a) - key(b));
-  return chargeSort.dir === 'desc' ? list.reverse() : list;
+function chargePanelHtml(s, page = false) {
+  const head = page ? '' : `<div class="p-head"><div>
+      <div class="eyebrow">Charge details</div>
+      <div class="p-title">${fmtLongDate(s.start)}</div>
+      <div class="p-time">${timeRange(s)}</div></div>${starHtml('charge', s)}</div>`;
+  const sub = [fmtDur(s.durMs), s.avg > 0 ? `${nf(s.avg, 1)} kW average` : ''].filter(Boolean).join(' · ');
+  const hero = `<div class="p-hero"${page ? ' style="margin-top:0"' : ''}><div class="hero hero-md"><span class="v">+${nf(s.kwh, 2)}</span><span class="u">kWh</span></div>
+    <div class="hero-sub">${sub}</div></div>`;
+  const power = `<div class="p-sec">
+    <div class="p-row"><span class="l">Type</span><span class="v">${typeChip(s)}</span></div>
+    <div class="p-row"><span class="l">Peak power</span><span class="v">${s.peak > 0 ? nf(s.peak, 1) + ' kW' : '—'}</span></div>
+    <div class="p-row"><span class="l">Average power</span><span class="v">${s.avg > 0 ? nf(s.avg, 1) + ' kW' : '—'}</span></div></div>`;
+  let batt = '';
+  if (s.socStart != null) {
+    const A = Math.round(s.socStart), B = s.socEnd != null ? Math.round(s.socEnd) : null;
+    batt = `<div class="p-sec"><div class="p-row"><span class="l">Battery</span>
+      <span class="v">${A}%${B != null ? ` → ${B}%` : ''}</span></div>
+      ${B != null ? bigBar(A, B, 'add') + `<div class="p-note">${signedPct(B - A)} added</div>` : ''}</div>`;
+  }
+  const temp = s.tempStart != null
+    ? `${nf(s.tempStart, 1)}°C${s.tempEnd != null ? ` → ${nf(s.tempEnd, 1)}°C` : ''}` : '—';
+  const more = `<div class="p-sec odo-grid">
+    <div><div class="l">Battery temp</div><div class="v">${temp}</div></div>
+    <div><div class="l">Odometer</div><div class="v">${s.odo ? nf(s.odo, 1) + ' km' : '—'}</div></div></div>`;
+  const open = page ? '' : `<button class="btn p-open" onclick="navigate('charge', ${s.id})">Open session — chart${icon('right')}</button>`;
+  return head + hero + power + batt + more + open;
 }
+
+function renderSide(kind, x) {
+  const el = $(kind + '-side');
+  if (!x) {
+    el.innerHTML = `<div class="panel-empty">Select a ${kind === 'trip' ? 'trip' : 'session'} to see its details.</div>`;
+    return;
+  }
+  el.innerHTML = kind === 'trip' ? tripPanelHtml(x, currentAvgEff()) : chargePanelHtml(x);
+}
+
+// ── Header battery chip ────────────────────────────────────────────────────────
+// The battery level at the end of the newest trip or charge, and the highest odometer reading.
+// That is the last thing recorded, not a live reading, and the tooltip says when it was.
+function updateBattChip() {
+  let best = null, odo = 0;
+  for (const t of store.trips || []) {
+    if (t.end && t.socEnd != null && (!best || t.end > best.t)) best = { t: t.end, soc: t.socEnd, what: 'trip' };
+    if (t.odoEnd > odo) odo = t.odoEnd;
+  }
+  for (const s of store.charges || []) {
+    if (s.end && s.socEnd != null && (!best || s.end > best.t)) best = { t: s.end, soc: s.socEnd, what: 'charge' };
+    if (s.odo > odo) odo = s.odo;
+  }
+  const chip = $('batt-chip');
+  if (!best) { chip.hidden = true; return; }
+  const soc = Math.round(best.soc);
+  $('batt-ico').innerHTML = battIcon(soc);
+  $('batt-soc').textContent = soc + '%';
+  $('batt-odo').textContent = odo > 0 ? `${Math.round(odo).toLocaleString(LOCALE)} km` : '';
+  chip.querySelector('.vsep').hidden = !(odo > 0);
+  chip.disabled = !liveMode;
+  const what = `${soc}% at the end of the last ${best.what}, ${fmtDate(best.t)}` +
+               (odo > 0 ? ` · odometer ${nf(odo, 1)} km` : '');
+  chip.title = what + (liveMode ? '\nOpens the 48-hour HV / 12V battery chart' : '');
+  chip.setAttribute('aria-label', liveMode ? `Battery history. ${what}` : what);
+  chip.hidden = false;
+}
+
+// ── Interaction ────────────────────────────────────────────────────────────────
+// A wide screen has room for the panel beside the list: a row tap shows it there, and the
+// panel's button (or Enter, or a double-click) opens the full page. Narrower, a tap opens it.
+const wideMq = window.matchMedia('(min-width: 1200px)');
+const isWide = () => wideMq.matches;
+
+function selectItem(kind, id) {
+  ui[kind].selected = id;
+  const listEl = $(kind + '-list');
+  listEl.querySelectorAll('.row.selected').forEach(r => r.classList.remove('selected'));
+  listEl.querySelector(`.row[data-id="${id}"]`)?.classList.add('selected');
+  renderSide(kind, KIND[kind].list()?.find(x => x.id === id));
+}
+
+function activateRow(kind, id) {
+  if (isWide()) selectItem(kind, id);
+  else navigate(KIND[kind].detail, id);
+}
+
+/** A tap on a bar of the period chart scrolls the list to that day, week or month. */
+function jumpToBucket(kind, from, to) {
+  hideTip();
+  const rowEls = [...$(kind + '-list').querySelectorAll('.row')];
+  const hit = rowEls.find(r => +r.dataset.start >= from && +r.dataset.start < to);
+  if (!hit) return;
+  const target = ui[kind].sort === 'date' ? (hit.closest('.day')?.querySelector('.group') || hit) : hit;
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (isWide()) selectItem(kind, +hit.dataset.id);
+  hit.classList.remove('flash');
+  void hit.offsetWidth;            // restart the animation
+  hit.classList.add('flash');
+}
+
+document.addEventListener('click', e => {
+  const star = e.target.closest('button.star[data-kind]');
+  if (star) { toggleFav(star.dataset.kind, +star.dataset.id); return; }
+  const bar = e.target.closest('.bar-col');
+  if (bar) { jumpToBucket(bar.dataset.kind, +bar.dataset.from, +bar.dataset.to); return; }
+  const row = e.target.closest('.row[data-kind]');
+  if (row) activateRow(row.dataset.kind, +row.dataset.id);
+});
+document.addEventListener('dblclick', e => {
+  const row = e.target.closest('.row[data-kind]');
+  if (row && !e.target.closest('button')) navigate(KIND[row.dataset.kind].detail, +row.dataset.id);
+});
+document.addEventListener('keydown', e => {
+  const row = e.target.closest?.('.row[data-kind]');
+  if (!row || e.target !== row) return;          // keys on the row's own star stay the star's
+  const kind = row.dataset.kind;
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    navigate(KIND[kind].detail, +row.dataset.id);
+  } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    const all = [...$(kind + '-list').querySelectorAll('.row')];
+    const next = all[all.indexOf(row) + (e.key === 'ArrowDown' ? 1 : -1)];
+    if (next) {
+      next.focus();
+      if (isWide()) selectItem(kind, +next.dataset.id);
+    }
+  }
+});
+
+// One tooltip for the period chart's bars, on hover and on keyboard focus. Its text is set with
+// textContent: it is built from the data, never parsed as markup.
+const tipEl = $('chart-tip');
+function showTip(colEl) {
+  tipEl.textContent = colEl.dataset.tip;
+  tipEl.hidden = false;
+  const bar = colEl.querySelector('.bar').getBoundingClientRect();
+  const tw = tipEl.offsetWidth, th = tipEl.offsetHeight;
+  const x = clamp(bar.left + bar.width / 2 - tw / 2, 8, window.innerWidth - tw - 8);
+  let y = bar.top - th - 8;
+  if (y < 8) y = bar.bottom + 8;
+  tipEl.style.left = x + 'px';
+  tipEl.style.top  = y + 'px';
+}
+function hideTip() { tipEl.hidden = true; }
+document.addEventListener('pointerover', e => { const c = e.target.closest?.('.bar-col'); if (c) showTip(c); });
+document.addEventListener('pointerout', e => {
+  const c = e.target.closest?.('.bar-col');
+  if (c && !c.contains(e.relatedTarget)) hideTip();
+});
+document.addEventListener('focusin',  e => { if (e.target.classList?.contains('bar-col')) showTip(e.target); });
+document.addEventListener('focusout', e => { if (e.target.classList?.contains('bar-col')) hideTip(); });
+window.addEventListener('scroll', hideTip, { passive: true });
+
+// ── Favourites ─────────────────────────────────────────────────────────────────
+// Live mode only. The star changes at once and changes back if the car didn't take it.
+let detailItem = null;   // { kind, x } — the trip or charge a detail page shows
+
+async function toggleFav(kind, id) {
+  if (!liveMode) return;
+  const item = KIND[kind].list()?.find(x => x.id === id);
+  const det  = detailItem && detailItem.kind === kind && detailItem.x.id === id ? detailItem.x : null;
+  const was  = item ? item.fav : det ? det.fav : false;
+  const set  = v => {
+    if (item) item.fav = v;
+    if (det) det.fav = v;
+    refreshFavViews(kind, id);
+  };
+  set(!was);
+  try {
+    await postAction(`/api/${kind === 'trip' ? 'trips' : 'charges'}/${id}/favourite?favourite=${was ? 0 : 1}`);
+  } catch (e) {
+    console.error('toggleFav:', e);
+    set(was);
+  }
+}
+
+function refreshFavViews(kind, id) {
+  // Re-rendering replaces the button that had focus, so focus goes to its replacement.
+  const f = document.activeElement?.matches?.('button.star') ? document.activeElement : null;
+  const where = !f ? null : f.closest('.split-side') ? `#${kind}-side button.star`
+              : f.closest('.list') ? `#${kind}-list button.star[data-id="${id}"]` : `#${kind}-detail-fav button.star`;
+  if (currentView === KIND[kind].view) renderList(kind);
+  if (detailItem && currentView === KIND[kind].detail) $(kind + '-detail-fav').innerHTML = starHtml(kind, detailItem.x);
+  if (where) document.querySelector(where)?.focus();
+}
+
+// ── Routing ────────────────────────────────────────────────────────────────────
+const TRIP_CHARTS = ['chart-speed','chart-rpm','chart-power','chart-energy','chart-soc','chart-altitude','chart-voltage','chart-tyre','chart-instant'];
 
 function navigate(view, id = null) {
   location.hash = id != null ? `${view}/${id}` : view;
+}
+
+function showView(view, id) {
+  if (!db && !liveMode && view !== 'drop') return;
+  // Remember where a list was scrolled to, so coming back from a detail page lands there again.
+  if (currentView === 'trips')   ui.trip.scroll   = window.scrollY;
+  if (currentView === 'charges') ui.charge.scroll = window.scrollY;
+  const prev = currentView;
+  currentView = view;
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  $('view-' + view)?.classList.add('active');
+  const navKey = view === 'trip' ? 'trips' : view === 'charge' ? 'charges' : view;
+  document.querySelectorAll('[data-nav]').forEach(b => {
+    const on = b.dataset.nav === navKey;
+    b.classList.toggle('active', on);
+    if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+  });
+  // Destroy charts and the map when leaving detail views
+  if (view !== 'trip') TRIP_CHARTS.forEach(destroyChart);
+  if (view !== 'charge') destroyChart('chart-charge');
+  if (view !== 'trip' && leafletMap) { leafletMap.remove(); leafletMap = null; }
+  if (view !== 'trip' && view !== 'charge') detailItem = null;
+  hideTip();
+
+  if (view === 'trips')   showList('trip', prev);
+  if (view === 'charges') showList('charge', prev);
+  if (view === 'trip')    { window.scrollTo(0, 0); renderTripDetail(+id); }
+  if (view === 'charge')  { window.scrollTo(0, 0); renderChargeDetail(+id); }
+  // Safari hands back an already-decoded location.hash, so a second decode has to be tolerated.
+  if (view === 'files') {
+    window.scrollTo(0, 0);
+    loadFiles(id ? (() => { try { return decodeURIComponent(id); } catch (_) { return id; } })() : '');
+  }
+}
+
+function showList(kind, prev) {
+  renderList(kind);                 // at once, from what is already loaded
+  window.scrollTo(0, prev === KIND[kind].detail ? ui[kind].scroll : 0);
+  refreshList(kind);
+}
+
+async function refreshList(kind) {
+  const K = KIND[kind];
+  if (!liveMode && K.list()) return;   // a backup doesn't change while it's open
+  try {
+    await K.fetch();
+    if (currentView === K.view) renderList(kind);
+  } catch (err) {
+    console.error('refreshList:', err);
+    if (currentView === K.view && !K.list()) {
+      $(kind + '-list').innerHTML = `<div class="empty error">Could not load the list — ${esc(err.message)}</div>`;
+    }
+  }
 }
 
 window.addEventListener('hashchange', parseHash);
@@ -1571,124 +2706,34 @@ function parseHash() {
   else if (h === 'charges')             showView('charges');
   else if (h.startsWith('charge/'))     showView('charge', h.split('/')[1]);
   // Everything after "files/" is one encoded path, so it is taken whole rather than split.
-  else if (h === 'files')               showView('files');
-  else if (h.startsWith('files/'))      showView('files', h.slice(6));
+  else if (h === 'files' && liveMode)   showView('files');
+  else if (h.startsWith('files/') && liveMode) showView('files', h.slice(6));
   else                                  showView('trips');
 }
 
-// ── Formatters ─────────────────────────────────────────────────────────────────
-function fmtDate(ms) {
-  if (!ms) return '—';
-  return new Date(+ms).toLocaleString('en-GB', {
-    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
-    hour: '2-digit', minute: '2-digit'
-  });
-}
-function fmtDuration(ms) {
-  if (!ms || ms <= 0) return '—';
-  const h = Math.floor(ms / 3_600_000);
-  const m = Math.floor((ms % 3_600_000) / 60_000);
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
-function fmtKm(v)  { return v != null ? (+v).toFixed(1) + ' km'  : '—'; }
-function fmtKmh(v) { return v != null ? Math.round(+v) + ' km/h' : '—'; }
-function fmtKwh(v) { return v != null && +v > 0 ? (+v).toFixed(2) + ' kWh' : '—'; }
-function fmtEff(v) { return v != null && +v > 0 ? (+v).toFixed(1) + ' kWh/100km' : '—'; }
-function fmtKw(v)  { return v != null && +v > 0 ? (+v).toFixed(1) + ' kW' : '—'; }
-// One decimal, matching fmtKm — the odometer pair and the distance delta derived
-// from it must not disagree through rounding.
-function fmtOdo(start, end) {
-  if (start == null || +start <= 0) return '—';
-  const one = v => (+v).toLocaleString('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-  return end != null && +end > 0 ? `${one(start)} → ${one(end)}` : one(start);
-}
-function fmtSoc(start, end) {
-  if (start == null || +start === 0) return '—';
-  const s = Math.round(+start) + '%';
-  return end != null ? `${s} → ${Math.round(+end)}%` : s;
-}
-function tryParse(s) { try { return s ? JSON.parse(s) : null; } catch { return null; } }
-
-// ── Trip list ──────────────────────────────────────────────────────────────────
-function renderTripList() {
-  _renderTripList().catch(err => {
-    document.getElementById('trip-cards').innerHTML =
-      `<p class="empty" style="color:var(--pink)">Error: ${err.message}</p>`;
-    console.error('renderTripList:', err);
-  });
-}
-async function _renderTripList() {
-  const trips = liveMode
-    ? await fetchJson('/api/trips')
-    : rows(`
-        SELECT t.id, t.startTime, t.endTime,
-               ${col('trips', 'offStateDurationMs')},
-               ${col('trips', 'startSocPanel')},
-               ${col('trips', 'endSocPanel', 'NULL')},
-               ${col('trips', 'isFavourite')},
-               t.startSoc, t.endSoc, t.isManual,
-               t.startOdometer, t.endOdometer,
-               COALESCE(s.totalDistance,
-                 MAX(0.0, COALESCE(CAST(t.endOdometer AS REAL), 0.0) - CAST(t.startOdometer AS REAL))
-               ) AS dist,
-               COALESCE(s.avgSpeed, 0)            AS avgSpd,
-               COALESCE(s.avgEfficiency, 0)       AS eff,
-               COALESCE(s.totalEnergyConsumed, 0) AS energy
-        FROM trips t LEFT JOIN trip_stats s ON t.id = s.tripId
-        WHERE t.isActive = 0 AND t.endTime IS NOT NULL
-        ORDER BY t.startTime DESC
-      `);
-
-  const shown = applyTripControls(trips);
-
-  const totalDist   = shown.reduce((a, t) => a + (+t.dist   || 0), 0);
-  const totalEnergy = shown.reduce((a, t) => a + (+t.energy || 0), 0);
-  document.getElementById('trip-summary').innerHTML = summaryLine([
-    [shown.length, shown.length === 1 ? 'trip' : 'trips'],
-    [Math.round(totalDist).toLocaleString(), 'km'],
-    [Math.round(totalEnergy).toLocaleString(), 'kWh']
-  ]);
-
-  if (!shown.length) {
-    document.getElementById('trip-cards').innerHTML =
-      `<p class="empty">${favOnly ? 'No favourite trips yet — tap a ☆ to add one.' : 'No completed trips found.'}</p>`;
-    return;
-  }
-
-  document.getElementById('trip-cards').innerHTML = shown.map(t => {
-    const dur = t.endTime
-      ? (+t.endTime - +t.startTime - (+t.offStateDurationMs || 0))
-      : null;
-    const soc = +t.startSocPanel > 0
-      ? fmtSoc(t.startSocPanel, t.endSocPanel)
-      : fmtSoc(t.startSoc, t.endSoc);
-    return `<div class="card" onclick="navigate('trip',${t.id})">
-      <div class="card-header">
-        <span class="card-date">${fmtDate(t.startTime)}</span>
-        <span class="card-head-right">
-          ${+t.isManual ? '<span class="badge">Manual</span>' : ''}
-          ${favStar('trip', t.id, t.isFavourite)}
-        </span>
-      </div>
-      <div class="card-stats">
-        <div class="stat"><span class="val">${fmtKm(t.dist)}</span><span class="lbl">Distance</span></div>
-        <div class="stat"><span class="val">${fmtDuration(dur)}</span><span class="lbl">Duration</span></div>
-        <div class="stat"><span class="val">${fmtKmh(+t.avgSpd || null)}</span><span class="lbl">Avg Speed</span></div>
-        <div class="stat"><span class="val">${fmtEff(+t.eff || null)}</span><span class="lbl">Avg Consumption</span></div>
-        <div class="stat"><span class="val">${fmtKwh(t.energy)}</span><span class="lbl">Energy</span></div>
-        <div class="stat"><span class="val">${soc}</span><span class="lbl">SoC</span></div>
-        <div class="stat"><span class="val">${fmtOdo(t.startOdometer, t.endOdometer)}</span><span class="lbl">Odometer (km)</span></div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
 // ── Trip detail ────────────────────────────────────────────────────────────────
+// Each render takes a ticket; a slower answer for a page that has since been left is dropped,
+// so it can't draw a map or charts into a view nobody is looking at.
+let detailTicket = 0;
+
 function renderTripDetail(id) {
-  _renderTripDetail(id).catch(err => console.error('renderTripDetail:', err));
+  _renderTripDetail(id).catch(err => {
+    console.error('renderTripDetail:', err);
+    $('trip-detail-card').innerHTML = `<div class="panel-empty">Could not load this trip — ${esc(err.message)}</div>`;
+  });
 }
 async function _renderTripDetail(id) {
-  const t = liveMode
+  const ticket = ++detailTicket;
+  const stale = () => ticket !== detailTicket || currentView !== 'trip';
+  $('trip-detail-title').textContent = 'Loading…';
+  $('trip-detail-sub').textContent = '';
+  $('trip-detail-fav').innerHTML = '';
+  $('trip-detail-card').innerHTML = '';
+  $('trip-report').innerHTML = '';
+  $('trip-map').innerHTML = '';
+  TRIP_CHARTS.forEach(id => resetChart(id));
+
+  const raw = liveMode
     ? await fetchJson(`/api/trips/${id}`)
     : one(`
         SELECT t.*, s.avgSpeed, s.avgEfficiency, s.totalEnergyConsumed, s.compressedRoute,
@@ -1698,51 +2743,46 @@ async function _renderTripDetail(id) {
         FROM trips t LEFT JOIN trip_stats s ON t.id = s.tripId
         WHERE t.id = ?
       `, [id]);
-  if (!t) { navigate('trips'); return; }
+  if (stale()) return;
+  if (!raw) { navigate('trips'); return; }
+  // The efficiency comparison needs the period's average, so the list comes along if it isn't
+  // loaded yet (a detail page opened from a link).
+  if (!store.trips) { try { await fetchTrips(); } catch (_) { /* compare against nothing */ } }
+  if (stale()) return;
 
-  const dur = t.endTime
-    ? (+t.endTime - +t.startTime - (+t.offStateDurationMs || 0))
-    : null;
-  const soc = +t.startSocPanel > 0
-    ? fmtSoc(t.startSocPanel, t.endSocPanel)
-    : fmtSoc(t.startSoc, t.endSoc);
+  const t = normTrip(raw);
+  detailItem = { kind: 'trip', x: t };
+  $('trip-detail-title').textContent = fmtLongDate(t.start);
+  $('trip-detail-sub').textContent = timeRange(t);
+  $('trip-detail-fav').innerHTML = starHtml('trip', t);
+  $('trip-detail-card').innerHTML = tripPanelHtml(t, currentAvgEff(), true);
 
-  document.getElementById('trip-detail-header').textContent = fmtDate(t.startTime);
-  document.getElementById('trip-detail-fav').innerHTML = favStar('trip', t.id, t.isFavourite);
-  document.getElementById('trip-detail-stats').innerHTML = [
-    ['Distance',   fmtKm(t.dist)],
-    ['Duration',   fmtDuration(dur)],
-    ['Avg Speed',  fmtKmh(+t.avgSpeed || null)],
-    ['Efficiency', fmtEff(+t.avgEfficiency || null)],
-    ['Energy',     fmtKwh(t.totalEnergyConsumed)],
-    ['SoC',        soc],
-    ['Odometer (km)', fmtOdo(t.startOdometer, t.endOdometer)],
-  ].map(([l, v]) =>
-    `<div class="stat"><span class="val">${v}</span><span class="lbl">${l}</span></div>`
-  ).join('');
-
-  renderTripReport(t.report);
+  renderTripReport(raw.report);
 
   // Map — live mode delivers compressedRoute as an already-parsed array; file mode
   // delivers it as a JSON string from SQLite. Handle both.
-  const route = Array.isArray(t.compressedRoute) ? t.compressedRoute : tryParse(t.compressedRoute);
+  const route = Array.isArray(raw.compressedRoute) ? raw.compressedRoute : tryParse(raw.compressedRoute);
   renderMap('trip-map', route);
 
   // Charts — load data points after a tick so the map renders first
   setTimeout(async () => {
-    const pts = liveMode
-      ? await fetchJson(`/api/trips/${id}/points`)
-      : rows(
-          `SELECT timestamp, speed, power, soc, socPanel, altitude, batteryTemp,
-                  engineSpeedFront, engineSpeedRear,
-                  tyrePressureLF, tyrePressureRF, tyrePressureLR, tyrePressureRR,
-                  batteryTotalVoltage, batteryCellVoltageMin, batteryCellVoltageMax
-           FROM trip_data_points WHERE tripId = ? ORDER BY timestamp ASC`,
-          [id]
-        );
-    renderTripCharts(pts);
+    try {
+      const pts = liveMode
+        ? await fetchJson(`/api/trips/${id}/points`)
+        : rows(
+            `SELECT timestamp, speed, power, soc, socPanel, altitude, batteryTemp,
+                    engineSpeedFront, engineSpeedRear,
+                    tyrePressureLF, tyrePressureRF, tyrePressureLR, tyrePressureRR,
+                    batteryTotalVoltage, batteryCellVoltageMin, batteryCellVoltageMax
+             FROM trip_data_points WHERE tripId = ? ORDER BY timestamp ASC`,
+            [id]
+          );
+      if (!stale()) renderTripCharts(pts);
+    } catch (err) { console.error('trip points:', err); }
   }, 50);
 }
+
+function tryParse(s) { try { return s ? JSON.parse(s) : null; } catch { return null; } }
 
 // ── Trip report (Overview figures + analyses) ──────────────────────────────────
 //
@@ -1767,7 +2807,7 @@ function rPanel(title, rows, note = '', extra = '') {
 }
 
 function renderTripReport(rep) {
-  const el = document.getElementById('trip-report');
+  const el = $('trip-report');
   el.innerHTML = '';
   if (!rep) return;
   const o = rep.overview || {};
@@ -1783,7 +2823,7 @@ function renderTripReport(rep) {
   panels.push(rPanel('Trip statistics', [
     rRow('Start time',  fmtDate(o.startTime)),
     rRow('End time',    o.endTime ? fmtDate(o.endTime) : 'In progress'),
-    rRow('Duration',    fmtDuration(o.duration)),
+    rRow('Duration',    fmtDur(o.duration)),
     rRow('Initial mileage', rNum(o.startOdometer, 1, 'km')),
     rRow('Final mileage',   rNum(o.endOdometer, 1, 'km')),
     rRow('Trip distance',   rNum(o.distance, 1, 'km')),
@@ -1800,14 +2840,14 @@ function renderTripReport(rep) {
     rRow('Regen efficiency',   rNum(o.regenEfficiencyPct, 2, '%')),
     o.energyRatePerKwh != null
       ? rRow('Energy rate', +o.energyRatePerKwh <= 0 ? 'Free'
-          : `${o.currencySymbol || ''}${(+o.energyRatePerKwh).toFixed(3)}/kWh`)
+          : `${esc(o.currencySymbol || '')}${(+o.energyRatePerKwh).toFixed(3)}/kWh`)
       : '',
     o.tripCost != null
       ? rRow('Trip cost', +o.tripCost <= 0 ? 'Free'
-          : `${o.currencySymbol || ''}${(+o.tripCost).toFixed(2)}`)
+          : `${esc(o.currencySymbol || '')}${(+o.tripCost).toFixed(2)}`)
       : '',
-    rRow('Battery temp range', o.batteryTempRangeLabel || '—'),
-    rRow('Avg battery temp',   o.avgBatteryTempLabel || '—'),
+    rRow('Battery temp range', esc(o.batteryTempRangeLabel || '—')),
+    rRow('Avg battery temp',   esc(o.avgBatteryTempLabel || '—')),
     o.tripScore != null ? rRow('Trip score', `${o.tripScore} / 100`) : '',
   ]));
 
@@ -1851,7 +2891,7 @@ function renderTripReport(rep) {
 
   if (rep.car) {
     panels.push(rPanel('Vehicle', [
-      rRow('Model', rep.car.name || rep.car.id || '—'),
+      rRow('Model', esc(rep.car.name || rep.car.id || '—')),
       rRow('Battery', rNum(rep.car.batteryKwh, 2, 'kWh')),
       rRow('Drivetrain', rep.car.isPhev ? 'PHEV' : 'BEV'),
     ]));
@@ -1860,75 +2900,23 @@ function renderTripReport(rep) {
   el.innerHTML = panels.filter(Boolean).join('');
 }
 
-// ── Charging list ──────────────────────────────────────────────────────────────
-function renderChargeList() {
-  _renderChargeList().catch(err => {
-    document.getElementById('charge-cards').innerHTML =
-      `<p class="empty" style="color:var(--pink)">Error: ${err.message}</p>`;
-    console.error('renderChargeList:', err);
-  });
-}
-async function _renderChargeList() {
-  const sessions = liveMode
-    ? await fetchJson('/api/charges')
-    : rows(`
-        SELECT id, startTime, endTime, socStart, socEnd,
-               ${col('charging_sessions', 'socStartPanel')},
-               ${col('charging_sessions', 'socEndPanel', 'NULL')},
-               ${col('charging_sessions', 'isFavourite')},
-               ${col('charging_sessions', 'startOdometer', 'NULL')},
-               kwhAdded, peakKw, avgKw, batteryTempStart
-        FROM charging_sessions
-        WHERE isActive = 0 AND endTime IS NOT NULL
-        ORDER BY startTime DESC
-      `);
-
-  const shown = applyChargeControls(sessions);
-
-  const totalKwh = shown.reduce((a, s) => a + (+s.kwhAdded || 0), 0);
-  document.getElementById('charge-summary').innerHTML = summaryLine([
-    [shown.length, shown.length === 1 ? 'session' : 'sessions'],
-    [Math.round(totalKwh).toLocaleString(), 'kWh']
-  ]);
-
-  if (!shown.length) {
-    document.getElementById('charge-cards').innerHTML =
-      `<p class="empty">${favOnly ? 'No favourite sessions yet — tap a ☆ to add one.' : 'No completed charging sessions found.'}</p>`;
-    return;
-  }
-
-  document.getElementById('charge-cards').innerHTML = shown.map(s => {
-    const dur = s.endTime ? (+s.endTime - +s.startTime) : null;
-    const soc = +s.socStartPanel > 0
-      ? fmtSoc(s.socStartPanel, s.socEndPanel)
-      : fmtSoc(s.socStart, s.socEnd);
-    return `<div class="card" onclick="navigate('charge',${s.id})">
-      <div class="card-header">
-        <span class="card-date">${fmtDate(s.startTime)}</span>
-        <span class="card-head-right">
-          ${+s.peakKw > 22 ? '<span class="badge dc-badge">DC</span>' : ''}
-          ${favStar('charge', s.id, s.isFavourite)}
-        </span>
-      </div>
-      <div class="card-stats">
-        <div class="stat"><span class="val">${fmtDuration(dur)}</span><span class="lbl">Duration</span></div>
-        <div class="stat"><span class="val">${fmtKwh(s.kwhAdded)}</span><span class="lbl">Added</span></div>
-        <div class="stat"><span class="val">${fmtKw(s.peakKw)}</span><span class="lbl">Peak</span></div>
-        <div class="stat"><span class="val">${fmtKw(s.avgKw)}</span><span class="lbl">Avg kW</span></div>
-        <div class="stat"><span class="val">${soc}</span><span class="lbl">SoC</span></div>
-        <div class="stat"><span class="val">${s.batteryTempStart ? (+s.batteryTempStart).toFixed(1)+'°C' : '—'}</span><span class="lbl">Batt Temp</span></div>
-        <div class="stat"><span class="val">${fmtOdo(s.startOdometer)}</span><span class="lbl">Odometer (km)</span></div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
 // ── Charging detail ────────────────────────────────────────────────────────────
 function renderChargeDetail(id) {
-  _renderChargeDetail(id).catch(err => console.error('renderChargeDetail:', err));
+  _renderChargeDetail(id).catch(err => {
+    console.error('renderChargeDetail:', err);
+    $('charge-detail-card').innerHTML = `<div class="panel-empty">Could not load this session — ${esc(err.message)}</div>`;
+  });
 }
 async function _renderChargeDetail(id) {
-  const s = liveMode
+  const ticket = ++detailTicket;
+  const stale = () => ticket !== detailTicket || currentView !== 'charge';
+  $('charge-detail-title').textContent = 'Loading…';
+  $('charge-detail-sub').textContent = '';
+  $('charge-detail-fav').innerHTML = '';
+  $('charge-detail-card').innerHTML = '';
+  resetChart('chart-charge');
+
+  const raw = liveMode
     ? await fetchJson(`/api/charges/${id}`)
     : one(`
         SELECT id, startTime, endTime, socStart, socEnd,
@@ -1938,36 +2926,27 @@ async function _renderChargeDetail(id) {
                ${col('charging_sessions', 'startOdometer', 'NULL')},
                kwhAdded, peakKw, avgKw, batteryTempStart, batteryTempEnd
         FROM charging_sessions WHERE id = ?`, [id]);
-  if (!s) { navigate('charges'); return; }
+  if (stale()) return;
+  if (!raw) { navigate('charges'); return; }
 
-  const dur = s.endTime ? (+s.endTime - +s.startTime) : null;
-  const soc = +s.socStartPanel > 0
-    ? fmtSoc(s.socStartPanel, s.socEndPanel)
-    : fmtSoc(s.socStart, s.socEnd);
-
-  document.getElementById('charge-detail-header').textContent = fmtDate(s.startTime);
-  document.getElementById('charge-detail-fav').innerHTML = favStar('charge', s.id, s.isFavourite);
-  document.getElementById('charge-detail-stats').innerHTML = [
-    ['Duration',  fmtDuration(dur)],
-    ['Added',     fmtKwh(s.kwhAdded)],
-    ['Peak kW',   fmtKw(s.peakKw)],
-    ['Avg kW',    fmtKw(s.avgKw)],
-    ['SoC',       soc],
-    ['Batt Temp', s.batteryTempStart ? (+s.batteryTempStart).toFixed(1)+'°C' : '—'],
-    ['Odometer (km)', fmtOdo(s.startOdometer)],
-  ].map(([l, v]) =>
-    `<div class="stat"><span class="val">${v}</span><span class="lbl">${l}</span></div>`
-  ).join('');
+  const s = normCharge(raw);
+  detailItem = { kind: 'charge', x: s };
+  $('charge-detail-title').textContent = fmtLongDate(s.start);
+  $('charge-detail-sub').textContent = timeRange(s);
+  $('charge-detail-fav').innerHTML = starHtml('charge', s);
+  $('charge-detail-card').innerHTML = chargePanelHtml(s, true);
 
   setTimeout(async () => {
-    const pts = liveMode
-      ? await fetchJson(`/api/charges/${id}/points`)
-      : rows(
-          `SELECT timestamp, soc, socPanel, chargingPower, batteryTotalVoltage, batteryTempAvg
-           FROM charging_data_points WHERE sessionId = ? ORDER BY timestamp ASC`,
-          [id]
-        );
-    renderChargeCharts(pts);
+    try {
+      const pts = liveMode
+        ? await fetchJson(`/api/charges/${id}/points`)
+        : rows(
+            `SELECT timestamp, soc, socPanel, chargingPower, batteryTotalVoltage, batteryTempAvg
+             FROM charging_data_points WHERE sessionId = ? ORDER BY timestamp ASC`,
+            [id]
+          );
+      if (!stale()) renderChargeCharts(pts);
+    } catch (err) { console.error('charge points:', err); }
   }, 50);
 }
 
@@ -1976,9 +2955,19 @@ function destroyChart(key) {
   if (charts[key]) { charts[key].destroy(); delete charts[key]; }
 }
 
+/** Puts a canvas back in its frame, after emptyChart() replaced it with a message. */
+function resetChart(id) {
+  destroyChart(id);
+  const canvas = $(id);
+  if (canvas) return;
+  const wrap = document.querySelector(`.chart-wrap[data-chart="${id}"]`);
+  if (wrap) wrap.innerHTML = `<canvas id="${id}"></canvas>`;
+}
+document.querySelectorAll('.chart-wrap canvas').forEach(c => { c.parentElement.dataset.chart = c.id; });
+
 function mkChart(id, cfg) {
   destroyChart(id);
-  const ctx = document.getElementById(id)?.getContext('2d');
+  const ctx = $(id)?.getContext('2d');
   if (!ctx) return;
   charts[id] = new Chart(ctx, cfg);
 }
@@ -1990,34 +2979,39 @@ function decimate(pts, n = 400) {
   return Array.from({ length: n }, (_, i) => pts[Math.min(Math.round(i * step), pts.length - 1)]);
 }
 
+if (typeof Chart !== 'undefined') {
+  Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+  Chart.defaults.color = '#8a92a0';
+}
+const GRID = 'rgba(255,255,255,0.06)';
 const xAxis = {
   type: 'time',
   time: { tooltipFormat: 'HH:mm:ss', displayFormats: { minute: 'HH:mm', hour: 'HH:mm' } },
-  ticks: { color: '#9aa3b2', maxRotation: 0, font: { size: 10 }, maxTicksLimit: 6 },
-  grid: { color: 'rgba(38,43,54,0.8)' }
+  ticks: { color: '#8a92a0', maxRotation: 0, font: { size: 10 }, maxTicksLimit: 6 },
+  grid: { color: GRID }, border: { color: GRID }
 };
 const yAxisLeft = (label, color) => ({
   title: { display: true, text: label, color, font: { size: 10 } },
-  ticks: { color: '#9aa3b2', font: { size: 10 } },
-  grid: { color: 'rgba(38,43,54,0.8)' }
+  ticks: { color: '#8a92a0', font: { size: 10 } },
+  grid: { color: GRID }, border: { display: false }
 });
 const yAxisRight = (label, color) => ({
   position: 'right',
   title: { display: true, text: label, color, font: { size: 10 } },
-  ticks: { color: '#9aa3b2', font: { size: 10 } },
-  grid: { drawOnChartArea: false }
+  ticks: { color: '#8a92a0', font: { size: 10 } },
+  grid: { drawOnChartArea: false }, border: { display: false }
 });
 const pluginBase = {
   legend: {
     position: 'top',
-    labels: { color: '#9aa3b2', boxWidth: 10, font: { size: 11 }, padding: 12 }
+    labels: { color: '#8a92a0', boxWidth: 10, boxHeight: 2, font: { size: 11 }, padding: 12 }
   },
-  tooltip: { mode: 'index', intersect: false }
+  tooltip: {
+    mode: 'index', intersect: false,
+    backgroundColor: '#20252d', borderColor: '#2e3440', borderWidth: 1,
+    titleColor: '#e9ebef', bodyColor: '#c3c8d1', padding: 9, boxPadding: 4,
+  }
 };
-
-function toXY(pts, field) {
-  return decimate(pts).map(p => ({ x: +p.timestamp, y: +p[field] || 0 }));
-}
 
 // App brand colors (matches Android theme exactly)
 const C = {
@@ -2030,15 +3024,19 @@ const C = {
 };
 
 function emptyChart(id, msg) {
-  const canvas = document.getElementById(id);
+  const canvas = $(id);
   if (!canvas) return;
+  destroyChart(id);
   const wrap = canvas.closest('.chart-wrap');
-  if (wrap) wrap.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:12px;text-align:center;padding:8px">${msg}</div>`;
+  if (wrap) wrap.innerHTML = `<div class="chart-empty">${esc(msg)}</div>`;
 }
 
 // ── Trip charts ────────────────────────────────────────────────────────────────
 function renderTripCharts(pts) {
-  if (!pts.length) return;
+  if (!pts.length) {
+    TRIP_CHARTS.forEach(id => emptyChart(id, 'No data points recorded on this trip'));
+    return;
+  }
   const d = decimate(pts);  // shared decimated set
 
   // 1. Speed Profile
@@ -2112,8 +3110,8 @@ function renderTripCharts(pts) {
 
   // 6. Elevation Profile
   // The car's server sends height above sea level; a database file opened here holds the GPS reading.
-  document.getElementById('altitude-title').textContent =
-    liveMode ? 'Elevation Profile' : 'Elevation Profile (GPS height, not above sea level)';
+  $('altitude-title').textContent =
+    liveMode ? 'Elevation profile' : 'Elevation profile (GPS height, not above sea level)';
   mkChart('chart-altitude', {
     type: 'line',
     data: { datasets: [{ label: 'Altitude (m)', data: d.map(p => ({ x: +p.timestamp, y: +p.altitude || 0 })),
@@ -2193,7 +3191,7 @@ function renderTripCharts(pts) {
 
 // ── Charging chart ─────────────────────────────────────────────────────────────
 function renderChargeCharts(pts) {
-  if (!pts.length) return;
+  if (!pts.length) { emptyChart('chart-charge', 'No data points recorded for this session'); return; }
   const socData = decimate(pts).map(p => ({ x: +p.timestamp, y: +p.socPanel > 0 ? +p.socPanel : +p.soc }));
   mkChart('chart-charge', {
     type: 'line',
@@ -2227,9 +3225,9 @@ const CAN_DRAW_BASEMAP = typeof L !== 'undefined' && typeof L.maplibreGL === 'fu
 
 function renderMap(containerId, route) {
   if (leafletMap) { leafletMap.remove(); leafletMap = null; }
-  const el = document.getElementById(containerId);
-  if (!route?.length) {
-    el.innerHTML = '<div class="map-placeholder">No route data available</div>';
+  const el = $(containerId);
+  if (!route?.length || typeof L === 'undefined') {
+    el.innerHTML = `<div class="map-placeholder">${route?.length ? 'The map library did not load' : 'No route recorded for this trip'}</div>`;
     return;
   }
   el.innerHTML = '';
@@ -2243,29 +3241,22 @@ function renderMap(containerId, route) {
   const latlngs = route.map(p => [p.lat, p.lon]);
   const poly = L.polyline(latlngs, { color: '#4cc9f0', weight: 3, opacity: 0.9 }).addTo(leafletMap);
   // Start marker (green) / End marker (pink)
-  L.circleMarker(latlngs[0], { radius: 7, color: '#06d6a0', fillColor: '#06d6a0', fillOpacity: 1, weight: 2 })
+  L.circleMarker(latlngs[0], { radius: 7, color: '#3dd68c', fillColor: '#3dd68c', fillOpacity: 1, weight: 2 })
     .bindTooltip('Start').addTo(leafletMap);
-  L.circleMarker(latlngs[latlngs.length - 1], { radius: 7, color: '#f72585', fillColor: '#f72585', fillOpacity: 1, weight: 2 })
+  L.circleMarker(latlngs[latlngs.length - 1], { radius: 7, color: '#f2577c', fillColor: '#f2577c', fillOpacity: 1, weight: 2 })
     .bindTooltip('End').addTo(leafletMap);
-  leafletMap.fitBounds(poly.getBounds(), { padding: [20, 20] });
-}
-
-// ── Loading UI ─────────────────────────────────────────────────────────────────
-function showLoading(msg) {
-  document.getElementById('loading-msg').textContent = msg;
-  document.getElementById('loading').style.display = 'flex';
-}
-function hideLoading() {
-  document.getElementById('loading').style.display = 'none';
+  leafletMap.fitBounds(poly.getBounds(), { padding: [24, 24] });
+  // The map's box can still be settling (grid row height, fonts) when Leaflet measures it.
+  setTimeout(() => leafletMap?.invalidateSize(), 150);
 }
 
 // ── File events ────────────────────────────────────────────────────────────────
-document.getElementById('file-input').addEventListener('change', e => {
+$('file-input').addEventListener('change', e => {
   if (e.target.files[0]) loadFile(e.target.files[0]);
   e.target.value = '';  // allow re-loading the same file
 });
 
-const dz = document.getElementById('dropzone');
+const dz = $('dropzone');
 dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
 dz.addEventListener('drop', e => {
@@ -2273,10 +3264,18 @@ dz.addEventListener('drop', e => {
   if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
 });
 
+// Crossing the wide-screen breakpoint changes what a row tap does; the panel needs its content.
+wideMq.addEventListener?.('change', () => {
+  if (currentView === 'trips')   renderList('trip');
+  if (currentView === 'charges') renderList('charge');
+});
+
 // ── Service worker (HTTPS only — SW is blocked over plain HTTP) ────────────────
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
+
+probeCar();
 </script>
 </body>
 </html>
