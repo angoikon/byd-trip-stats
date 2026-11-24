@@ -113,6 +113,7 @@
     <string name="stat_rear_motor">Rear Motor</string>
     <string name="stat_front_rear_motors">Front / Rear Motors</string>
     <string name="stat_driving_dynamics">Driving Dynamics</string>
+    <string name="stat_driving_dynamics_short">Dynamics</string>
     <string name="stat_odometer">Odometer</string>
     <string name="stat_total_discharge">Total Discharge</string>
     <string name="stat_total_consumed">Total consumed</string>
@@ -1365,7 +1366,7 @@
     <string name="trips_avg_since_label">Your recorded trips, since %1$s</string>
     <string name="car_avg_label">Car\'s own average</string>
     <string name="discharge_info_body">This is the car\'s own counter of the energy it has taken from the high-voltage battery since it was new, minus what regenerative braking put back. Energy from charging doesn\'t count.\n\nIt counts everything, not only driving: climate run while parked or from the BYD app, heating or cooling the battery, keeping the 12 V battery charged, standby. That\'s why the lifetime average reads higher than a driving-only consumption.\n\nYour recorded trips count only the energy used while a trip was being recorded, so they are the figure to compare with a driving consumption, such as the one the BYD app shows.</string>
-    <string name="tyre_subtitle_pressure">°C · %1$s pressure</string>
+    <string name="tyre_subtitle_pressure">%1$s pressure · °C</string>
     <!-- DiLink-5 vehicle-data-access consent (hidden-API opt-in) -->
     <string name="d5_consent_title">Allow vehicle data access?</string>
     <string name="d5_consent_body">To read live data from this car (battery, range, speed, tyres…), BYD Trip Stats needs to relax one system setting on the head unit (the hidden-API restriction), scoped to the BYD vehicle libraries.\n\nThis is a device-wide setting. It reverts on reboot and the app re-applies it only when needed. You can change this later in Settings.\n\nWithout it the app runs but shows no vehicle data.\n\nThe app also keeps ADB switched on at all times, and this part isn\'t optional. The car switches ADB off every time it shuts down; the app switches it back on as it starts, because that is what lets it start recording by itself when you start the car.</string>

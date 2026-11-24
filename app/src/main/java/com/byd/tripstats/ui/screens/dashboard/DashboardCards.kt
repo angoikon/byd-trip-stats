@@ -261,7 +261,11 @@ fun DashboardStatCard(
         }
 
         DashboardCardId.DRIVING -> CardTile(
-            title = stringResource(R.string.stat_driving_dynamics),
+            // Split screen puts the title and the modes on one line, where the full name was cut.
+            title = stringResource(
+                if (LocalDashboardCardDense.current) R.string.stat_driving_dynamics_short
+                else R.string.stat_driving_dynamics
+            ),
             value = run {
                 listOfNotNull(
                     // PHEV powertrain source — see the matching Classic-layout card in

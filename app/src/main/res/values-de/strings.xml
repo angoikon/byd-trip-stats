@@ -100,6 +100,7 @@
     <string name="stat_rear_motor">Hintermotor</string>
     <string name="stat_front_rear_motors">Vorder-/Hintermotor</string>
     <string name="stat_driving_dynamics">Fahrdynamik</string>
+    <string name="stat_driving_dynamics_short">Dynamik</string>
     <string name="stat_odometer">Kilometerzähler</string>
     <string name="stat_total_discharge">Gesamtentladung</string>
     <string name="stat_total_consumed">Gesamt verbraucht</string>
@@ -1241,7 +1242,7 @@
     <string name="trips_avg_since_label">Ihre aufgezeichneten Fahrten, seit %1$s</string>
     <string name="car_avg_label">Eigener Durchschnitt des Fahrzeugs</string>
     <string name="discharge_info_body">Das ist der fahrzeugeigene Zähler der Energie, die seit Auslieferung aus der Hochvoltbatterie entnommen wurde, abzüglich dessen, was die Rekuperation zurückgespeist hat. Energie aus dem Laden zählt nicht.\n\nEr zählt alles, nicht nur das Fahren: Klimatisierung im Stand oder über die BYD-App, Heizen oder Kühlen der Batterie, das Nachladen der 12-V-Batterie und den Standby. Deshalb liegt der Lebensdauer-Durchschnitt über einem reinen Fahrverbrauch.\n\nIhre aufgezeichneten Fahrten zählen nur die Energie, die während einer aufgezeichneten Fahrt verbraucht wurde – mit ihnen vergleichen Sie einen Fahrverbrauch, etwa den, den die BYD-App anzeigt.</string>
-    <string name="tyre_subtitle_pressure">°C · %1$s Druck</string>
+    <string name="tyre_subtitle_pressure">%1$s Druck · °C</string>
     <string name="d5_consent_title">Zugriff auf Fahrzeugdaten erlauben?</string>
     <string name="d5_consent_body">Um Live-Daten dieses Fahrzeugs zu lesen (Batterie, Reichweite, Geschwindigkeit, Reifen…), muss BYD Trip Stats eine Systemeinstellung der Haupteinheit lockern (die Hidden-API-Beschränkung), begrenzt auf die BYD-Fahrzeugbibliotheken.\n\nDies ist eine geräteweite Einstellung. Sie wird bei einem Neustart zurückgesetzt und die App wendet sie nur bei Bedarf erneut an. Sie können dies später in den Einstellungen ändern.\n\nOhne sie läuft die App, zeigt aber keine Fahrzeugdaten.\n\nDie App hält außerdem ADB dauerhaft eingeschaltet, und dieser Teil ist nicht optional. Das Fahrzeug schaltet ADB bei jedem Herunterfahren aus; die App schaltet es beim Start wieder ein, denn nur so kann sie selbstständig mit der Aufzeichnung beginnen, wenn Sie das Fahrzeug starten.</string>
     <string name="consent_own_risk">Sie nehmen diese Änderung auf eigenes Risiko vor. BYD Trip Stats wird „wie besehen“ ohne jegliche Gewährleistung bereitgestellt.</string>
