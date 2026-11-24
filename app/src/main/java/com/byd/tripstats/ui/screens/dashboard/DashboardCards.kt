@@ -339,6 +339,8 @@ private fun CardTile(
 ) {
     // In Neon, give the card an accent-tinted edge so it reads as a surface on black.
     val neon = MaterialTheme.isNeon
+    // The icon and the title in the card's colour, as on Classic's cards (StackedCardHeader).
+    val accent = accentTextColor(color)
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -367,14 +369,14 @@ private fun CardTile(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 when {
-                    icon != null -> Icon(icon, null, tint = color, modifier = Modifier.size(18.dp))
-                    iconRes != null -> Icon(painterResource(id = iconRes), null, tint = color, modifier = Modifier.size(18.dp))
+                    icon != null -> Icon(icon, null, tint = accent, modifier = Modifier.size(18.dp))
+                    iconRes != null -> Icon(painterResource(id = iconRes), null, tint = accent, modifier = Modifier.size(18.dp))
                 }
                 if (icon != null || iconRes != null) Spacer(Modifier.width(8.dp))
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = accent,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
@@ -389,14 +391,14 @@ private fun CardTile(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     when {
-                        icon != null -> Icon(imageVector = icon, contentDescription = null, tint = color, modifier = Modifier.size(22.dp))
-                        iconRes != null -> Icon(painter = painterResource(id = iconRes), contentDescription = null, tint = color, modifier = Modifier.size(22.dp))
+                        icon != null -> Icon(imageVector = icon, contentDescription = null, tint = accent, modifier = Modifier.size(22.dp))
+                        iconRes != null -> Icon(painter = painterResource(id = iconRes), contentDescription = null, tint = accent, modifier = Modifier.size(22.dp))
                     }
                     if (icon != null || iconRes != null) Spacer(Modifier.width(8.dp))
                     Text(
                         text = title,
                         style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = accent,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -442,6 +444,7 @@ private fun TyreCardTile(
     val denseFont = LocalDashboardCardCompact.current
     val denseLayout = LocalDashboardCardDense.current
     val neon = MaterialTheme.isNeon
+    val accent = accentTextColor(BydElectricBlue)
 
     Card(
         modifier = modifier
@@ -465,12 +468,12 @@ private fun TyreCardTile(
                 modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Filled.TireRepair, contentDescription = null, tint = BydElectricBlue, modifier = Modifier.size(18.dp))
+                Icon(Icons.Filled.TireRepair, contentDescription = null, tint = accent, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(
                     text = stringResource(R.string.stat_tyres),
                     style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = accent,
                     maxLines = 1
                 )
                 Spacer(Modifier.weight(1f))
@@ -492,14 +495,14 @@ private fun TyreCardTile(
                 Icon(
                     imageVector = Icons.Filled.TireRepair,
                     contentDescription = null,
-                    tint = BydElectricBlue,
+                    tint = accent,
                     modifier = Modifier.size(22.dp)
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
                     text = stringResource(R.string.stat_tyres),
                     style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = accent,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -512,14 +515,14 @@ private fun TyreCardTile(
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth().weight(1f),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     TyreCell("FL", telemetry.tyreTempLF.takeIf { it > 0 }, telemetry.tyrePressureLF, tyreUnit, frontBar, modifier = Modifier.weight(1f).fillMaxHeight(), large = true, compact = denseFont)
                     TyreCell("FR", telemetry.tyreTempRF.takeIf { it > 0 }, telemetry.tyrePressureRF, tyreUnit, frontBar, modifier = Modifier.weight(1f).fillMaxHeight(), large = true, compact = denseFont)
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth().weight(1f),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     TyreCell("RL", telemetry.tyreTempLR.takeIf { it > 0 }, telemetry.tyrePressureLR, tyreUnit, rearBar, modifier = Modifier.weight(1f).fillMaxHeight(), large = true, compact = denseFont)
                     TyreCell("RR", telemetry.tyreTempRR.takeIf { it > 0 }, telemetry.tyrePressureRR, tyreUnit, rearBar, modifier = Modifier.weight(1f).fillMaxHeight(), large = true, compact = denseFont)

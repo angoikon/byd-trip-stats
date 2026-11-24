@@ -416,18 +416,19 @@ private fun ChartTile(
                 // In split-screen the title + all chart chrome are dropped so the plot
                 // gets the full height; the full view (long-press Range) keeps everything.
                 if (!compact) {
+                    val accent = accentTextColor(MaterialTheme.extendedColors.range)
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ShowChart,
                             contentDescription = null,
-                            tint = MaterialTheme.extendedColors.range,
+                            tint = accent,
                             modifier = Modifier.size(22.dp)
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(
                             text = stringResource(R.string.range_projection_title),
                             style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = accent
                         )
                     }
                     Spacer(Modifier.height(6.dp))

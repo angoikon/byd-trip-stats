@@ -305,36 +305,47 @@ internal fun TyreCell(
         shape = RoundedCornerShape(8.dp),
         color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
     ) {
+        // Wheel, pressure, temperature, in the order and with the gaps of Classic's StackedTyreCell.
+        // The pressure is measured before the temperature, so a narrow cell cuts the temperature.
+        // Beside the chart (compact) a cell is ~82 dp, and "FL 2.47 16°" at 12/15/12 sp with the
+        // default text style's 0.5 sp tracking filled it: the three ran together. So no tracking,
+        // and the box's padding is 4 dp there.
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = if (large) (if (compact) 6.dp else 10.dp) else 5.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(horizontal = if (large) (if (compact) 4.dp else 10.dp) else 5.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = label,
                 fontSize = labelSize,
+                letterSpacing = 0.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1
+                maxLines = 1,
+                softWrap = false
             )
-            if (tempC != null) {
-                Text(
-                    text = "${tempC}°",
-                    fontSize = tempSize,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1
-                )
-            }
+            Spacer(modifier = Modifier.width(if (large && !compact) 8.dp else 4.dp))
             Text(
                 text = unit.formatValue(pressurePsi),
                 fontSize = pressureSize,
+                letterSpacing = 0.sp,
                 fontWeight = if (isAlarm) FontWeight.Bold else FontWeight.SemiBold,
                 color = pressureColor,
                 maxLines = 1,
                 softWrap = false
             )
+            Spacer(modifier = Modifier.weight(1f))
+            if (tempC != null) {
+                Text(
+                    text = "${tempC}°",
+                    fontSize = tempSize,
+                    letterSpacing = 0.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    softWrap = false
+                )
+            }
         }
     }
 }
