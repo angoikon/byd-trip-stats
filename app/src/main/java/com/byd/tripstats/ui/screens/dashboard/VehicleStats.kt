@@ -12,7 +12,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -41,6 +40,7 @@ import com.byd.tripstats.ui.theme.BatteryBlue
 import com.byd.tripstats.ui.theme.BydEcoTealDim
 import com.byd.tripstats.ui.theme.BydElectricBlue
 import com.byd.tripstats.ui.theme.RegenGreen
+import com.byd.tripstats.ui.theme.darkenedToContrast
 import com.byd.tripstats.ui.theme.isNeon
 
 /** One card of [VehicleStats], as data, so the same set can be stacked in a column or set in a grid. */
@@ -359,11 +359,16 @@ fun VehicleStats(
 
 /**
  * An accent colour for text on a card: as is on the dark themes, darkened on the light one, where
- * the accents read at 1.4:1 (electric blue) to 2:1 (orange) on its pale card and ~5:1 darkened.
+ * the accents read at 1.5:1 (electric blue) to 3.8:1 (ocean blue) on its pale card. Only to 4.8:1,
+ * past the 4.5:1 text needs: further, the blues close in on the figures' navy.
  */
 @Composable
-internal fun accentTextColor(color: Color): Color =
-    if (MaterialTheme.colorScheme.surface.luminance() > 0.5f) lerp(color, Color.Black, 0.45f) else color
+internal fun accentTextColor(color: Color): Color {
+    val scheme = MaterialTheme.colorScheme
+    if (scheme.surface.luminance() <= 0.5f) return color
+    val card = scheme.primaryContainer
+    return remember(color, card) { darkenedToContrast(color, card, 4.8f) }
+}
 
 /** What each stretch of a card's reading is, for [readingParts]. */
 internal enum class ReadingPart {
