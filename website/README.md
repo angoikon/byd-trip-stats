@@ -58,3 +58,5 @@ its production branch. To deploy by hand, run `npx wrangler deploy` from the rep
   crawler that doesn't run JavaScript reads the fallback.
 - **`llms.txt`** summarises the page for AI tools; update it when features, models or
   the price change.
+- **The `google-site-verification` meta tag** in `index.html` proves ownership to Google
+  Search Console (and, through its import, to Bing Webmaster Tools). Don't remove it.
