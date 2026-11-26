@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Only URLs on this host belong here. Set <lastmod> to the deploy date whenever
+     the page's content changes: search engines stop trusting a lastmod that moves
+     without a change, or doesn't move when the page does. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://byd-trip-stats.angoikon.workers.dev/</loc>
+    <lastmod>2026-11-26</lastmod>
+  </url>
+</urlset>

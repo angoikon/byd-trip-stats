@@ -1,0 +1,15 @@
+# BYD Trip Stats marketing site (a Cloudflare static-assets Worker).
+#
+# Everything is open to every crawler, search engines and AI assistants alike.
+# Content-Signal (Cloudflare's Content Signals Policy, https://contentsignals.org/)
+# grants all three uses explicitly: search results, AI answers that read the page
+# live (ai-input), and AI training (ai-train).
+#
+# Keep a single "User-agent: *" group: a crawler that finds a group naming it
+# ignores the "*" group, so per-bot groups would silently miss future rules here.
+
+User-agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
+Allow: /
+
+Sitemap: https://byd-trip-stats.angoikon.workers.dev/sitemap.xml

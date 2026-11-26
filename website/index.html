@@ -8,6 +8,7 @@
 
   <!-- Open Graph / social -->
   <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="BYD Trip Stats" />
   <meta property="og:title" content="BYD Trip Stats — Trip Analytics for BYD DiLink" />
   <meta property="og:description" content="Live telemetry, autonomous trips, real-time range projection and battery health — running right on your car's screen. 100% local. Free, with an optional €9.99 Pro unlock." />
   <meta property="og:image" content="https://byd-trip-stats.angoikon.workers.dev/assets/screenshots/hero-dashboard.png" />
@@ -19,6 +20,125 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <!-- Canonical URL: pins "BYD Trip Stats" to this address despite the naming
+       collision with "BYD Connect: Trip Stats" and "BYD Stats". -->
+  <link rel="canonical" href="https://byd-trip-stats.angoikon.workers.dev/" />
+
+  <!-- Structured data (schema.org), one linked graph: who makes it (Organization), the
+       site (WebSite: Google takes the site name in results from it), the app
+       (SoftwareApplication) and the FAQ further down (FAQPage).
+       - JSON inside <script> is not HTML-decoded: write a plain "&", never "&amp;".
+       - The FAQPage answers must say what the visible FAQ section says: change both together.
+       - Check after editing: https://validator.schema.org/ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://byd-trip-stats.angoikon.workers.dev/#organization",
+        "name": "BYD Trip Stats",
+        "url": "https://byd-trip-stats.angoikon.workers.dev/",
+        "logo": "https://byd-trip-stats.angoikon.workers.dev/assets/logo.png",
+        "email": "bydtripstats@gmail.com",
+        "sameAs": ["https://github.com/angoikon/byd-trip-stats"]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://byd-trip-stats.angoikon.workers.dev/#website",
+        "name": "BYD Trip Stats",
+        "url": "https://byd-trip-stats.angoikon.workers.dev/",
+        "inLanguage": "en",
+        "publisher": { "@id": "https://byd-trip-stats.angoikon.workers.dev/#organization" }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://byd-trip-stats.angoikon.workers.dev/#app",
+        "name": "BYD Trip Stats",
+        "description": "A standalone in-car analytics app that runs on your BYD DiLink head unit. Live telemetry, autonomous trip recording, real-time range projection, charging analysis and battery health — 100% on-device, no cloud. Runs on DiLink 3, DiLink 5 and DiLink 100 cars, BEV and PHEV (DM-i): Seal, Dolphin, Atto 2, Atto 3, Seal U, Sealion 6, Sealion 7, Han, Tang, Shark 6 and more. Free, with an optional one-time €9.99 Pro unlock.",
+        "url": "https://byd-trip-stats.angoikon.workers.dev/",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Android (BYD DiLink 3, DiLink 5 & DiLink 100)",
+        "downloadUrl": "https://github.com/angoikon/byd-trip-stats/releases",
+        "screenshot": "https://byd-trip-stats.angoikon.workers.dev/assets/screenshots/hero-dashboard.png",
+        "isAccessibleForFree": true,
+        "license": "https://github.com/angoikon/byd-trip-stats/blob/main/LICENSE.md",
+        "offers": {
+          "@type": "Offer",
+          "name": "Free (optional one-time €9.99 Pro unlock)",
+          "price": "0",
+          "priceCurrency": "EUR"
+        },
+        "featureList": [
+          "Autonomous trip recording",
+          "Real-time range projection",
+          "Live motor & power telemetry (10 Hz)",
+          "Battery health & degradation (SoH)",
+          "Charging-session analysis",
+          "Route maps rendered on the car",
+          "Filter, sort & export (CSV/JSON/HTML)",
+          "Web companion & remote access via Tailscale",
+          "Notifications delivered to Telegram",
+          "Opt-in ABRP & Home Assistant (MQTT)"
+        ],
+        "author": { "@id": "https://byd-trip-stats.angoikon.workers.dev/#organization" },
+        "publisher": { "@id": "https://byd-trip-stats.angoikon.workers.dev/#organization" }
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://byd-trip-stats.angoikon.workers.dev/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Do I need a subscription?",
+            "acceptedAnswer": { "@type": "Answer", "text": "No. The app runs fully standalone on supported vehicles. Integrations like MQTT and ABRP are optional and disabled by default." }
+          },
+          {
+            "@type": "Question",
+            "name": "Is it really free, as I see premium features?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes, the app is completely free for personal use. Premium features are essentially for those users who wanted to show their gratitude for the work put into the project. Those premium features will remain as a \"good thing to have\" but will not be a part of the app's core functionality. Pro is a one-time €9.99 unlock (lifetime, per vehicle)." }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I buy a Pro licence?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Install the free app, then open Settings → Pro and scan the on-screen QR with your phone (or copy your Vehicle ID) to email it to bydtripstats@gmail.com. You'll get a reply with payment instructions (€9.99, one-time) and a personal unlock code to paste in. The code is tied to your car, so it only unlocks that vehicle and survives app updates." }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I use the app without side-loading?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Not currently. The long-term goal is for BYD to ship something like this natively. For now it's a side-loaded APK. If you want assistance with how to side-load, see <a href=\"https://github.com/DeBondor/byd-unlocking-guide/blob/main/README_EN.md\">this unlocking guide</a>." }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I install it?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Download the signed APK from GitHub Releases (DiLink 5 cars take the dilink5 build; the Atto 3 EVO takes the regular dilink3 one, even though its screen says DiLink 5.0 UI), enable installation from unknown sources on your DiLink unit, accept permissions by following the on-screen prompts, then pick your model on first launch. After that, new versions can be installed from inside the app, under Settings → About & FAQ." }
+          },
+          {
+            "@type": "Question",
+            "name": "Will it drain my 12 V battery?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Impact is minimal — the 12 V is continuously topped up from the high-voltage pack while the car is off. On DiLink 3 and DiLink 100 you can also set the app to Deep Sleep, which stops it 5 minutes after you park, under Settings → App → Power & background. DiLink 5 always runs Always On, since the head unit powers itself down a few minutes after you switch off anyway." }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my data secure?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Everything stays on-device by default. The only outbound traffic is what you set up yourself — Telegram, MQTT, ABRP or Tailscale — a report you choose to send with Email via QR code, plus a read-only update check. The web companion is on by default, but it only answers browsers on your own network, with a PIN." }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I check on the car when I'm away from home?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes, with Tailscale (free for personal use). Under Settings → Connections → Tailscale, tap Sign in with your phone, scan the QR code and approve — the web companion and ADB are then reachable from anywhere, with nothing opened on your router. It needs the same one-time ADB setup as instant telemetry. On DiLink 5 the head unit powers down a few minutes after you switch the car off, so access lasts until then." }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it work on other BYD EVs besides the Seal?",
+            "acceptedAnswer": { "@type": "Answer", "text": "If your car runs DiLink 3, DiLink 5 (the Sealion 7) or DiLink 100 (the Atto 3 EVO) — regardless of being BEV or PHEV — then you can most definitely run the app. On DiLink 100, speed, gear, power, battery level, range, charging and outside temperature work; the odometer, tyre pressures and the battery's health and cell readings can't be read there yet." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -54,7 +174,7 @@
     <div class="hero__glow" aria-hidden="true"></div>
     <div class="container hero__inner">
       <div class="hero__copy">
-        <span class="pill"><span id="appVersion">v2.16</span> · Runs on your car's screen</span>
+        <span class="pill"><span id="appVersion">v2.21.0</span> · Runs on your car's screen</span>
         <h1>Your BYD's hidden telemetry,<br><span class="grad">finally on the dashboard</span></h1>
         <p class="lede">
           BYD Trip Stats is a standalone analytics app that runs directly on your

@@ -1,0 +1,4 @@
+# Files in this folder that wrangler does not publish (gitignore syntax).
+.assetsignore
+.DS_Store
+README.md

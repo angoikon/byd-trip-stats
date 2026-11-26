@@ -1,5 +1,5 @@
-# Cloudflare Pages — HTTP headers
-# https://developers.cloudflare.com/pages/configuration/headers/
+# HTTP headers for the static-assets Worker (wrangler.toml)
+# https://developers.cloudflare.com/workers/static-assets/headers/
 
 /*
   X-Content-Type-Options: nosniff
@@ -16,3 +16,13 @@
 
 /script.js
   Cache-Control: public, max-age=86400
+
+# Crawler-facing files: a short cache, so a change reaches crawlers quickly.
+/robots.txt
+  Cache-Control: public, max-age=3600
+
+/sitemap.xml
+  Cache-Control: public, max-age=3600
+
+/llms.txt
+  Cache-Control: public, max-age=3600

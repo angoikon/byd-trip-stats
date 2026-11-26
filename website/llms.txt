@@ -1,0 +1,41 @@
+# BYD Trip Stats
+
+> A free, standalone trip-analytics and telemetry app that runs on the BYD DiLink head unit itself (DiLink 3, DiLink 5 and DiLink 100; BEV and PHEV/DM-i). It records trips automatically, projects range from the driver's own recent consumption, analyses charging sessions and tracks battery health, with all data stored on the car: no cloud, no account. An optional one-time €9.99 Pro unlock adds a few extras.
+
+BYD Trip Stats is an independent project, not affiliated with BYD. It is a side-loaded Android APK, not an app-store app, and it is source-available under the Business Source License 1.1. It is a different app from "BYD Connect: Trip Stats" and from "BYD Stats".
+
+- **Head units:** DiLink 3 (Android 10+); DiLink 5 (Android 11+, e.g. the Sealion 7), which takes the separate `dilink5` build; DiLink 100 (Android 14, the Atto 3 EVO), which takes the regular `dilink3` build even though its screen says DiLink 5.0 UI.
+- **Models:** Seal, Dolphin, Atto 2, Atto 3, Atto 3 EVO, Seal U, Seagull / Dolphin Surf / Atto 1, M6, Seal 5 / Sealion 5, Seal 6, Seal 7 DM-i, Sealion 6, Sealion 7, Han, Tang, Song Plus DM-i, Song Pro DM-i, Shark 6 and other DM-i PHEV variants (45+ model variants). Tested mainly on the Seal.
+- **DiLink 100 limits:** speed, gear, power, battery level, range, charging and outside temperature work; the odometer, tyre pressures and battery health and cell readings can't be read there yet.
+- **Price:** free for personal use, no subscription. Pro is a one-time €9.99 unlock per vehicle: in the app, Settings → Pro shows a QR code / Vehicle ID to email to bydtripstats@gmail.com, and the reply carries payment instructions and an unlock code tied to that car.
+- **Privacy:** by default nothing leaves the car. Telegram, MQTT, ABRP and Tailscale are opt-in and send only to destinations the user sets up. The web companion is on by default but answers only browsers on the car's own network (or the user's own Tailscale network), behind a PIN.
+- **Install:** download the signed APK from GitHub Releases, enable installation from unknown sources on the DiLink unit, follow the permission prompts and pick the car model on first launch. Later versions install from inside the app (Settings → About & FAQ).
+
+Features:
+
+- Autonomous trip recording: a trip starts on drive-off and ends a chosen few minutes after switch-off.
+- Range projection from the BMS discharge counter over the last 10, 100 or 500 km of driving, capped at WLTP and compared with the car's own estimate.
+- Live speed, gear, power and motor RPM up to 10 times a second; HV and 12 V voltage, tyre pressures and temperatures where the car exposes them.
+- Battery health (SoH) over time, with the projected date the pack reaches 80 %.
+- Charging-session curves (power, SoC, voltage, temperature); charges the app wasn't running for are reconstructed from the change in battery level.
+- Charts, 14 correlation heatmaps and a per-trip energy breakdown (drag, rolling, gradient, regen).
+- OpenStreetMap route maps, with tiles kept on the car once downloaded.
+- Filtering, sorting, weekly/monthly/yearly statistics, and export to CSV, JSON or a self-contained HTML viewer.
+- Web companion for phone or laptop; remote access through the user's own Tailscale network.
+- Notifications and compressed database backups through the user's own Telegram bot; backups on the car, or an SD card with Pro.
+- Opt-in live telemetry to ABRP and to any MQTT broker, Home Assistant included.
+- Pro extras: Cards dashboard layout, Neon theme, cell-imbalance alert, battery-health PDF/HTML report, SD-card backup, dashboard screenshots.
+
+## Links
+
+- [Website](https://byd-trip-stats.angoikon.workers.dev/): features, screenshots, supported models, FAQ
+- [Download: GitHub Releases](https://github.com/angoikon/byd-trip-stats/releases): signed APKs for each version
+- [Source code and issue tracker](https://github.com/angoikon/byd-trip-stats)
+- [Changelog](https://github.com/angoikon/byd-trip-stats/blob/main/CHANGELOG.md): what changed in each version
+- [Demo video](https://youtu.be/qmkeVPG8pRo)
+
+## Optional
+
+- [Side-loading guide](https://github.com/DeBondor/byd-unlocking-guide/blob/main/README_EN.md): a third-party guide to enabling APK installation on DiLink
+- [Discussions](https://github.com/angoikon/byd-trip-stats/discussions)
+- [Discord community](https://discord.gg/pf8TjjTce9)
